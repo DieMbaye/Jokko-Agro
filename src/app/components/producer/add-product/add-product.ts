@@ -551,14 +551,8 @@ export class AddProductComponent implements OnInit, AfterViewInit {
   private async uploadImages(): Promise<string[]> {
     console.log("Upload d'images ignoré temporairement");
 
-    // Pour le moment, retourner un tableau vide
-    // OU retourner une URL d'image placeholder si vous voulez une image par défaut
-
     // Option A: Aucune image
     return [];
-
-    // Option B: Une image placeholder statique (décommentez si vous voulez une image par défaut)
-    // return ['assets/images/product-placeholder.jpg'];
   }
   private formatDate(dateString: string): string | null {
     if (!dateString) return null;
