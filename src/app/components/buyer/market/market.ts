@@ -1,27 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { FirebaseService } from '../../../services/firebase.service';
-import { CartService } from '../../../services/cart.service'; // Importez le service panier
+import { CartService } from '../../../services/cart.service';
 import { Product } from '../../../services/data.interfaces';
 
 // Définissez l'interface MarketProduct
 interface MarketProduct
   extends Omit<Product, 'producerId' | 'producerPhone' | 'isActive'> {
   producer: string;
-  producerId: string; // ← AJOUTER CETTE LIGNE
+  producerId: string;
   producerRating: number;
   distance: number;
   rating: number;
   reviews: number;
   stock: number;
-  // Propriétés calculées pour le template
   certified: boolean;
   organic: boolean;
   local: boolean;
-  // Image à afficher
   displayImage: string;
 }
 
@@ -40,7 +38,7 @@ interface Category {
   templateUrl: './market.html',
   styleUrls: ['./market.css'],
 })
-export class MarketComponent implements OnInit {
+export class MarketComponent implements OnInit, OnDestroy {
   allProducts: MarketProduct[] = [];
   filteredProducts: MarketProduct[] = [];
   categories: Category[] = [];
@@ -56,6 +54,31 @@ export class MarketComponent implements OnInit {
   // État
   isLoading = true;
   viewMode: 'grid' | 'list' = 'grid';
+
+  // RECHERCHE VOCALE
+  isListening = false;
+  isVoiceSupported = true;
+  showVoiceHelp = true;
+  lastVoiceCommand = '';
+
+  // Dictionnaire Wolof-Français étendu
+  private wolofToFrench: { [key: string]: string } = {
+    // Fruits
+    'mango': 'mangue',
+    'manga': 'mangue',
+    'pomme de terre': 'Pommes de terre',
+    'carotte': 'Carottes',
+    'orange': 'Oranges',
+    'khaal': 'Pastèque',
+    'dougoup': 'Mil',
+    'niébé': 'Niébé',
+
+
+  };
+
+  private recognition: any;
+  private SpeechRecognition = (window as any).webkitSpeechRecognition || 
+                              (window as any).SpeechRecognition;
 
   // Certifications
   certifications = [
@@ -77,38 +100,434 @@ export class MarketComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private firebaseService: FirebaseService,
-    private cartService: CartService // Ajoutez le service panier
+    private cartService: CartService
   ) {}
 
   async ngOnInit() {
     this.loadCategories();
     await this.loadProducts();
+    this.initVoiceRecognition();
   }
 
+  ngOnDestroy() {
+    if (this.recognition) {
+      this.recognition.stop();
+    }
+  }
+
+  // INITIALISATION RECHERCHE VOCALE
+  private initVoiceRecognition() {
+    if (!this.SpeechRecognition) {
+      console.warn('Reconnaissance vocale non supportée par ce navigateur');
+      this.isVoiceSupported = false;
+      return;
+    }
+
+    this.recognition = new this.SpeechRecognition();
+    this.recognition.lang = 'fr-FR';
+    this.recognition.continuous = false;
+    this.recognition.interimResults = false;
+    this.recognition.maxAlternatives = 5;
+
+    this.recognition.onstart = () => {
+      this.isListening = true;
+      this.logVoiceInfo('🎤 Reconnaissance vocale démarrée - DITES UN MOT WOLOF', 'success');
+      console.log('%c💡 ASTUCE: Dites "mango", "karot", "dio", "sangue", etc.', 
+        'color: #FF9800; font-style: italic;');
+    };
+
+    this.recognition.onresult = (event: any) => {
+      this.displayVoiceRecognitionResult(event);
+    };
+
+    this.recognition.onerror = (event: any) => {
+      console.error('%c❌ ERREUR reconnaissance vocale:', 'color: #F44336; font-weight: bold;', event.error);
+      this.isListening = false;
+      
+      if (event.error === 'not-allowed') {
+        alert('Microphone non autorisé. Veuillez autoriser le microphone dans les paramètres de votre navigateur.');
+      }
+    };
+
+    this.recognition.onend = () => {
+      this.isListening = false;
+      this.logVoiceInfo('⏹️ Reconnaissance vocale terminée', 'info');
+    };
+  }
+
+  private displayVoiceRecognitionResult(event: any) {
+    console.log('%c' + '='.repeat(70), 'color: #2196F3;');
+    console.log('%c🎤 RÉSULTAT DE LA RECONNAISSANCE VOCALE', 
+      'color: white; background: #2196F3; padding: 8px; border-radius: 4px; font-weight: bold;');
+    
+    const result = event.results[0];
+    
+    // Afficher toutes les alternatives
+    console.group('%c📋 TOUTES LES ALTERNATIVES ENTENDUES', 'color: #4CAF50; font-weight: bold;');
+    for (let i = 0; i < result.length; i++) {
+      const transcript = result[i].transcript.toLowerCase();
+      const confidence = Math.round(result[i].confidence * 100);
+      
+      let confidenceColor;
+      if (confidence >= 80) confidenceColor = '#4CAF50';
+      else if (confidence >= 60) confidenceColor = '#FF9800';
+      else confidenceColor = '#F44336';
+      
+      console.log(`%c${i+1}. "${transcript}" (${confidence}% de confiance)`, 
+        `color: ${confidenceColor}; font-weight: bold;`);
+      
+      // Pour la première alternative (la plus probable), analyser en détail
+      if (i === 0) {
+        this.analyzeWolofRecognition(transcript, result);
+      }
+    }
+    console.groupEnd();
+    
+    // Traiter la commande avec la première alternative (la plus probable)
+    const mainTranscript = result[0].transcript.toLowerCase();
+    this.processVoiceCommand(mainTranscript);
+    
+    console.log('%c' + '='.repeat(70), 'color: #2196F3;');
+  }
+
+  private analyzeWolofRecognition(transcript: string, result: any) {
+    console.group('%c🔍 ANALYSE DU MOT WOLOF', 'color: #9C27B0; font-weight: bold;');
+    
+    console.log(`%cMot entendu: "${transcript}"`, 'color: #2196F3;');
+    
+    // Découper en mots
+    const words = transcript.split(' ');
+    console.log(`Mots détectés: ${words.length} mot(s)`);
+    
+    // Rechercher chaque mot dans le dictionnaire
+    const detectedWords: Array<{word: string, wolof: string, french: string}> = [];
+    
+    words.forEach(word => {
+      const cleanWord = word.toLowerCase().trim();
+      
+      // Recherche exacte d'abord
+      if (this.wolofToFrench[cleanWord]) {
+        detectedWords.push({
+          word: cleanWord,
+          wolof: cleanWord,
+          french: this.wolofToFrench[cleanWord]
+        });
+      } else {
+        // Recherche partielle
+        for (const wolofWord of Object.keys(this.wolofToFrench)) {
+          if (cleanWord.includes(wolofWord) || wolofWord.includes(cleanWord)) {
+            detectedWords.push({
+              word: cleanWord,
+              wolof: wolofWord,
+              french: this.wolofToFrench[wolofWord]
+            });
+            break;
+          }
+        }
+      }
+    });
+    
+    if (detectedWords.length > 0) {
+      console.log('%c✅ MOTS WOLOF IDENTIFIÉS:', 'color: #4CAF50; font-weight: bold;');
+      detectedWords.forEach(item => {
+        console.log(`   "${item.word}" → Wolof: "${item.wolof}" → Français: "${item.french}"`);
+      });
+    } else {
+      console.log('%c❌ AUCUN MOT WOLOF IDENTIFIÉ DANS LE DICTIONNAIRE', 
+        'color: #F44336; font-weight: bold;');
+      
+      // Recherche phonétique
+      console.group('%c🔊 RECHERCHE PHONÉTIQUE', 'color: #FF9800;');
+      for (const word of words) {
+        const phoneticMatch = this.findPhoneticMatch(word);
+        if (phoneticMatch) {
+          console.log(`   "${word}" pourrait être "${phoneticMatch}" (${this.wolofToFrench[phoneticMatch]})`);
+        }
+      }
+      console.groupEnd();
+      
+      // Analyse de similarité
+      console.group('%c📊 ANALYSE DE SIMILARITÉ', 'color: #607D8B;');
+      for (const word of words) {
+        if (word.length > 2) { // Ignorer les mots trop courts
+          this.checkWordSimilarity(word);
+        }
+      }
+      console.groupEnd();
+    }
+    
+    console.groupEnd();
+  }
+
+  private findPhoneticMatch(word: string): string | null {
+    const phoneticMap: { [key: string]: string[] } = {
+      'mang': ['mango', 'mangu', 'manga'],
+      'mong': ['mango', 'mangu'],
+      'kar': ['karot', 'karote', 'carotte'],
+      'tom': ['tomater', 'tomat', 'tomate'],
+      'dio': ['dio', 'riz'],
+      'sang': ['sangue', 'arachide'],
+      'nye': ['nyebe', 'niebe', 'niébé'],
+      'poi': ['poivr', 'poivron'],
+      'cit': ['sitron', 'citron'],
+      'pas': ['pastay', 'pastek', 'pastèque'],
+      'ban': ['banaana', 'banan', 'banane'],
+      'ara': ['sangue', 'arachide'],
+      'sal': ['salat', 'salade'],
+      'kom': ['kombar', 'concombre'],
+      'pat': ['patat', 'patate'],
+      'pom': ['pomdeter', 'pommedeterre'],
+      'biss': ['bissap', 'oseille'],
+      'oig': ['ognon', 'oignon', 'sablet'],
+      'con': ['kombar', 'concombre'],
+      'riz': ['dio', 'riz'],
+      'maïs': ['ma', 'maïs'],
+      'mil': ['mbaw', 'mil']
+    };
+    
+    for (const [sound, possibleWords] of Object.entries(phoneticMap)) {
+      if (word.includes(sound)) {
+        for (const wolofWord of possibleWords) {
+          if (this.wolofToFrench[wolofWord]) {
+            return wolofWord;
+          }
+        }
+      }
+    }
+    
+    return null;
+  }
+
+  private checkWordSimilarity(word: string) {
+    const wolofWords = Object.keys(this.wolofToFrench);
+    const similarities: Array<{wolof: string, similarity: number, french: string}> = [];
+    
+    for (const wolofWord of wolofWords) {
+      const similarity = this.calculateSimilarity(word, wolofWord);
+      if (similarity > 0.4) { // 40% de similarité
+        similarities.push({
+          wolof: wolofWord,
+          similarity: similarity,
+          french: this.wolofToFrench[wolofWord]
+        });
+      }
+    }
+    
+    if (similarities.length > 0) {
+      console.log(`Pour "${word}":`);
+      similarities
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, 5)
+        .forEach(item => {
+          const percent = Math.round(item.similarity * 100);
+          let color;
+          if (percent >= 70) color = '#4CAF50';
+          else if (percent >= 50) color = '#FF9800';
+          else color = '#F44336';
+          
+          console.log(`%c   ${percent}% → "${item.wolof}" (${item.french})`, 
+            `color: ${color};`);
+        });
+    }
+  }
+
+  private calculateSimilarity(word1: string, word2: string): number {
+    const longer = word1.length > word2.length ? word1 : word2;
+    const shorter = word1.length > word2.length ? word2 : word1;
+    
+    if (longer.length === 0) return 1.0;
+    
+    const distance = this.levenshteinDistance(word1, word2);
+    return (longer.length - distance) / longer.length;
+  }
+
+  private levenshteinDistance(a: string, b: string): number {
+    const matrix = [];
+    
+    for (let i = 0; i <= b.length; i++) {
+      matrix[i] = [i];
+    }
+    
+    for (let j = 0; j <= a.length; j++) {
+      matrix[0][j] = j;
+    }
+    
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          );
+        }
+      }
+    }
+    
+    return matrix[b.length][a.length];
+  }
+
+  // TOGGLE RECHERCHE VOCALE
+  toggleVoiceSearch() {
+    if (!this.isVoiceSupported) {
+      console.error('%c❌ Reconnaissance vocale non supportée', 
+        'color: #F44336; font-weight: bold;');
+      alert('La reconnaissance vocale n\'est pas supportée par votre navigateur. Essayez Chrome ou Edge.');
+      return;
+    }
+
+    if (this.isListening) {
+      console.log('%c⏹️ Arrêt de l\'écoute...', 'color: #FF9800;');
+      this.recognition.stop();
+    } else {
+      console.clear();
+      console.log('%c' + '='.repeat(70), 'color: #2196F3;');
+      console.log('%c🎤 DÉMARRAGE DE LA RECHERCHE VOCALE', 
+        'color: white; background: #2196F3; padding: 10px; border-radius: 4px; font-weight: bold; font-size: 16px;');
+      console.log('%c💡 PARLEZ EN WOLOF DANS LE MICROPHONE', 
+        'color: #FF9800; font-size: 14px;');
+      console.log('');
+      console.log('%c📝 EXEMPLES DE MOTS WOLOF À DIRE:', 'color: #4CAF50; font-weight: bold;');
+      console.log('   • "mango" (mangue)');
+      console.log('   • "karot" (carotte)');
+      console.log('   • "dio" (riz)');
+      console.log('   • "sangue" (arachide)');
+      console.log('   • "nyebe" (niébé)');
+      console.log('   • "tomater" (tomate)');
+      console.log('');
+      console.log('%c📢 Le système affichera dans la console:', 'color: #9C27B0;');
+      console.log('   ✓ Le mot que vous avez dit');
+      console.log('   ✓ La traduction en français');
+      console.log('   ✓ Les alternatives possibles');
+      console.log('   ✓ Les résultats de la recherche');
+      console.log('%c' + '='.repeat(70), 'color: #2196F3;');
+      
+      try {
+        this.recognition.start();
+      } catch (error) {
+        console.error('❌ Erreur démarrage reconnaissance:', error);
+        this.isListening = false;
+      }
+    }
+  }
+
+  // TRAITEMENT COMMANDE VOCALE
+  private processVoiceCommand(command: string) {
+    console.group('%c🎯 TRAITEMENT DE LA COMMANDE', 'color: #FF5722; font-weight: bold;');
+    
+    this.lastVoiceCommand = command;
+    console.log(`Commande vocale reçue: "${command}"`);
+    
+    // Traduire le wolof en français
+    const frenchTerm = this.translateWolofToFrench(command);
+    
+    console.log(`%c🌍 TRADUCTION: "${command}" → "${frenchTerm}"`, 
+      'color: #2196F3; font-weight: bold; background: #E3F2FD; padding: 8px; border-radius: 4px;');
+    
+    // Afficher les mots traduits un par un
+    const words = command.split(' ');
+    if (words.length > 1) {
+      console.group('%c📝 DÉTAIL DE LA TRADUCTION', 'color: #607D8B;');
+      words.forEach((word, index) => {
+        const translation = this.translateWolofToFrench(word);
+        console.log(`${index + 1}. "${word}" → "${translation}"`);
+      });
+      console.groupEnd();
+    }
+    
+    // Mettre à jour la recherche
+    this.searchQuery = frenchTerm;
+    console.log(`%c🔍 RECHERCHE APPLIQUÉE: "${frenchTerm}"`, 
+      'color: #4CAF50; font-weight: bold;');
+    
+    // Appliquer les filtres
+    this.applyFilters();
+    
+    console.groupEnd();
+    
+    // Afficher les résultats après un court délai
+    setTimeout(() => {
+      console.log('%c📊 RÉSULTATS DE LA RECHERCHE', 'color: #4CAF50; font-weight: bold;');
+      console.log(`Produits trouvés: ${this.filteredProducts.length}`);
+      
+      if (this.filteredProducts.length > 0) {
+        console.log('%c✅ SUCCÈS: Produits trouvés!', 'color: #4CAF50;');
+        this.filteredProducts.slice(0, 3).forEach((product, index) => {
+          console.log(`${index + 1}. ${product.name} - ${this.formatPrice(product.price)}`);
+        });
+        if (this.filteredProducts.length > 3) {
+          console.log(`   ... et ${this.filteredProducts.length - 3} autres`);
+        }
+      } else {
+        console.log('%c❌ AUCUN produit trouvé', 'color: #F44336;');
+        console.log('💡 Essayez un autre mot wolof');
+      }
+      
+      console.log('');
+      console.log('%c💡 ASTUCE: Cliquez à nouveau sur le micro pour une nouvelle recherche', 
+        'color: #FF9800; font-style: italic;');
+    }, 500);
+  }
+
+  // TRADUCTION WOLOF → FRANÇAIS
+  private translateWolofToFrench(wolofText: string): string {
+    const lowerText = wolofText.toLowerCase().trim();
+    
+    // Vérifier d'abord les phrases complètes
+    for (const [wolof, french] of Object.entries(this.wolofToFrench)) {
+      if (lowerText === wolof) {
+        return french;
+      }
+    }
+    
+    // Si c'est une phrase, traduire mot par mot
+    const words = lowerText.split(' ');
+    if (words.length > 1) {
+      const translatedWords = words.map(word => {
+        for (const [wolof, french] of Object.entries(this.wolofToFrench)) {
+          if (word === wolof) {
+            return french;
+          }
+        }
+        return word; // Retourner le mot original si non trouvé
+      });
+      return translatedWords.join(' ');
+    }
+    
+    // Si non trouvé, retourner le texte original
+    return wolofText;
+  }
+
+  // LOGGER POUR LES INFORMATIONS VOCALES
+  private logVoiceInfo(message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') {
+    const styles = {
+      info: 'color: #2196F3;',
+      success: 'color: #4CAF50; font-weight: bold;',
+      error: 'color: #F44336; font-weight: bold;',
+      warning: 'color: #FF9800;'
+    };
+    
+    const timestamp = new Date().toLocaleTimeString();
+    console.log(`%c[${timestamp}] ${message}`, styles[type]);
+  }
+
+  // MÉTHODES EXISTANTES (inchangées)
   async loadProducts() {
     this.isLoading = true;
 
     try {
-      // Récupérer tous les produits disponibles depuis Firebase
       const firebaseProducts = await this.getAllProductsFromFirebase();
-
-      // Transformer les produits Firebase en produits pour le marché
       this.allProducts = firebaseProducts.map((product) =>
         this.transformToMarketProduct(product)
       );
 
-      console.log(
-        `${this.allProducts.length} produits chargés depuis Firebase`
-      );
-
-      // Appliquer les filtres initiaux
+      console.log(`${this.allProducts.length} produits chargés depuis Firebase`);
       this.applyFilters();
-
-      // Mettre à jour les catégories avec les comptes réels
       this.updateCategoryCounts();
     } catch (error) {
       console.error('Erreur lors du chargement des produits:', error);
-      // Fallback sur des données simulées
       this.loadFallbackData();
     } finally {
       this.isLoading = false;
@@ -117,32 +536,24 @@ export class MarketComponent implements OnInit {
 
   private async getAllProductsFromFirebase(): Promise<Product[]> {
     try {
-      // Vérifier si la méthode existe dans FirebaseService
       if (this.firebaseService.getAllAvailableProducts) {
         return await this.firebaseService.getAllAvailableProducts();
       } else {
-        console.warn(
-          "La méthode getAllAvailableProducts n'existe pas dans FirebaseService"
-        );
+        console.warn("La méthode getAllAvailableProducts n'existe pas dans FirebaseService");
         return [];
       }
     } catch (error) {
-      console.error(
-        'Erreur lors de la récupération des produits Firebase:',
-        error
-      );
+      console.error('Erreur lors de la récupération des produits Firebase:', error);
       return [];
     }
   }
 
   private transformToMarketProduct(product: Product): MarketProduct {
-    // Générer des données aléatoires pour les champs manquants
     const randomDistance = Math.floor(Math.random() * 30) + 1;
     const randomRating = 3.5 + Math.random() * 1.5;
     const randomReviews = Math.floor(Math.random() * 100);
     const producerRating = 3.5 + Math.random() * 1.5;
 
-    // Calculer les propriétés de certification
     const hasCertifications =
       (product.certifications && product.certifications.length > 0) || false;
     const isOrganic = product.isOrganic || false;
@@ -150,38 +561,27 @@ export class MarketComponent implements OnInit {
       (product.certifications && product.certifications.includes('local')) ||
       false;
 
-    // Déterminer l'image à afficher
     const displayImage = this.getDisplayImage(product);
 
     return {
       id: product.id || '',
       name: product.name,
       producer: product.producerName || 'Producteur',
-      producerId: product.producerId || '', // ← AJOUTER CETTE LIGNE
+      producerId: product.producerId || '',
       producerRating: producerRating,
       price: product.price,
       unit: product.unit,
       quantity: product.quantity,
       category: product.category,
-
-      // Image à afficher dans le template
       displayImage: displayImage,
-
-      // Propriétés calculées pour le template
       certified: hasCertifications,
       organic: isOrganic,
       local: isLocal,
-
-      // Données simulées pour l'instant
       distance: randomDistance,
       rating: randomRating,
       reviews: randomReviews,
-
-      // Données réelles
       description: product.description || 'Produit agricole de qualité',
       stock: product.quantity,
-
-      // Copier tous les autres champs
       certifications: product.certifications || [],
       isOrganic: isOrganic,
       location: product.location,
@@ -201,9 +601,7 @@ export class MarketComponent implements OnInit {
   }
 
   private getDisplayImage(product: Product): string {
-    // Si le produit a des images, retourner la première
     if (product.images && product.images.length > 0) {
-      // Si c'est une URL, retourner l'URL, sinon retourner l'icône
       if (
         product.images[0].startsWith('http') ||
         product.images[0].startsWith('data:')
@@ -211,50 +609,117 @@ export class MarketComponent implements OnInit {
         return product.images[0];
       }
     }
-    // Sinon retourner l'icône de catégorie
     return this.getCategoryIcon(product.category);
   }
 
-// Mettez aussi à jour les données de fallback dans loadFallbackData :
-private loadFallbackData() {
-  console.log('Chargement des données de fallback');
-  // Données simulées
-  this.allProducts = [
-    {
-      id: '1',
-      name: 'Tomates Bio',
-      producer: 'Alioune Farm',
-      producerId: 'producer_1', // ← AJOUTER
-      producerRating: 4.8,
-      price: 1500,
-      unit: 'kg',
-      quantity: 1,
-      category: 'vegetables',
-      displayImage: '🍅',
-      certified: true,
-      organic: true,
-      local: true,
-      distance: 2.5,
-      rating: 4.8,
-      reviews: 45,
-      description: 'Tomates biologiques cultivées sans pesticides',
-      stock: 50,
-      certifications: ['organic', 'local'],
-      isOrganic: true,
-      location: 'Dakar',
-      harvestDate: '2024-01-10',
-      expirationDate: '2024-01-20',
-      createdAt: new Date('2024-01-10'),
-      updatedAt: new Date('2024-01-15'),
-      status: 'available',
-      views: 100,
-      sales: 45,
-      producerName: 'Alioune Farm',
-      minOrderQuantity: 1,
-      images: [],
-      storageConditions: 'Conserver au frais',
-      contactPhone: '771234567',
-    },
+  private loadFallbackData() {
+    console.log('Chargement des données de fallback');
+    this.allProducts = [
+      {
+        id: '1',
+        name: 'Tomates Bio',
+        producer: 'Alioune Farm',
+        producerId: 'producer_1',
+        producerRating: 4.8,
+        price: 1500,
+        unit: 'kg',
+        quantity: 1,
+        category: 'vegetables',
+        displayImage: '🍅',
+        certified: true,
+        organic: true,
+        local: true,
+        distance: 2.5,
+        rating: 4.8,
+        reviews: 45,
+        description: 'Tomates biologiques cultivées sans pesticides',
+        stock: 50,
+        certifications: ['organic', 'local'],
+        isOrganic: true,
+        location: 'Dakar',
+        harvestDate: '2024-01-10',
+        expirationDate: '2024-01-20',
+        createdAt: new Date('2024-01-10'),
+        updatedAt: new Date('2024-01-15'),
+        status: 'available',
+        views: 100,
+        sales: 45,
+        producerName: 'Alioune Farm',
+        minOrderQuantity: 1,
+        images: [],
+        storageConditions: 'Conserver au frais',
+        contactPhone: '771234567',
+      },
+      {
+        id: '2',
+        name: 'Mangues',
+        producer: 'Mango Farm',
+        producerId: 'producer_2',
+        producerRating: 4.5,
+        price: 800,
+        unit: 'kg',
+        quantity: 1,
+        category: 'fruits',
+        displayImage: '🥭',
+        certified: false,
+        organic: true,
+        local: true,
+        distance: 5.2,
+        rating: 4.6,
+        reviews: 32,
+        description: 'Mangues sucrées de saison',
+        stock: 100,
+        certifications: ['organic'],
+        isOrganic: true,
+        location: 'Thiès',
+        harvestDate: '2024-01-05',
+        expirationDate: '2024-01-25',
+        createdAt: new Date('2024-01-05'),
+        updatedAt: new Date('2024-01-10'),
+        status: 'available',
+        views: 85,
+        sales: 60,
+        producerName: 'Mango Farm',
+        minOrderQuantity: 2,
+        images: [],
+        storageConditions: 'Conserver à température ambiante',
+        contactPhone: '772345678',
+      },
+      {
+        id: '3',
+        name: 'Riz local',
+        producer: 'Rizière Sénégal',
+        producerId: 'producer_3',
+        producerRating: 4.9,
+        price: 1200,
+        unit: 'kg',
+        quantity: 1,
+        category: 'cereals',
+        displayImage: '🌾',
+        certified: true,
+        organic: false,
+        local: true,
+        distance: 15.7,
+        rating: 4.7,
+        reviews: 78,
+        description: 'Riz cultivé dans le delta du Saloum',
+        stock: 200,
+        certifications: ['local'],
+        isOrganic: false,
+        location: 'Fatick',
+        harvestDate: '2023-12-20',
+        expirationDate: '2024-06-20',
+        createdAt: new Date('2023-12-25'),
+        updatedAt: new Date('2024-01-01'),
+        status: 'available',
+        views: 150,
+        sales: 120,
+        producerName: 'Rizière Sénégal',
+        minOrderQuantity: 5,
+        images: [],
+        storageConditions: 'Conserver au sec',
+        contactPhone: '773456789',
+      },
     ];
 
     this.applyFilters();
@@ -304,7 +769,6 @@ private loadFallbackData() {
   applyFilters() {
     let filtered = [...this.allProducts];
 
-    // Filtre par recherche
     if (this.searchQuery) {
       filtered = filtered.filter(
         (product) =>
@@ -318,14 +782,12 @@ private loadFallbackData() {
       );
     }
 
-    // Filtre par catégorie
     if (this.selectedCategory !== 'all') {
       filtered = filtered.filter(
         (product) => product.category === this.selectedCategory
       );
     }
 
-    // Filtre par certification
     if (this.selectedCertification !== 'all') {
       switch (this.selectedCertification) {
         case 'certified':
@@ -340,38 +802,34 @@ private loadFallbackData() {
       }
     }
 
-    // Filtre par distance
     filtered = filtered.filter(
       (product) => product.distance <= this.maxDistance
     );
 
-    // Filtre par prix
     filtered = filtered.filter(
       (product) =>
         product.price >= this.priceRange[0] &&
         product.price <= this.priceRange[1]
     );
 
-    // Filtre par disponibilité
     filtered = filtered.filter(
       (product) => product.status === 'available' && product.stock > 0
     );
 
-    // Tri
     filtered.sort((a, b) => {
       switch (this.selectedSort) {
         case 'distance':
-          return a.distance - b.distance;
+          return (a.distance || 0) - (b.distance || 0);
         case 'price_low':
-          return a.price - b.price;
+          return (a.price || 0) - (b.price || 0);
         case 'price_high':
-          return b.price - a.price;
+          return (b.price || 0) - (a.price || 0);
         case 'rating':
-          return b.rating - a.rating;
+          return (b.rating || 0) - (a.rating || 0);
         case 'newest':
-          return (
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
         default:
           return 0;
       }
@@ -391,27 +849,20 @@ private loadFallbackData() {
       .map((_, i) => (i < Math.round(rating) ? 1 : 0));
   }
 
-  // Méthode pour obtenir l'unité du produit (ajoutez cette méthode)
   getProductUnit(product: MarketProduct): string {
     return product.unit || 'unité';
   }
 
-  // Méthode pour formater le prix (assurez-vous qu'elle existe)
   formatPrice(price: number): string {
     return price.toLocaleString() + ' FCFA';
   }
 
   addToCart(product: MarketProduct) {
     console.log('Ajouter au panier:', product);
-
-    // Vérifier la quantité minimale
     const quantity = product.minOrderQuantity || 1;
 
     if (product.stock >= quantity) {
-      // Utiliser le service panier
       this.cartService.addToCart(product, quantity);
-
-      // Vous pouvez aussi afficher une notification personnalisée
       this.showAddToCartNotification(product.name, quantity);
     } else {
       alert(
@@ -420,9 +871,7 @@ private loadFallbackData() {
     }
   }
 
-  // Méthode pour afficher une notification d'ajout au panier
   private showAddToCartNotification(productName: string, quantity: number) {
-    // Créer une notification temporaire
     const notification = document.createElement('div');
     notification.style.cssText = `
       position: fixed;
@@ -445,15 +894,13 @@ private loadFallbackData() {
       <div style="font-size: 28px;">🛒</div>
       <div>
         <div style="font-weight: 600; margin-bottom: 5px;">${productName}</div>
- au panier
-        </div>
+        <div style="font-size: 14px;">Ajouté au panier (${quantity} unité(s))</div>
         <div style="font-size: 12px; margin-top: 5px; opacity: 0.8;">
           👉 Cliquez pour voir le panier
         </div>
       </div>
     `;
 
-    // Rediriger vers le panier au clic
     notification.onclick = () => {
       this.cartService.goToCart();
       document.body.removeChild(notification);
@@ -461,7 +908,6 @@ private loadFallbackData() {
 
     document.body.appendChild(notification);
 
-    // Supprimer la notification après 4 secondes
     setTimeout(() => {
       if (document.body.contains(notification)) {
         document.body.removeChild(notification);
@@ -469,12 +915,9 @@ private loadFallbackData() {
     }, 4000);
   }
 
-  // Méthode utilitaire pour obtenir l'unité du produit
-
   viewProductDetails(product: MarketProduct) {
     console.log('Voir détails:', product);
-
-    // Pour l'instant, afficher les détails dans une alerte
+    
     const details = `
       🛒 **${product.name}**
 
@@ -513,7 +956,6 @@ private loadFallbackData() {
       return;
     }
     console.log('Toggle favori:', productId);
-    // TODO: Implémenter le service des favoris
   }
 
   getProductStatus(product: MarketProduct): string {

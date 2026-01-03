@@ -58,6 +58,7 @@ export class FirebaseService {
   currentUser: User | null = null;
   userData: FirebaseUserData | null = null;
   isLoading = true;
+  getProducers: any;
 
   constructor() {
     this.setupAuthPersistence();

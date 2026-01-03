@@ -1,7 +1,104 @@
-/* You can add global styles to this file, and also import other style files */
-/* Main Content */
-.main-content {
-  flex: 1;
-  padding: 2rem;
-  min-height: 100vh;
+/* ============================================
+   VARIABLES GLOBALES - PALETTE AGRICOLE
+   ============================================ */
+:root {
+  /* Palette agricole principale */
+  --primary-green: #2F855A;        /* Vert forêt riche */
+  --primary-green-light: #38A169;  /* Vert frais */
+  --primary-green-dark: #276749;   /* Vert foncé */
+  
+  /* Couleurs d'accent agricoles */
+  --accent-orange: #F6AD55;        /* Orange doux */
+  --accent-orange-light: #FBD38D;  /* Orange clair */
+  --accent-orange-dark: #ED8936;   /* Orange foncé */
+  
+  /* Couleurs de statut */
+  --success-green: #48BB78;        /* Succès */
+  --warning-orange: #ED8936;       /* Avertissement */
+  --error-red: #E53E3E;            /* Erreur */
+  --info-blue: #4299E1;            /* Information */
+  
+  /* Couleurs neutres */
+  --bg-light: #F7FAFC;             /* Arrière-plan général */
+  --bg-white: #FFFFFF;             /* Cartes, formulaires */
+  --bg-gray: #f5f7fa;              /* Arrière-plan dashboard */
+  --border-light: #E2E8F0;         /* Bordures */
+  --border-medium: #CBD5E0;        /* Bordures actives */
+  
+  /* Couleurs de texte */
+  --text-dark: #1A202C;            /* Texte principal */
+  --text-gray: #4A5568;            /* Texte secondaire */
+  --text-light: #718096;           /* Texte désactivé */
+  --text-white: #FFFFFF;           /* Texte sur fond coloré */
+  
+  /* Ombres */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.15);
+  
+  /* Bordures arrondies */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 50%;
+}
+
+/* ============================================
+   RESET & BASE STYLES
+   ============================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background-color: var(--bg-gray);
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--primary-green);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--primary-green-dark);
+  text-decoration: underline;
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }

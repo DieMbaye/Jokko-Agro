@@ -1,5 +1,4 @@
 <div class="dashboard-container">
-
   <!-- Main Content -->
   <main class="main-content">
     <!-- Header -->
@@ -10,8 +9,11 @@
       </div>
       <div class="header-right">
         <div class="search-box">
-          <input type="text" placeholder="Rechercher un produit...">
-          <button class="search-btn">🔍</button>
+          <input type="text" placeholder="Rechercher un produit..." [(ngModel)]="searchTerm" (keyup.enter)="onSearch()">
+          <button class="search-btn" (click)="onSearch()">🔍</button>
+          <button class="voice-btn" (click)="toggleVoiceSearch()" [class.listening]="isListening">
+            🎤
+          </button>
         </div>
         <div class="quick-actions">
           <button routerLink="/buyer/scan" class="quick-btn">
@@ -20,6 +22,31 @@
         </div>
       </div>
     </header>
+
+    <!-- Résultats de recherche vocale -->
+    <div *ngIf="voiceSearchResults.length > 0" class="voice-results">
+      <div class="results-header">
+        <h3>Résultats pour "{{lastVoiceCommand || searchTerm}}"</h3>
+        <button class="clear-btn" (click)="clearVoiceResults()">×</button>
+      </div>
+      <div class="products-grid">
+        <div *ngFor="let product of voiceSearchResults" class="product-card">
+          <div class="product-image">
+            {{ product.image }}
+            <span *ngIf="product.certified" class="certified-tag">✔ Certifié</span>
+          </div>
+          <div class="product-info">
+            <h4>{{ product.name }}</h4>
+            <p class="producer">{{ product.producer }}</p>
+            <div class="product-meta">
+              <span class="price">{{ formatPrice(product.price) }}/{{ product.unit }}</span>
+              <span class="rating">⭐ {{ product.rating }}</span>
+            </div>
+            <button class="add-to-cart">Ajouter au panier</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Stats Grid -->
     <div class="stats-grid">
@@ -148,6 +175,126 @@
       </div>
     </div>
   </main>
-
-
 </div>
+
+<!-- ============================================
+   CHATBOT INTELLIGENT
+   ============================================ -->
+<button class="chatbot-button" (click)="toggleChatbot()">
+  <span class="chatbot-icon">💬</span>
+  <span class="chatbot-notification" *ngIf="hasUnreadMessages">●</span>
+</button>
+
+<div class="chatbot-container" [class.open]="isChatbotOpen">
+  <!-- Header -->
+  <div class="chatbot-header">
+    <div class="chatbot-title">
+      <div class="chatbot-avatar">🤖</div>
+      <div class="chatbot-info">
+        <h3>Assistant AgroConnect</h3>
+        <p class="chatbot-status">En ligne • Données réelles</p>
+      </div>
+    </div>
+    <div class="chatbot-controls">
+      <button class="chatbot-action" (click)="newChat()" title="Nouvelle conversation">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 13H5V11H19V13Z"/>
+          <path d="M13 5L11 5L11 19H13V5Z"/>
+        </svg>
+      </button>
+      <button class="chatbot-action" (click)="toggleChatbot()" title="Fermer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="chatbot-messages" #chatMessages>
+    <!-- Message de bienvenue -->
+    <div class="message welcome" *ngIf="chatHistory.length === 0">
+      <div class="message-avatar">🤖</div>
+      <div class="message-content">
+        <div class="message-bubble">
+          <strong>👋 Bonjour {{userName}} !</strong><br><br>
+          Je suis votre assistant AgroConnect. Je peux vous donner des informations <strong>réelles</strong> sur :<br><br>
+          • 📦 <strong>Les produits disponibles</strong> (prix, stock, producteurs)<br>
+          • 👨‍🌾 <strong>Les producteurs actifs</strong> (liste réelle des vendeurs)<br>
+          • 💰 <strong>Les prix et promotions</strong><br>
+          • 🛒 <strong>Comment commander</strong> (procédure réelle)<br><br>
+          <em>Posez-moi vos questions en français simple !</em>
+        </div>
+        <div class="message-time">Maintenant</div>
+      </div>
+    </div>
+
+    <!-- Historique des messages -->
+    <div *ngFor="let msg of chatHistory" class="message" [class.user]="msg.isUser" [class.bot]="!msg.isUser">
+      <div class="message-avatar" *ngIf="!msg.isUser">🤖</div>
+      
+      <div class="message-content">
+        <div class="message-bubble">
+          <div class="message-text" [innerHTML]="msg.text"></div>
+          <div *ngIf="msg.isLoading" class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+        <div class="message-time">
+          {{msg.timestamp | date:'HH:mm'}}
+          <span *ngIf="msg.isUser" class="message-status">✓</span>
+        </div>
+      </div>
+      
+      <div class="message-avatar user-avatar" *ngIf="msg.isUser">
+        {{userInitials}}
+      </div>
+    </div>
+  </div>
+
+  <!-- Suggestions -->
+  <div class="chatbot-suggestions" *ngIf="!isProcessing && chatHistory.length === 0">
+    <p>💡 <strong>Exemples de questions réelles :</strong></p>
+    <div class="suggestions-grid">
+      <button class="suggestion-btn" (click)="askQuestion('Qui sont les producteurs actifs ?')">
+        👨‍🌾 Producteurs actifs
+      </button>
+      <button class="suggestion-btn" (click)="askQuestion('Quels sont les produits disponibles ?')">
+        📦 Produits disponibles
+      </button>
+      <button class="suggestion-btn" (click)="askQuestion('Je veux commander des tomates')">
+        🍅 Commander un produit
+      </button>
+      <button class="suggestion-btn" (click)="askQuestion('Comment faire une commande ?')">
+        🛒 Comment commander
+      </button>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="chatbot-input">
+    <div class="input-container">
+      <input 
+        type="text" 
+        [(ngModel)]="currentMessage"
+        placeholder="Posez votre question (ex: 'qui vend des mangues ?')..."
+        (keyup.enter)="sendMessage()"
+        [disabled]="isProcessing"
+        #chatInput
+      />
+      <button class="send-button" (click)="sendMessage()" [disabled]="!currentMessage.trim() || isProcessing">
+        <svg *ngIf="!isProcessing" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="currentColor"/>
+        </svg>
+        <div *ngIf="isProcessing" class="loading-spinner"></div>
+      </button>
+    </div>
+    <div class="input-hint">
+      💬 Essayez : "producteurs actifs", "produits disponibles", "commander [produit]"
+    </div>
+  </div>
+</div>
+
+<div class="chatbot-overlay" [class.active]="isChatbotOpen" (click)="toggleChatbot()"></div>

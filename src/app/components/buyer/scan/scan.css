@@ -181,7 +181,7 @@
 .placeholder-icon {
   font-size: 4rem;
   margin-bottom: 1rem;
-  color: #1976d2;
+  color: #48BB78;
 }
 
 .scanner-placeholder h3 {
@@ -288,7 +288,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #1976d2;
+  color: #48BB78;
 }
 
 .product-header h4 {
@@ -392,7 +392,7 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: #1976d2;
+  background: #48BB78;
 }
 
 .timeline-event {
@@ -411,7 +411,7 @@
   width: 16px;
   height: 16px;
   background: white;
-  border: 3px solid #1976d2;
+  border: 3px solid #48BB78;
   border-radius: 50%;
 }
 
@@ -423,7 +423,7 @@
 
 .event-date {
   font-weight: 600;
-  color: #1976d2;
+  color:#48BB78;
   margin-bottom: 0.3rem;
   font-size: 0.9rem;
 }
@@ -456,7 +456,7 @@
 
 .instructions-card h3 {
   margin: 0 0 1rem 0;
-  color: #1976D2;
+  color: #48BB78;
   font-size: 1.3rem;
   display: flex;
   align-items: center;
@@ -476,7 +476,7 @@
 
 .benefits h4 {
   margin: 0 0 0.5rem 0;
-  color: #1976D2;
+  color: #48BB78;
   font-size: 1.1rem;
 }
 
@@ -542,7 +542,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #1976d2;
+  color: #48BB78;
 }
 
 .item-info {
@@ -574,7 +574,7 @@
 }
 
 .item-action {
-  background: #1976d2;
+  background: #48BB78;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -634,7 +634,7 @@
 }
 
 .btn-primary {
-  background: #1976d2;
+  background: #48BB78;
   color: white;
 }
 
@@ -644,8 +644,8 @@
 
 .btn-secondary {
   background: white;
-  color: #1976d2;
-  border: 1px solid #1976d2;
+  color: #48BB78;
+  border: 1px solid #48BB78;
 }
 
 .btn-secondary:hover {

@@ -68,6 +68,9 @@ interface Notification {
   styleUrls: ['./cart.css'],
 })
 export class CartComponent implements OnInit, OnDestroy {
+onImageError($event: ErrorEvent,arg1: string) {
+throw new Error('Method not implemented.');
+}
   cartItems: EnhancedCartItem[] = [];
   deliveryOptions: DeliveryOption[] = [];
   paymentMethods: PaymentMethod[] = [];

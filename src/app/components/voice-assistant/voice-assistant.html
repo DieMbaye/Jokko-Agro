@@ -1,15 +1,4 @@
-<div class="voice-assistant-container">
-  <!-- Bouton microphone flottant -->
-  <button
-    class="microphone-btn"
-    [class.listening]="isListening"
-    (click)="toggleListening()"
-    [attr.aria-label]="isListening ? 'Arrêter l\'écoute' : 'Démarrer l\'écoute vocale'"
-  >
-    <span class="icon">
-      {{ isListening ? '⏹️' : '🎤' }}
-    </span>
-  </button>
+<div>
 
   <!-- Panneau d'aide qui apparaît quand on clique sur le bouton info -->
   <div class="help-panel" *ngIf="showHelp">

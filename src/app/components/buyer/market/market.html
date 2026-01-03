@@ -59,25 +59,45 @@
     </div>
   </div>
 
-  <!-- Barre de recherche principale -->
+  <!-- Barre de recherche principale AVEC MICROPHONE -->
   <div class="main-search">
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input
-        type="text"
-        [(ngModel)]="searchQuery"
-        (ngModelChange)="applyFilters()"
-        placeholder="Rechercher un produit, producteur ou catégorie..."
-        class="search-input"
-      />
-      <button class="search-btn" (click)="applyFilters()">Rechercher</button>
-      <button
-        class="search-btn refresh"
-        (click)="loadProducts()"
-        title="Actualiser"
-      >
-        🔄
-      </button>
+    <div class="search-container">
+      <div class="search-box-wrapper">
+        <div class="search-input-group">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="applyFilters()"
+            placeholder="Rechercher un produit, producteur ou catégorie... (dites-le en Wolof)"
+            class="search-input"
+          />
+          <div class="search-buttons">
+            <button class="search-btn" (click)="applyFilters()">
+              <i class="fas fa-search"></i>
+            </button>
+            <button 
+              class="voice-search-btn-market" 
+              [ngClass]="{'listening': isListening}"
+              (click)="toggleVoiceSearch()"
+              [disabled]="!isVoiceSupported || isListening"
+              title="Recherche vocale en Wolof"
+            >
+              <i class="fas" [ngClass]="isListening ? 'fa-microphone-slash' : 'fa-microphone'"></i>
+            </button>
+          </div>
+        </div>
+        
+       
+      
+      <!-- Indicateur d'écoute -->
+      <div *ngIf="isListening" class="voice-status-market">
+        <div class="pulse-ring-market"></div>
+        <div class="pulse-ring-market delay"></div>
+        <span class="listening-text-market">
+          <i class="fas fa-microphone"></i> Parlez maintenant...
+        </span>
+      </div>
     </div>
   </div>
 
@@ -441,16 +461,16 @@
       </ul>
     </div>
     <div class="tip-card">
-      <h3>🔒 Produits certifiés</h3>
-      <p>Les produits avec le badge "Certifié" ont été vérifiés :</p>
+      <h3>🎤 Recherche Vocale en Wolof</h3>
+      <p>Idéal pour les utilisateurs analphabètes :</p>
       <ol>
-        <li>Traçabilité complète depuis la ferme</li>
-        <li>Qualité contrôlée par nos équipes</li>
-        <li>Conformité aux standards agricoles</li>
-        <li>Fraîcheur garantie</li>
+        <li>Cliquez sur le bouton <strong><i class="fas fa-microphone"></i> Microphone</strong></li>
+        <li>Dites le nom du produit en wolof</li>
+        <li>Le système recherche automatiquement le produit</li>
+        <li>Résultats immédiats !</li>
       </ol>
-      <button routerLink="/buyer/scan" class="scan-tip-btn">
-        📱 Scanner un produit
+      <button class="scan-tip-btn" (click)="showVoiceHelp = !showVoiceHelp">
+        <i class="fas fa-microphone-alt"></i> Comment ça marche ?
       </button>
     </div>
   </div>

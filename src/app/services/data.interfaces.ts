@@ -138,8 +138,8 @@ export interface Product {
   sales: number;
   rating: number;
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+    createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // services/data.interfaces.ts

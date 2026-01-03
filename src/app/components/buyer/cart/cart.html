@@ -23,7 +23,6 @@
       <button class="continue-btn" (click)="continueShopping()">
         ← Continuer mes achats
       </button>
-      <!-- AJOUTEZ CE BOUTON -->
       <button class="action-btn" (click)="goToOrders()">
         📦 Voir mes commandes
       </button>
@@ -641,24 +640,87 @@
           <h3>💳 Méthode de paiement</h3>
 
           <div class="payment-options">
+            <!-- Wave Money -->
             <div
-              *ngFor="let method of getFilteredPaymentMethods()"
               class="payment-option"
-              [class.selected]="selectedPaymentMethod === method.id"
-              [class.recommended]="method.recommended"
-              (click)="selectedPaymentMethod = method.id"
+              [class.selected]="selectedPaymentMethod === 'wave'"
+              [class.recommended]="true"
+              (click)="selectedPaymentMethod = 'wave'"
             >
-              <div class="payment-icon">{{ method.icon }}</div>
+              <div class="payment-icon">
+                <img src="assets/images/wave-money-logo.png" alt="Wave Money" class="payment-logo" 
+                     (error)="onImageError($event, 'wave')" />
+              </div>
               <div class="payment-info">
-                <div class="payment-name">{{ method.name }}</div>
-                <div class="payment-description">{{ method.description }}</div>
-                <div class="payment-promo" *ngIf="method.promo">
-                  🎁 {{method.promo}}
-                </div>
+                <div class="payment-name">Wave Money</div>
+                <div class="payment-description">Paiement mobile rapide et sécurisé</div>
+                <div class="payment-promo">🎁 0% de frais jusqu'au 31/12</div>
               </div>
-              <div class="payment-fee">
-                {{ method.fee > 0 ? '+' + formatPrice(method.fee) : 'Gratuit' }}
+              <div class="payment-fee">Gratuit</div>
+            </div>
+
+            <!-- Orange Money -->
+            <div
+              class="payment-option"
+              [class.selected]="selectedPaymentMethod === 'orange'"
+              (click)="selectedPaymentMethod = 'orange'"
+            >
+              <div class="payment-icon">
+                <img src="assets/orange-money-logo.png" alt="Orange Money" class="payment-logo"
+                     (error)="onImageError($event, 'orange')" />
               </div>
+              <div class="payment-info">
+                <div class="payment-name">Orange Money</div>
+                <div class="payment-description">Service de paiement Orange</div>
+                <div class="payment-promo">🎁 Premier paiement offert</div>
+              </div>
+              <div class="payment-fee">+500 FCFA</div>
+            </div>
+
+            <!-- Free Money -->
+            <div
+              class="payment-option"
+              [class.selected]="selectedPaymentMethod === 'free'"
+              (click)="selectedPaymentMethod = 'free'"
+            >
+              <div class="payment-icon">
+                <img src="assets/free-money-logo.png" alt="Free Money" class="payment-logo"
+                     (error)="onImageError($event, 'free')" />
+              </div>
+              <div class="payment-info">
+                <div class="payment-name">Free Money</div>
+                <div class="payment-description">Service de paiement Free</div>
+                <div class="payment-promo">🎁 Cashback 5%</div>
+              </div>
+              <div class="payment-fee">+300 FCFA</div>
+            </div>
+
+            <!-- Carte bancaire -->
+            <div
+              class="payment-option"
+              [class.selected]="selectedPaymentMethod === 'card'"
+              (click)="selectedPaymentMethod = 'card'"
+            >
+              <div class="payment-icon">💳</div>
+              <div class="payment-info">
+                <div class="payment-name">Carte bancaire</div>
+                <div class="payment-description">Visa, Mastercard</div>
+              </div>
+              <div class="payment-fee">+1.5%</div>
+            </div>
+
+            <!-- Espèces à la livraison -->
+            <div
+              class="payment-option"
+              [class.selected]="selectedPaymentMethod === 'cash'"
+              (click)="selectedPaymentMethod = 'cash'"
+            >
+              <div class="payment-icon">💵</div>
+              <div class="payment-info">
+                <div class="payment-name">Espèces à la livraison</div>
+                <div class="payment-description">Paiement lors de la réception</div>
+              </div>
+              <div class="payment-fee">+1 000 FCFA</div>
             </div>
           </div>
 
