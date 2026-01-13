@@ -138,8 +138,44 @@ export interface Product {
   sales: number;
   rating: number;
   isActive: boolean;
-    createdAt?: Date;
+  createdAt?: Date;
   updatedAt?: Date;
+  certification?: {
+    details: any;
+    id: string;
+    type: 'standard' | 'certified' | 'in_progress';
+    level: 'bronze' | 'silver' | 'gold';
+    score: number;
+    verificationDate: Date;
+    validUntil: Date;
+
+    // Traçabilité
+    traceability: {
+      startDate: Date;
+      harvestDate: Date;
+      location: string;
+      checkpointsCompleted: number;
+      totalCheckpoints: number;
+      proofs: Array<{
+        type: string;
+        date: Date;
+        verified: boolean;
+      }>;
+    };
+
+    // Liens
+    qrCodeUrl: string;
+    certificateUrl: string;
+    verificationUrl: string;
+  };
+
+  // Badges dynamiques
+  badges: Array<{
+    id: string;
+    label: string;
+    icon: string;
+    color: string;
+  }>;
 }
 
 // services/data.interfaces.ts
@@ -160,8 +196,21 @@ export interface Sale {
   unitPrice: number;
   totalAmount: number;
   deliveryFee: number;
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'completed' | 'cancelled' | 'refunded';
-  paymentMethod: 'wave' | 'orange_money' | 'free_money' | 'cash' | 'credit_card' | 'mobile_money';
+  status:
+    | 'pending'
+    | 'confirmed'
+    | 'shipped'
+    | 'delivered'
+    | 'completed'
+    | 'cancelled'
+    | 'refunded';
+  paymentMethod:
+    | 'wave'
+    | 'orange_money'
+    | 'free_money'
+    | 'cash'
+    | 'credit_card'
+    | 'mobile_money';
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
   deliveryType: 'pickup' | 'delivery';
   deliveryAddress?: string;

@@ -117,7 +117,8 @@ export class ProductsComponent implements OnInit {
         rating: 4.8,
         isActive: true,
         createdAt: new Date('2024-01-10'),
-        updatedAt: new Date('2024-01-15')
+        updatedAt: new Date('2024-01-15'),
+        badges: []
       }
     ];
     this.filteredProducts = [...this.products];
@@ -149,29 +150,29 @@ export class ProductsComponent implements OnInit {
       const updatedA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
       const updatedB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
       return updatedB - updatedA;
-    
+
     case 'oldest':
       // Tri par date de mise à jour (ancien → récent)
       const oldestA = a.updatedAt ? new Date(a.updatedAt).getTime() : Date.now();
       const oldestB = b.updatedAt ? new Date(b.updatedAt).getTime() : Date.now();
       return oldestA - oldestB;
-    
+
     case 'price_low':
       // Prix croissant (bas → haut)
       return (a.price || 0) - (b.price || 0);
-    
+
     case 'price_high':
       // Prix décroissant (haut → bas)
       return (b.price || 0) - (a.price || 0);
-    
+
     case 'sales':
       // Ventes décroissantes (plus vendu → moins vendu)
       return (b.sales || 0) - (a.sales || 0);
-    
+
     case 'rating':
       // Note décroissante (meilleure note → pire note)
       return (b.rating || 0) - (a.rating || 0);
-    
+
     default:
       return 0;
   }

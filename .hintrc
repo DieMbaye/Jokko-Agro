@@ -25,6 +25,14 @@
       {
         "button-name": "off"
       }
+    ],
+    "compat-api/html": [
+      "default",
+      {
+        "ignore": [
+          "input[capture]"
+        ]
+      }
     ]
   }
 }

@@ -7,9 +7,9 @@ import { FirebaseService } from '../../../services/firebase.service';
 import { CartService } from '../../../services/cart.service';
 import { Product } from '../../../services/data.interfaces';
 
-// Définissez l'interface MarketProduct
+// Définissez l'interface MarketProduct - MISE À JOUR AVEC LA PROPRIÉTÉ BADGES
 interface MarketProduct
-  extends Omit<Product, 'producerId' | 'producerPhone' | 'isActive'> {
+  extends Omit<Product, 'producerId' | 'producerPhone' | 'isActive' | 'badges'> {
   producer: string;
   producerId: string;
   producerRating: number;
@@ -21,6 +21,13 @@ interface MarketProduct
   organic: boolean;
   local: boolean;
   displayImage: string;
+  // Ajoutez la propriété badges si nécessaire
+  badges?: Array<{
+    id: string;
+    label: string;
+    icon: string;
+    color: string;
+  }>;
 }
 
 // Définissez l'interface Category
@@ -72,12 +79,10 @@ export class MarketComponent implements OnInit, OnDestroy {
     'khaal': 'Pastèque',
     'dougoup': 'Mil',
     'niébé': 'Niébé',
-
-
   };
 
   private recognition: any;
-  private SpeechRecognition = (window as any).webkitSpeechRecognition || 
+  private SpeechRecognition = (window as any).webkitSpeechRecognition ||
                               (window as any).SpeechRecognition;
 
   // Certifications
@@ -132,7 +137,7 @@ export class MarketComponent implements OnInit, OnDestroy {
     this.recognition.onstart = () => {
       this.isListening = true;
       this.logVoiceInfo('🎤 Reconnaissance vocale démarrée - DITES UN MOT WOLOF', 'success');
-      console.log('%c💡 ASTUCE: Dites "mango", "karot", "dio", "sangue", etc.', 
+      console.log('%c💡 ASTUCE: Dites "mango", "karot", "dio", "sangue", etc.',
         'color: #FF9800; font-style: italic;');
     };
 
@@ -143,7 +148,7 @@ export class MarketComponent implements OnInit, OnDestroy {
     this.recognition.onerror = (event: any) => {
       console.error('%c❌ ERREUR reconnaissance vocale:', 'color: #F44336; font-weight: bold;', event.error);
       this.isListening = false;
-      
+
       if (event.error === 'not-allowed') {
         alert('Microphone non autorisé. Veuillez autoriser le microphone dans les paramètres de votre navigateur.');
       }
@@ -157,54 +162,54 @@ export class MarketComponent implements OnInit, OnDestroy {
 
   private displayVoiceRecognitionResult(event: any) {
     console.log('%c' + '='.repeat(70), 'color: #2196F3;');
-    console.log('%c🎤 RÉSULTAT DE LA RECONNAISSANCE VOCALE', 
+    console.log('%c🎤 RÉSULTAT DE LA RECONNAISSANCE VOCALE',
       'color: white; background: #2196F3; padding: 8px; border-radius: 4px; font-weight: bold;');
-    
+
     const result = event.results[0];
-    
+
     // Afficher toutes les alternatives
     console.group('%c📋 TOUTES LES ALTERNATIVES ENTENDUES', 'color: #4CAF50; font-weight: bold;');
     for (let i = 0; i < result.length; i++) {
       const transcript = result[i].transcript.toLowerCase();
       const confidence = Math.round(result[i].confidence * 100);
-      
+
       let confidenceColor;
       if (confidence >= 80) confidenceColor = '#4CAF50';
       else if (confidence >= 60) confidenceColor = '#FF9800';
       else confidenceColor = '#F44336';
-      
-      console.log(`%c${i+1}. "${transcript}" (${confidence}% de confiance)`, 
+
+      console.log(`%c${i+1}. "${transcript}" (${confidence}% de confiance)`,
         `color: ${confidenceColor}; font-weight: bold;`);
-      
+
       // Pour la première alternative (la plus probable), analyser en détail
       if (i === 0) {
         this.analyzeWolofRecognition(transcript, result);
       }
     }
     console.groupEnd();
-    
+
     // Traiter la commande avec la première alternative (la plus probable)
     const mainTranscript = result[0].transcript.toLowerCase();
     this.processVoiceCommand(mainTranscript);
-    
+
     console.log('%c' + '='.repeat(70), 'color: #2196F3;');
   }
 
   private analyzeWolofRecognition(transcript: string, result: any) {
     console.group('%c🔍 ANALYSE DU MOT WOLOF', 'color: #9C27B0; font-weight: bold;');
-    
+
     console.log(`%cMot entendu: "${transcript}"`, 'color: #2196F3;');
-    
+
     // Découper en mots
     const words = transcript.split(' ');
     console.log(`Mots détectés: ${words.length} mot(s)`);
-    
+
     // Rechercher chaque mot dans le dictionnaire
     const detectedWords: Array<{word: string, wolof: string, french: string}> = [];
-    
+
     words.forEach(word => {
       const cleanWord = word.toLowerCase().trim();
-      
+
       // Recherche exacte d'abord
       if (this.wolofToFrench[cleanWord]) {
         detectedWords.push({
@@ -226,16 +231,16 @@ export class MarketComponent implements OnInit, OnDestroy {
         }
       }
     });
-    
+
     if (detectedWords.length > 0) {
       console.log('%c✅ MOTS WOLOF IDENTIFIÉS:', 'color: #4CAF50; font-weight: bold;');
       detectedWords.forEach(item => {
         console.log(`   "${item.word}" → Wolof: "${item.wolof}" → Français: "${item.french}"`);
       });
     } else {
-      console.log('%c❌ AUCUN MOT WOLOF IDENTIFIÉ DANS LE DICTIONNAIRE', 
+      console.log('%c❌ AUCUN MOT WOLOF IDENTIFIÉ DANS LE DICTIONNAIRE',
         'color: #F44336; font-weight: bold;');
-      
+
       // Recherche phonétique
       console.group('%c🔊 RECHERCHE PHONÉTIQUE', 'color: #FF9800;');
       for (const word of words) {
@@ -245,7 +250,7 @@ export class MarketComponent implements OnInit, OnDestroy {
         }
       }
       console.groupEnd();
-      
+
       // Analyse de similarité
       console.group('%c📊 ANALYSE DE SIMILARITÉ', 'color: #607D8B;');
       for (const word of words) {
@@ -255,7 +260,7 @@ export class MarketComponent implements OnInit, OnDestroy {
       }
       console.groupEnd();
     }
-    
+
     console.groupEnd();
   }
 
@@ -284,7 +289,7 @@ export class MarketComponent implements OnInit, OnDestroy {
       'maïs': ['ma', 'maïs'],
       'mil': ['mbaw', 'mil']
     };
-    
+
     for (const [sound, possibleWords] of Object.entries(phoneticMap)) {
       if (word.includes(sound)) {
         for (const wolofWord of possibleWords) {
@@ -294,14 +299,14 @@ export class MarketComponent implements OnInit, OnDestroy {
         }
       }
     }
-    
+
     return null;
   }
 
   private checkWordSimilarity(word: string) {
     const wolofWords = Object.keys(this.wolofToFrench);
     const similarities: Array<{wolof: string, similarity: number, french: string}> = [];
-    
+
     for (const wolofWord of wolofWords) {
       const similarity = this.calculateSimilarity(word, wolofWord);
       if (similarity > 0.4) { // 40% de similarité
@@ -312,7 +317,7 @@ export class MarketComponent implements OnInit, OnDestroy {
         });
       }
     }
-    
+
     if (similarities.length > 0) {
       console.log(`Pour "${word}":`);
       similarities
@@ -324,8 +329,8 @@ export class MarketComponent implements OnInit, OnDestroy {
           if (percent >= 70) color = '#4CAF50';
           else if (percent >= 50) color = '#FF9800';
           else color = '#F44336';
-          
-          console.log(`%c   ${percent}% → "${item.wolof}" (${item.french})`, 
+
+          console.log(`%c   ${percent}% → "${item.wolof}" (${item.french})`,
             `color: ${color};`);
         });
     }
@@ -334,24 +339,24 @@ export class MarketComponent implements OnInit, OnDestroy {
   private calculateSimilarity(word1: string, word2: string): number {
     const longer = word1.length > word2.length ? word1 : word2;
     const shorter = word1.length > word2.length ? word2 : word1;
-    
+
     if (longer.length === 0) return 1.0;
-    
+
     const distance = this.levenshteinDistance(word1, word2);
     return (longer.length - distance) / longer.length;
   }
 
   private levenshteinDistance(a: string, b: string): number {
     const matrix = [];
-    
+
     for (let i = 0; i <= b.length; i++) {
       matrix[i] = [i];
     }
-    
+
     for (let j = 0; j <= a.length; j++) {
       matrix[0][j] = j;
     }
-    
+
     for (let i = 1; i <= b.length; i++) {
       for (let j = 1; j <= a.length; j++) {
         if (b.charAt(i - 1) === a.charAt(j - 1)) {
@@ -365,14 +370,14 @@ export class MarketComponent implements OnInit, OnDestroy {
         }
       }
     }
-    
+
     return matrix[b.length][a.length];
   }
 
   // TOGGLE RECHERCHE VOCALE
   toggleVoiceSearch() {
     if (!this.isVoiceSupported) {
-      console.error('%c❌ Reconnaissance vocale non supportée', 
+      console.error('%c❌ Reconnaissance vocale non supportée',
         'color: #F44336; font-weight: bold;');
       alert('La reconnaissance vocale n\'est pas supportée par votre navigateur. Essayez Chrome ou Edge.');
       return;
@@ -384,9 +389,9 @@ export class MarketComponent implements OnInit, OnDestroy {
     } else {
       console.clear();
       console.log('%c' + '='.repeat(70), 'color: #2196F3;');
-      console.log('%c🎤 DÉMARRAGE DE LA RECHERCHE VOCALE', 
+      console.log('%c🎤 DÉMARRAGE DE LA RECHERCHE VOCALE',
         'color: white; background: #2196F3; padding: 10px; border-radius: 4px; font-weight: bold; font-size: 16px;');
-      console.log('%c💡 PARLEZ EN WOLOF DANS LE MICROPHONE', 
+      console.log('%c💡 PARLEZ EN WOLOF DANS LE MICROPHONE',
         'color: #FF9800; font-size: 14px;');
       console.log('');
       console.log('%c📝 EXEMPLES DE MOTS WOLOF À DIRE:', 'color: #4CAF50; font-weight: bold;');
@@ -403,7 +408,7 @@ export class MarketComponent implements OnInit, OnDestroy {
       console.log('   ✓ Les alternatives possibles');
       console.log('   ✓ Les résultats de la recherche');
       console.log('%c' + '='.repeat(70), 'color: #2196F3;');
-      
+
       try {
         this.recognition.start();
       } catch (error) {
@@ -416,16 +421,16 @@ export class MarketComponent implements OnInit, OnDestroy {
   // TRAITEMENT COMMANDE VOCALE
   private processVoiceCommand(command: string) {
     console.group('%c🎯 TRAITEMENT DE LA COMMANDE', 'color: #FF5722; font-weight: bold;');
-    
+
     this.lastVoiceCommand = command;
     console.log(`Commande vocale reçue: "${command}"`);
-    
+
     // Traduire le wolof en français
     const frenchTerm = this.translateWolofToFrench(command);
-    
-    console.log(`%c🌍 TRADUCTION: "${command}" → "${frenchTerm}"`, 
+
+    console.log(`%c🌍 TRADUCTION: "${command}" → "${frenchTerm}"`,
       'color: #2196F3; font-weight: bold; background: #E3F2FD; padding: 8px; border-radius: 4px;');
-    
+
     // Afficher les mots traduits un par un
     const words = command.split(' ');
     if (words.length > 1) {
@@ -436,22 +441,22 @@ export class MarketComponent implements OnInit, OnDestroy {
       });
       console.groupEnd();
     }
-    
+
     // Mettre à jour la recherche
     this.searchQuery = frenchTerm;
-    console.log(`%c🔍 RECHERCHE APPLIQUÉE: "${frenchTerm}"`, 
+    console.log(`%c🔍 RECHERCHE APPLIQUÉE: "${frenchTerm}"`,
       'color: #4CAF50; font-weight: bold;');
-    
+
     // Appliquer les filtres
     this.applyFilters();
-    
+
     console.groupEnd();
-    
+
     // Afficher les résultats après un court délai
     setTimeout(() => {
       console.log('%c📊 RÉSULTATS DE LA RECHERCHE', 'color: #4CAF50; font-weight: bold;');
       console.log(`Produits trouvés: ${this.filteredProducts.length}`);
-      
+
       if (this.filteredProducts.length > 0) {
         console.log('%c✅ SUCCÈS: Produits trouvés!', 'color: #4CAF50;');
         this.filteredProducts.slice(0, 3).forEach((product, index) => {
@@ -464,9 +469,9 @@ export class MarketComponent implements OnInit, OnDestroy {
         console.log('%c❌ AUCUN produit trouvé', 'color: #F44336;');
         console.log('💡 Essayez un autre mot wolof');
       }
-      
+
       console.log('');
-      console.log('%c💡 ASTUCE: Cliquez à nouveau sur le micro pour une nouvelle recherche', 
+      console.log('%c💡 ASTUCE: Cliquez à nouveau sur le micro pour une nouvelle recherche',
         'color: #FF9800; font-style: italic;');
     }, 500);
   }
@@ -474,14 +479,14 @@ export class MarketComponent implements OnInit, OnDestroy {
   // TRADUCTION WOLOF → FRANÇAIS
   private translateWolofToFrench(wolofText: string): string {
     const lowerText = wolofText.toLowerCase().trim();
-    
+
     // Vérifier d'abord les phrases complètes
     for (const [wolof, french] of Object.entries(this.wolofToFrench)) {
       if (lowerText === wolof) {
         return french;
       }
     }
-    
+
     // Si c'est une phrase, traduire mot par mot
     const words = lowerText.split(' ');
     if (words.length > 1) {
@@ -495,7 +500,7 @@ export class MarketComponent implements OnInit, OnDestroy {
       });
       return translatedWords.join(' ');
     }
-    
+
     // Si non trouvé, retourner le texte original
     return wolofText;
   }
@@ -508,12 +513,12 @@ export class MarketComponent implements OnInit, OnDestroy {
       error: 'color: #F44336; font-weight: bold;',
       warning: 'color: #FF9800;'
     };
-    
+
     const timestamp = new Date().toLocaleTimeString();
     console.log(`%c[${timestamp}] ${message}`, styles[type]);
   }
 
-  // MÉTHODES EXISTANTES (inchangées)
+  // MÉTHODES EXISTANTES (MISE À JOUR AVEC LA PROPRIÉTÉ BADGES)
   async loadProducts() {
     this.isLoading = true;
 
@@ -563,7 +568,7 @@ export class MarketComponent implements OnInit, OnDestroy {
 
     const displayImage = this.getDisplayImage(product);
 
-    return {
+    const marketProduct: MarketProduct = {
       id: product.id || '',
       name: product.name,
       producer: product.producerName || 'Producteur',
@@ -597,7 +602,11 @@ export class MarketComponent implements OnInit, OnDestroy {
       images: product.images || [],
       storageConditions: product.storageConditions,
       contactPhone: product.contactPhone,
+      // Ajout des badges si disponibles
+      badges: product.badges || []
     };
+
+    return marketProduct;
   }
 
   private getDisplayImage(product: Product): string {
@@ -649,6 +658,7 @@ export class MarketComponent implements OnInit, OnDestroy {
         images: [],
         storageConditions: 'Conserver au frais',
         contactPhone: '771234567',
+        badges: [] // Ajout de la propriété badges
       },
       {
         id: '2',
@@ -684,6 +694,7 @@ export class MarketComponent implements OnInit, OnDestroy {
         images: [],
         storageConditions: 'Conserver à température ambiante',
         contactPhone: '772345678',
+        badges: [] // Ajout de la propriété badges
       },
       {
         id: '3',
@@ -719,6 +730,7 @@ export class MarketComponent implements OnInit, OnDestroy {
         images: [],
         storageConditions: 'Conserver au sec',
         contactPhone: '773456789',
+        badges: [] // Ajout de la propriété badges
       },
     ];
 
@@ -917,7 +929,7 @@ export class MarketComponent implements OnInit, OnDestroy {
 
   viewProductDetails(product: MarketProduct) {
     console.log('Voir détails:', product);
-    
+
     const details = `
       🛒 **${product.name}**
 
@@ -1003,5 +1015,40 @@ export class MarketComponent implements OnInit, OnDestroy {
   getUniqueProducers(products: MarketProduct[]): number {
     const uniqueProducers = new Set(products.map((p) => p.producer));
     return uniqueProducers.size;
+  }
+
+  // Nouvelle méthode pour afficher les badges
+  getProductBadges(product: MarketProduct): Array<{id: string, label: string, icon: string, color: string}> {
+    const badges = product.badges || [];
+
+    // Si pas de badges dans les données, créer des badges basés sur les certifications
+    if (badges.length === 0) {
+      if (product.certified) {
+        badges.push({
+          id: 'certified',
+          label: 'Certifié',
+          icon: '🏆',
+          color: '#FFD700'
+        });
+      }
+      if (product.organic) {
+        badges.push({
+          id: 'organic',
+          label: 'Bio',
+          icon: '🌱',
+          color: '#4CAF50'
+        });
+      }
+      if (product.local) {
+        badges.push({
+          id: 'local',
+          label: 'Local',
+          icon: '📍',
+          color: '#2196F3'
+        });
+      }
+    }
+
+    return badges;
   }
 }

@@ -72,12 +72,12 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
   voiceSearchResults: RecommendedProduct[] = [];
   lastVoiceCommand = '';
   showVoiceHelp = true;
-  
+
   // Données dynamiques
   allProducts: Product[] = [];
   allProducers: any[] = [];
   isLoadingProducts = false;
-  
+
   // DICTIONNAIRE WOLOF-FRANÇAIS
   private wolofToFrench: { [key: string]: string } = {
     'tomater': 'tomate',
@@ -91,7 +91,7 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
   };
 
   private recognition: any;
-  private SpeechRecognition = (window as any).webkitSpeechRecognition || 
+  private SpeechRecognition = (window as any).webkitSpeechRecognition ||
                               (window as any).SpeechRecognition;
 
   // ==================== CHATBOT INTELLIGENT ====================
@@ -121,7 +121,7 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
     this.userData = this.authService.getUserData();
     this.userName = this.userData?.fullName || 'Utilisateur';
     this.userInitials = this.getInitials(this.userName);
-    
+
     await this.loadDashboardData();
     this.initVoiceRecognition();
   }
@@ -144,7 +144,7 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
   // ==================== CHATBOT ====================
   toggleChatbot() {
     this.isChatbotOpen = !this.isChatbotOpen;
-    
+
     if (this.isChatbotOpen) {
       this.hasUnreadMessages = false;
       // Forcer le scroll au démarrage
@@ -160,19 +160,19 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
 
   sendMessage() {
     if (!this.currentMessage.trim() || this.isProcessing) return;
-    
+
     const userQuestion = this.currentMessage.trim();
-    
+
     // Vérifier si c'est un remerciement
     if (this.isThankYouMessage(userQuestion)) {
       this.processThankYou();
       return;
     }
-    
+
     // Ajouter le message utilisateur
     this.addMessage(userQuestion, true);
     this.currentMessage = '';
-    
+
     // Traiter la question
     this.processQuestion(userQuestion);
   }
@@ -191,10 +191,10 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
   private isThankYouMessage(message: string): boolean {
     const lowerMessage = message.toLowerCase().trim();
     const thankYouWords = [
-      'merci', 'thank you', 'thanks', 'merci beaucoup', 
+      'merci', 'thank you', 'thanks', 'merci beaucoup',
       'je te remercie', 'cimer', 'merci bien'
     ];
-    
+
     return thankYouWords.some(word => lowerMessage.includes(word));
   }
 
@@ -202,7 +202,7 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
     const thankYouMessage = this.currentMessage.trim();
     this.addMessage(thankYouMessage, true);
     this.currentMessage = '';
-    
+
     // Réponse automatisée pour les remerciements
     setTimeout(() => {
       this.addMessage(
@@ -215,10 +215,10 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
 
   private async processQuestion(question: string) {
     this.isProcessing = true;
-    
+
     // Ajouter message de chargement
     this.addMessage('', false, true);
-    
+
     try {
       // Récupérer la réponse intelligente basée sur les données réelles
       const response = await this.chatbotService.getIntelligentResponse(
@@ -226,13 +226,13 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
         this.allProducts,
         this.allProducers
       );
-      
+
       // Supprimer le message de chargement
       this.removeLoadingMessage();
-      
+
       // Ajouter la réponse formatée
       this.addMessage(this.formatBotResponse(response), false);
-      
+
     } catch (error) {
       console.error('Erreur chatbot:', error);
       this.removeLoadingMessage();
@@ -258,7 +258,7 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
       timestamp: new Date(),
       isLoading: isLoading
     };
-    
+
     this.chatHistory.push(message);
     this.shouldScroll = true;
     this.scrollChatToBottom();
@@ -277,27 +277,27 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
   // SCROLL CORRIGÉ - Gestion améliorée
   private scrollChatToBottom() {
     if (!this.shouldScroll) return;
-    
+
     if (this.scrollTimeout) {
       clearTimeout(this.scrollTimeout);
     }
-    
+
     this.scrollTimeout = setTimeout(() => {
       if (this.chatMessages?.nativeElement) {
         const container = this.chatMessages.nativeElement;
-        
+
         // Utiliser scrollTo avec smooth
         container.scrollTo({
           top: container.scrollHeight,
           behavior: 'smooth'
         });
-        
+
         // Forcer le scroll si smooth ne fonctionne pas
         setTimeout(() => {
           container.scrollTop = container.scrollHeight;
         }, 100);
       }
-      
+
       // Réinitialiser après le scroll
       setTimeout(() => {
         this.shouldScroll = false;
@@ -344,15 +344,15 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
 
   async loadRealProducts() {
     this.isLoadingProducts = true;
-    
+
     try {
       if (this.firebaseService.getAllAvailableProducts) {
         const products = await this.firebaseService.getAllAvailableProducts();
         this.allProducts = products;
         console.log(`✅ ${products.length} produits chargés depuis Firebase`);
-        
+
         this.updateCategoryCounts();
-        
+
         if (this.allProducts.length === 0) {
           this.addTestProducts();
         }
@@ -389,20 +389,20 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
         producers.add(product.producerName);
       }
     });
-    
+
     this.allProducers = Array.from(producers).map(name => ({
       name: name,
       productCount: this.allProducts.filter(p => p.producerName === name).length
     }));
-    
+
     console.log(`👨‍🌾 ${this.allProducers.length} producteurs extraits des produits`);
   }
 
   private addTestProducts() {
     console.log('📝 Ajout de produits de test');
-    
+
     const now = new Date();
-    
+
     this.allProducts = [
       {
         id: '1',
@@ -427,7 +427,8 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
         sales: 0,
         isActive: false,
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
+        badges: []
       },
       {
         id: '2',
@@ -452,7 +453,8 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
         sales: 0,
         isActive: false,
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
+        badges: []
       },
       {
         id: '3',
@@ -477,7 +479,8 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
         sales: 0,
         isActive: false,
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
+        badges: []
       },
       {
         id: '4',
@@ -502,19 +505,20 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
         sales: 0,
         isActive: false,
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
+        badges: []
       }
     ];
-    
+
     this.updateCategoryCounts();
   }
 
   private updateCategoryCounts() {
     this.categories.forEach(cat => cat.count = 0);
-    
+
     this.allProducts.forEach(product => {
       const category = product.category?.toLowerCase();
-      
+
       if (category) {
         if (category.includes('fruit')) {
           this.categories.find(c => c.name === 'Fruits')!.count++;
@@ -600,35 +604,35 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
 
   private processVoiceCommand(command: string) {
     this.lastVoiceCommand = command;
-    
+
     const translatedTerm = this.translateWolofToFrench(command);
     this.searchTerm = translatedTerm;
-    
+
     this.searchProductsByVoice(translatedTerm);
   }
 
   private translateWolofToFrench(text: string): string {
     const lowerText = text.toLowerCase().trim();
-    
+
     for (const [wolof, french] of Object.entries(this.wolofToFrench)) {
       if (lowerText.includes(wolof)) {
         return french;
       }
     }
-    
+
     return lowerText;
   }
 
   private searchProductsByVoice(searchTerm: string) {
     const searchTermLower = searchTerm.toLowerCase();
-    
+
     const filtered = this.allProducts.filter(product => {
       if (product.name?.toLowerCase().includes(searchTermLower)) return true;
       if (product.description?.toLowerCase().includes(searchTermLower)) return true;
       if (product.category?.toLowerCase().includes(searchTermLower)) return true;
       return false;
     });
-    
+
     this.voiceSearchResults = filtered.map(product => ({
       id: product.id || '',
       name: product.name,
@@ -658,7 +662,7 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
   // ==================== UTILITAIRES ====================
   getProductEmoji(productName: string): string {
     const lowerName = productName.toLowerCase();
-    
+
     if (lowerName.includes('mangue')) return '🥭';
     if (lowerName.includes('tomate')) return '🍅';
     if (lowerName.includes('carotte')) return '🥕';
@@ -669,7 +673,7 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
     if (lowerName.includes('riz')) return '🌾';
     if (lowerName.includes('maïs')) return '🌽';
     if (lowerName.includes('niébé')) return '🥜';
-    
+
     return '🌱';
   }
 

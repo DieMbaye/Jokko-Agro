@@ -320,6 +320,7 @@ export class FirebaseService {
     try {
       const productWithTimestamp = {
         ...productData,
+        badges: productData.badges || [], // ← AJOUTEZ CETTE LIGNE
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         status: 'available' as const,
@@ -352,6 +353,7 @@ export class FirebaseService {
     }
   }
 
+  // Dans la méthode getProducerProducts - ligne 244
   async getProducerProducts(producerId: string): Promise<Product[]> {
     try {
       const q = query(
@@ -367,23 +369,23 @@ export class FirebaseService {
         const data = doc.data();
         products.push({
           id: doc.id,
-          name: data['name'],
-          category: data['category'],
-          description: data['description'],
-          price: data['price'],
-          quantity: data['quantity'],
-          unit: data['unit'],
+          name: data['name'] || '',
+          category: data['category'] || '',
+          description: data['description'] || '',
+          price: data['price'] || 0,
+          quantity: data['quantity'] || 0,
+          unit: data['unit'] || 'unit',
           certifications: data['certifications'] || [],
           isOrganic: data['isOrganic'] || false,
           harvestDate: data['harvestDate'],
           expirationDate: data['expirationDate'],
           storageConditions: data['storageConditions'],
-          location: data['location'],
-          contactPhone: data['contactPhone'],
+          location: data['location'] || '',
+          contactPhone: data['contactPhone'] || '',
           minOrderQuantity: data['minOrderQuantity'] || 1,
-          producerId: data['producerId'],
-          producerName: data['producerName'],
-          producerPhone: data['producerPhone'],
+          producerId: data['producerId'] || '',
+          producerName: data['producerName'] || '',
+          producerPhone: data['producerPhone'] || '',
           images: data['images'] || [],
           status: data['status'] || 'available',
           views: data['views'] || 0,
@@ -392,6 +394,9 @@ export class FirebaseService {
           isActive: data['isActive'] !== undefined ? data['isActive'] : true,
           createdAt: data['createdAt']?.toDate() || new Date(),
           updatedAt: data['updatedAt']?.toDate() || new Date(),
+          // NOUVEAUX CHAMPS
+          certification: data['certification'] || undefined,
+          badges: data['badges'] || [], // ← AJOUTEZ CETTE LIGNE
         });
       });
 
@@ -401,7 +406,6 @@ export class FirebaseService {
       return [];
     }
   }
-
   async getProductById(productId: string): Promise<Product | null> {
     try {
       const productDoc = await getDoc(
@@ -412,23 +416,23 @@ export class FirebaseService {
         const data = productDoc.data();
         return {
           id: productDoc.id,
-          name: data['name'],
-          category: data['category'],
-          description: data['description'],
-          price: data['price'],
-          quantity: data['quantity'],
-          unit: data['unit'],
+          name: data['name'] || '',
+          category: data['category'] || '',
+          description: data['description'] || '',
+          price: data['price'] || 0,
+          quantity: data['quantity'] || 0,
+          unit: data['unit'] || 'unit',
           certifications: data['certifications'] || [],
           isOrganic: data['isOrganic'] || false,
           harvestDate: data['harvestDate'],
           expirationDate: data['expirationDate'],
           storageConditions: data['storageConditions'],
-          location: data['location'],
-          contactPhone: data['contactPhone'],
+          location: data['location'] || '',
+          contactPhone: data['contactPhone'] || '',
           minOrderQuantity: data['minOrderQuantity'] || 1,
-          producerId: data['producerId'],
-          producerName: data['producerName'],
-          producerPhone: data['producerPhone'],
+          producerId: data['producerId'] || '',
+          producerName: data['producerName'] || '',
+          producerPhone: data['producerPhone'] || '',
           images: data['images'] || [],
           status: data['status'] || 'available',
           views: data['views'] || 0,
@@ -437,6 +441,9 @@ export class FirebaseService {
           isActive: data['isActive'] !== undefined ? data['isActive'] : true,
           createdAt: data['createdAt']?.toDate() || new Date(),
           updatedAt: data['updatedAt']?.toDate() || new Date(),
+          // NOUVEAUX CHAMPS
+          certification: data['certification'] || undefined,
+          badges: data['badges'] || [], // ← AJOUTEZ CETTE LIGNE
         } as Product;
       }
       return null;
@@ -522,6 +529,7 @@ export class FirebaseService {
   }
 
   // Dans firebase.service.ts ou votre service de produits
+  // Dans la méthode getAllAvailableProducts
   async getAllAvailableProducts(): Promise<Product[]> {
     try {
       const q = query(
@@ -538,31 +546,25 @@ export class FirebaseService {
       querySnapshot.forEach((doc) => {
         const data = doc.data();
 
-        // LOG IMPORTANT pour déboguer
-        console.log('=== Produit chargé depuis Firestore ===');
-        console.log('Document ID:', doc.id);
-        console.log('ProducerId dans Firestore:', data['producerId']);
-        console.log('ProducerName:', data['producerName']);
-
         const product = {
           id: doc.id,
-          name: data['name'],
-          category: data['category'],
-          description: data['description'],
-          price: data['price'],
-          quantity: data['quantity'],
-          unit: data['unit'],
+          name: data['name'] || '',
+          category: data['category'] || '',
+          description: data['description'] || '',
+          price: data['price'] || 0,
+          quantity: data['quantity'] || 0,
+          unit: data['unit'] || 'unit',
           certifications: data['certifications'] || [],
           isOrganic: data['isOrganic'] || false,
           harvestDate: data['harvestDate'],
           expirationDate: data['expirationDate'],
           storageConditions: data['storageConditions'],
-          location: data['location'],
-          contactPhone: data['contactPhone'],
+          location: data['location'] || '',
+          contactPhone: data['contactPhone'] || '',
           minOrderQuantity: data['minOrderQuantity'] || 1,
-          producerId: data['producerId'] || '', // <-- ASSUREZ-VOUS D'AVOIR CECI
-          producerName: data['producerName'],
-          producerPhone: data['producerPhone'],
+          producerId: data['producerId'] || '',
+          producerName: data['producerName'] || '',
+          producerPhone: data['producerPhone'] || '',
           images: data['images'] || [],
           status: data['status'] || 'available',
           views: data['views'] || 0,
@@ -571,6 +573,9 @@ export class FirebaseService {
           isActive: data['isActive'] !== undefined ? data['isActive'] : true,
           createdAt: data['createdAt']?.toDate() || new Date(),
           updatedAt: data['updatedAt']?.toDate() || new Date(),
+          // NOUVEAUX CHAMPS
+          certification: data['certification'] || undefined,
+          badges: data['badges'] || [], // ← AJOUTEZ CETTE LIGNE
         };
 
         // Vérification supplémentaire
@@ -579,7 +584,6 @@ export class FirebaseService {
             '⚠️ ATTENTION: product.producerId est vide pour:',
             product.name
           );
-          // Essayez de récupérer l'ID d'une autre manière
           product.producerId =
             this.extractProducerIdFromEmail(data['producerEmail']) || '';
         }
@@ -646,5 +650,73 @@ export class FirebaseService {
 
   get authInstance() {
     return this.auth;
+  }
+
+  // Dans FirebaseService
+  async getCertifiedProducts(): Promise<Product[]> {
+    const q = query(
+      collection(this.firestore, 'products'),
+      where('certification', '!=', null),
+      where('status', '==', 'available'),
+      orderBy('createdAt', 'desc')
+    );
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        name: data['name'] || '',
+        category: data['category'] || '',
+        description: data['description'] || '',
+        price: data['price'] || 0,
+        quantity: data['quantity'] || 0,
+        unit: data['unit'] || 'unit',
+        certifications: data['certifications'] || [],
+        isOrganic: data['isOrganic'] || false,
+        harvestDate: data['harvestDate'],
+        expirationDate: data['expirationDate'],
+        storageConditions: data['storageConditions'],
+        location: data['location'] || '',
+        contactPhone: data['contactPhone'] || '',
+        minOrderQuantity: data['minOrderQuantity'] || 1,
+        producerId: data['producerId'] || '',
+        producerName: data['producerName'] || '',
+        producerPhone: data['producerPhone'] || '',
+        images: data['images'] || [],
+        status: data['status'] || 'available',
+        views: data['views'] || 0,
+        sales: data['sales'] || 0,
+        rating: data['rating'] || 0,
+        isActive: data['isActive'] !== undefined ? data['isActive'] : true,
+        createdAt: data['createdAt']?.toDate() || new Date(),
+        updatedAt: data['updatedAt']?.toDate() || new Date(),
+        certification: data['certification'],
+        badges: data['badges'] || [], // ← AJOUTEZ CETTE LIGNE
+      } as Product;
+    });
+  }
+
+  async getProductWithCertification(
+    productId: string
+  ): Promise<Product | null> {
+    const product = await this.getProductById(productId);
+    if (!product) return null;
+
+    if (product.certification?.id) {
+      try {
+        const cert = await getDoc(
+          doc(this.firestore, 'certifications', product.certification.id)
+        );
+
+        if (cert.exists()) {
+          product.certification.details = cert.data();
+        }
+      } catch (error) {
+        console.error('Erreur récupération certification:', error);
+      }
+    }
+
+    return product;
   }
 }
