@@ -133,13 +133,13 @@ export class App implements OnInit {
           { label: 'Mes produits', icon: '📦', route: '/producer/products' },
           { label: 'Ventes', icon: '💰', route: '/producer/sales' },
           { label: 'Commandes', icon: '🛒', route: '/producer/tracking' },
-          { label: 'Messages', icon: '✉️', route: '/producer/messages' },
-          { label: 'Réputation', icon: '⭐', route: '/producer/reputation' },
           {
             label: 'Certifications',
             icon: '🔒',
             route: '/producer/certifications',
           },
+          { label: 'Messages', icon: '✉️', route: '/producer/messages' },
+          { label: 'Réputation', icon: '⭐', route: '/producer/reputation' },
           { label: 'Paramètres', icon: '⚙️', route: '/producer/settings' },
         ],
       };

@@ -416,3 +416,201 @@
     align-items: flex-start;
   }
 }
+/* Styles pour le tableau de bord dynamique */
+
+/* Chargement */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #4CAF50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Cartes de statistiques améliorées */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.stat-trend {
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+.trend-up {
+  color: #4CAF50;
+}
+
+.trend-down {
+  color: #F44336;
+}
+
+.trend-neutral {
+  color: #9E9E9E;
+}
+
+/* Notifications */
+.notification-item.type-sale {
+  border-left: 4px solid #4CAF50;
+}
+
+.notification-item.type-stock {
+  border-left: 4px solid #FF9800;
+}
+
+.notification-item.type-review {
+  border-left: 4px solid #FFC107;
+}
+
+.notification-item.type-certification {
+  border-left: 4px solid #9C27B0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.notification-count-badge {
+  background: #F44336;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #757575;
+}
+
+.empty-notifications {
+  text-align: center;
+  padding: 20px;
+  color: #757575;
+  font-style: italic;
+}
+
+/* Progress bar améliorée */
+.progress-bar {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #757575;
+  margin-top: 5px;
+}
+
+/* Insights supplémentaires */
+.additional-insights {
+  margin-top: 30px;
+}
+
+.insight-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.insight-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.insight-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.insight-item:last-child {
+  border-bottom: none;
+}
+
+.insight-label {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.insight-value {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Bouton actualiser */
+.quick-btn.refresh {
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.quick-btn.refresh:hover {
+  background: #e0e0e0;
+}
+
+/* États vides */
+.empty-state p {
+  margin: 0;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .quick-stats {
+    flex-direction: column;
+  }
+
+  .insight-content {
+    flex-direction: column;
+  }
+}

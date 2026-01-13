@@ -92,36 +92,36 @@ export const routes: Routes = [
     canActivate: [producerGuard],
   },
   {
-  path: 'producer/certifications',
-  loadComponent: () =>
-    import('./components/producer/certifications/certifications').then(
-      (m) => m.CertificationsComponent
-    ),
-  canActivate: [producerGuard],
-},
-{
-  path: 'producer/certification/:id',
-  loadComponent: () =>
-    import('./components/producer/certifications/certification-detail').then(
-      (m) => m.CertificationDetailComponent
-    ),
-  canActivate: [producerGuard],
-},
-/*{
-  path: 'producer/certification/:id/checkpoint/:checkpointId',
-  loadComponent: () =>
-    import('./components/producer/certifications/complete-checkpoint').then(
-      (m) => m.CompleteCheckpointComponent
-    ),
-  canActivate: [producerGuard],
-},
-{
-  path: 'verify/:id',
-  loadComponent: () =>
-    import('./components/public/verification/verification').then(
-      (m) => m.VerificationComponent
-    ),
-}*/
+    path: 'producer/certifications',
+    loadComponent: () =>
+      import('./components/producer/certifications/certifications').then(
+        (m) => m.CertificationsComponent
+      ),
+    canActivate: [producerGuard],
+  },
+  {
+    path: 'producer/certification/:id',
+    loadComponent: () =>
+      import('./components/producer/certifications/certification-detail').then(
+        (m) => m.CertificationDetailComponent
+      ),
+    canActivate: [producerGuard],
+  },
+  {
+    path: 'producer/certification/:id/checkpoint/:checkpointId',
+    loadComponent: () =>
+      import('./components/producer/certifications/complete-checkpoint').then(
+        (m) => m.CompleteCheckpointComponent
+      ),
+    canActivate: [producerGuard],
+  },
+  {
+    path: 'verify/:id',
+    loadComponent: () =>
+      import('./components/producer/certifications/verification').then(
+        (m) => m.VerificationComponent
+      ),
+  },
 
   // ==================== ROUTES ACHETEUR ====================
   {

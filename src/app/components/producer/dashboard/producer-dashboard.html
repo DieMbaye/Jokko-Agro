@@ -13,17 +13,26 @@
       <div class="header-right">
         <div class="notification-bell">
           <span class="bell-icon">🔔</span>
-          <span class="notification-count" *ngIf="getUnreadCount() > 0"
-            >{{ getUnreadCount() }}</span
-          >
+          <span class="notification-count" *ngIf="getUnreadCount() > 0">
+            {{ getUnreadCount() }}
+          </span>
         </div>
         <div class="quick-actions">
           <button routerLink="/producer/add-product" class="quick-btn">
             ➕ Ajouter un produit
           </button>
+          <button (click)="refreshData()" class="quick-btn refresh" [disabled]="isLoading">
+            {{ isLoading ? '🔄 Chargement...' : '🔄 Actualiser' }}
+          </button>
         </div>
       </div>
     </header>
+
+    <!-- Chargement -->
+    <div *ngIf="isLoading" class="loading-overlay">
+      <div class="spinner"></div>
+      <p>Chargement des données...</p>
+    </div>
 
     <!-- Stats Grid -->
     <div class="stats-grid">
@@ -37,8 +46,22 @@
           {{ stat.icon }}
         </div>
         <div class="stat-info">
-          <h3>{{ stat.value.toLocaleString() }}</h3>
+          <h3>
+            <span *ngIf="stat.label === 'Revenus total'">{{ stat.value.toLocaleString('fr-FR') }}</span>
+            <span *ngIf="stat.label === 'Note moyenne'">{{ stat.value.toFixed(1) }}</span>
+            <span *ngIf="stat.label !== 'Revenus total' && stat.label !== 'Note moyenne'">
+              {{ stat.value.toLocaleString('fr-FR') }}
+            </span>
+          </h3>
           <p>{{ stat.label }}</p>
+
+          <!-- Indicateur de tendance pour les ventes -->
+          <div *ngIf="stat.label === 'Ventes du mois' && stat.change !== undefined"
+               class="stat-trend">
+            <span *ngIf="stat.trend === 1" class="trend-up">↑ +{{ stat.change.toFixed(1) }}%</span>
+            <span *ngIf="stat.trend === -1" class="trend-down">↓ -{{ stat.change.toFixed(1) }}%</span>
+            <span *ngIf="stat.trend === 0" class="trend-neutral">→ Stable</span>
+          </div>
         </div>
       </div>
     </div>
@@ -68,7 +91,7 @@
               <td class="product-cell">{{ sale.product }}</td>
               <td>{{ sale.buyer }}</td>
               <td>{{ sale.date }}</td>
-              <td class="amount">{{ sale.amount.toLocaleString() }} FCFA</td>
+              <td class="amount">{{ sale.amount.toLocaleString('fr-FR') }} FCFA</td>
               <td>
                 <span
                   class="status-badge"
@@ -81,6 +104,9 @@
             </tr>
           </tbody>
         </table>
+        <div *ngIf="recentSales.length === 0 && !isLoading" class="empty-state">
+          <p>Aucune vente récente</p>
+        </div>
       </div>
     </div>
 
@@ -88,9 +114,14 @@
     <div class="dashboard-section">
       <div class="section-header">
         <h2>Notifications récentes</h2>
-        <button class="mark-read" (click)="markAllAsRead()">
-          Tout marquer comme lu
-        </button>
+        <div class="header-actions">
+          <button class="mark-read" (click)="markAllAsRead()">
+            Tout marquer comme lu
+          </button>
+          <span class="notification-count-badge" *ngIf="getUnreadCount() > 0">
+            {{ getUnreadCount() }} non lu(s)
+          </span>
+        </div>
       </div>
 
       <div class="notifications-list">
@@ -98,10 +129,18 @@
           *ngFor="let notification of notifications"
           class="notification-item"
           [class.unread]="!notification.read"
+          [class.type-sale]="notification.type === 'sale'"
+          [class.type-stock]="notification.type === 'stock'"
+          [class.type-review]="notification.type === 'review'"
+          [class.type-certification]="notification.type === 'certification'"
         >
           <div class="notification-icon">
             <span *ngIf="!notification.read" class="unread-dot"></span>
-            📌
+            <span *ngIf="notification.type === 'sale'">💰</span>
+            <span *ngIf="notification.type === 'stock'">📦</span>
+            <span *ngIf="notification.type === 'review'">⭐</span>
+            <span *ngIf="notification.type === 'certification'">🔒</span>
+            <span *ngIf="!notification.type">📌</span>
           </div>
           <div class="notification-content">
             <h4>{{ notification.title }}</h4>
@@ -116,6 +155,9 @@
             Marquer lu
           </button>
         </div>
+        <div *ngIf="notifications.length === 0 && !isLoading" class="empty-notifications">
+          <p>Aucune notification</p>
+        </div>
       </div>
     </div>
 
@@ -123,24 +165,64 @@
     <div class="quick-stats">
       <div class="stat-box">
         <h3>🎯 Objectifs du mois</h3>
-        <p>Ventes: <strong>8/10 produits</strong></p>
+        <p>Ventes: <strong>{{ currentSales }}/{{ monthlyGoal }} produits</strong></p>
         <div class="progress-bar">
-          <div class="progress-fill" [style.width]="'80%'"></div>
+          <div class="progress-fill" [style.width.%]="getGoalPercentage()"></div>
         </div>
+        <p class="progress-text">{{ getGoalPercentage().toFixed(0) }}% atteint</p>
       </div>
       <div class="stat-box">
         <h3>📈 Performance</h3>
-        <p>Augmentation des ventes: <strong>+15%</strong></p>
-        <p class="trend up">↑ Meilleur mois</p>
+        <p>Augmentation des ventes:
+          <strong [class]="getPerformanceClass()">
+            {{ getPerformanceText() }}
+          </strong>
+        </p>
+        <p *ngIf="salesPerformance > 0" class="trend up">↑ Meilleur mois</p>
+        <p *ngIf="salesPerformance < 0" class="trend down">↓ À améliorer</p>
+        <p *ngIf="salesPerformance === 0" class="trend neutral">→ Stable</p>
       </div>
       <div class="stat-box">
         <h3>💡 Conseil du jour</h3>
-        <p>
+        <p *ngIf="totalCertifications === 0">
           Pensez à certifier vos produits bio pour augmenter leur valeur de 30%
         </p>
+        <p *ngIf="totalCertifications > 0 && totalCertifications < 3">
+          Ajoutez plus de certifications pour augmenter la confiance des clients
+        </p>
+        <p *ngIf="totalCertifications >= 3">
+          Excellent! Vos certifications augmentent votre crédibilité
+        </p>
         <button routerLink="/producer/certifications" class="advice-btn">
-          Certifier maintenant
+          {{ totalCertifications === 0 ? 'Certifier maintenant' : 'Ajouter certifications' }}
         </button>
+      </div>
+    </div>
+
+    <!-- Insights supplémentaires -->
+    <div class="additional-insights" *ngIf="!isLoading">
+      <div class="insight-card">
+        <h3>📊 Aperçu rapide</h3>
+        <div class="insight-content">
+          <div class="insight-item">
+            <span class="insight-label">Panier moyen:</span>
+            <span class="insight-value">
+              {{ monthlySales > 0 ? (totalRevenue / monthlySales).toLocaleString('fr-FR') : '0' }} FCFA
+            </span>
+          </div>
+          <div class="insight-item">
+            <span class="insight-label">Taux de conversion:</span>
+            <span class="insight-value">
+              {{ (totalProducts > 0 ? (currentSales / totalProducts * 100) : 0).toFixed(1) }}%
+            </span>
+          </div>
+          <div class="insight-item">
+            <span class="insight-label">Clients satisfaits:</span>
+            <span class="insight-value">
+              {{ averageRating >= 4 ? 'Excellent' : averageRating >= 3 ? 'Bon' : 'À améliorer' }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   </main>
