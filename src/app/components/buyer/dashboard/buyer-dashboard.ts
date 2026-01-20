@@ -148,73 +148,62 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
   }
 
   // ==================== CHATBOT ====================
-  toggleChatbot() {
-    this.isChatbotOpen = !this.isChatbotOpen;
+ toggleChatbot() {
+  this.isChatbotOpen = !this.isChatbotOpen;
 
-    if (this.isChatbotOpen) {
-      this.hasUnreadMessages = false;
-      // Forcer le scroll au démarrage
-      this.shouldScroll = true;
-      setTimeout(() => {
-        if (this.chatInput?.nativeElement) {
-          this.chatInput.nativeElement.focus();
-        }
-        this.scrollChatToBottom();
-      }, 300); // Délai pour l'animation d'ouverture
-    }
+  if (!this.isChatbotOpen) {
+    // 🔴 STOP VOIX IMMÉDIAT
+    window.speechSynthesis.cancel();
+    this.isSpeaking = false;
+    this.isVoiceInput = false;
   }
+
+  if (this.isChatbotOpen) {
+    this.hasUnreadMessages = false;
+    setTimeout(() => {
+      this.chatInput?.nativeElement?.focus();
+      this.scrollChatToBottom();
+    }, 300);
+  }
+}
+
 
 sendMessage() {
-  // 🔒 Sécurité : message vide ou déjà en cours
-  if (!this.currentMessage || !this.currentMessage.trim() || this.isProcessing) {
-    return;
-  }
+  if (!this.currentMessage.trim() || this.isProcessing) return;
 
-  const userQuestion: string = this.currentMessage.trim();
-
-  // Bloquer les doubles envois
-  this.isProcessing = true;
-
-  // ➕ Ajouter le message utilisateur
-  this.addMessage(userQuestion, true);
-
-  // Vider l’input
+  const question = this.currentMessage.trim();
   this.currentMessage = '';
 
-  // 🙏 CAS SPÉCIAL : REMERCIEMENT
-  if (this.isThankYouMessage(userQuestion)) {
-    const response: string = this.processThankYou();
+  this.isProcessing = true;
 
-    // ➕ Message bot
-    this.addMessage(response, false);
+  // ➕ Message utilisateur
+  this.addMessage(question, true);
 
-    // 🔊 Lecture vocale
-    this.speak(response);
-
-    this.isProcessing = false;
-    return;
-  }
-
-  // 🤖 CAS NORMAL : QUESTION AU CHATBOT
-  this.processQuestion(userQuestion)
+  this.processQuestion(question)
     .then((botResponse: string) => {
-      // ➕ Réponse du bot
       this.addMessage(botResponse, false);
 
-      // 🔊 Lecture vocale automatique
-      this.speak(botResponse);
+      // 🔊 PARLER UNIQUEMENT SI QUESTION ORALE
+      if (this.isVoiceInput === true) {
+        this.speak(botResponse);
+      }
     })
     .catch(() => {
-      const errorMsg: string =
-        "❌ Désolé, une erreur est survenue. Veuillez réessayer.";
+      const err = "❌ Une erreur est survenue.";
+      this.addMessage(err, false);
 
-      this.addMessage(errorMsg, false);
-      this.speak(errorMsg);
+      if (this.isVoiceInput === true) {
+        this.speak(err);
+      }
     })
     .finally(() => {
       this.isProcessing = false;
+
+      // 🔒 RESET ABSOLU (TRÈS IMPORTANT)
+      this.isVoiceInput = false;
     });
 }
+
 
 
 
@@ -287,53 +276,52 @@ initSpeechRecognition() {
 
 startVoiceInput() {
   if (!this.recognition) {
-    alert('⚠️ La reconnaissance vocale n’est pas supportée sur ce navigateur.');
+    alert('⚠️ La reconnaissance vocale n’est pas supportée.');
     return;
   }
 
-  // Si le bot est en train de parler, on stoppe la voix
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-  }
+  // 🔴 Stop toute lecture en cours
+  window.speechSynthesis.cancel();
+  this.isSpeaking = false;
 
-  // Toggle écoute
-  if (this.isListening) {
-    this.recognition.stop();
-    this.isListening = false;
-    return;
-  }
-
-  // 🔥 Activer le mode vocal
+  // 🔥 MARQUER QUE LA QUESTION EST ORALE
   this.isVoiceInput = true;
 
   try {
     this.recognition.start();
     this.isListening = true;
-  } catch (error) {
-    console.error('Erreur démarrage micro', error);
+  } catch (e) {
+    console.error('Erreur micro', e);
     this.isListening = false;
+    this.isVoiceInput = false;
   }
 }
 
+
 speak(text: string) {
+  // 🔒 Sécurité ultime
+  if (!this.isVoiceInput) return;
   if (!('speechSynthesis' in window)) return;
 
-  // 🧹 Nettoyage spécial pour la voix
-  const cleanText = this.cleanTextForSpeech(text);
-
-  if (!cleanText) return;
-
-  // Stop toute voix précédente
+  // 🔴 Stop toute voix précédente
   window.speechSynthesis.cancel();
+
+  const cleanText = this.cleanTextForSpeech(text);
+  if (!cleanText) return;
 
   const utterance = new SpeechSynthesisUtterance(cleanText);
   utterance.lang = 'fr-FR';
-  utterance.rate = 1;
-  utterance.pitch = 1;
-  utterance.volume = 1;
+  utterance.rate = 0.95;
+
+  this.isSpeaking = true;
+
+  utterance.onend = () => {
+    this.isSpeaking = false;
+  };
 
   window.speechSynthesis.speak(utterance);
 }
+
 
 
 
