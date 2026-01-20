@@ -166,6 +166,8 @@ export const routes: Routes = [
       ),
     canActivate: [buyerGuard],
   },
+ 
+
 
   { path: '**', redirectTo: '' },
 ];

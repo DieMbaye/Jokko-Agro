@@ -59,7 +59,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
       { label: 'Marché', icon: '🛍️', route: '/buyer/market' },
       { label: 'Scanner QR', icon: '📱', route: '/buyer/scan' },
       { label: 'Panier', icon: '🛒', route: '/buyer/cart' },
-      { label: 'Historique', icon: '📋', route: '/buyer/purchases' },
       { label: 'Vérifications', icon: '✅', route: '/buyer/verifications' },
       { label: 'Messages', icon: '✉️', route: '/buyer/messages', badge: 2 },
       { label: 'Favoris', icon: '❤️', route: '/buyer/favorites', badge: 5 },
@@ -291,9 +290,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     return this.config.type === 'producer' ? '👨‍🌾 Producteur' : '🛒 Acheteur';
   }
 
-  getRoleColor(): string {
-    return this.config.type === 'producer' ? '#2e7d32' : '#1976d2';
-  }
+ 
 
   getInitials(): string {
     if (!this.userData?.fullName) return 'U';
@@ -328,4 +325,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.toggleChatbot();
     }
   }
+  getRoleColor(): string {
+  return this.config?.type === 'producer'
+    ? '#2e7d32' // Vert agricole (Producteur)
+    : '#1976d2'; // Bleu moderne (Acheteur)
+}
 }

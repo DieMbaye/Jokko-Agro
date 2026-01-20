@@ -228,7 +228,7 @@ export class ChatbotService {
            
            `4️⃣ **Suivez votre commande**\n` +
            `   • Confirmation immédiate\n` +
-           `   • Livraison en 24-48h 🚚`;
+           `   • Livraison en 24-48heures 🚚`;
   }
 
   private getCategoryProducts(category: string, products: Product[]): string {

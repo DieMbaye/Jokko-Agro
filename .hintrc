@@ -33,6 +33,13 @@
           "input[capture]"
         ]
       }
+    ],
+    "axe/forms": [
+      "default",
+      {
+        "label": "off",
+        "select-name": "off"
+      }
     ]
   }
 }

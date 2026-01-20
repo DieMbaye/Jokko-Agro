@@ -67,6 +67,10 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
 
   // Variables pour la recherche vocale
   isListening = false;
+  isSpeaking = false;
+  isVoiceInput = false;
+
+
   isVoiceSupported = true;
   searchTerm = '';
   voiceSearchResults: RecommendedProduct[] = [];
@@ -124,6 +128,8 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
 
     await this.loadDashboardData();
     this.initVoiceRecognition();
+      this.initSpeechRecognition();
+
   }
 
   ngAfterViewChecked() {
@@ -158,24 +164,59 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
     }
   }
 
-  sendMessage() {
-    if (!this.currentMessage.trim() || this.isProcessing) return;
-
-    const userQuestion = this.currentMessage.trim();
-
-    // Vérifier si c'est un remerciement
-    if (this.isThankYouMessage(userQuestion)) {
-      this.processThankYou();
-      return;
-    }
-
-    // Ajouter le message utilisateur
-    this.addMessage(userQuestion, true);
-    this.currentMessage = '';
-
-    // Traiter la question
-    this.processQuestion(userQuestion);
+sendMessage() {
+  // 🔒 Sécurité : message vide ou déjà en cours
+  if (!this.currentMessage || !this.currentMessage.trim() || this.isProcessing) {
+    return;
   }
+
+  const userQuestion: string = this.currentMessage.trim();
+
+  // Bloquer les doubles envois
+  this.isProcessing = true;
+
+  // ➕ Ajouter le message utilisateur
+  this.addMessage(userQuestion, true);
+
+  // Vider l’input
+  this.currentMessage = '';
+
+  // 🙏 CAS SPÉCIAL : REMERCIEMENT
+  if (this.isThankYouMessage(userQuestion)) {
+    const response: string = this.processThankYou();
+
+    // ➕ Message bot
+    this.addMessage(response, false);
+
+    // 🔊 Lecture vocale
+    this.speak(response);
+
+    this.isProcessing = false;
+    return;
+  }
+
+  // 🤖 CAS NORMAL : QUESTION AU CHATBOT
+  this.processQuestion(userQuestion)
+    .then((botResponse: string) => {
+      // ➕ Réponse du bot
+      this.addMessage(botResponse, false);
+
+      // 🔊 Lecture vocale automatique
+      this.speak(botResponse);
+    })
+    .catch(() => {
+      const errorMsg: string =
+        "❌ Désolé, une erreur est survenue. Veuillez réessayer.";
+
+      this.addMessage(errorMsg, false);
+      this.speak(errorMsg);
+    })
+    .finally(() => {
+      this.isProcessing = false;
+    });
+}
+
+
 
   askQuestion(question: string) {
     this.currentMessage = question;
@@ -198,53 +239,135 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
     return thankYouWords.some(word => lowerMessage.includes(word));
   }
 
-  private processThankYou() {
-    const thankYouMessage = this.currentMessage.trim();
-    this.addMessage(thankYouMessage, true);
-    this.currentMessage = '';
+ private processThankYou(): string {
+  return "🙏 De rien ! N'hésitez pas si vous avez d'autres questions.<br>" +
+         "Je suis là pour vous aider à trouver les meilleurs produits !";
+}
 
-    // Réponse automatisée pour les remerciements
-    setTimeout(() => {
-      this.addMessage(
-        "🙏 De rien ! N'hésitez pas si vous avez d'autres questions.<br>" +
-        "Je suis là pour vous aider à trouver les meilleurs produits !",
-        false
-      );
-    }, 500);
+
+initSpeechRecognition() {
+  const SpeechRecognition =
+    (window as any).SpeechRecognition ||
+    (window as any).webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    console.warn('Reconnaissance vocale non supportée');
+    return;
   }
 
-  private async processQuestion(question: string) {
-    this.isProcessing = true;
+  this.recognition = new SpeechRecognition();
+  this.recognition.lang = 'fr-FR';
+  this.recognition.continuous = false;
+  this.recognition.interimResults = false;
 
-    // Ajouter message de chargement
-    this.addMessage('', false, true);
+  this.recognition.onstart = () => {
+    this.isListening = true;
+  };
 
-    try {
-      // Récupérer la réponse intelligente basée sur les données réelles
-      const response = await this.chatbotService.getIntelligentResponse(
+  this.recognition.onend = () => {
+    this.isListening = false;
+  };
+
+  this.recognition.onerror = () => {
+    this.isListening = false;
+  };
+
+  // 🔥 ICI : quand l’utilisateur parle
+  this.recognition.onresult = (event: any) => {
+    const transcript = event.results[0][0].transcript;
+
+    this.currentMessage = transcript;
+
+    // ✅ ENVOI AUTOMATIQUE
+    setTimeout(() => {
+      this.sendMessage();
+    }, 300);
+  };
+}
+
+startVoiceInput() {
+  if (!this.recognition) {
+    alert('⚠️ La reconnaissance vocale n’est pas supportée sur ce navigateur.');
+    return;
+  }
+
+  // Si le bot est en train de parler, on stoppe la voix
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+
+  // Toggle écoute
+  if (this.isListening) {
+    this.recognition.stop();
+    this.isListening = false;
+    return;
+  }
+
+  // 🔥 Activer le mode vocal
+  this.isVoiceInput = true;
+
+  try {
+    this.recognition.start();
+    this.isListening = true;
+  } catch (error) {
+    console.error('Erreur démarrage micro', error);
+    this.isListening = false;
+  }
+}
+
+speak(text: string) {
+  if (!('speechSynthesis' in window)) return;
+
+  // 🧹 Nettoyage spécial pour la voix
+  const cleanText = this.cleanTextForSpeech(text);
+
+  if (!cleanText) return;
+
+  // Stop toute voix précédente
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(cleanText);
+  utterance.lang = 'fr-FR';
+  utterance.rate = 1;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+
+  window.speechSynthesis.speak(utterance);
+}
+
+
+
+  private async processQuestion(question: string): Promise<string> {
+  // Ajouter message de chargement
+  this.addMessage('', false, true);
+
+  try {
+    // 🔥 Réponse intelligente basée sur Firestore
+    const response: string =
+      await this.chatbotService.getIntelligentResponse(
         question,
         this.allProducts,
         this.allProducers
       );
 
-      // Supprimer le message de chargement
-      this.removeLoadingMessage();
+    // Supprimer le message "typing"
+    this.removeLoadingMessage();
 
-      // Ajouter la réponse formatée
-      this.addMessage(this.formatBotResponse(response), false);
+    // Retourner la réponse formatée
+    return this.formatBotResponse(response);
 
-    } catch (error) {
-      console.error('Erreur chatbot:', error);
-      this.removeLoadingMessage();
-      this.addMessage(
-        "❌ <strong>Désolé, je rencontre une difficulté technique.</strong><br>" +
-        "Veuillez réessayer dans quelques instants.",
-        false
-      );
-    } finally {
-      this.isProcessing = false;
-    }
+  } catch (error) {
+    console.error('Erreur chatbot:', error);
+
+    this.removeLoadingMessage();
+
+    return (
+      "❌ <strong>Désolé, je rencontre une difficulté technique.</strong><br>" +
+      "Veuillez réessayer dans quelques instants."
+    );
   }
+}
+
 
   private formatBotResponse(text: string): string {
     return text.replace(/\n/g, '<br>');
@@ -698,4 +821,34 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
       default: return status;
     }
   }
+private cleanTextForSpeech(text: string): string {
+  return text
+    // Supprimer markdown **
+    .replace(/\*\*/g, '')
+
+    // Supprimer emojis
+    .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
+
+    // Supprimer HTML
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<[^>]*>/g, '')
+
+    // Supprimer puces
+    .replace(/•/g, '')
+
+    // 🔥 Corriger le pluriel pour la voix
+    .replace(/\bproduits\b/gi, 'produit')
+    .replace(/\bdisponibles\b/gi, 'disponible')
+    .replace(/\bproducteurs\b/gi, 'producteur')
+
+    // Supprimer les "(s)"
+    .replace(/\(s\)/gi, '')
+
+    // Nettoyage espaces
+    .replace(/\n+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+ 
 }
