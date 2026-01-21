@@ -5,7 +5,7 @@ import {
   producerGuard,
   buyerGuard,
 } from './services/auth-guard.service';
-
+import { BuyerPurchasesComponent } from './buyer/buyer-purchases/buyer-purchases.component';
 export const routes: Routes = [
   // Routes publiques
   {
@@ -166,7 +166,12 @@ export const routes: Routes = [
       ),
     canActivate: [buyerGuard],
   },
- 
+ {
+  path: 'buyer/purchases',
+  component: BuyerPurchasesComponent,
+  canActivate: [authGuard]
+}
+,
 
 
   { path: '**', redirectTo: '' },

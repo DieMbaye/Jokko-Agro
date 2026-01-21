@@ -104,72 +104,62 @@
             </tr>
           </thead>
           <tbody>
-  <tr *ngFor="let purchase of recentPurchases | slice:0:5">
-    
-    <!-- COMMANDE -->
-    <td>#{{ purchase.id }}</td>
+ <tr *ngFor="let purchase of recentPurchases | slice:0:5">
 
-    <!-- PRODUIT -->
-    <td class="product-cell">{{ purchase.product }}</td>
+  <!-- COMMANDE -->
+  <td>#{{ purchase.id }}</td>
 
-    <!-- PRODUCTEUR -->
-    <td>{{ purchase.producer }}</td>
+  <!-- PRODUIT -->
+  <td class="product-cell">{{ purchase.product }}</td>
 
-    <!-- DATE -->
-    <td>{{ purchase.date }}</td>
+  <!-- PRODUCTEUR -->
+  <td>{{ purchase.producer }}</td>
 
-    <!-- MONTANT -->
-    <td class="amount">{{ formatPrice(purchase.amount) }}</td>
+  <!-- DATE -->
+  <td>{{ purchase.date }}</td>
 
-    <!-- ⭐ NOTE / RATING -->
-    <td>
-  <!-- ✅ COMMANDE TERMINÉE -->
-  <ng-container *ngIf="purchase.status === 'delivered'; else notDelivered">
+  <!-- MONTANT -->
+  <td class="amount">{{ formatPrice(purchase.amount) }}</td>
+
+  <!-- ⭐ NOTE / RATING -->
+  <td>
 
     <!-- ⭐ DÉJÀ NOTÉ -->
-    <ng-container *ngIf="purchase.rated; else rateNow">
-      <span class="stars readonly">
-        <span *ngFor="let s of [1,2,3,4,5]">
-          {{ s <= purchase.ratingValue ? '★' : '☆' }}
-        </span>
+    <div *ngIf="purchase.rated" class="stars readonly">
+      <span *ngFor="let s of starsArray()">
+        {{ s <= purchase.ratingValue ? '★' : '☆' }}
       </span>
-    </ng-container>
+    </div>
 
-    <!-- ⭐ À NOTER -->
-    <ng-template #rateNow>
-      <span class="stars clickable">
-        <span
-          *ngFor="let s of [1,2,3,4,5]"
-          (click)="ratePurchase(purchase, s)">
-          ★
-        </span>
+    <!-- ⭐ PAS ENCORE NOTÉ -->
+    <div
+      *ngIf="!purchase.rated"
+      class="stars clickable"
+      [class.disabled]="purchase.status !== 'delivered'"
+    >
+      <span
+        *ngFor="let s of starsArray()"
+        (click)="purchase.status === 'delivered' && rate(purchase, s)"
+      >
+        ★
       </span>
-    </ng-template>
+    </div>
 
-  </ng-container>
+  </td>
 
-  <!-- ⏳ PAS ENCORE LIVRÉ -->
-  <ng-template #notDelivered>
-    <span class="stars disabled">
-      ☆ ☆ ☆ ☆ ☆
+  <!-- CERTIFIÉ -->
+  <td>
+    <span *ngIf="purchase.certified" class="certified-badge">
+      ✅ Certifié
     </span>
-  </ng-template>
-</td>
 
+    <span *ngIf="!purchase.certified" class="not-certified-badge">
+      ❌ Non certifié
+    </span>
+  </td>
 
-    <!-- CERTIFIÉ -->
-    <td>
-  <span *ngIf="purchase.certified" class="certified-badge">
-    ✅ Certifié
-  </span>
+</tr>
 
-  <span *ngIf="!purchase.certified" class="not-certified-badge">
-    ❌ Non certifié
-  </span>
-</td>
-
-
-  </tr>
 </tbody>
 
         </table>

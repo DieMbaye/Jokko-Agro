@@ -1,0 +1,63 @@
+<div class="purchases-page">
+
+  <h1>🧾 Mes commandes</h1>
+
+  <div *ngIf="isLoading" class="loading">
+    Chargement des commandes...
+  </div>
+
+  <table *ngIf="!isLoading" class="purchases-table">
+    <thead>
+      <tr>
+        <th>Commande</th>
+        <th>Produit</th>
+        <th>Producteur</th>
+        <th>Date</th>
+        <th>Montant</th>
+        <th>Note</th>
+        <th>Certification</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let p of purchases">
+        <td>#{{ p.id }}</td>
+        <td>{{ p.product }}</td>
+        <td>{{ p.producer }}</td>
+        <td>{{ p.date }}</td>
+        <td class="price">{{ p.amount | number }} FCFA</td>
+
+        <!-- ⭐ NOTATION -->
+        <td>
+          <!-- déjà noté -->
+          <div *ngIf="p.rated" class="stars readonly">
+            <span *ngFor="let s of starsArray()">
+              {{ s <= p.ratingValue ? '★' : '☆' }}
+            </span>
+          </div>
+
+          <!-- pas encore noté -->
+          <div *ngIf="!p.rated" class="stars"
+               [class.disabled]="p.status !== 'delivered'">
+            <span
+              *ngFor="let s of starsArray()"
+              (click)="rate(p, s)">
+              ★
+            </span>
+          </div>
+        </td>
+
+        <!-- ✅ CERTIFICATION -->
+        <td>
+          <span *ngIf="p.certified" class="certified">
+            ✔ Certifié
+          </span>
+          <span *ngIf="!p.certified" class="not-certified">
+            ✖ Non certifié
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>

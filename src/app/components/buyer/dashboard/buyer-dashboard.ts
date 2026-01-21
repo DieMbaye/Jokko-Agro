@@ -101,6 +101,8 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
   allProducts: Product[] = [];
   allProducers: any[] = [];
   isLoadingProducts = false;
+    allPurchases: RecentPurchase[] = [];
+
 
   // DICTIONNAIRE WOLOF-FRANÇAIS
   private wolofToFrench: { [key: string]: string } = {
@@ -452,17 +454,7 @@ speak(text: string) {
 
   // ==================== DASHBOARD ====================
 async loadDashboardData() {
-  // =======================
-  // 1️⃣ STATISTIQUES (peuvent être améliorées plus tard)
-  // =======================
-  this.stats = [
-    { label: 'Achats ce mois', value: 6, icon: '🛍️', color: '#2196F3', link: '/buyer/purchases' },
-    { label: 'Dépenses totales', value: '75,000', icon: '💰', color: '#4CAF50' },
-    { label: 'Certifications vérifiées', value: 8, icon: '✅', color: '#FF9800', link: '/buyer/verifications' },
-    { label: 'Vendeurs favoris', value: 3, icon: '❤️', color: '#E91E63', link: '/buyer/favorites' },
-    { label: 'Messages', value: 5, icon: '✉️', color: '#9C27B0', link: '/buyer/messages' },
-    { label: 'Panier', value: 2, icon: '🛒', color: '#FF5722', link: '/buyer/cart' }
-  ];
+
 
   // =======================
   // 2️⃣ PRODUITS & PRODUCTEURS RÉELS
@@ -477,18 +469,74 @@ async loadDashboardData() {
   await this.loadRecentPurchases();
 }
 async loadRecentPurchases() {
-  const purchases = await this.firebaseService.getBuyerSales(); 
-  const ratings = await this.firebaseService.getMyRatings(); // collection ratings
+  const purchases = await this.firebaseService.getBuyerSales();
+  const ratings = await this.firebaseService.getMyRatings();
 
-  this.recentPurchases = purchases.map(p => {
+  this.allPurchases = purchases.map(p => {
     const rating = ratings.find(r => r.productId === p.productId);
-
     return {
       ...p,
       rated: !!rating,
       ratingValue: rating?.stars || 0
     };
-  }).slice(0, 5); // 🔥 seulement 5 lignes
+  });
+
+  // 🔥 Seulement 5 pour le tableau
+  this.recentPurchases = this.allPurchases.slice(0, 5);
+
+  // 🔥 Calculer les cartes
+  this.computeStats();
+}
+
+
+
+private computeStats() {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  // 🛍️ Achats ce mois
+  const purchasesThisMonth = this.allPurchases.filter(p => {
+    const d = new Date(p.date);
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  });
+
+  // 💰 Dépenses totales
+  const totalSpent = this.allPurchases.reduce(
+    (sum, p) => sum + (p.amount || 0),
+    0
+  );
+
+  // ✅ Produits certifiés achetés
+  const certifiedCount = this.allPurchases.filter(p => p.certified).length;
+
+  this.stats = [
+    {
+      label: 'Achats ce mois',
+      value: purchasesThisMonth.length,
+      icon: '🛍️',
+      color: '#2196F3',
+      link: '/buyer/purchases'
+    },
+    {
+      label: 'Dépenses totales',
+      value: totalSpent.toLocaleString() + ' FCFA',
+      icon: '💰',
+      color: '#4CAF50'
+    },
+    {
+      label: 'Certifications vérifiées',
+      value: certifiedCount,
+      icon: '✅',
+      color: '#FF9800'
+    },
+    {
+      label: 'Vendeurs favoris',
+      value: 0, // ✅ NORMAL pour l’instant
+      icon: '❤️',
+      color: '#E91E63'
+    }
+  ];
 }
 
 
@@ -785,14 +833,40 @@ private cleanTextForSpeech(text: string): string {
 }
 async ratePurchase(purchase: any, stars: number) {
   await this.firebaseService.submitRating({
-    productId: purchase.productId,
-    producerId: purchase.producerId,
+    productId: purchase.productId ?? '',
+    producerId: purchase.producerId ?? '',
     stars,
     buyerId: ''
   });
 
   purchase.rated = true;
   purchase.ratingValue = stars; // ⭐ IMPORTANT
+}
+async rate(purchase: RecentPurchase, stars: number) {
+  if (purchase.status !== 'delivered') return;
+  if (purchase.rated) return;
+
+  const user = this.authService.getUserData();
+
+  if (!user || !user.uid) {
+    alert('Utilisateur non connecté');
+    return;
+  }
+
+  await this.firebaseService.submitRating({
+    productId: purchase.productId!,
+    producerId: purchase.producerId!,
+    stars,
+    buyerId: user.uid   // ✅ string garanti
+  });
+
+  purchase.rated = true;
+  purchase.ratingValue = stars;
+}
+
+
+starsArray(): number[] {
+  return [1, 2, 3, 4, 5];
 }
 
 
