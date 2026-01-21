@@ -6,37 +6,57 @@ import { AuthService } from '../../../services/auth.service';
 import { FirebaseService } from '../../../services/firebase.service';
 import { Product } from '../../../services/data.interfaces';
 import { ChatbotService } from '../../../services/chatbot.service';
+import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
+
 
 interface DashboardStat {
   label: string;
   value: number | string;
   icon: string;
   color: string;
-  link?: string;
-}
+  link?: string;}
 
 interface RecentPurchase {
+  ratingValue: number;
   id: string;
   product: string;
   producer: string;
   date: string;
   amount: number;
+
   status: 'delivered' | 'shipping' | 'pending';
   certified: boolean;
+
+  // ⭐ RATING
+  rated?: boolean;
+
+  // ⭐ TEMPORAIRE (UI SEULEMENT)
+  tempRating?: number;
+
+  // 🔗 POUR FIRESTORE
+  productId?: string;
+  producerId?: string;
 }
+
+
+
 
 interface RecommendedProduct {
   id: string;
   name: string;
   producer: string;
   price: number;
+
+  // ⭐ OBLIGATOIRE POUR LE HTML
   rating: number;
+
   image: string;
   certified: boolean;
   category?: string;
   unit?: string;
   stock?: number;
 }
+
 
 interface ChatMessage {
   id: string;
@@ -118,7 +138,7 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
   constructor(
     private authService: AuthService,
     private firebaseService: FirebaseService,
-    private chatbotService: ChatbotService
+    private chatbotService: ChatbotService,
   ) {}
 
   async ngOnInit() {
@@ -431,53 +451,92 @@ speak(text: string) {
   }
 
   // ==================== DASHBOARD ====================
-  async loadDashboardData() {
-    this.stats = [
-      { label: 'Achats ce mois', value: 6, icon: '🛍️', color: '#2196F3', link: '/buyer/purchases' },
-      { label: 'Dépenses totales', value: '75,000', icon: '💰', color: '#4CAF50' },
-      { label: 'Certifications vérifiées', value: 8, icon: '✅', color: '#FF9800', link: '/buyer/verifications' },
-      { label: 'Vendeurs favoris', value: 3, icon: '❤️', color: '#E91E63', link: '/buyer/favorites' },
-      { label: 'Messages', value: 5, icon: '✉️', color: '#9C27B0', link: '/buyer/messages' },
-      { label: 'Panier', value: 2, icon: '🛒', color: '#FF5722', link: '/buyer/cart' }
-    ];
+async loadDashboardData() {
+  // =======================
+  // 1️⃣ STATISTIQUES (peuvent être améliorées plus tard)
+  // =======================
+  this.stats = [
+    { label: 'Achats ce mois', value: 6, icon: '🛍️', color: '#2196F3', link: '/buyer/purchases' },
+    { label: 'Dépenses totales', value: '75,000', icon: '💰', color: '#4CAF50' },
+    { label: 'Certifications vérifiées', value: 8, icon: '✅', color: '#FF9800', link: '/buyer/verifications' },
+    { label: 'Vendeurs favoris', value: 3, icon: '❤️', color: '#E91E63', link: '/buyer/favorites' },
+    { label: 'Messages', value: 5, icon: '✉️', color: '#9C27B0', link: '/buyer/messages' },
+    { label: 'Panier', value: 2, icon: '🛒', color: '#FF5722', link: '/buyer/cart' }
+  ];
 
-    await this.loadRealProducts();
-    await this.loadProducers();
-    this.updateRecommendedProducts();
+  // =======================
+  // 2️⃣ PRODUITS & PRODUCTEURS RÉELS
+  // =======================
+  await this.loadRealProducts();
+  await this.loadProducers();
+  this.updateRecommendedProducts();
 
-    this.recentPurchases = [
-      { id: '001', product: 'Mangues Kent Bio', producer: 'Ferme Tropicale', date: '2024-01-15', amount: 15000, status: 'delivered', certified: true },
-      { id: '002', product: 'Carottes Nantaises', producer: 'Jardin de Fatou', date: '2024-01-14', amount: 4500, status: 'delivered', certified: true },
-      { id: '003', product: 'Poivre de Penja', producer: 'Épices du Cameroun', date: '2024-01-13', amount: 8500, status: 'shipping', certified: true },
-      { id: '004', product: 'Niébé décortiqué', producer: 'Coopérative Agricole', date: '2024-01-12', amount: 6500, status: 'pending', certified: true }
-    ];
+  // =======================
+  // 3️⃣ ACHATS RÉELS (🔥 TRÈS IMPORTANT)
+  // =======================
+  await this.loadRecentPurchases();
+}
+async loadRecentPurchases() {
+  const purchases = await this.firebaseService.getBuyerSales(); 
+  const ratings = await this.firebaseService.getMyRatings(); // collection ratings
+
+  this.recentPurchases = purchases.map(p => {
+    const rating = ratings.find(r => r.productId === p.productId);
+
+    return {
+      ...p,
+      rated: !!rating,
+      ratingValue: rating?.stars || 0
+    };
+  }).slice(0, 5); // 🔥 seulement 5 lignes
+}
+
+
+
+
+
+
+async loadRealProducts() {
+  this.isLoadingProducts = true;
+
+  try {
+    const products = await this.firebaseService.getAllAvailableProducts();
+
+    this.allProducts = products.map(p => ({
+      ...p,
+      rating: p.rating ?? 0,
+      certifications: p.certifications ?? [],
+      images: p.images ?? [],
+      badges: p.badges ?? []
+    }));
+
+    this.updateCategoryCounts();
+  } catch (e) {
+    console.error('Erreur produits Firestore', e);
+    this.allProducts = [];
+  } finally {
+    this.isLoadingProducts = false;
   }
+}
 
-  async loadRealProducts() {
-    this.isLoadingProducts = true;
+selectRating(purchase: any, stars: number) {
+  purchase.tempRating = stars;
+}
+async confirmRating(purchase: any) {
+  if (!purchase.tempRating) return;
 
-    try {
-      if (this.firebaseService.getAllAvailableProducts) {
-        const products = await this.firebaseService.getAllAvailableProducts();
-        this.allProducts = products;
-        console.log(`✅ ${products.length} produits chargés depuis Firebase`);
+  await this.firebaseService.submitRating({
+    productId: purchase.productId,
+    producerId: purchase.producerId,
+    stars: purchase.tempRating,
+    buyerId: ''
+  });
 
-        this.updateCategoryCounts();
+  purchase.ratingValue = purchase.tempRating;
+  purchase.rated = true;
+  purchase.tempRating = null;
+}
 
-        if (this.allProducts.length === 0) {
-          this.addTestProducts();
-        }
-      } else {
-        console.error('Méthode getAllAvailableProducts non disponible');
-        this.addTestProducts();
-      }
-    } catch (error) {
-      console.error('Erreur chargement produits:', error);
-      this.addTestProducts();
-    } finally {
-      this.isLoadingProducts = false;
-    }
-  }
 
   async loadProducers() {
     try {
@@ -509,121 +568,7 @@ speak(text: string) {
     console.log(`👨‍🌾 ${this.allProducers.length} producteurs extraits des produits`);
   }
 
-  private addTestProducts() {
-    console.log('📝 Ajout de produits de test');
-
-    const now = new Date();
-
-    this.allProducts = [
-      {
-        id: '1',
-        name: 'Mangue Kent Bio',
-        description: 'Mangues Kent bio, chair orange juteuse sans fibres',
-        price: 1800,
-        category: 'Fruits',
-        producerName: 'Ferme Tropicale',
-        unit: 'kg',
-        quantity: 50,
-        certifications: ['Bio', 'Local'],
-        rating: 4.5,
-        isOrganic: false,
-        location: '',
-        contactPhone: '',
-        minOrderQuantity: 0,
-        producerId: '',
-        producerPhone: '',
-        images: [],
-        status: 'available',
-        views: 0,
-        sales: 0,
-        isActive: false,
-        createdAt: now,
-        updatedAt: now,
-        badges: []
-      },
-      {
-        id: '2',
-        name: 'Carotte Nantaise Fraîche',
-        description: 'Carottes Nantaises cultivées dans les sols sablonneux',
-        price: 1200,
-        category: 'Légumes',
-        producerName: 'Jardin de Fatou',
-        unit: 'kg',
-        quantity: 100,
-        certifications: ['Bio'],
-        rating: 4.2,
-        isOrganic: false,
-        location: '',
-        contactPhone: '',
-        minOrderQuantity: 0,
-        producerId: '',
-        producerPhone: '',
-        images: [],
-        status: 'available',
-        views: 0,
-        sales: 0,
-        isActive: false,
-        createdAt: now,
-        updatedAt: now,
-        badges: []
-      },
-      {
-        id: '3',
-        name: 'Tomates Bio',
-        description: 'Tomates bio fraîches, cultivées naturellement',
-        price: 1500,
-        category: 'Légumes',
-        producerName: 'Alioune Farms',
-        unit: 'kg',
-        quantity: 80,
-        certifications: ['Bio'],
-        rating: 4.4,
-        isOrganic: false,
-        location: '',
-        contactPhone: '',
-        minOrderQuantity: 0,
-        producerId: '',
-        producerPhone: '',
-        images: [],
-        status: 'available',
-        views: 0,
-        sales: 0,
-        isActive: false,
-        createdAt: now,
-        updatedAt: now,
-        badges: []
-      },
-      {
-        id: '4',
-        name: 'Orange Valencia',
-        description: 'Oranges juteuses et sucrées',
-        price: 1500,
-        category: 'Fruits',
-        producerName: 'Verger de Casamance',
-        unit: 'kg',
-        quantity: 75,
-        certifications: ['Local'],
-        rating: 4.3,
-        isOrganic: false,
-        location: '',
-        contactPhone: '',
-        minOrderQuantity: 0,
-        producerId: '',
-        producerPhone: '',
-        images: [],
-        status: 'available',
-        views: 0,
-        sales: 0,
-        isActive: false,
-        createdAt: now,
-        updatedAt: now,
-        badges: []
-      }
-    ];
-
-    this.updateCategoryCounts();
-  }
-
+ 
   private updateCategoryCounts() {
     this.categories.forEach(cat => cat.count = 0);
 
@@ -644,25 +589,22 @@ speak(text: string) {
     });
   }
 
-  private updateRecommendedProducts() {
-    if (this.allProducts.length > 0) {
-      const shuffled = [...this.allProducts].sort(() => 0.5 - Math.random());
-      this.recommendedProducts = shuffled.slice(0, 4).map(product => ({
-        id: product.id || '',
-        name: product.name,
-        producer: product.producerName || 'Producteur',
-        price: product.price,
-        rating: product.rating || 4.0,
-        image: this.getProductEmoji(product.name),
-        certified: (product.certifications && product.certifications.length > 0) || false,
-        category: product.category,
-        unit: product.unit,
-        stock: product.quantity
-      }));
-    } else {
-      this.recommendedProducts = [];
-    }
-  }
+private updateRecommendedProducts() {
+  this.recommendedProducts = this.allProducts.slice(0, 4).map(p => ({
+    id: p.id!,
+    name: p.name,
+    producer: p.producerName,
+    price: p.price,
+    rating: p.rating ?? 0,
+    image: this.getProductEmoji(p.name),
+    certified: p.certifications.length > 0,
+    category: p.category,
+    unit: p.unit,
+    stock: p.quantity
+  }));
+}
+
+
 
   // ==================== RECHERCHE VOCALE ====================
   private initVoiceRecognition() {
@@ -744,18 +686,22 @@ speak(text: string) {
       return false;
     });
 
-    this.voiceSearchResults = filtered.map(product => ({
-      id: product.id || '',
-      name: product.name,
-      producer: product.producerName || 'Producteur',
-      price: product.price,
-      rating: product.rating || 4.0,
-      image: this.getProductEmoji(product.name),
-      certified: (product.certifications && product.certifications.length > 0) || false,
-      category: product.category,
-      unit: product.unit,
-      stock: product.quantity
-    }));
+   this.voiceSearchResults = filtered.map(product => ({
+  id: product.id || '',
+  name: product.name,
+  producer: product.producerName || 'Producteur',
+  price: product.price,
+
+  // ⭐ sécurisé
+  rating: product.rating ?? 0,
+
+  image: this.getProductEmoji(product.name),
+  certified: product.certifications?.length > 0,
+  category: product.category,
+  unit: product.unit,
+  stock: product.quantity
+}));
+
   }
 
   onSearch() {
@@ -837,6 +783,30 @@ private cleanTextForSpeech(text: string): string {
     .replace(/\s+/g, ' ')
     .trim();
 }
+async ratePurchase(purchase: any, stars: number) {
+  await this.firebaseService.submitRating({
+    productId: purchase.productId,
+    producerId: purchase.producerId,
+    stars,
+    buyerId: ''
+  });
 
- 
+  purchase.rated = true;
+  purchase.ratingValue = stars; // ⭐ IMPORTANT
+}
+
+
+
+async enrichProductsWithRatings() {
+  for (const product of this.allProducts) {
+    if (!product.id) continue;
+
+    const avgRating =
+      await this.firebaseService.getAverageRatingForProduct(product.id);
+
+    product.rating = avgRating ?? 0;
+  }
+}
+
+
 }

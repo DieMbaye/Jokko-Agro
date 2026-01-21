@@ -115,33 +115,55 @@ export interface ProfileModalData {
 
 export interface Product {
   id?: string;
+
   name: string;
   category: string;
   description: string;
+
   price: number;
   quantity: number;
   unit: string;
+  minOrderQuantity: number;
+
+  producerId: string;
+  producerName: string;
+  producerPhone: string;
+
+  location: string;
+  contactPhone: string;
+
   certifications: string[];
   isOrganic: boolean;
+
+  images: string[];
+  status: 'available' | 'sold_out' | 'inactive';
+
+  views: number;
+  sales: number;
+
+  // ⭐ Rating
+  rating?: number;
+  ratingCount?: number;
+
+  // 📅 Dates (optionnelles)
   harvestDate?: string;
   expirationDate?: string;
   storageConditions?: string;
-  location: string;
-  contactPhone: string;
-  minOrderQuantity: number;
-  producerId: string; // <-- IMPORTANT
-  producerName: string;
-  producerPhone: string;
-  images: string[];
-  status: 'available' | 'sold_out' | 'inactive';
-  views: number;
-  sales: number;
-  rating: number;
+
   isActive: boolean;
+
   createdAt?: Date;
   updatedAt?: Date;
+
+  badges: Array<{
+    id: string;
+    label: string;
+    icon: string;
+    color: string;
+  }>;
+
+  // 🏆 Certification (OPTIONNELLE MAIS COHÉRENTE)
   certification?: {
-    details: any;
     id: string;
     type: 'standard' | 'certified' | 'in_progress';
     level: 'bronze' | 'silver' | 'gold';
@@ -149,8 +171,7 @@ export interface Product {
     verificationDate: Date;
     validUntil: Date;
 
-    // Traçabilité
-    traceability: {
+    traceability?: {
       startDate: Date;
       harvestDate: Date;
       location: string;
@@ -163,20 +184,16 @@ export interface Product {
       }>;
     };
 
-    // Liens
-    qrCodeUrl: string;
-    certificateUrl: string;
-    verificationUrl: string;
-  };
+    qrCodeUrl?: string;
+    certificateUrl?: string;
+    verificationUrl?: string;
 
-  // Badges dynamiques
-  badges: Array<{
-    id: string;
-    label: string;
-    icon: string;
-    color: string;
-  }>;
+    details?: any;
+  };
 }
+
+
+
 
 // services/data.interfaces.ts
 export interface Sale {

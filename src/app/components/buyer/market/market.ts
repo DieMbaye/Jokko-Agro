@@ -10,18 +10,27 @@ import { Product } from '../../../services/data.interfaces';
 // Définissez l'interface MarketProduct - MISE À JOUR AVEC LA PROPRIÉTÉ BADGES
 interface MarketProduct
   extends Omit<Product, 'producerId' | 'producerPhone' | 'isActive' | 'badges'> {
+
   producer: string;
   producerId: string;
   producerRating: number;
   distance: number;
+
   rating: number;
   reviews: number;
   stock: number;
+
   certified: boolean;
   organic: boolean;
   local: boolean;
+
   displayImage: string;
-  // Ajoutez la propriété badges si nécessaire
+
+  // ✅ AJOUTER EXPLICITEMENT
+  harvestDate?: string;
+  expirationDate?: string;
+  storageConditions?: string;
+
   badges?: Array<{
     id: string;
     label: string;
@@ -29,6 +38,7 @@ interface MarketProduct
     color: string;
   }>;
 }
+
 
 // Définissez l'interface Category
 interface Category {

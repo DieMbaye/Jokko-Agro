@@ -27,9 +27,47 @@ import {
   deleteDoc,
   increment,
   writeBatch,
+  limit,
 } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Product } from './data.interfaces';
+
+// Define the Order interface if not already defined elsewhere
+export interface Order {
+  // 🔑 Identité
+  id: string;
+
+  // 👤 Acheteur
+  buyerId: string;
+  buyerName?: string;
+
+  // 📦 Produit
+  productId: string;
+  productName: string;
+  productUnit?: string;
+  productPrice?: number;
+
+  // 👨‍🌾 Producteur
+  producerId: string;
+  producerName: string;
+
+  // 💰 Commande
+  quantity: number;
+  amount: number; // total payé
+  status: 'pending' | 'shipping' | 'delivered' | 'cancelled';
+
+  // ✅ Qualité / confiance
+  certified: boolean;
+
+  // ⭐ Notation
+  rated?: boolean;        // true si déjà noté
+  ratingValue?: number;  // 1 à 5 (optionnel)
+
+  // ⏱️ Dates Firestore
+  createdAt: any; // Timestamp Firestore
+  deliveredAt?: any;
+}
+
 
 import { environment } from '../../environments/environment';
 
@@ -50,6 +88,41 @@ export interface FirebaseUserData {
   providedIn: 'root',
 })
 export class FirebaseService {
+async submitRating(data: {
+  productId: string;
+  producerId: string;
+  buyerId: string;
+  stars: number;
+}) {
+  await addDoc(collection(this.firestore, 'ratings'), {
+    productId: data.productId,
+    producerId: data.producerId,
+    buyerId: data.buyerId,
+    stars: data.stars,
+    createdAt: serverTimestamp()
+  });
+}
+
+
+async getAverageRatingForProduct(productId: string): Promise<number> {
+  const q = query(
+    collection(this.firestore, 'ratings'),
+    where('productId', '==', productId)
+  );
+
+  const snap = await getDocs(q);
+
+  if (snap.empty) return 0;
+
+  const total = snap.docs.reduce(
+    (sum, d) => sum + d.data()['stars'],
+    0
+  );
+
+  return Number((total / snap.size).toFixed(1));
+}
+
+
   private app = initializeApp(environment.firebase);
   private auth = getAuth(this.app);
   public firestore = getFirestore(this.app);
@@ -60,10 +133,11 @@ export class FirebaseService {
   isLoading = true;
   getProducers: any;
 
-  constructor() {
-    this.setupAuthPersistence();
-    this.setupAuthListener();
-  }
+constructor() {
+  this.setupAuthPersistence();
+  this.setupAuthListener();
+}
+
 
   private async setupAuthPersistence() {
     try {
@@ -163,6 +237,129 @@ export class FirebaseService {
       };
     }
   }
+async getMyOrders(buyerId: string): Promise<Order[]> {
+  const q = query(
+    collection(this.firestore, 'sales'),
+    where('buyerId', '==', buyerId),
+    orderBy('createdAt', 'desc')
+  );
+
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map(docSnap => {
+    const data = docSnap.data();
+    return {
+      id: docSnap.id,
+      buyerId: data['buyerId'] || '',
+      producerId: data['producerId'] || '',
+      productId: data['productId'] || '',
+      quantity: data['quantity'] || 0,
+      totalPrice: data['totalPrice'] || 0,
+      status: data['status'] || '',
+      amount: data['amount'] || data['totalPrice'] || 0,
+
+      createdAt: data['createdAt']?.toDate ? data['createdAt'].toDate() : new Date(),
+      updatedAt: data['updatedAt']?.toDate ? data['updatedAt'].toDate() : undefined,
+      ...data
+    } as unknown as Order;
+  });
+}
+
+async getBuyerSales(): Promise<any[]> {
+  const user = this.auth.currentUser;
+  if (!user) return [];
+
+  const salesRef = collection(this.firestore, 'sales');
+  const q = query(
+    salesRef,
+    where('buyerId', '==', user.uid),
+    orderBy('createdAt', 'desc')
+  );
+
+  const snapshot = await getDocs(q);
+  const results: any[] = [];
+
+  for (const docSnap of snapshot.docs) {
+    const sale = docSnap.data();
+
+    // =========================
+    // 🔹 Récupération PRODUIT
+    // =========================
+    let productData: any = null;
+    if (sale['productId']) {
+      const productSnap = await getDoc(
+        doc(this.firestore, 'products', sale['productId'])
+      );
+      productData = productSnap.exists() ? productSnap.data() : null;
+    }
+
+    // =========================
+    // 🔹 Récupération PRODUCTEUR
+    // =========================
+    let producerData: any = null;
+    if (sale['producerId']) {
+      const producerSnap = await getDoc(
+        doc(this.firestore, 'users', sale['producerId'])
+      );
+      producerData = producerSnap.exists() ? producerSnap.data() : null;
+    }
+
+    // =========================
+    // ⭐ LOGIQUE DE CERTIFICATION (UNIQUE)
+    // EXACTEMENT COMME "Produits recommandés"
+    // =========================
+    const isCertified =
+      productData?.certifications &&
+      Array.isArray(productData.certifications) &&
+      productData.certifications.length > 0;
+
+    // =========================
+    // 📦 PUSH FINAL
+    // =========================
+    results.push({
+      id: docSnap.id,
+      product: productData?.name || 'Produit inconnu',
+      producer: producerData?.fullName || 'Producteur inconnu',
+      date: sale['createdAt']?.toDate
+        ? sale['createdAt'].toDate().toISOString().split('T')[0]
+        : '',
+      amount: sale['totalAmount'] || 0,
+
+      // statut réel
+      status: sale['status'] || 'pending',
+
+      // ✅ CERTIFICATION CORRECTE
+      certified: isCertified,
+
+      // 🔗 pour rating
+      productId: sale['productId'],
+      producerId: sale['producerId']
+    });
+  }
+
+  return results;
+}
+  db(db: any, arg1: string, arg2: any): import("@firebase/firestore").DocumentReference<import("@firebase/firestore").DocumentData, import("@firebase/firestore").DocumentData> {
+    throw new Error('Method not implemented.');
+  }
+
+async getMyRatings(): Promise<any[]> {
+  const user = this.getCurrentAuthUser();
+  if (!user) return [];
+
+  const ratingsRef = collection(this.firestore, 'ratings');
+  const q = query(
+    ratingsRef,
+    where('buyerId', '==', user.uid)
+  );
+
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+}
 
   async logout(): Promise<void> {
     try {
@@ -377,9 +574,6 @@ export class FirebaseService {
           unit: data['unit'] || 'unit',
           certifications: data['certifications'] || [],
           isOrganic: data['isOrganic'] || false,
-          harvestDate: data['harvestDate'],
-          expirationDate: data['expirationDate'],
-          storageConditions: data['storageConditions'],
           location: data['location'] || '',
           contactPhone: data['contactPhone'] || '',
           minOrderQuantity: data['minOrderQuantity'] || 1,
@@ -390,12 +584,10 @@ export class FirebaseService {
           status: data['status'] || 'available',
           views: data['views'] || 0,
           sales: data['sales'] || 0,
-          rating: data['rating'] || 0,
           isActive: data['isActive'] !== undefined ? data['isActive'] : true,
           createdAt: data['createdAt']?.toDate() || new Date(),
           updatedAt: data['updatedAt']?.toDate() || new Date(),
           // NOUVEAUX CHAMPS
-          certification: data['certification'] || undefined,
           badges: data['badges'] || [], // ← AJOUTEZ CETTE LIGNE
         });
       });
@@ -425,7 +617,6 @@ export class FirebaseService {
           certifications: data['certifications'] || [],
           isOrganic: data['isOrganic'] || false,
           harvestDate: data['harvestDate'],
-          expirationDate: data['expirationDate'],
           storageConditions: data['storageConditions'],
           location: data['location'] || '',
           contactPhone: data['contactPhone'] || '',
@@ -719,4 +910,5 @@ export class FirebaseService {
 
     return product;
   }
+
 }
