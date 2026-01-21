@@ -90,6 +90,7 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
   isSpeaking = false;
   isVoiceInput = false;
 
+isDashboardLoading = true;
 
   isVoiceSupported = true;
   searchTerm = '';
@@ -454,20 +455,27 @@ speak(text: string) {
 
   // ==================== DASHBOARD ====================
 async loadDashboardData() {
+  try {
+    // 🔥 TOUT EN PARALLÈLE
+    await Promise.all([
+      this.loadRealProducts(),
+      this.loadProducers(),
+      this.loadRecentPurchases()
+    ]);
 
+    // 🔥 Une fois tout chargé
+    this.updateRecommendedProducts();
+    this.computeStats();
 
-  // =======================
-  // 2️⃣ PRODUITS & PRODUCTEURS RÉELS
-  // =======================
-  await this.loadRealProducts();
-  await this.loadProducers();
-  this.updateRecommendedProducts();
-
-  // =======================
-  // 3️⃣ ACHATS RÉELS (🔥 TRÈS IMPORTANT)
-  // =======================
-  await this.loadRecentPurchases();
+  } catch (error) {
+    console.error('Erreur chargement dashboard:', error);
+  }
+  finally {
+  this.isDashboardLoading = false;
 }
+
+}
+
 async loadRecentPurchases() {
   const purchases = await this.firebaseService.getBuyerSales();
   const ratings = await this.firebaseService.getMyRatings();
@@ -484,9 +492,7 @@ async loadRecentPurchases() {
   // 🔥 Seulement 5 pour le tableau
   this.recentPurchases = this.allPurchases.slice(0, 5);
 
-  // 🔥 Calculer les cartes
-  this.computeStats();
-}
+  }
 
 
 

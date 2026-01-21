@@ -49,22 +49,33 @@
     </div>
 
     <!-- Stats Grid -->
-    <div class="stats-grid">
-      <div
-        *ngFor="let stat of stats"
-        class="stat-card"
-        [routerLink]="stat.link"
-        [ngStyle]="{borderLeftColor: stat.color}"
-      >
-        <div class="stat-icon" [ngStyle]="{backgroundColor: stat.color + '20'}">
-          {{ stat.icon }}
-        </div>
-        <div class="stat-info">
-          <h3>{{ stat.value }}</h3>
-          <p>{{ stat.label }}</p>
-        </div>
+    <!-- Stats Grid -->
+<div *ngIf="!isDashboardLoading; else loadingStats">
+  <div class="stats-grid">
+    <div
+      *ngFor="let stat of stats"
+      class="stat-card"
+      [routerLink]="stat.link"
+      [ngStyle]="{ borderLeftColor: stat.color }"
+    >
+      <div class="stat-icon" [ngStyle]="{ backgroundColor: stat.color + '20' }">
+        {{ stat.icon }}
+      </div>
+      <div class="stat-info">
+        <h3>{{ stat.value }}</h3>
+        <p>{{ stat.label }}</p>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ⏳ SKELETON LOADER -->
+<ng-template #loadingStats>
+  <div class="stats-grid">
+    <div class="stat-card skeleton" *ngFor="let i of [1,2,3,4]"></div>
+  </div>
+</ng-template>
+
 
     <!-- Categories -->
     <div class="dashboard-section">
