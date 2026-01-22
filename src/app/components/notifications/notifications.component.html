@@ -1,0 +1,27 @@
+<div class="notifications-wrapper">
+
+  <h2>🔔 Notifications</h2>
+
+  <div *ngIf="notifications.length === 0" class="empty">
+    Aucune notification pour le moment
+  </div>
+
+  <div
+    *ngFor="let n of notifications"
+    class="notification"
+    [class.unread]="!n.read"
+    (click)="markRead(n)"
+    [routerLink]="n.link"
+  >
+    <div class="icon">
+      {{ n.type === 'order' ? '📦' : '🆕' }}
+    </div>
+
+    <div class="content">
+      <strong>{{ n.title }}</strong>
+      <p>{{ n.message }}</p>
+      <small>{{ n.createdAt?.toDate() | date:'short' }}</small>
+    </div>
+  </div>
+
+</div>

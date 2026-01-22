@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { SalesService } from '../../../services/sales.service';
+import { NotificationService } from '../../../services/notification.service';
+
 import {
   CartService,
   CartItem,
@@ -130,12 +132,14 @@ throw new Error('Method not implemented.');
   private cartSubscription?: Subscription;
   private priceUpdateSubscription?: Subscription;
 
-  constructor(
-    private authService: AuthService,
-    private cartService: CartService,
-    private salesService: SalesService, // Ajoutez cette ligne
-    private router: Router
-  ) {}
+constructor(
+  private authService: AuthService,
+  private cartService: CartService,
+  private salesService: SalesService,
+  private router: Router,
+  private notificationService: NotificationService // ✅ AJOUT
+) {}
+
 
   ngOnInit() {
     this.loadCartItems();
@@ -695,120 +699,136 @@ throw new Error('Method not implemented.');
 
   // Commande
   // Dans cart.ts, méthode proceedToCheckout
-  async proceedToCheckout() {
-    if (!this.canCheckout()) {
-      this.showError('Veuillez compléter toutes les étapes');
+ async proceedToCheckout() {
+  if (!this.canCheckout()) {
+    this.showError('Veuillez compléter toutes les étapes');
+    return;
+  }
+
+  this.isCheckingOut = true;
+
+  try {
+    const selectedItems = this.cartItems.filter(item => item.selected);
+    const currentUser = this.authService.getUserData();
+
+    // Vérifier si l'utilisateur est connecté
+    if (!currentUser || !currentUser.uid) {
+      this.showError('Veuillez vous connecter pour commander');
+      this.isCheckingOut = false;
       return;
     }
 
-    this.isCheckingOut = true;
+    const deliveryType: 'pickup' | 'delivery' =
+      this.selectedDeliveryOption.includes('pickup') ? 'pickup' : 'delivery';
 
-    try {
-      const selectedItems = this.cartItems.filter((item) => item.selected);
-      const currentUser = this.authService.getUserData();
+    // Numéro de commande unique
+    const orderNumber = `CMD-${Date.now().toString().slice(-8)}`;
+    const salesToCreate: any[] = [];
 
-      // Vérifier si l'utilisateur est connecté
-      if (!currentUser || !currentUser.uid) {
-        this.showError('Veuillez vous connecter pour commander');
-        this.isCheckingOut = false;
-        return;
+    // Sauvegarde avant vidage panier
+    const orderTotal = this.getTotal();
+    const itemsCount = selectedItems.length;
+
+    // Préparer les ventes
+    for (const item of selectedItems) {
+      if (!item.producerId) {
+        console.error('producerId manquant pour:', item);
+        continue;
       }
 
-      const deliveryType: 'pickup' | 'delivery' =
-        this.selectedDeliveryOption.includes('pickup') ? 'pickup' : 'delivery';
+      const saleData = {
+        buyerId: currentUser.uid,
+        buyerName: currentUser.fullName || 'Client',
+        buyerPhone: this.deliveryAddress.phone,
+        buyerLocation: this.deliveryAddress.city,
 
-      // Créer une commande unique pour tous les produits
-      const orderNumber = `CMD-${Date.now().toString().slice(-8)}`;
-      const salesToCreate = [];
+        producerId: item.producerId,
+        producerName: item.producer,
+        producerPhone: item.producerPhone || '',
 
-      // ========== SAUVEGARDER LE TOTAL AVANT DE VIDER LE PANIER ==========
-      const orderTotal = this.getTotal();
-      const itemsCount = selectedItems.length;
-      // ========== FIN SAUVEGARDE ==========
+        productId: item.productId || item.id,
+        productName: item.name,
+        productCategory: item.category || 'Divers',
 
-      for (const item of selectedItems) {
-        if (!item.producerId) {
-          console.error('producerId manquant pour:', item);
-          continue;
-        }
+        quantity: item.quantity,
+        unitPrice: item.price,
+        totalAmount: this.calculateItemPrice(item),
+        deliveryFee: this.getItemDeliveryFee(item),
 
-        const saleData = {
-          buyerId: currentUser.uid,
-          buyerName: currentUser.fullName || 'Client',
-          buyerPhone: this.deliveryAddress.phone,
-          buyerLocation: this.deliveryAddress.city,
-          producerId: item.producerId,
-          producerName: item.producer,
-          producerPhone: item.producerPhone || '',
-          productId: item.productId || item.id,
-          productName: item.name,
-          productCategory: item.category || 'Divers',
-          quantity: item.quantity,
-          unitPrice: item.price,
-          totalAmount: this.calculateItemPrice(item),
-          deliveryFee: this.getItemDeliveryFee(item),
-          status: 'pending' as const,
-          paymentMethod: this.selectedPaymentMethod as any,
-          paymentStatus: 'pending' as const,
-          deliveryType: deliveryType,
-          notes: item.notes || '',
-          orderDate: new Date(),
-          orderNumber: orderNumber,
-        };
+        status: 'pending' as const,
+        paymentMethod: this.selectedPaymentMethod as any,
+        paymentStatus: 'pending' as const,
+        deliveryType: deliveryType,
 
-        salesToCreate.push(saleData);
-      }
-
-      // Créer toutes les ventes
-      for (const saleData of salesToCreate) {
-        const result = await this.salesService.createSale(saleData);
-
-        if (!result.success) {
-          throw new Error(
-            `Erreur lors de l'enregistrement de ${saleData.productName}: ${result.error}`
-          );
-        }
-      }
-
-      // Vider le panier uniquement pour les items commandés
-      selectedItems.forEach((item) => {
-        this.cartService.removeItem(item.id);
-      });
-
-      this.loadCartItems();
-
-      // Sauvegarder comme commande récente
-      const recentOrderData = {
-        orderNumber: orderNumber,
-        total: orderTotal, // Utiliser le total sauvegardé
-        itemsCount: itemsCount, // Utiliser le nombre sauvegardé
+        notes: item.notes || '',
         orderDate: new Date(),
-        items: selectedItems.map((item) => ({
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-        })),
+        orderNumber: orderNumber,
       };
-      this.saveRecentOrder(recentOrderData);
 
-      // Afficher un message de succès
-      this.showSuccess(`🎉 Commande #${orderNumber} passée avec succès !`);
-
-      // Afficher le modal de confirmation avec les valeurs sauvegardées
-      this.showOrderConfirmationModal(
-        orderNumber,
-        orderTotal, // Utiliser le total sauvegardé
-        itemsCount // Utiliser le nombre sauvegardé
-      );
-    } catch (error: any) {
-      console.error('Erreur lors de la commande:', error);
-      this.showError(
-        error.message || 'Une erreur est survenue lors de la commande'
-      );
-    } finally {
-      this.isCheckingOut = false;
+      salesToCreate.push(saleData);
     }
+
+    // Créer les ventes en base
+    for (const saleData of salesToCreate) {
+      const result = await this.salesService.createSale(saleData);
+
+      if (!result.success) {
+        throw new Error(
+          `Erreur lors de l'enregistrement de ${saleData.productName}: ${result.error}`
+        );
+      }
+    }
+
+    // Vider le panier (uniquement les items commandés)
+    selectedItems.forEach(item => {
+      this.cartService.removeItem(item.id);
+    });
+
+    this.loadCartItems();
+
+    // Sauvegarder commande récente
+    const recentOrderData = {
+      orderNumber: orderNumber,
+      total: orderTotal,
+      itemsCount: itemsCount,
+      orderDate: new Date(),
+      items: selectedItems.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+    };
+    this.saveRecentOrder(recentOrderData);
+
+    // 🔔 NOTIFICATION FIRESTORE (RÉELLE)
+    await this.notificationService.createNotification({
+      userId: currentUser.uid,                 // UID acheteur
+      type: 'order',
+      title: 'Commande enregistrée',
+      message: `Votre commande ${orderNumber} est en cours de traitement.`,
+      link: '/buyer/tracking'
+    });
+
+    // Toast local
+    this.showSuccess(`🎉 Commande #${orderNumber} passée avec succès !`);
+
+    // Modal de confirmation
+    this.showOrderConfirmationModal(
+      orderNumber,
+      orderTotal,
+      itemsCount
+    );
+
+  } catch (error: any) {
+    console.error('Erreur lors de la commande:', error);
+    this.showError(
+      error.message || 'Une erreur est survenue lors de la commande'
+    );
+  } finally {
+    this.isCheckingOut = false;
   }
+}
+
 
   private async simulatePayment() {
     return new Promise((resolve, reject) => {

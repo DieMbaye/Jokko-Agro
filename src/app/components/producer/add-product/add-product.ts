@@ -21,6 +21,8 @@ import { AuthService } from '../../../services/auth.service';
 import { FirebaseService } from '../../../services/firebase.service';
 import { Product } from '../../../services/data.interfaces';
 import { ViewEncapsulation } from '@angular/core';
+import { SalesService } from '../../../services/sales.service';
+import { NotificationService } from '../../../services/notification.service';
 
 interface FormSection {
   id: string;
@@ -146,6 +148,9 @@ export class AddProductComponent implements OnInit, AfterViewInit {
   private firebaseService = inject(FirebaseService);
   private router = inject(Router);
   private elementRef = inject(ElementRef);
+  private salesService = inject(SalesService);
+private notificationService = inject(NotificationService);
+
 
   constructor() {
     this.productForm = this.fb.group({
@@ -500,6 +505,30 @@ export class AddProductComponent implements OnInit, AfterViewInit {
 
       // Save to Firebase
       const result = await this.firebaseService.addProduct(productData);
+        if (result.success) {
+  // 🔔 NOTIFIER LES ACHETEURS DU PRODUCTEUR
+  const buyerIds = await this.salesService.getBuyersForProducer(
+    productData.producerId
+  );
+
+  for (const buyerId of buyerIds) {
+    await this.notificationService.createNotification({
+      userId: buyerId,
+      type: 'product',
+      title: '🆕 Nouveau produit disponible',
+      message: `${productData.name} a été ajouté par ${productData.producerName}`,
+      link: '/buyer/market'
+    });
+  }
+
+  this.showNotification('success', 'Produit publié avec succès !');
+
+  setTimeout(() => {
+    this.router.navigate(['/producer/products'], {
+      queryParams: { published: true },
+    });
+  }, 2000);
+}
 
       if (result.success) {
         this.showNotification('success', 'Produit publié avec succès !');
@@ -696,4 +725,5 @@ export class AddProductComponent implements OnInit, AfterViewInit {
     if (!text || text.trim() === '') return 0;
     return text.trim().split(/\s+/).length;
   }
+  
 }

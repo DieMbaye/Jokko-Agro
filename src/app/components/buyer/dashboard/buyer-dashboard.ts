@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -7,6 +7,8 @@ import { FirebaseService } from '../../../services/firebase.service';
 import { Product } from '../../../services/data.interfaces';
 import { ChatbotService } from '../../../services/chatbot.service';
 import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
+import { NotificationService, AppNotification } from '../../../services/notification.service';
+import { Subscription } from 'rxjs';
 
 
 interface DashboardStat {
@@ -97,6 +99,14 @@ isDashboardLoading = true;
   voiceSearchResults: RecommendedProduct[] = [];
   lastVoiceCommand = '';
   showVoiceHelp = true;
+ // 🔔 Notifications
+notifications: AppNotification[] = [];
+unreadCount = 0;
+showNotifications = false;
+private notifSub: any;
+
+
+
 
   // Données dynamiques
   allProducts: Product[] = [];
@@ -138,37 +148,82 @@ isDashboardLoading = true;
   userName = '';
   userInitials = '';
 
-  constructor(
-    private authService: AuthService,
-    private firebaseService: FirebaseService,
-    private chatbotService: ChatbotService,
-  ) {}
+ constructor(
+  private authService: AuthService,
+  private firebaseService: FirebaseService,
+  private chatbotService: ChatbotService,
+  private notificationService: NotificationService
+) {}
 
-  async ngOnInit() {
-    this.userData = this.authService.getUserData();
-    this.userName = this.userData?.fullName || 'Utilisateur';
-    this.userInitials = this.getInitials(this.userName);
 
-    await this.loadDashboardData();
-    this.initVoiceRecognition();
-      this.initSpeechRecognition();
+async ngOnInit() {
+  this.userData = this.authService.getUserData();
+  this.userName = this.userData?.fullName || 'Utilisateur';
+  this.userInitials = this.getInitials(this.userName);
 
-  }
+ this.notifSub = this.notificationService
+  .listenUserNotifications()
+  .subscribe(notifs => {
+    this.notifications = notifs;
+    this.unreadCount = notifs.filter(n => !n.read).length;
+  });
+
+
+  await this.loadDashboardData();
+  this.initVoiceRecognition();
+  this.initSpeechRecognition();
+}
+
+
 
   ngAfterViewChecked() {
     if (this.shouldScroll) {
       this.scrollChatToBottom();
     }
   }
-
-  ngOnDestroy() {
-    if (this.recognition) {
-      this.recognition.stop();
-    }
-    if (this.scrollTimeout) {
-      clearTimeout(this.scrollTimeout);
-    }
+ngOnDestroy() {
+  if (this.recognition) {
+    this.recognition.stop();
   }
+
+  if (this.scrollTimeout) {
+    clearTimeout(this.scrollTimeout);
+  }
+
+  // ✅ IMPORTANT : arrêter l’écoute Firestore
+  if (this.notifSub) {
+    this.notifSub.unsubscribe();
+  }
+}
+
+
+
+@HostListener('document:click', ['$event'])
+onClickOutside(event: MouseEvent) {
+  const target = event.target as HTMLElement;
+  if (!target.closest('.notifications-wrapper')) {
+    this.showNotifications = false;
+  }
+}
+
+toggleNotifications() {
+  this.showNotifications = !this.showNotifications;
+}
+
+async openNotification(notification: any) {
+  // Marquer comme lue uniquement
+  if (!notification.read && notification.id) {
+    await this.notificationService.markAsRead(notification.id);
+  }
+
+  // ❌ AUCUNE REDIRECTION
+  // ❌ PAS de window.location
+  // ❌ PAS de router.navigate
+
+  this.showNotifications = false;
+}
+
+
 
   // ==================== CHATBOT ====================
  toggleChatbot() {

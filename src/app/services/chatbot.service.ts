@@ -273,20 +273,35 @@ if (q.includes('compare') || q.includes('comparer')) {
     return res;
   }
 
-  private getActiveProducers(producers: any[], products: Product[]): string {
-    if (!producers || producers.length === 0) {
-      return "❌ Aucun producteur actif.";
-    }
+  private getActiveProducers(_: any[], products: Product[]): string {
 
-    let res = `👨‍🌾 PRODUCTEURS ACTIFS\n\n`;
+  if (!products || products.length === 0) {
+    return "❌ Aucun producteur actif.";
+  }
 
-    producers.forEach(p => {
-      const count = products.filter(pr => pr.producerName === p.name).length;
-      res += `• ${p.name} – ${count} produit(s)\n`;
+  // 🔍 extraire producteurs uniques depuis les produits
+  const map = new Map<string, number>();
+
+  products
+    .filter(p => p.status === 'available')
+    .forEach(p => {
+      const name = p.producerName;
+      map.set(name, (map.get(name) || 0) + 1);
     });
 
-    return res;
+  if (map.size === 0) {
+    return "❌ Aucun producteur actif.";
   }
+
+  let res = `👨‍🌾 PRODUCTEURS ACTIFS (${map.size})\n\n`;
+
+  map.forEach((count, name) => {
+    res += `• ${name} – ${count} produit(s)\n`;
+  });
+
+  return res;
+}
+
   private compareProducers(question: string, products: Product[]): string {
   const key = this.extractProductName(question);
 

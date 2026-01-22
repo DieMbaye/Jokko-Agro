@@ -1,0 +1,30 @@
+.notifications-wrapper {
+  max-width: 800px;
+  margin: auto;
+}
+
+.notification {
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.notification.unread {
+  background: #f1f8f3;
+}
+
+.icon {
+  font-size:a 22px;
+}
+
+.content p {
+  margin: 4px 0;
+  color: #555;
+}
+
+.empty {
+  color: #777;
+  padding: 20px;
+}

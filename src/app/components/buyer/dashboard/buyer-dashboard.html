@@ -1,52 +1,83 @@
 <div class="dashboard-container">
   <!-- Main Content -->
   <main class="main-content">
-    <!-- Header -->
-    <header class="main-header">
-      <div class="header-left">
-        <h1>Bienvenue sur le marché</h1>
-        <p class="welcome-text">Découvrez des produits frais et certifiés près de chez vous</p>
-      </div>
-      <div class="header-right">
-        <div class="search-box">
-          <input type="text" placeholder="Rechercher un produit..." [(ngModel)]="searchTerm" (keyup.enter)="onSearch()">
-          <button class="search-btn" (click)="onSearch()">🔍</button>
-          <button class="voice-btn" (click)="toggleVoiceSearch()" [class.listening]="isListening">
-            🎤
-          </button>
-        </div>
-        <div class="quick-actions">
-          <button routerLink="/buyer/scan" class="quick-btn">
-            📱 Scanner QR
-          </button>
-        </div>
-      </div>
-    </header>
+  <header class="main-header">
+  <div class="header-left">
+    <h1>Bienvenue sur le marché</h1>
+    <p class="welcome-text">
+      Découvrez des produits frais et certifiés près de chez vous
+    </p>
+  </div>
 
-    <!-- Résultats de recherche vocale -->
-    <div *ngIf="voiceSearchResults.length > 0" class="voice-results">
-      <div class="results-header">
-        <h3>Résultats pour "{{lastVoiceCommand || searchTerm}}"</h3>
-        <button class="clear-btn" (click)="clearVoiceResults()">×</button>
-      </div>
-      <div class="products-grid">
-        <div *ngFor="let product of voiceSearchResults" class="product-card">
-          <div class="product-image">
-            {{ product.image }}
-            <span *ngIf="product.certified" class="certified-tag">✔ Certifié</span>
+  <div class="header-right">
+
+    <!-- 🔔 + 🔍 SUR LA MÊME LIGNE -->
+    <div class="search-notification-row">
+
+      <!-- 🔔 NOTIFICATIONS -->
+      <div class="notifications-wrapper">
+        <button class="notif-btn" (click)="toggleNotifications()">
+          🔔
+          <span *ngIf="unreadCount > 0" class="notif-badge">
+            {{ unreadCount }}
+          </span>
+        </button>
+
+        <!-- 📋 DROPDOWN -->
+        <div class="notif-dropdown" *ngIf="showNotifications">
+          <h4>Notifications</h4>
+
+          <div *ngIf="notifications.length === 0" class="notif-empty">
+            Aucune notification
           </div>
-          <div class="product-info">
-            <h4>{{ product.name }}</h4>
-            <p class="producer">{{ product.producer }}</p>
-            <div class="product-meta">
-              <span class="price">{{ formatPrice(product.price) }}/{{ product.unit }}</span>
-              <span class="rating">⭐ {{ product.rating }}</span>
-            </div>
-            <button class="add-to-cart">Ajouter au panier</button>
+
+          <div
+            *ngFor="let n of notifications"
+            class="notif-item"
+            [class.unread]="!n.read"
+            (click)="openNotification(n)"
+          >
+            <strong>{{ n.title }}</strong>
+            <p>{{ n.message }}</p>
+            <small>{{ n.createdAt?.toDate() | date:'short' }}</small>
           </div>
         </div>
       </div>
+
+      <!-- 🔍 BARRE DE RECHERCHE -->
+      <div class="search-box">
+        <input
+          type="text"
+          placeholder="Rechercher un produit..."
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="onSearch()"
+        />
+
+        <button
+          class="voice-btn"
+          (click)="toggleVoiceSearch()"
+          [class.listening]="isListening"
+        >
+          🎤
+        </button>
+
+        <button class="search-btn" (click)="onSearch()">
+          🔍
+        </button>
+      </div>
+
+      <!-- ⚡ ACTION RAPIDE -->
+      <div class="quick-actions">
+        <button routerLink="/buyer/scan" class="quick-btn">
+          📱 Scanner QR
+        </button>
+      </div>
+
     </div>
+  </div>
+</header>
+
+
 
     <!-- Stats Grid -->
     <!-- Stats Grid -->

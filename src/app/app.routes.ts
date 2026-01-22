@@ -6,6 +6,8 @@ import {
   buyerGuard,
 } from './services/auth-guard.service';
 import { BuyerPurchasesComponent } from './buyer/buyer-purchases/buyer-purchases.component';
+import { BuyerSettingsComponent } from './buyer/settings/buyer-settings.component';
+
 export const routes: Routes = [
   // Routes publiques
   {
@@ -172,6 +174,17 @@ export const routes: Routes = [
   canActivate: [authGuard]
 }
 ,
+
+ {
+  path: 'buyer/settings',
+  component: BuyerSettingsComponent,
+  canActivate: [buyerGuard]
+}
+,
+
+
+
+
 
 
   { path: '**', redirectTo: '' },

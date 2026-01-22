@@ -20,12 +20,16 @@ import {
   limit,
   getDoc,
 } from 'firebase/firestore';
+import { NotificationService } from './notification.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SalesService {
-  constructor(private firebaseService: FirebaseService) {}
+constructor(
+  private firebaseService: FirebaseService,
+  private notificationService: NotificationService
+) {}
 
   // Générer un numéro de commande unique
   generateOrderNumber(): string {
@@ -76,10 +80,31 @@ export class SalesService {
         saleToCreate.deliveryAddress = saleData.deliveryAddress;
       }
 
-      const docRef = await addDoc(
-        collection(this.firebaseService.firestore, 'sales'),
-        saleToCreate
-      );
+     const docRef = await addDoc(
+  collection(this.firebaseService.firestore, 'sales'),
+  saleToCreate
+);
+
+// 🔔 NOTIFICATION PRODUCTEUR (NOUVELLE COMMANDE)
+await this.notificationService.createNotification({
+  userId: saleData.producerId,
+  title: '🛒 Nouvelle commande reçue',
+  message: `Nouvelle commande pour ${saleData.productName} (${saleData.quantity})`,
+  type: 'order'
+});
+
+// Mettre à jour le stock
+await this.updateProductStock(
+  saleData.productId,
+  saleData.quantity,
+  'decrement'
+);
+
+return {
+  success: true,
+  saleId: docRef.id,
+};
+
 
       // Mettre à jour le stock
       await this.updateProductStock(
@@ -298,48 +323,82 @@ export class SalesService {
 
   // Mettre à jour le statut d'une vente
   async updateSaleStatus(
-    saleId: string,
-    status: Sale['status']
-  ): Promise<{ success: boolean; error?: string }> {
-    try {
-      const saleRef = doc(this.firebaseService.firestore, 'sales', saleId);
+  saleId: string,
+  status: Sale['status']
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const saleRef = doc(this.firebaseService.firestore, 'sales', saleId);
 
-      const updateData: any = {
-        status,
-        updatedAt: serverTimestamp(),
-      };
-
-      if (status === 'completed') {
-        updateData.completionDate = serverTimestamp();
-      }
-      if (status === 'shipped') {
-        updateData.deliveryDate = serverTimestamp();
-      }
-
-      await updateDoc(saleRef, updateData);
-
-      // Restaurer le stock si annulé
-      if (status === 'cancelled') {
-        const saleSnap = await getDoc(saleRef);
-        if (saleSnap.exists()) {
-          const saleData = saleSnap.data();
-          await this.updateProductStock(
-            saleData['productId'],
-            saleData['quantity'],
-            'increment'
-          );
-        }
-      }
-
-      return { success: true };
-    } catch (error: any) {
-      console.error('Erreur mise à jour statut:', error);
-      return {
-        success: false,
-        error: error.message || 'Erreur lors de la mise à jour',
-      };
+    // 1️⃣ récupérer la vente AVANT modification
+    const saleSnap = await getDoc(saleRef);
+    if (!saleSnap.exists()) {
+      return { success: false, error: 'Commande introuvable' };
     }
+
+    const saleData: any = saleSnap.data();
+
+    // 2️⃣ mise à jour du statut
+    const updateData: any = {
+      status,
+      updatedAt: serverTimestamp(),
+    };
+
+    if (status === 'completed') {
+      updateData.completionDate = serverTimestamp();
+    }
+    if (status === 'shipped') {
+      updateData.deliveryDate = serverTimestamp();
+    }
+
+    await updateDoc(saleRef, updateData);
+
+    // 3️⃣ notification pour le BUYER 🔔
+    await this.notificationService.createNotification({
+      userId: saleData.buyerId,
+      title: '📦 Statut de commande mis à jour',
+      message: this.getOrderStatusMessage(status, saleData.orderNumber),
+      type: 'order',
+      link: '/buyer/purchases'
+    });
+
+    // 4️⃣ restaurer le stock si annulée
+    if (status === 'cancelled') {
+      await this.updateProductStock(
+        saleData.productId,
+        saleData.quantity,
+        'increment'
+      );
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('Erreur mise à jour statut:', error);
+    return {
+      success: false,
+      error: error.message || 'Erreur lors de la mise à jour',
+    };
   }
+}
+private getOrderStatusMessage(
+  status: Sale['status'],
+  orderNumber: string
+): string {
+  switch (status) {
+    case 'confirmed':
+      return `✅ Votre commande ${orderNumber} a été confirmée par le producteur.`;
+    case 'shipped':
+      return `🚚 Votre commande ${orderNumber} est en cours de livraison.`;
+    case 'delivered':
+      return `📦 Votre commande ${orderNumber} a été livrée.`;
+    case 'completed':
+      return `⭐ Commande ${orderNumber} terminée. Merci pour votre confiance !`;
+    case 'cancelled':
+      return `❌ Votre commande ${orderNumber} a été annulée.`;
+    default:
+      return `📋 Mise à jour de votre commande ${orderNumber}.`;
+  }
+}
+
 
   // Exporter en CSV
   async exportSalesToCSV(
@@ -757,5 +816,29 @@ async getBuyerOrders(buyerId: string): Promise<Sale[]> {
     return [];
   }
 }
+// ==================== ACHETEURS D'UN PRODUCTEUR ====================
+// Utilisé pour notifier les acheteurs lorsqu’un producteur ajoute un produit
+async getBuyersForProducer(producerId: string): Promise<string[]> {
+  try {
+    const q = query(
+      collection(this.firebaseService.firestore, 'sales'),
+      where('producerId', '==', producerId)
+    );
+
+    const snapshot = await getDocs(q);
+
+    // Récupérer tous les buyerId
+    const buyerIds = snapshot.docs
+      .map(doc => doc.data()['buyerId'])
+      .filter(Boolean);
+
+    // Supprimer les doublons
+    return Array.from(new Set(buyerIds));
+  } catch (error) {
+    console.error('Erreur récupération acheteurs du producteur:', error);
+    return [];
+  }
+}
+
 
 }

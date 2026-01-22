@@ -55,6 +55,7 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
   averageRating: number = 0;
   totalCertifications: number = 0;
   unreadMessages: number = 0;
+  showNotifications = false;
 
   // Objectifs
   monthlyGoal: number = 10; // Objectif mensuel en produits
@@ -80,6 +81,9 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
+  toggleNotifications() {
+  this.showNotifications = !this.showNotifications;
+}
   async loadDashboardData() {
     this.isLoading = true;
 

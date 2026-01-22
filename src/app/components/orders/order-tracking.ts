@@ -6,6 +6,7 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FirebaseService } from '../../services/firebase.service';
 import { SalesService } from '../../services/sales.service';
 import { Sale } from '../../services/data.interfaces';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-order-tracking',
@@ -63,10 +64,12 @@ export class OrderTrackingComponent implements OnInit {
   ];
 
   constructor(
-    private firebaseService: FirebaseService,
-    private salesService: SalesService,
-    private route: ActivatedRoute
-  ) {}
+  private firebaseService: FirebaseService,
+  private salesService: SalesService,
+  private route: ActivatedRoute,
+  private notificationService: NotificationService   // ✅ AJOUT
+) {}
+
 
   async ngOnInit() {
     this.isLoading = true;
@@ -192,23 +195,54 @@ export class OrderTrackingComponent implements OnInit {
   }
 
   // Mettre à jour le statut d'une commande (SEULEMENT pour producteur)
-  async updateOrderStatus(orderId: string, newStatus: Sale['status']) {
-    if (!newStatus || !this.isProducer) return;
+ async updateOrderStatus(orderId: string, newStatus: Sale['status']) {
+  if (!newStatus || !this.isProducer) return;
 
-    try {
-      const result = await this.salesService.updateSaleStatus(orderId, newStatus);
+  try {
+    const result = await this.salesService.updateSaleStatus(orderId, newStatus);
 
-      if (result.success) {
-        await this.loadOrders(); // Recharger les données
-        this.showNotification(`Statut mis à jour: ${this.salesService.getStatusText(newStatus)}`, 'success');
-      } else {
-        this.showNotification(`Erreur: ${result.error}`, 'error');
+    if (result.success) {
+
+      // 🔔 CRÉATION NOTIFICATION POUR L’ACHETEUR
+      const order = this.orders.find(o => o.id === orderId);
+
+      if (order) {
+        await this.notificationService.createNotification({
+          userId: order.buyerId, // 🔴 UID de l’acheteur
+          type: 'order',
+          title: this.getNotificationTitle(newStatus),
+          message: `Commande ${order.orderNumber} : ${this.getStatusText(newStatus)}`,
+          link: '/buyer/tracking'
+        });
       }
-    } catch (error) {
-      console.error('Erreur mise à jour statut:', error);
-      this.showNotification('Erreur lors de la mise à jour', 'error');
+
+      await this.loadOrders();
+      this.showNotification(
+        `Statut mis à jour: ${this.getStatusText(newStatus)}`,
+        'success'
+      );
+
+    } else {
+      this.showNotification(`Erreur: ${result.error}`, 'error');
     }
+  } catch (error) {
+    console.error('Erreur mise à jour statut:', error);
+    this.showNotification('Erreur lors de la mise à jour', 'error');
   }
+}
+
+private getNotificationTitle(status: Sale['status']): string {
+  switch (status) {
+    case 'pending': return 'Commande en attente';
+    case 'confirmed': return 'Commande confirmée';
+    case 'shipped': return 'Commande expédiée';
+    case 'delivered': return 'Commande livrée';
+    case 'completed': return 'Commande terminée';
+    case 'cancelled': return 'Commande annulée';
+    default: return 'Mise à jour de commande';
+  }
+}
+
 
   // ==================== UTILITAIRES POUR LE TEMPLATE ====================
 

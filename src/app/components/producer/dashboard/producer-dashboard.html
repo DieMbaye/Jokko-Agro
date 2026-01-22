@@ -4,29 +4,77 @@
   <main class="main-content">
     <!-- Header -->
     <header class="main-header">
-      <div class="header-left">
-        <h1>Tableau de bord</h1>
-        <p class="welcome-text">
-          Bonjour {{ userData?.fullName }}, voici votre activité aujourd'hui
-        </p>
-      </div>
-      <div class="header-right">
-        <div class="notification-bell">
-          <span class="bell-icon">🔔</span>
-          <span class="notification-count" *ngIf="getUnreadCount() > 0">
-            {{ getUnreadCount() }}
-          </span>
-        </div>
-        <div class="quick-actions">
-          <button routerLink="/producer/add-product" class="quick-btn">
-            ➕ Ajouter un produit
+  <div class="header-left">
+    <h1>Tableau de bord</h1>
+    <p class="welcome-text">
+      Bonjour {{ userData?.fullName }}, voici votre activité aujourd’hui
+    </p>
+  </div>
+
+  <div class="header-right">
+
+    <!-- 🔔 NOTIFICATIONS -->
+    <div class="notification-wrapper">
+
+      <button class="bell-btn" (click)="toggleNotifications()">
+        🔔
+        <span
+          class="notification-badge"
+          *ngIf="getUnreadCount() > 0"
+        >
+          {{ getUnreadCount() }}
+        </span>
+      </button>
+
+      <!-- 📋 DROPDOWN -->
+      <div class="notification-dropdown" *ngIf="showNotifications">
+
+        <div class="dropdown-header">
+          <span>Notifications</span>
+          <button class="mark-all" (click)="markAllAsRead()">
+            Tout lire
           </button>
-          <button (click)="refreshData()" class="quick-btn refresh" [disabled]="isLoading">
-            {{ isLoading ? '🔄 Chargement...' : '🔄 Actualiser' }}
-          </button>
         </div>
+
+        <div class="dropdown-body">
+          <div
+            *ngFor="let n of notifications"
+            class="notification-item"
+            [class.unread]="!n.read"
+            (click)="markAsRead(n.id)"
+          >
+            <div class="notif-icon">
+              <span *ngIf="n.type === 'sale'">💰</span>
+              <span *ngIf="n.type === 'stock'">📦</span>
+              <span *ngIf="n.type === 'review'">⭐</span>
+              <span *ngIf="!n.type">📌</span>
+            </div>
+
+            <div class="notif-content">
+              <strong>{{ n.title }}</strong>
+              <p>{{ n.message }}</p>
+              <small>{{ n.time }}</small>
+            </div>
+          </div>
+
+          <div *ngIf="notifications.length === 0" class="notif-empty">
+            Aucune notification
+          </div>
+        </div>
+
       </div>
-    </header>
+    </div>
+
+    <!-- ⚡ ACTIONS -->
+    <div class="quick-actions">
+      <button routerLink="/producer/add-product" class="quick-btn">
+        ➕ Ajouter un produit
+      </button>
+    </div>
+
+  </div>
+</header>
+
 
     <!-- Chargement -->
     <div *ngIf="isLoading" class="loading-overlay">

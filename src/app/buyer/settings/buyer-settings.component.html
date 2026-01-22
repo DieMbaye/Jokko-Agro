@@ -1,0 +1,60 @@
+<div class="account-layout" *ngIf="!loading">
+
+  <!-- SIDEBAR -->
+  <aside class="account-sidebar">
+    <h3>👤 Mon compte</h3>
+
+    <nav>
+      <button (click)="activeSection='overview'" [class.active]="activeSection==='overview'">
+        Vue d’ensemble
+      </button>
+
+      <button (click)="goToOrders()">
+        📦 Mes commandes
+      </button>
+
+      <button (click)="activeSection='notifications'" [class.active]="activeSection==='notifications'">
+        🔔 Notifications
+        <span *ngIf="unreadCount" class="badge">{{ unreadCount }}</span>
+      </button>
+
+      <button (click)="activeSection='settings'" [class.active]="activeSection==='settings'">
+        ⚙️ Paramètres
+      </button>
+    </nav>
+
+    <button class="logout" (click)="logout()">🚪 Déconnexion</button>
+  </aside>
+
+  <!-- CONTENT -->
+  <section class="account-content">
+
+    <!-- OVERVIEW -->
+    <div *ngIf="activeSection==='overview'">
+      <h2>Bienvenue 👋</h2>
+      <p>{{ userData.email }}</p>
+
+      <div class="cards">
+        <div class="mini-card">
+          📦 Suivez vos commandes en temps réel
+        </div>
+        <div class="mini-card">
+          🔔 Recevez des alertes importantes
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+<div *ngIf="activeSection === 'notifications'">
+  <app-notifications></app-notifications>
+</div>
+
+
+    <!-- SETTINGS -->
+    <div *ngIf="activeSection==='settings'">
+      <h2>⚙️ Paramètres du compte</h2>
+      <p>Gestion du profil et sécurité (à étendre)</p>
+    </div>
+
+  </section>
+</div>
