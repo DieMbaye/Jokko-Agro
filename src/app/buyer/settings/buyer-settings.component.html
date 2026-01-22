@@ -1,60 +1,479 @@
-<div class="account-layout" *ngIf="!loading">
+<div class="settings-container" *ngIf="!loading">
 
-  <!-- SIDEBAR -->
-  <aside class="account-sidebar">
-    <h3>👤 Mon compte</h3>
+  <!-- Message de succès -->
+  <div *ngIf="saveSuccess" class="success-message">
+    ✅ Modifications enregistrées avec succès
+  </div>
 
-    <nav>
-      <button (click)="activeSection='overview'" [class.active]="activeSection==='overview'">
-        Vue d’ensemble
+  <!-- Sidebar -->
+  <aside class="settings-sidebar">
+    <div class="sidebar-header">
+      <div class="user-avatar">{{ userData.avatar }}</div>
+      <div class="user-info">
+        <h3>{{ userData.fullName }}</h3>
+        <p>{{ userData.email }}</p>
+        <span class="user-status" [class.verified]="userData.verified">
+          {{ userData.verified ? '✓ Compte vérifié' : 'Compte non vérifié' }}
+        </span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button (click)="activeSection = 'overview'" [class.active]="activeSection === 'overview'">
+        <span class="nav-icon">📊</span>
+        Vue d'ensemble
       </button>
 
-      <button (click)="goToOrders()">
-        📦 Mes commandes
+      <button (click)="activeSection = 'profile'" [class.active]="activeSection === 'profile'">
+        <span class="nav-icon">👤</span>
+        Profil
       </button>
 
-      <button (click)="activeSection='notifications'" [class.active]="activeSection==='notifications'">
-        🔔 Notifications
-        <span *ngIf="unreadCount" class="badge">{{ unreadCount }}</span>
+      <button (click)="activeSection = 'security'" [class.active]="activeSection === 'security'">
+        <span class="nav-icon">🔒</span>
+        Sécurité
       </button>
 
-      <button (click)="activeSection='settings'" [class.active]="activeSection==='settings'">
-        ⚙️ Paramètres
+      <button (click)="activeSection = 'notifications'" [class.active]="activeSection === 'notifications'">
+        <span class="nav-icon">🔔</span>
+        Notifications
+        <span *ngIf="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
+      </button>
+
+      <button (click)="activeSection = 'preferences'" [class.active]="activeSection === 'preferences'">
+        <span class="nav-icon">⚙️</span>
+        Préférences
+      </button>
+
+      <button (click)="goToOrders()" class="nav-action">
+        <span class="nav-icon">📦</span>
+        Mes commandes
+      </button>
+
+      <button (click)="goToFavorites()" class="nav-action">
+        <span class="nav-icon">❤️</span>
+        Favoris
       </button>
     </nav>
 
-    <button class="logout" (click)="logout()">🚪 Déconnexion</button>
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <span class="logout-icon">🚪</span>
+        Déconnexion
+      </button>
+    </div>
   </aside>
 
-  <!-- CONTENT -->
-  <section class="account-content">
+  <!-- Contenu principal -->
+  <main class="settings-content">
+    
+    <!-- Vue d'ensemble -->
+    <div *ngIf="activeSection === 'overview'" class="overview-section">
+      <div class="section-header">
+        <h1>Vue d'ensemble du compte</h1>
+        <p class="welcome-text">Bienvenue dans votre espace personnel, {{ userData.fullName }} 👋</p>
+      </div>
 
-    <!-- OVERVIEW -->
-    <div *ngIf="activeSection==='overview'">
-      <h2>Bienvenue 👋</h2>
-      <p>{{ userData.email }}</p>
-
-      <div class="cards">
-        <div class="mini-card">
-          📦 Suivez vos commandes en temps réel
+      <!-- Cartes de statistiques -->
+      <div class="stats-cards">
+        <div class="stat-card" (click)="goToOrders()">
+          <div class="stat-icon" style="background: #e3f2fd; color: #1976d2;">📦</div>
+          <div class="stat-info">
+            <h3>{{ stats.totalOrders }}</h3>
+            <p>Commandes totales</p>
+          </div>
+          <div class="stat-detail">
+            <span class="pending">{{ stats.pendingOrders }} en attente</span>
+          </div>
         </div>
-        <div class="mini-card">
-          🔔 Recevez des alertes importantes
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #e8f5e9; color: #388e3c;">✅</div>
+          <div class="stat-info">
+            <h3>{{ stats.completedOrders }}</h3>
+            <p>Commandes terminées</p>
+          </div>
+        </div>
+
+        <div class="stat-card" (click)="goToFavorites()">
+          <div class="stat-icon" style="background: #fce4ec; color: #c2185b;">❤️</div>
+          <div class="stat-info">
+            <h3>{{ stats.favoriteProducts }}</h3>
+            <p>Produits favoris</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #fff3e0; color: #f57c00;">👤</div>
+          <div class="stat-info">
+            <h3>Membre depuis</h3>
+            <p>{{ userData.joinDate | date:'MMMM yyyy' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commandes récentes -->
+      <div class="recent-orders">
+        <div class="section-title">
+          <h2>📦 Commandes récentes</h2>
+          <button class="view-all" (click)="goToOrders()">Voir tout →</button>
+        </div>
+        
+        <div class="orders-list">
+          <div *ngFor="let order of recentOrders" class="order-item">
+            <div class="order-info">
+              <strong>{{ order.id }}</strong>
+              <span>{{ order.product }}</span>
+            </div>
+            <div class="order-date">{{ order.date }}</div>
+            <div class="order-amount">{{ order.amount }}€</div>
+            <div class="order-status" [class]="order.status">
+              {{ order.status === 'completed' ? 'Terminé' : 'En attente' }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions rapides -->
+      <div class="quick-actions-grid">
+        <div class="section-title">
+          <h2>⚡ Actions rapides</h2>
+        </div>
+        
+        <div class="actions-grid">
+          <button class="action-card" (click)="activeSection = 'profile'">
+            <span class="action-icon">✏️</span>
+            <span class="action-text">Modifier le profil</span>
+          </button>
+          
+          <button class="action-card" (click)="activeSection = 'security'">
+            <span class="action-icon">🔐</span>
+            <span class="action-text">Sécurité du compte</span>
+          </button>
+          
+          <button class="action-card" (click)="exportData()">
+            <span class="action-icon">📥</span>
+            <span class="action-text">Exporter mes données</span>
+          </button>
+          
+          <button class="action-card" (click)="activeSection = 'preferences'">
+            <span class="action-icon">🎨</span>
+            <span class="action-text">Préférences d'affichage</span>
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- NOTIFICATIONS -->
-<div *ngIf="activeSection === 'notifications'">
-  <app-notifications></app-notifications>
-</div>
+    <!-- Section Profil -->
+    <div *ngIf="activeSection === 'profile'" class="profile-section">
+      <div class="section-header">
+        <h1>👤 Informations personnelles</h1>
+        <p>Gérez vos informations de profil et de contact</p>
+      </div>
 
+      <form (ngSubmit)="saveProfile()" #profileForm="ngForm" class="profile-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nom complet</label>
+            <input type="text" [(ngModel)]="userData.fullName" name="fullName" placeholder="Votre nom complet">
+          </div>
 
-    <!-- SETTINGS -->
-    <div *ngIf="activeSection==='settings'">
-      <h2>⚙️ Paramètres du compte</h2>
-      <p>Gestion du profil et sécurité (à étendre)</p>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="userData.email" name="email" placeholder="votre@email.com" disabled>
+            <small class="form-help">L'email ne peut pas être modifié</small>
+          </div>
+
+          <div class="form-group">
+            <label>Téléphone</label>
+            <input type="tel" [(ngModel)]="userData.phone" name="phone" placeholder="+33 6 12 34 56 78">
+          </div>
+
+          <div class="form-group">
+            <label>Adresse</label>
+            <input type="text" [(ngModel)]="userData.address" name="address" placeholder="123 Rue de Paris">
+          </div>
+
+          <div class="form-group">
+            <label>Ville</label>
+            <input type="text" [(ngModel)]="userData.city" name="city" placeholder="Paris">
+          </div>
+
+          <div class="form-group">
+            <label>Code postal</label>
+            <input type="text" [(ngModel)]="userData.postalCode" name="postalCode" placeholder="75001">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="activeSection = 'overview'">Annuler</button>
+          <button type="submit" class="btn-primary" [disabled]="saving">
+            {{ saving ? 'Enregistrement...' : 'Enregistrer les modifications' }}
+          </button>
+        </div>
+      </form>
     </div>
 
-  </section>
+    <!-- Section Sécurité -->
+    <div *ngIf="activeSection === 'security'" class="security-section">
+      <div class="section-header">
+        <h1>🔒 Sécurité du compte</h1>
+        <p>Protégez votre compte avec ces paramètres de sécurité</p>
+      </div>
+
+      <div class="security-grid">
+        <!-- Mot de passe -->
+        <div class="security-card">
+          <h3>🔐 Changer le mot de passe</h3>
+          <form (ngSubmit)="updateSecurity()" #securityForm="ngForm" class="security-form">
+            <div class="form-group">
+              <label>Mot de passe actuel</label>
+              <input type="password" [(ngModel)]="security.currentPassword" name="currentPassword" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Nouveau mot de passe</label>
+              <input type="password" [(ngModel)]="security.newPassword" name="newPassword" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Confirmer le nouveau mot de passe</label>
+              <input type="password" [(ngModel)]="security.confirmPassword" name="confirmPassword" required>
+            </div>
+            
+            <button type="submit" class="btn-primary" [disabled]="saving">
+              {{ saving ? 'Mise à jour...' : 'Mettre à jour le mot de passe' }}
+            </button>
+          </form>
+        </div>
+
+        <!-- Authentification à deux facteurs -->
+        <div class="security-card">
+          <h3>🔑 Authentification à deux facteurs</h3>
+          <div class="toggle-group">
+            <span>Activer la 2FA</span>
+            <label class="toggle-switch">
+              <input type="checkbox" [(ngModel)]="security.twoFactorEnabled">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <p class="security-note">
+            Ajoutez une couche de sécurité supplémentaire à votre compte
+          </p>
+        </div>
+
+        <!-- Historique de connexion -->
+        <div class="security-card wide">
+          <h3>📋 Historique de connexion</h3>
+          <div class="activity-list">
+            <div *ngFor="let activity of activityHistory" class="activity-item">
+              <div class="activity-icon">🔍</div>
+              <div class="activity-info">
+                <strong>{{ activity.action }}</strong>
+                <span>{{ activity.time }}</span>
+              </div>
+              <div class="activity-ip">{{ activity.ip }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Suppression de compte -->
+        <div class="security-card danger">
+          <h3>🗑️ Zone dangereuse</h3>
+          <p>La suppression de votre compte est irréversible</p>
+          <button class="btn-danger" (click)="deleteAccount()">
+            Supprimer mon compte
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Notifications -->
+    <div *ngIf="activeSection === 'notifications'" class="notifications-section">
+      <div class="section-header">
+        <h1>🔔 Notifications</h1>
+        <div class="header-actions">
+          <button class="btn-secondary" (click)="markAllAsRead()" *ngIf="unreadCount > 0">
+            Tout marquer comme lu
+          </button>
+          <span class="unread-count" *ngIf="unreadCount > 0">
+            {{ unreadCount }} non lu(s)
+          </span>
+        </div>
+      </div>
+
+      <div class="notifications-list">
+        <div *ngFor="let notification of notifications" 
+             class="notification-item" 
+             [class.unread]="!notification.read"
+             [class]="'type-' + notification.type">
+          
+          <div class="notification-icon">
+            <span *ngIf="!notification.read" class="unread-dot"></span>
+            <span>{{ 
+              notification.type === 'order' ? '📦' : 
+              notification.type === 'delivery' ? '🚚' :
+              notification.type === 'product' ? '✨' : '🔔'
+            }}</span>
+          </div>
+
+          <div class="notification-content">
+            <h4>{{ notification.title }}</h4>
+            <p>{{ notification.message }}</p>
+            <small>{{ notification.time }}</small>
+          </div>
+
+          <div class="notification-actions">
+            <button *ngIf="!notification.read" 
+                    class="btn-small" 
+                    (click)="markAsRead(notification)">
+              Marquer lu
+            </button>
+            <button class="btn-small btn-text" 
+                    (click)="deleteNotification(notification.id)">
+              Supprimer
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="notifications.length === 0" class="empty-state">
+          <div class="empty-icon">📭</div>
+          <h3>Aucune notification</h3>
+          <p>Vous n'avez aucune notification pour le moment</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Préférences -->
+    <div *ngIf="activeSection === 'preferences'" class="preferences-section">
+      <div class="section-header">
+        <h1>⚙️ Préférences</h1>
+        <p>Personnalisez votre expérience utilisateur</p>
+      </div>
+
+      <div class="preferences-grid">
+        <!-- Notifications -->
+        <div class="preferences-card">
+          <h3>🔔 Préférences de notifications</h3>
+          
+          <div class="toggle-group">
+            <span>Notifications par email</span>
+            <label class="toggle-switch">
+              <input type="checkbox" [(ngModel)]="preferences.emailNotifications">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-group">
+            <span>Notifications push</span>
+            <label class="toggle-switch">
+              <input type="checkbox" [(ngModel)]="preferences.pushNotifications">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-group">
+            <span>Notifications SMS</span>
+            <label class="toggle-switch">
+              <input type="checkbox" [(ngModel)]="preferences.smsNotifications">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-group">
+            <span>Newsletter</span>
+            <label class="toggle-switch">
+              <input type="checkbox" [(ngModel)]="preferences.newsletter">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Affichage -->
+        <div class="preferences-card">
+          <h3>🎨 Préférences d'affichage</h3>
+          
+          <div class="form-group">
+            <label>Langue</label>
+            <select [(ngModel)]="preferences.language">
+              <option value="fr">Français</option>
+              <option value="en">English</option>
+              <option value="es">Español</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Thème</label>
+            <div class="theme-selector">
+              <button [class.active]="preferences.theme === 'light'" 
+                      (click)="preferences.theme = 'light'">
+                ☀️ Clair
+              </button>
+              <button [class.active]="preferences.theme === 'dark'" 
+                      (click)="preferences.theme = 'dark'">
+                🌙 Sombre
+              </button>
+              <button [class.active]="preferences.theme === 'auto'" 
+                      (click)="preferences.theme = 'auto'">
+                🔄 Auto
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confidentialité -->
+        <div class="preferences-card wide">
+          <h3>👁️ Confidentialité</h3>
+          <div class="privacy-settings">
+            <div class="toggle-group">
+              <div>
+                <strong>Profil public</strong>
+                <p>Rendre votre profil visible par les producteurs</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-group">
+              <div>
+                <strong>Historique d'activité</strong>
+                <p>Sauvegarder votre historique de navigation</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-group">
+              <div>
+                <strong>Données analytiques</strong>
+                <p>Partager des données anonymes pour améliorer le service</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="preferences-actions">
+        <button class="btn-secondary" (click)="activeSection = 'overview'">Annuler</button>
+        <button class="btn-primary" (click)="savePreferences()" [disabled]="saving">
+          {{ saving ? 'Enregistrement...' : 'Enregistrer les préférences' }}
+        </button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Loader -->
+<div *ngIf="loading" class="loading-overlay">
+  <div class="spinner"></div>
+  <p>Chargement de vos données...</p>
 </div>

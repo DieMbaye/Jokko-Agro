@@ -339,23 +339,39 @@
   </div>
 
   <!-- Suggestions -->
-  <div class="chatbot-suggestions" *ngIf="!isProcessing && chatHistory.length === 0">
-    <p>💡 <strong>Exemples de questions réelles :</strong></p>
-    <div class="suggestions-grid">
-      <button class="suggestion-btn" (click)="askQuestion('Qui sont les producteurs actifs ?')">
-        👨‍🌾 Producteurs actifs
-      </button>
-      <button class="suggestion-btn" (click)="askQuestion('Quels sont les produits disponibles ?')">
-        📦 Produits disponibles
-      </button>
-      <button class="suggestion-btn" (click)="askQuestion('Je veux commander des tomates')">
-        🍅 Commander un produit
-      </button>
-      <button class="suggestion-btn" (click)="askQuestion('Comment faire une commande ?')">
-        🛒 Comment commander
-      </button>
-    </div>
+ <div class="chatbot-suggestions" *ngIf="!isProcessing && chatHistory.length === 0">
+  <p>💡 <strong>Exemples de questions réelles :</strong></p>
+
+  <div class="suggestions-grid">
+    <button class="suggestion-btn" (click)="askQuestion('Producteurs actifs')">
+      👨‍🌾 Producteurs actifs
+    </button>
+
+    <button class="suggestion-btn" (click)="askQuestion('Produits disponibles')">
+      📦 Produits disponibles
+    </button>
+
+    <button class="suggestion-btn" (click)="askQuestion('Commander un produit')">
+      🍅 Commander un produit
+    </button>
+
+    <button class="suggestion-btn" (click)="askQuestion('Comment faire une commande')">
+      🛒 Comment commander
+    </button>
+
+     <button class="suggestion-btn" (click)="askEstimateProduct()">
+      📊 Estimation produit
+    </button>
+
+    <button class="suggestion-btn" (click)="askCompareProducers()">
+      🏆 Comparer producteurs
+    </button>
   </div>
+
+ 
+</div>
+
+
 
   <!-- Input -->
  <div class="chatbot-input">

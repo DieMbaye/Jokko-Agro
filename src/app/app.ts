@@ -6,6 +6,8 @@ import { VoiceAssistantComponent } from './components/voice-assistant/voice-assi
 import { AuthService } from './services/auth.service';
 import { filter } from 'rxjs/operators';
 import { FirebaseService } from './services/firebase.service';
+import { ThemeService } from './services/theme.service';
+
 
 @Component({
   selector: 'app-root',
@@ -33,7 +35,9 @@ export class App implements OnInit {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private firebaseService: FirebaseService // Ajouter
+    private firebaseService: FirebaseService ,
+    private themeService: ThemeService // 👈 AJOUT ICI
+
   ) {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
@@ -42,15 +46,12 @@ export class App implements OnInit {
       });
   }
 
-  async ngOnInit() {
-    // Attendre l'initialisation complète
-    await this.waitForInitialization();
+async ngOnInit() {
+  this.themeService.initTheme();
+  await this.waitForInitialization();
+  this.updateUIState(this.router.url);
+}
 
-    // Vérifier et rediriger si nécessaire
-    await this.checkAndRedirect();
-
-    this.updateUIState(this.router.url);
-  }
 
   private async waitForInitialization(): Promise<void> {
     return new Promise((resolve) => {
@@ -69,22 +70,8 @@ export class App implements OnInit {
     });
   }
 
-  private async checkAndRedirect(): Promise<void> {
-    const currentUrl = this.router.url;
-    const firebaseUser = this.firebaseService.getCurrentAuthUser();
 
-    // Si utilisateur connecté et sur page login/register, rediriger
-    if (firebaseUser && ['/login', '/register', '/'].includes(currentUrl)) {
-      const role = this.authService.getUserRole();
-      if (role === 'producer') {
-        this.router.navigate(['/producer/dashboard']);
-      } else if (role === 'buyer') {
-        this.router.navigate(['/buyer/dashboard']);
-      } else {
-        this.router.navigate(['/select-role']);
-      }
-    }
-  }
+
 
   private updateUIState(url: string) {
     // Mettre à jour le chargement

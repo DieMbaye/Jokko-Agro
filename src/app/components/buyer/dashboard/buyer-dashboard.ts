@@ -6,17 +6,16 @@ import { AuthService } from '../../../services/auth.service';
 import { FirebaseService } from '../../../services/firebase.service';
 import { Product } from '../../../services/data.interfaces';
 import { ChatbotService } from '../../../services/chatbot.service';
-import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { NotificationService, AppNotification } from '../../../services/notification.service';
 import { Subscription } from 'rxjs';
-
 
 interface DashboardStat {
   label: string;
   value: number | string;
   icon: string;
   color: string;
-  link?: string;}
+  link?: string;
+}
 
 interface RecentPurchase {
   ratingValue: number;
@@ -25,40 +24,26 @@ interface RecentPurchase {
   producer: string;
   date: string;
   amount: number;
-
   status: 'delivered' | 'shipping' | 'pending';
   certified: boolean;
-
-  // ⭐ RATING
   rated?: boolean;
-
-  // ⭐ TEMPORAIRE (UI SEULEMENT)
   tempRating?: number;
-
-  // 🔗 POUR FIRESTORE
   productId?: string;
   producerId?: string;
 }
-
-
-
 
 interface RecommendedProduct {
   id: string;
   name: string;
   producer: string;
   price: number;
-
-  // ⭐ OBLIGATOIRE POUR LE HTML
   rating: number;
-
   image: string;
   certified: boolean;
   category?: string;
   unit?: string;
   stock?: number;
 }
-
 
 interface ChatMessage {
   id: string;
@@ -80,6 +65,9 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
   stats: DashboardStat[] = [];
   recentPurchases: RecentPurchase[] = [];
   recommendedProducts: RecommendedProduct[] = [];
+  chatMode: 'normal' | 'estimate' | 'compare' = 'normal';
+
+  
   categories = [
     { name: 'Légumes', icon: '🥦', count: 0 },
     { name: 'Fruits', icon: '🍎', count: 0 },
@@ -91,28 +79,26 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
   isListening = false;
   isSpeaking = false;
   isVoiceInput = false;
-
-isDashboardLoading = true;
-
+  isDashboardLoading = true;
   isVoiceSupported = true;
   searchTerm = '';
   voiceSearchResults: RecommendedProduct[] = [];
   lastVoiceCommand = '';
   showVoiceHelp = true;
- // 🔔 Notifications
-notifications: AppNotification[] = [];
-unreadCount = 0;
-showNotifications = false;
-private notifSub: any;
 
-
-
+  // 🔔 Notifications
+  notifications: AppNotification[] = [];
+  unreadCount = 0;
+  showNotifications = false;
+  private notifSub: Subscription | undefined;
 
   // Données dynamiques
   allProducts: Product[] = [];
   allProducers: any[] = [];
   isLoadingProducts = false;
-    allPurchases: RecentPurchase[] = [];
+  allPurchases: RecentPurchase[] = [];
+  // 🔥 CONTEXTE DES QUESTIONS MULTI-ÉTAPES
+pendingIntent: 'estimate' | 'compare' | null = null;
 
 
   // DICTIONNAIRE WOLOF-FRANÇAIS
@@ -131,12 +117,13 @@ private notifSub: any;
   private SpeechRecognition = (window as any).webkitSpeechRecognition ||
                               (window as any).SpeechRecognition;
 
-  // ==================== CHATBOT INTELLIGENT ====================
+  // ==================== CHATBOT ====================
   isChatbotOpen = false;
   hasUnreadMessages = false;
   chatHistory: ChatMessage[] = [];
   currentMessage = '';
   isProcessing = false;
+  
   @ViewChild('chatMessages') chatMessages!: ElementRef<HTMLDivElement>;
   @ViewChild('chatInput') chatInput!: ElementRef<HTMLInputElement>;
 
@@ -148,136 +135,143 @@ private notifSub: any;
   userName = '';
   userInitials = '';
 
- constructor(
-  private authService: AuthService,
-  private firebaseService: FirebaseService,
-  private chatbotService: ChatbotService,
-  private notificationService: NotificationService
-) {}
+  // NOUVEAUX : Modales
+  showPriceEstimationModal = false;
+  showCompareProducersModal = false;
+  priceEstimationProduct = '';
+  compareProduct = '';
+  availableProductSuggestions: string[] = [];
 
+  constructor(
+    private authService: AuthService,
+    private firebaseService: FirebaseService,
+    private chatbotService: ChatbotService,
+    private notificationService: NotificationService
+  ) {}
 
-async ngOnInit() {
-  this.userData = this.authService.getUserData();
-  this.userName = this.userData?.fullName || 'Utilisateur';
-  this.userInitials = this.getInitials(this.userName);
+  async ngOnInit() {
+    this.userData = this.authService.getUserData();
+    this.userName = this.userData?.fullName || 'Utilisateur';
+    this.userInitials = this.getInitials(this.userName);
 
- this.notifSub = this.notificationService
-  .listenUserNotifications()
-  .subscribe(notifs => {
-    this.notifications = notifs;
-    this.unreadCount = notifs.filter(n => !n.read).length;
-  });
+    this.notifSub = this.notificationService
+      .listenUserNotifications()
+      .subscribe(notifs => {
+        this.notifications = notifs;
+        this.unreadCount = notifs.filter(n => !n.read).length;
+      });
 
-
-  await this.loadDashboardData();
-  this.initVoiceRecognition();
-  this.initSpeechRecognition();
-}
-
-
+    await this.loadDashboardData();
+    this.initVoiceRecognition();
+    this.initSpeechRecognition();
+  }
 
   ngAfterViewChecked() {
     if (this.shouldScroll) {
       this.scrollChatToBottom();
     }
   }
-ngOnDestroy() {
-  if (this.recognition) {
-    this.recognition.stop();
-  }
+askEstimateProduct() {
+  this.pendingIntent = 'estimate';
+  this.addMessage("📊 Quel produit souhaitez-vous estimer ?", false);
+}
 
-  if (this.scrollTimeout) {
-    clearTimeout(this.scrollTimeout);
-  }
-
-  // ✅ IMPORTANT : arrêter l’écoute Firestore
-  if (this.notifSub) {
-    this.notifSub.unsubscribe();
-  }
+askCompareProducers() {
+  this.pendingIntent = 'compare';
+  this.addMessage("🏆 Pour quel produit voulez-vous comparer les producteurs ?", false);
 }
 
 
 
-@HostListener('document:click', ['$event'])
-onClickOutside(event: MouseEvent) {
-  const target = event.target as HTMLElement;
-  if (!target.closest('.notifications-wrapper')) {
+  ngOnDestroy() {
+    if (this.recognition) {
+      this.recognition.stop();
+    }
+
+    if (this.scrollTimeout) {
+      clearTimeout(this.scrollTimeout);
+    }
+
+    if (this.notifSub) {
+      this.notifSub.unsubscribe();
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.notifications-wrapper')) {
+      this.showNotifications = false;
+    }
+  }
+
+  toggleNotifications() {
+    this.showNotifications = !this.showNotifications;
+  }
+
+  async openNotification(notification: any) {
+    if (!notification.read && notification.id) {
+      await this.notificationService.markAsRead(notification.id);
+    }
     this.showNotifications = false;
   }
-}
-
-toggleNotifications() {
-  this.showNotifications = !this.showNotifications;
-}
-
-async openNotification(notification: any) {
-  // Marquer comme lue uniquement
-  if (!notification.read && notification.id) {
-    await this.notificationService.markAsRead(notification.id);
-  }
-
-  // ❌ AUCUNE REDIRECTION
-  // ❌ PAS de window.location
-  // ❌ PAS de router.navigate
-
-  this.showNotifications = false;
-}
-
-
 
   // ==================== CHATBOT ====================
- toggleChatbot() {
-  this.isChatbotOpen = !this.isChatbotOpen;
+  toggleChatbot() {
+    this.isChatbotOpen = !this.isChatbotOpen;
 
-  if (!this.isChatbotOpen) {
-    // 🔴 STOP VOIX IMMÉDIAT
-    window.speechSynthesis.cancel();
-    this.isSpeaking = false;
-    this.isVoiceInput = false;
+    if (!this.isChatbotOpen) {
+      window.speechSynthesis.cancel();
+      this.isSpeaking = false;
+      this.isVoiceInput = false;
+    }
+
+    if (this.isChatbotOpen) {
+      this.hasUnreadMessages = false;
+      setTimeout(() => {
+        this.chatInput?.nativeElement?.focus();
+        this.scrollChatToBottom();
+      }, 300);
+    }
   }
-
-  if (this.isChatbotOpen) {
-    this.hasUnreadMessages = false;
-    setTimeout(() => {
-      this.chatInput?.nativeElement?.focus();
-      this.scrollChatToBottom();
-    }, 300);
-  }
-}
-
 
 sendMessage() {
   if (!this.currentMessage.trim() || this.isProcessing) return;
 
-  const question = this.currentMessage.trim();
+  const userInput = this.currentMessage.trim();
   this.currentMessage = '';
 
   this.isProcessing = true;
 
-  // ➕ Message utilisateur
-  this.addMessage(question, true);
+  // afficher message utilisateur
+  this.addMessage(userInput, true);
 
-  this.processQuestion(question)
-    .then((botResponse: string) => {
-      this.addMessage(botResponse, false);
+  let finalQuestion = userInput;
 
-      // 🔊 PARLER UNIQUEMENT SI QUESTION ORALE
-      if (this.isVoiceInput === true) {
-        this.speak(botResponse);
+  // 🔥 INTELLIGENCE CONTEXTUELLE
+  if (this.pendingIntent === 'estimate') {
+    finalQuestion = `estimation ${userInput}`;
+    this.pendingIntent = null;
+  }
+
+  if (this.pendingIntent === 'compare') {
+    finalQuestion = `comparer producteurs ${userInput}`;
+    this.pendingIntent = null;
+  }
+
+  this.processQuestion(finalQuestion)
+    .then(response => {
+      this.addMessage(response, false);
+
+      if (this.isVoiceInput) {
+        this.speak(response);
       }
     })
     .catch(() => {
-      const err = "❌ Une erreur est survenue.";
-      this.addMessage(err, false);
-
-      if (this.isVoiceInput === true) {
-        this.speak(err);
-      }
+      this.addMessage("❌ Une erreur est survenue.", false);
     })
     .finally(() => {
       this.isProcessing = false;
-
-      // 🔒 RESET ABSOLU (TRÈS IMPORTANT)
       this.isVoiceInput = false;
     });
 }
@@ -295,145 +289,123 @@ sendMessage() {
     this.shouldScroll = true;
   }
 
-  // Vérifier si le message est un remerciement
   private isThankYouMessage(message: string): boolean {
     const lowerMessage = message.toLowerCase().trim();
     const thankYouWords = [
       'merci', 'thank you', 'thanks', 'merci beaucoup',
       'je te remercie', 'cimer', 'merci bien'
     ];
-
     return thankYouWords.some(word => lowerMessage.includes(word));
   }
 
- private processThankYou(): string {
-  return "🙏 De rien ! N'hésitez pas si vous avez d'autres questions.<br>" +
-         "Je suis là pour vous aider à trouver les meilleurs produits !";
-}
-
-
-initSpeechRecognition() {
-  const SpeechRecognition =
-    (window as any).SpeechRecognition ||
-    (window as any).webkitSpeechRecognition;
-
-  if (!SpeechRecognition) {
-    console.warn('Reconnaissance vocale non supportée');
-    return;
+  private processThankYou(): string {
+    return "🙏 De rien ! N'hésitez pas si vous avez d'autres questions.<br>" +
+           "Je suis là pour vous aider à trouver les meilleurs produits !";
   }
 
-  this.recognition = new SpeechRecognition();
-  this.recognition.lang = 'fr-FR';
-  this.recognition.continuous = false;
-  this.recognition.interimResults = false;
+  initSpeechRecognition() {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
 
-  this.recognition.onstart = () => {
-    this.isListening = true;
-  };
+    if (!SpeechRecognition) {
+      console.warn('Reconnaissance vocale non supportée');
+      return;
+    }
 
-  this.recognition.onend = () => {
-    this.isListening = false;
-  };
+    this.recognition = new SpeechRecognition();
+    this.recognition.lang = 'fr-FR';
+    this.recognition.continuous = false;
+    this.recognition.interimResults = false;
 
-  this.recognition.onerror = () => {
-    this.isListening = false;
-  };
+    this.recognition.onstart = () => {
+      this.isListening = true;
+    };
 
-  // 🔥 ICI : quand l’utilisateur parle
-  this.recognition.onresult = (event: any) => {
-    const transcript = event.results[0][0].transcript;
+    this.recognition.onend = () => {
+      this.isListening = false;
+    };
 
-    this.currentMessage = transcript;
+    this.recognition.onerror = () => {
+      this.isListening = false;
+    };
 
-    // ✅ ENVOI AUTOMATIQUE
-    setTimeout(() => {
-      this.sendMessage();
-    }, 300);
-  };
-}
-
-startVoiceInput() {
-  if (!this.recognition) {
-    alert('⚠️ La reconnaissance vocale n’est pas supportée.');
-    return;
+    this.recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      this.currentMessage = transcript;
+      
+      setTimeout(() => {
+        this.sendMessage();
+      }, 300);
+    };
   }
 
-  // 🔴 Stop toute lecture en cours
-  window.speechSynthesis.cancel();
-  this.isSpeaking = false;
+  startVoiceInput() {
+    if (!this.recognition) {
+      alert('⚠️ La reconnaissance vocale n\'est pas supportée.');
+      return;
+    }
 
-  // 🔥 MARQUER QUE LA QUESTION EST ORALE
-  this.isVoiceInput = true;
-
-  try {
-    this.recognition.start();
-    this.isListening = true;
-  } catch (e) {
-    console.error('Erreur micro', e);
-    this.isListening = false;
-    this.isVoiceInput = false;
-  }
-}
-
-
-speak(text: string) {
-  // 🔒 Sécurité ultime
-  if (!this.isVoiceInput) return;
-  if (!('speechSynthesis' in window)) return;
-
-  // 🔴 Stop toute voix précédente
-  window.speechSynthesis.cancel();
-
-  const cleanText = this.cleanTextForSpeech(text);
-  if (!cleanText) return;
-
-  const utterance = new SpeechSynthesisUtterance(cleanText);
-  utterance.lang = 'fr-FR';
-  utterance.rate = 0.95;
-
-  this.isSpeaking = true;
-
-  utterance.onend = () => {
+    window.speechSynthesis.cancel();
     this.isSpeaking = false;
-  };
+    this.isVoiceInput = true;
 
-  window.speechSynthesis.speak(utterance);
-}
+    try {
+      this.recognition.start();
+      this.isListening = true;
+    } catch (e) {
+      console.error('Erreur micro', e);
+      this.isListening = false;
+      this.isVoiceInput = false;
+    }
+  }
 
+  speak(text: string) {
+    if (!this.isVoiceInput) return;
+    if (!('speechSynthesis' in window)) return;
 
+    window.speechSynthesis.cancel();
 
+    const cleanText = this.cleanTextForSpeech(text);
+    if (!cleanText) return;
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = 'fr-FR';
+    utterance.rate = 0.95;
+
+    this.isSpeaking = true;
+
+    utterance.onend = () => {
+      this.isSpeaking = false;
+    };
+
+    window.speechSynthesis.speak(utterance);
+  }
 
   private async processQuestion(question: string): Promise<string> {
-  // Ajouter message de chargement
-  this.addMessage('', false, true);
+    this.addMessage('', false, true);
 
-  try {
-    // 🔥 Réponse intelligente basée sur Firestore
-    const response: string =
-      await this.chatbotService.getIntelligentResponse(
-        question,
-        this.allProducts,
-        this.allProducers
+    try {
+      const response: string =
+        await this.chatbotService.getIntelligentResponse(
+          question,
+          this.allProducts,
+          this.allProducers
+        );
+
+      this.removeLoadingMessage();
+      return this.formatBotResponse(response);
+
+    } catch (error) {
+      console.error('Erreur chatbot:', error);
+      this.removeLoadingMessage();
+
+      return (
+        "❌ <strong>Désolé, je rencontre une difficulté technique.</strong><br>" +
+        "Veuillez réessayer dans quelques instants."
       );
-
-    // Supprimer le message "typing"
-    this.removeLoadingMessage();
-
-    // Retourner la réponse formatée
-    return this.formatBotResponse(response);
-
-  } catch (error) {
-    console.error('Erreur chatbot:', error);
-
-    this.removeLoadingMessage();
-
-    return (
-      "❌ <strong>Désolé, je rencontre une difficulté technique.</strong><br>" +
-      "Veuillez réessayer dans quelques instants."
-    );
+    }
   }
-}
-
 
   private formatBotResponse(text: string): string {
     return text.replace(/\n/g, '<br>');
@@ -463,7 +435,6 @@ speak(text: string) {
     }
   }
 
-  // SCROLL CORRIGÉ - Gestion améliorée
   private scrollChatToBottom() {
     if (!this.shouldScroll) return;
 
@@ -475,30 +446,25 @@ speak(text: string) {
       if (this.chatMessages?.nativeElement) {
         const container = this.chatMessages.nativeElement;
 
-        // Utiliser scrollTo avec smooth
         container.scrollTo({
           top: container.scrollHeight,
           behavior: 'smooth'
         });
 
-        // Forcer le scroll si smooth ne fonctionne pas
         setTimeout(() => {
           container.scrollTop = container.scrollHeight;
         }, 100);
       }
 
-      // Réinitialiser après le scroll
       setTimeout(() => {
         this.shouldScroll = false;
       }, 200);
     }, 150);
   }
 
-  // Détection du scroll manuel
   onChatScroll() {
     const container = this.chatMessages?.nativeElement;
     if (container) {
-      // Si l'utilisateur scroll vers le haut, ne pas forcer le scroll automatique
       const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
       this.shouldScroll = isNearBottom;
     }
@@ -509,143 +475,128 @@ speak(text: string) {
   }
 
   // ==================== DASHBOARD ====================
-async loadDashboardData() {
-  try {
-    // 🔥 TOUT EN PARALLÈLE
-    await Promise.all([
-      this.loadRealProducts(),
-      this.loadProducers(),
-      this.loadRecentPurchases()
-    ]);
+  async loadDashboardData() {
+    try {
+      await Promise.all([
+        this.loadRealProducts(),
+        this.loadProducers(),
+        this.loadRecentPurchases()
+      ]);
 
-    // 🔥 Une fois tout chargé
-    this.updateRecommendedProducts();
-    this.computeStats();
+      this.updateRecommendedProducts();
+      this.computeStats();
 
-  } catch (error) {
-    console.error('Erreur chargement dashboard:', error);
-  }
-  finally {
-  this.isDashboardLoading = false;
-}
-
-}
-
-async loadRecentPurchases() {
-  const purchases = await this.firebaseService.getBuyerSales();
-  const ratings = await this.firebaseService.getMyRatings();
-
-  this.allPurchases = purchases.map(p => {
-    const rating = ratings.find(r => r.productId === p.productId);
-    return {
-      ...p,
-      rated: !!rating,
-      ratingValue: rating?.stars || 0
-    };
-  });
-
-  // 🔥 Seulement 5 pour le tableau
-  this.recentPurchases = this.allPurchases.slice(0, 5);
-
-  }
-
-
-
-private computeStats() {
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  // 🛍️ Achats ce mois
-  const purchasesThisMonth = this.allPurchases.filter(p => {
-    const d = new Date(p.date);
-    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-  });
-
-  // 💰 Dépenses totales
-  const totalSpent = this.allPurchases.reduce(
-    (sum, p) => sum + (p.amount || 0),
-    0
-  );
-
-  // ✅ Produits certifiés achetés
-  const certifiedCount = this.allPurchases.filter(p => p.certified).length;
-
-  this.stats = [
-    {
-      label: 'Achats ce mois',
-      value: purchasesThisMonth.length,
-      icon: '🛍️',
-      color: '#2196F3',
-      link: '/buyer/purchases'
-    },
-    {
-      label: 'Dépenses totales',
-      value: totalSpent.toLocaleString() + ' FCFA',
-      icon: '💰',
-      color: '#4CAF50'
-    },
-    {
-      label: 'Certifications vérifiées',
-      value: certifiedCount,
-      icon: '✅',
-      color: '#FF9800'
-    },
-    {
-      label: 'Vendeurs favoris',
-      value: 0, // ✅ NORMAL pour l’instant
-      icon: '❤️',
-      color: '#E91E63'
+    } catch (error) {
+      console.error('Erreur chargement dashboard:', error);
     }
-  ];
-}
-
-
-
-
-
-
-async loadRealProducts() {
-  this.isLoadingProducts = true;
-
-  try {
-    const products = await this.firebaseService.getAllAvailableProducts();
-
-    this.allProducts = products.map(p => ({
-      ...p,
-      rating: p.rating ?? 0,
-      certifications: p.certifications ?? [],
-      images: p.images ?? [],
-      badges: p.badges ?? []
-    }));
-
-    this.updateCategoryCounts();
-  } catch (e) {
-    console.error('Erreur produits Firestore', e);
-    this.allProducts = [];
-  } finally {
-    this.isLoadingProducts = false;
+    finally {
+      this.isDashboardLoading = false;
+    }
   }
-}
 
-selectRating(purchase: any, stars: number) {
-  purchase.tempRating = stars;
-}
-async confirmRating(purchase: any) {
-  if (!purchase.tempRating) return;
+  async loadRecentPurchases() {
+    const purchases = await this.firebaseService.getBuyerSales();
+    const ratings = await this.firebaseService.getMyRatings();
 
-  await this.firebaseService.submitRating({
-    productId: purchase.productId,
-    producerId: purchase.producerId,
-    stars: purchase.tempRating,
-    buyerId: ''
-  });
+    this.allPurchases = purchases.map(p => {
+      const rating = ratings.find(r => r.productId === p.productId);
+      return {
+        ...p,
+        rated: !!rating,
+        ratingValue: rating?.stars || 0
+      };
+    });
 
-  purchase.ratingValue = purchase.tempRating;
-  purchase.rated = true;
-  purchase.tempRating = null;
-}
+    this.recentPurchases = this.allPurchases.slice(0, 5);
+  }
 
+  private computeStats() {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const purchasesThisMonth = this.allPurchases.filter(p => {
+      const d = new Date(p.date);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+
+    const totalSpent = this.allPurchases.reduce(
+      (sum, p) => sum + (p.amount || 0),
+      0
+    );
+
+    const certifiedCount = this.allPurchases.filter(p => p.certified).length;
+
+    this.stats = [
+      {
+        label: 'Achats ce mois',
+        value: purchasesThisMonth.length,
+        icon: '🛍️',
+        color: '#2196F3',
+        link: '/buyer/purchases'
+      },
+      {
+        label: 'Dépenses totales',
+        value: totalSpent.toLocaleString() + ' FCFA',
+        icon: '💰',
+        color: '#4CAF50'
+      },
+      {
+        label: 'Certifications vérifiées',
+        value: certifiedCount,
+        icon: '✅',
+        color: '#FF9800'
+      },
+      {
+        label: 'Vendeurs favoris',
+        value: 0,
+        icon: '❤️',
+        color: '#E91E63'
+      }
+    ];
+  }
+
+  async loadRealProducts() {
+    this.isLoadingProducts = true;
+
+    try {
+      const products = await this.firebaseService.getAllAvailableProducts();
+
+      this.allProducts = products.map(p => ({
+        ...p,
+        rating: p.rating ?? 0,
+        certifications: p.certifications ?? [],
+        images: p.images ?? [],
+        badges: p.badges ?? []
+      }));
+
+      this.updateCategoryCounts();
+    } catch (e) {
+      console.error('Erreur produits Firestore', e);
+      this.allProducts = [];
+    } finally {
+      this.isLoadingProducts = false;
+    }
+  }
+
+  selectRating(purchase: any, stars: number) {
+    purchase.tempRating = stars;
+  }
+
+  async confirmRating(purchase: any) {
+    if (!purchase.tempRating) return;
+
+    await this.firebaseService.submitRating({
+      productId: purchase.productId,
+      producerId: purchase.producerId,
+      stars: purchase.tempRating,
+      buyerId: ''
+    });
+
+    purchase.ratingValue = purchase.tempRating;
+    purchase.rated = true;
+    purchase.tempRating = null;
+  }
 
   async loadProducers() {
     try {
@@ -677,7 +628,6 @@ async confirmRating(purchase: any) {
     console.log(`👨‍🌾 ${this.allProducers.length} producteurs extraits des produits`);
   }
 
- 
   private updateCategoryCounts() {
     this.categories.forEach(cat => cat.count = 0);
 
@@ -698,22 +648,20 @@ async confirmRating(purchase: any) {
     });
   }
 
-private updateRecommendedProducts() {
-  this.recommendedProducts = this.allProducts.slice(0, 4).map(p => ({
-    id: p.id!,
-    name: p.name,
-    producer: p.producerName,
-    price: p.price,
-    rating: p.rating ?? 0,
-    image: this.getProductEmoji(p.name),
-    certified: p.certifications.length > 0,
-    category: p.category,
-    unit: p.unit,
-    stock: p.quantity
-  }));
-}
-
-
+  private updateRecommendedProducts() {
+    this.recommendedProducts = this.allProducts.slice(0, 4).map(p => ({
+      id: p.id!,
+      name: p.name,
+      producer: p.producerName,
+      price: p.price,
+      rating: p.rating ?? 0,
+      image: this.getProductEmoji(p.name),
+      certified: p.certifications.length > 0,
+      category: p.category,
+      unit: p.unit,
+      stock: p.quantity
+    }));
+  }
 
   // ==================== RECHERCHE VOCALE ====================
   private initVoiceRecognition() {
@@ -766,10 +714,8 @@ private updateRecommendedProducts() {
 
   private processVoiceCommand(command: string) {
     this.lastVoiceCommand = command;
-
     const translatedTerm = this.translateWolofToFrench(command);
     this.searchTerm = translatedTerm;
-
     this.searchProductsByVoice(translatedTerm);
   }
 
@@ -795,22 +741,18 @@ private updateRecommendedProducts() {
       return false;
     });
 
-   this.voiceSearchResults = filtered.map(product => ({
-  id: product.id || '',
-  name: product.name,
-  producer: product.producerName || 'Producteur',
-  price: product.price,
-
-  // ⭐ sécurisé
-  rating: product.rating ?? 0,
-
-  image: this.getProductEmoji(product.name),
-  certified: product.certifications?.length > 0,
-  category: product.category,
-  unit: product.unit,
-  stock: product.quantity
-}));
-
+    this.voiceSearchResults = filtered.map(product => ({
+      id: product.id || '',
+      name: product.name,
+      producer: product.producerName || 'Producteur',
+      price: product.price,
+      rating: product.rating ?? 0,
+      image: this.getProductEmoji(product.name),
+      certified: product.certifications?.length > 0,
+      category: product.category,
+      unit: product.unit,
+      stock: product.quantity
+    }));
   }
 
   onSearch() {
@@ -864,84 +806,158 @@ private updateRecommendedProducts() {
       default: return status;
     }
   }
-private cleanTextForSpeech(text: string): string {
-  return text
-    // Supprimer markdown **
-    .replace(/\*\*/g, '')
 
-    // Supprimer emojis
-    .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
-
-    // Supprimer HTML
-    .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/<[^>]*>/g, '')
-
-    // Supprimer puces
-    .replace(/•/g, '')
-
-    // 🔥 Corriger le pluriel pour la voix
-    .replace(/\bproduits\b/gi, 'produit')
-    .replace(/\bdisponibles\b/gi, 'disponible')
-    .replace(/\bproducteurs\b/gi, 'producteur')
-
-    // Supprimer les "(s)"
-    .replace(/\(s\)/gi, '')
-
-    // Nettoyage espaces
-    .replace(/\n+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-async ratePurchase(purchase: any, stars: number) {
-  await this.firebaseService.submitRating({
-    productId: purchase.productId ?? '',
-    producerId: purchase.producerId ?? '',
-    stars,
-    buyerId: ''
-  });
-
-  purchase.rated = true;
-  purchase.ratingValue = stars; // ⭐ IMPORTANT
-}
-async rate(purchase: RecentPurchase, stars: number) {
-  if (purchase.status !== 'delivered') return;
-  if (purchase.rated) return;
-
-  const user = this.authService.getUserData();
-
-  if (!user || !user.uid) {
-    alert('Utilisateur non connecté');
-    return;
+  private cleanTextForSpeech(text: string): string {
+    return text
+      .replace(/\*\*/g, '')
+      .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
+      .replace(/<br\s*\/?>/gi, ' ')
+      .replace(/<[^>]*>/g, '')
+      .replace(/•/g, '')
+      .replace(/\bproduits\b/gi, 'produit')
+      .replace(/\bdisponibles\b/gi, 'disponible')
+      .replace(/\bproducteurs\b/gi, 'producteur')
+      .replace(/\(s\)/gi, '')
+      .replace(/\n+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
-  await this.firebaseService.submitRating({
-    productId: purchase.productId!,
-    producerId: purchase.producerId!,
-    stars,
-    buyerId: user.uid   // ✅ string garanti
-  });
+  async ratePurchase(purchase: any, stars: number) {
+    await this.firebaseService.submitRating({
+      productId: purchase.productId ?? '',
+      producerId: purchase.producerId ?? '',
+      stars,
+      buyerId: ''
+    });
 
-  purchase.rated = true;
-  purchase.ratingValue = stars;
-}
-
-
-starsArray(): number[] {
-  return [1, 2, 3, 4, 5];
-}
-
-
-
-async enrichProductsWithRatings() {
-  for (const product of this.allProducts) {
-    if (!product.id) continue;
-
-    const avgRating =
-      await this.firebaseService.getAverageRatingForProduct(product.id);
-
-    product.rating = avgRating ?? 0;
+    purchase.rated = true;
+    purchase.ratingValue = stars;
   }
-}
 
+  async rate(purchase: RecentPurchase, stars: number) {
+    if (purchase.status !== 'delivered') return;
+    if (purchase.rated) return;
 
+    const user = this.authService.getUserData();
+
+    if (!user || !user.uid) {
+      alert('Utilisateur non connecté');
+      return;
+    }
+
+    await this.firebaseService.submitRating({
+      productId: purchase.productId!,
+      producerId: purchase.producerId!,
+      stars,
+      buyerId: user.uid
+    });
+
+    purchase.rated = true;
+    purchase.ratingValue = stars;
+  }
+
+  starsArray(): number[] {
+    return [1, 2, 3, 4, 5];
+  }
+
+  async enrichProductsWithRatings() {
+    for (const product of this.allProducts) {
+      if (!product.id) continue;
+
+      const avgRating =
+        await this.firebaseService.getAverageRatingForProduct(product.id);
+
+      product.rating = avgRating ?? 0;
+    }
+  }
+
+  // ==================== MODALES ====================
+  openPriceEstimationModal() {
+    this.showPriceEstimationModal = true;
+    
+    this.availableProductSuggestions = this.allProducts
+      .filter(p => p.status === 'available' && p.quantity > 0)
+      .map(p => p.name)
+      .filter((value, index, self) => self.indexOf(value) === index)
+      .slice(0, 10);
+    
+    setTimeout(() => {
+      const input = document.querySelector('.modal-product-input') as HTMLInputElement;
+      if (input) input.focus();
+    }, 100);
+  }
+
+  closePriceEstimationModal() {
+    this.showPriceEstimationModal = false;
+    this.priceEstimationProduct = '';
+    this.availableProductSuggestions = [];
+  }
+
+  submitPriceEstimation() {
+    if (!this.priceEstimationProduct.trim()) {
+      return;
+    }
+
+    const question = `Estimation prix ${this.priceEstimationProduct}`;
+    
+    this.closePriceEstimationModal();
+    
+    setTimeout(() => {
+      this.isChatbotOpen = true;
+      setTimeout(() => {
+        this.currentMessage = question;
+        this.sendMessage();
+      }, 300);
+    }, 200);
+  }
+
+  selectProductSuggestion(productName: string) {
+    this.priceEstimationProduct = productName;
+    this.submitPriceEstimation();
+  }
+
+  openCompareProducersModal() {
+    this.showCompareProducersModal = true;
+    
+    this.availableProductSuggestions = this.allProducts
+      .filter(p => p.status === 'available' && p.quantity > 0)
+      .map(p => p.name)
+      .filter((value, index, self) => self.indexOf(value) === index)
+      .slice(0, 10);
+    
+    setTimeout(() => {
+      const input = document.querySelector('.compare-product-input') as HTMLInputElement;
+      if (input) input.focus();
+    }, 100);
+  }
+
+  closeCompareProducersModal() {
+    this.showCompareProducersModal = false;
+    this.compareProduct = '';
+    this.availableProductSuggestions = [];
+  }
+
+  submitCompareProducers() {
+    if (!this.compareProduct.trim()) {
+      return;
+    }
+
+    const question = `Comparer producteurs pour ${this.compareProduct}`;
+    
+    this.closeCompareProducersModal();
+    
+    setTimeout(() => {
+      this.isChatbotOpen = true;
+      setTimeout(() => {
+        this.currentMessage = question;
+        this.sendMessage();
+      }, 300);
+    }, 200);
+  }
+
+  selectCompareSuggestion(productName: string) {
+    this.compareProduct = productName;
+    this.submitCompareProducers();
+  }
 }

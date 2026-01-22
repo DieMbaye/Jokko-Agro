@@ -1,4 +1,4 @@
-// app.routes.ts
+// app.routes.ts - version mise à jour
 import { Routes } from '@angular/router';
 import {
   authGuard,
@@ -124,6 +124,16 @@ export const routes: Routes = [
         (m) => m.VerificationComponent
       ),
   },
+  // AJOUT DE LA NOUVELLE ROUTE PRODUCTEUR SETTINGS
+{
+  path: 'producer/settings',
+  loadComponent: () =>
+    import('./components/producer/settings/producer-settings.component')
+      .then(m => m.ProducerSettingsComponent),
+  canActivate: [producerGuard],
+},
+
+
 
   // ==================== ROUTES ACHETEUR ====================
   {
@@ -158,8 +168,6 @@ export const routes: Routes = [
       import('./components/messages/messages').then((m) => m.MessagesComponent),
     canActivate: [buyerGuard],
   },
-
-  // Dans app.routes.ts, ajoutez cette route :
   {
     path: 'buyer/tracking',
     loadComponent: () =>
@@ -168,24 +176,16 @@ export const routes: Routes = [
       ),
     canActivate: [buyerGuard],
   },
- {
-  path: 'buyer/purchases',
-  component: BuyerPurchasesComponent,
-  canActivate: [authGuard]
-}
-,
-
- {
-  path: 'buyer/settings',
-  component: BuyerSettingsComponent,
-  canActivate: [buyerGuard]
-}
-,
-
-
-
-
-
+  {
+    path: 'buyer/purchases',
+    component: BuyerPurchasesComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'buyer/settings',
+    component: BuyerSettingsComponent,
+    canActivate: [buyerGuard]
+  },
 
   { path: '**', redirectTo: '' },
 ];
