@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { FirebaseService } from './firebase.service';
-import { Sale, SalesStats, SalesFilter } from './data.interfaces';
+import { Sale, SalesStats, SalesFilter } from '../interfaces/data.interfaces';
 import {
   collection,
   query,
@@ -26,10 +26,10 @@ import { NotificationService } from './notification.service';
   providedIn: 'root',
 })
 export class SalesService {
-constructor(
-  private firebaseService: FirebaseService,
-  private notificationService: NotificationService
-) {}
+  constructor(
+    private firebaseService: FirebaseService,
+    private notificationService: NotificationService,
+  ) {}
 
   // Générer un numéro de commande unique
   generateOrderNumber(): string {
@@ -45,7 +45,7 @@ constructor(
 
   // Créer une nouvelle vente
   async createSale(
-    saleData: Omit<Sale, 'id' | 'createdAt' | 'updatedAt'>
+    saleData: Omit<Sale, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<{ success: boolean; saleId?: string; error?: string }> {
     try {
       const orderNumber = saleData.orderNumber || this.generateOrderNumber();
@@ -80,37 +80,36 @@ constructor(
         saleToCreate.deliveryAddress = saleData.deliveryAddress;
       }
 
-     const docRef = await addDoc(
-  collection(this.firebaseService.firestore, 'sales'),
-  saleToCreate
-);
+      const docRef = await addDoc(
+        collection(this.firebaseService.firestore, 'sales'),
+        saleToCreate,
+      );
 
-// 🔔 NOTIFICATION PRODUCTEUR (NOUVELLE COMMANDE)
-await this.notificationService.createNotification({
-  userId: saleData.producerId,
-  title: '🛒 Nouvelle commande reçue',
-  message: `Nouvelle commande pour ${saleData.productName} (${saleData.quantity})`,
-  type: 'order'
-});
-
-// Mettre à jour le stock
-await this.updateProductStock(
-  saleData.productId,
-  saleData.quantity,
-  'decrement'
-);
-
-return {
-  success: true,
-  saleId: docRef.id,
-};
-
+      // 🔔 NOTIFICATION PRODUCTEUR (NOUVELLE COMMANDE)
+      await this.notificationService.createNotification({
+        userId: saleData.producerId,
+        title: '🛒 Nouvelle commande reçue',
+        message: `Nouvelle commande pour ${saleData.productName} (${saleData.quantity})`,
+        type: 'order',
+      });
 
       // Mettre à jour le stock
       await this.updateProductStock(
         saleData.productId,
         saleData.quantity,
-        'decrement'
+        'decrement',
+      );
+
+      return {
+        success: true,
+        saleId: docRef.id,
+      };
+
+      // Mettre à jour le stock
+      await this.updateProductStock(
+        saleData.productId,
+        saleData.quantity,
+        'decrement',
       );
 
       return {
@@ -130,18 +129,23 @@ return {
   private async updateProductStock(
     productId: string,
     quantity: number,
-    operation: 'increment' | 'decrement'
+    operation: 'increment' | 'decrement',
   ): Promise<void> {
     try {
-      const productRef = doc(this.firebaseService.firestore, 'products', productId);
+      const productRef = doc(
+        this.firebaseService.firestore,
+        'products',
+        productId,
+      );
       const productSnap = await getDoc(productRef);
 
       if (productSnap.exists()) {
         const productData = productSnap.data();
         const currentStock = productData['quantity'] || 0;
-        const newStock = operation === 'decrement'
-          ? Math.max(0, currentStock - quantity)
-          : currentStock + quantity;
+        const newStock =
+          operation === 'decrement'
+            ? Math.max(0, currentStock - quantity)
+            : currentStock + quantity;
 
         await updateDoc(productRef, {
           quantity: newStock,
@@ -155,23 +159,28 @@ return {
   }
 
   // Récupérer les ventes avec filtres
-  async getSales(
-    producerId: string,
-    filter?: SalesFilter
-  ): Promise<Sale[]> {
+  async getSales(producerId: string, filter?: SalesFilter): Promise<Sale[]> {
     try {
       let constraints: QueryConstraint[] = [
-        where('producerId', '==', producerId)
+        where('producerId', '==', producerId),
       ];
 
       // Filtre par période
       if (filter?.period && filter.period !== 'all') {
-        const dateRange = this.getDateRange(filter.period, filter.startDate, filter.endDate);
+        const dateRange = this.getDateRange(
+          filter.period,
+          filter.startDate,
+          filter.endDate,
+        );
         if (dateRange.start) {
-          constraints.push(where('orderDate', '>=', Timestamp.fromDate(dateRange.start)));
+          constraints.push(
+            where('orderDate', '>=', Timestamp.fromDate(dateRange.start)),
+          );
         }
         if (dateRange.end) {
-          constraints.push(where('orderDate', '<=', Timestamp.fromDate(dateRange.end)));
+          constraints.push(
+            where('orderDate', '<=', Timestamp.fromDate(dateRange.end)),
+          );
         }
       }
 
@@ -193,7 +202,10 @@ return {
       // Trier par date
       constraints.push(orderBy('orderDate', 'desc'));
 
-      const q = query(collection(this.firebaseService.firestore, 'sales'), ...constraints);
+      const q = query(
+        collection(this.firebaseService.firestore, 'sales'),
+        ...constraints,
+      );
       const querySnapshot = await getDocs(q);
 
       const sales: Sale[] = [];
@@ -206,11 +218,12 @@ return {
       let filteredSales = sales;
       if (filter?.searchQuery) {
         const searchLower = filter.searchQuery.toLowerCase();
-        filteredSales = sales.filter(sale =>
-          sale.orderNumber.toLowerCase().includes(searchLower) ||
-          sale.productName.toLowerCase().includes(searchLower) ||
-          sale.buyerName.toLowerCase().includes(searchLower) ||
-          sale.buyerPhone.includes(searchLower)
+        filteredSales = sales.filter(
+          (sale) =>
+            sale.orderNumber.toLowerCase().includes(searchLower) ||
+            sale.productName.toLowerCase().includes(searchLower) ||
+            sale.buyerName.toLowerCase().includes(searchLower) ||
+            sale.buyerPhone.includes(searchLower),
         );
       }
 
@@ -224,7 +237,7 @@ return {
   // Calculer les statistiques
   async getSalesStats(
     producerId: string,
-    filter?: SalesFilter
+    filter?: SalesFilter,
   ): Promise<SalesStats> {
     try {
       const sales = await this.getSales(producerId, filter);
@@ -234,47 +247,57 @@ return {
       }
 
       // Ventes complétées
-      const completedSales = sales.filter(s => s.status === 'completed');
-      const pendingSales = sales.filter(s => s.status === 'pending');
-      const cancelledSales = sales.filter(s => s.status === 'cancelled');
+      const completedSales = sales.filter((s) => s.status === 'completed');
+      const pendingSales = sales.filter((s) => s.status === 'pending');
+      const cancelledSales = sales.filter((s) => s.status === 'cancelled');
 
       // Statistiques de base
-      const totalRevenue = completedSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+      const totalRevenue = completedSales.reduce(
+        (sum, sale) => sum + sale.totalAmount,
+        0,
+      );
       const totalSales = completedSales.length;
       const averageOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
-      const completionRate = sales.length > 0 ? (completedSales.length / sales.length) * 100 : 0;
+      const completionRate =
+        sales.length > 0 ? (completedSales.length / sales.length) * 100 : 0;
 
       // Note moyenne
-      const ratedSales = completedSales.filter(s => s.rating);
-      const averageRating = ratedSales.length > 0
-        ? ratedSales.reduce((sum, sale) => sum + (sale.rating || 0), 0) / ratedSales.length
-        : 0;
+      const ratedSales = completedSales.filter((s) => s.rating);
+      const averageRating =
+        ratedSales.length > 0
+          ? ratedSales.reduce((sum, sale) => sum + (sale.rating || 0), 0) /
+            ratedSales.length
+          : 0;
 
       // Statistiques par statut
       const byStatus = {
-        pending: sales.filter(s => s.status === 'pending').length,
-        confirmed: sales.filter(s => s.status === 'confirmed').length,
-        shipped: sales.filter(s => s.status === 'shipped').length,
-        delivered: sales.filter(s => s.status === 'delivered').length,
-        completed: sales.filter(s => s.status === 'completed').length,
-        cancelled: sales.filter(s => s.status === 'cancelled').length,
-        refunded: sales.filter(s => s.status === 'refunded').length,
+        pending: sales.filter((s) => s.status === 'pending').length,
+        confirmed: sales.filter((s) => s.status === 'confirmed').length,
+        shipped: sales.filter((s) => s.status === 'shipped').length,
+        delivered: sales.filter((s) => s.status === 'delivered').length,
+        completed: sales.filter((s) => s.status === 'completed').length,
+        cancelled: sales.filter((s) => s.status === 'cancelled').length,
+        refunded: sales.filter((s) => s.status === 'refunded').length,
       };
 
       // Statistiques par méthode de paiement
       const byPaymentMethod = {
-        wave: sales.filter(s => s.paymentMethod === 'wave').length,
-        orange_money: sales.filter(s => s.paymentMethod === 'orange_money').length,
-        free_money: sales.filter(s => s.paymentMethod === 'free_money').length,
-        cash: sales.filter(s => s.paymentMethod === 'cash').length,
-        credit_card: sales.filter(s => s.paymentMethod === 'credit_card').length,
-        mobile_money: sales.filter(s => s.paymentMethod === 'mobile_money').length,
+        wave: sales.filter((s) => s.paymentMethod === 'wave').length,
+        orange_money: sales.filter((s) => s.paymentMethod === 'orange_money')
+          .length,
+        free_money: sales.filter((s) => s.paymentMethod === 'free_money')
+          .length,
+        cash: sales.filter((s) => s.paymentMethod === 'cash').length,
+        credit_card: sales.filter((s) => s.paymentMethod === 'credit_card')
+          .length,
+        mobile_money: sales.filter((s) => s.paymentMethod === 'mobile_money')
+          .length,
       };
 
       // Statistiques par type de livraison
       const byDeliveryType = {
-        pickup: sales.filter(s => s.deliveryType === 'pickup').length,
-        delivery: sales.filter(s => s.deliveryType === 'delivery').length,
+        pickup: sales.filter((s) => s.deliveryType === 'pickup').length,
+        delivery: sales.filter((s) => s.deliveryType === 'delivery').length,
       };
 
       // Revenus mensuels
@@ -323,87 +346,86 @@ return {
 
   // Mettre à jour le statut d'une vente
   async updateSaleStatus(
-  saleId: string,
-  status: Sale['status']
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    const saleRef = doc(this.firebaseService.firestore, 'sales', saleId);
+    saleId: string,
+    status: Sale['status'],
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const saleRef = doc(this.firebaseService.firestore, 'sales', saleId);
 
-    // 1️⃣ récupérer la vente AVANT modification
-    const saleSnap = await getDoc(saleRef);
-    if (!saleSnap.exists()) {
-      return { success: false, error: 'Commande introuvable' };
+      // 1️⃣ récupérer la vente AVANT modification
+      const saleSnap = await getDoc(saleRef);
+      if (!saleSnap.exists()) {
+        return { success: false, error: 'Commande introuvable' };
+      }
+
+      const saleData: any = saleSnap.data();
+
+      // 2️⃣ mise à jour du statut
+      const updateData: any = {
+        status,
+        updatedAt: serverTimestamp(),
+      };
+
+      if (status === 'completed') {
+        updateData.completionDate = serverTimestamp();
+      }
+      if (status === 'shipped') {
+        updateData.deliveryDate = serverTimestamp();
+      }
+
+      await updateDoc(saleRef, updateData);
+
+      // 3️⃣ notification pour le BUYER 🔔
+      await this.notificationService.createNotification({
+        userId: saleData.buyerId,
+        title: '📦 Statut de commande mis à jour',
+        message: this.getOrderStatusMessage(status, saleData.orderNumber),
+        type: 'order',
+        link: '/buyer/purchases',
+      });
+
+      // 4️⃣ restaurer le stock si annulée
+      if (status === 'cancelled') {
+        await this.updateProductStock(
+          saleData.productId,
+          saleData.quantity,
+          'increment',
+        );
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Erreur mise à jour statut:', error);
+      return {
+        success: false,
+        error: error.message || 'Erreur lors de la mise à jour',
+      };
     }
-
-    const saleData: any = saleSnap.data();
-
-    // 2️⃣ mise à jour du statut
-    const updateData: any = {
-      status,
-      updatedAt: serverTimestamp(),
-    };
-
-    if (status === 'completed') {
-      updateData.completionDate = serverTimestamp();
-    }
-    if (status === 'shipped') {
-      updateData.deliveryDate = serverTimestamp();
-    }
-
-    await updateDoc(saleRef, updateData);
-
-    // 3️⃣ notification pour le BUYER 🔔
-    await this.notificationService.createNotification({
-      userId: saleData.buyerId,
-      title: '📦 Statut de commande mis à jour',
-      message: this.getOrderStatusMessage(status, saleData.orderNumber),
-      type: 'order',
-      link: '/buyer/purchases'
-    });
-
-    // 4️⃣ restaurer le stock si annulée
-    if (status === 'cancelled') {
-      await this.updateProductStock(
-        saleData.productId,
-        saleData.quantity,
-        'increment'
-      );
-    }
-
-    return { success: true };
-  } catch (error: any) {
-    console.error('Erreur mise à jour statut:', error);
-    return {
-      success: false,
-      error: error.message || 'Erreur lors de la mise à jour',
-    };
   }
-}
-private getOrderStatusMessage(
-  status: Sale['status'],
-  orderNumber: string
-): string {
-  switch (status) {
-    case 'confirmed':
-      return `✅ Votre commande ${orderNumber} a été confirmée par le producteur.`;
-    case 'shipped':
-      return `🚚 Votre commande ${orderNumber} est en cours de livraison.`;
-    case 'delivered':
-      return `📦 Votre commande ${orderNumber} a été livrée.`;
-    case 'completed':
-      return `⭐ Commande ${orderNumber} terminée. Merci pour votre confiance !`;
-    case 'cancelled':
-      return `❌ Votre commande ${orderNumber} a été annulée.`;
-    default:
-      return `📋 Mise à jour de votre commande ${orderNumber}.`;
+  private getOrderStatusMessage(
+    status: Sale['status'],
+    orderNumber: string,
+  ): string {
+    switch (status) {
+      case 'confirmed':
+        return `✅ Votre commande ${orderNumber} a été confirmée par le producteur.`;
+      case 'shipped':
+        return `🚚 Votre commande ${orderNumber} est en cours de livraison.`;
+      case 'delivered':
+        return `📦 Votre commande ${orderNumber} a été livrée.`;
+      case 'completed':
+        return `⭐ Commande ${orderNumber} terminée. Merci pour votre confiance !`;
+      case 'cancelled':
+        return `❌ Votre commande ${orderNumber} a été annulée.`;
+      default:
+        return `📋 Mise à jour de votre commande ${orderNumber}.`;
+    }
   }
-}
-
 
   // Exporter en CSV
   async exportSalesToCSV(
     producerId: string,
-    filter?: SalesFilter
+    filter?: SalesFilter,
   ): Promise<string> {
     try {
       const sales = await this.getSales(producerId, filter);
@@ -450,7 +472,7 @@ private getOrderStatusMessage(
 
       const csvContent = [
         headers.join(','),
-        ...rows.map(row => row.join(','))
+        ...rows.map((row) => row.join(',')),
       ].join('\n');
 
       return csvContent;
@@ -499,7 +521,7 @@ private getOrderStatusMessage(
   private getDateRange(
     period: string,
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
   ): { start: Date | null; end: Date | null } {
     const now = new Date();
     const start = new Date(now);
@@ -535,9 +557,10 @@ private getOrderStatusMessage(
   }
 
   private calculateMonthlyRevenue(
-    sales: Sale[]
+    sales: Sale[],
   ): { month: string; revenue: number; sales: number }[] {
-    const monthlyData: { [key: string]: { revenue: number; sales: number } } = {};
+    const monthlyData: { [key: string]: { revenue: number; sales: number } } =
+      {};
 
     sales.forEach((sale) => {
       const monthKey = sale.orderDate.toLocaleDateString('fr-FR', {
@@ -625,7 +648,8 @@ private getOrderStatusMessage(
   }
 
   private calculateDailyStats(sales: Sale[]) {
-    const dailyData: { [key: string]: { revenue: number; orders: number } } = {};
+    const dailyData: { [key: string]: { revenue: number; orders: number } } =
+      {};
 
     sales.forEach((sale) => {
       const dateKey = sale.orderDate.toLocaleDateString('fr-FR', {
@@ -655,12 +679,15 @@ private getOrderStatusMessage(
     const pastDate = new Date(now);
     pastDate.setDate(now.getDate() - days);
 
-    const recentSales = sales.filter(s => s.orderDate >= pastDate);
-    const olderSales = sales.filter(s => s.orderDate < pastDate);
+    const recentSales = sales.filter((s) => s.orderDate >= pastDate);
+    const olderSales = sales.filter((s) => s.orderDate < pastDate);
 
     if (olderSales.length === 0) return 100; // 100% d'augmentation si pas de ventes précédentes
 
-    const recentRevenue = recentSales.reduce((sum, s) => sum + s.totalAmount, 0);
+    const recentRevenue = recentSales.reduce(
+      (sum, s) => sum + s.totalAmount,
+      0,
+    );
     const olderRevenue = olderSales.reduce((sum, s) => sum + s.totalAmount, 0);
 
     if (olderRevenue === 0) return recentRevenue > 0 ? 100 : 0;
@@ -672,11 +699,13 @@ private getOrderStatusMessage(
     return currentRevenue * (1 + trend / 100);
   }
 
-  private getBestSellingDay(dailyStats?: { date: string; revenue: number; orders: number }[]): string {
+  private getBestSellingDay(
+    dailyStats?: { date: string; revenue: number; orders: number }[],
+  ): string {
     if (!dailyStats || dailyStats.length === 0) return 'N/A';
 
     const bestDay = dailyStats.reduce((prev, current) =>
-      prev.revenue > current.revenue ? prev : current
+      prev.revenue > current.revenue ? prev : current,
     );
 
     return bestDay.date;
@@ -687,14 +716,14 @@ private getOrderStatusMessage(
 
     const hourCounts: { [hour: string]: number } = {};
 
-    sales.forEach(sale => {
+    sales.forEach((sale) => {
       const hour = sale.orderDate.getHours();
       const hourKey = `${hour}h`;
       hourCounts[hourKey] = (hourCounts[hourKey] || 0) + 1;
     });
 
     const peakHour = Object.entries(hourCounts).reduce((a, b) =>
-      a[1] > b[1] ? a : b
+      a[1] > b[1] ? a : b,
     );
 
     return peakHour[0];
@@ -792,53 +821,51 @@ private getOrderStatusMessage(
     }).format(date);
   }
 
-    // ==================== POUR L'ACHETEUR ====================
+  // ==================== POUR L'ACHETEUR ====================
 
-// Obtenir les commandes d'un acheteur
-async getBuyerOrders(buyerId: string): Promise<Sale[]> {
-  try {
-    const q = query(
-      collection(this.firebaseService.firestore, 'sales'),
-      where('buyerId', '==', buyerId),
-      orderBy('orderDate', 'desc')
-    );
+  // Obtenir les commandes d'un acheteur
+  async getBuyerOrders(buyerId: string): Promise<Sale[]> {
+    try {
+      const q = query(
+        collection(this.firebaseService.firestore, 'sales'),
+        where('buyerId', '==', buyerId),
+        orderBy('orderDate', 'desc'),
+      );
 
-    const querySnapshot = await getDocs(q);
-    const orders: Sale[] = [];
+      const querySnapshot = await getDocs(q);
+      const orders: Sale[] = [];
 
-    querySnapshot.forEach(doc => {
-      orders.push(this.mapFirestoreDataToSale(doc.id, doc.data()));
-    });
+      querySnapshot.forEach((doc) => {
+        orders.push(this.mapFirestoreDataToSale(doc.id, doc.data()));
+      });
 
-    return orders;
-  } catch (error) {
-    console.error('Erreur chargement commandes acheteur:', error);
-    return [];
+      return orders;
+    } catch (error) {
+      console.error('Erreur chargement commandes acheteur:', error);
+      return [];
+    }
   }
-}
-// ==================== ACHETEURS D'UN PRODUCTEUR ====================
-// Utilisé pour notifier les acheteurs lorsqu’un producteur ajoute un produit
-async getBuyersForProducer(producerId: string): Promise<string[]> {
-  try {
-    const q = query(
-      collection(this.firebaseService.firestore, 'sales'),
-      where('producerId', '==', producerId)
-    );
+  // ==================== ACHETEURS D'UN PRODUCTEUR ====================
+  // Utilisé pour notifier les acheteurs lorsqu’un producteur ajoute un produit
+  async getBuyersForProducer(producerId: string): Promise<string[]> {
+    try {
+      const q = query(
+        collection(this.firebaseService.firestore, 'sales'),
+        where('producerId', '==', producerId),
+      );
 
-    const snapshot = await getDocs(q);
+      const snapshot = await getDocs(q);
 
-    // Récupérer tous les buyerId
-    const buyerIds = snapshot.docs
-      .map(doc => doc.data()['buyerId'])
-      .filter(Boolean);
+      // Récupérer tous les buyerId
+      const buyerIds = snapshot.docs
+        .map((doc) => doc.data()['buyerId'])
+        .filter(Boolean);
 
-    // Supprimer les doublons
-    return Array.from(new Set(buyerIds));
-  } catch (error) {
-    console.error('Erreur récupération acheteurs du producteur:', error);
-    return [];
+      // Supprimer les doublons
+      return Array.from(new Set(buyerIds));
+    } catch (error) {
+      console.error('Erreur récupération acheteurs du producteur:', error);
+      return [];
+    }
   }
-}
-
-
 }

@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FirebaseService } from '../../services/firebase.service';
 import { SalesService } from '../../services/sales.service';
-import { Sale } from '../../services/data.interfaces';
+import { Sale } from '../../interfaces/data.interfaces';
 import { NotificationService } from '../../services/notification.service';
 
 @Component({
@@ -30,7 +30,13 @@ export class OrderTrackingComponent implements OnInit {
   searchTerm = '';
   statusFilter: Sale['status'] | 'all' = 'all';
   dateFilter = 'all';
-  activeTab: 'all' | 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'completed' = 'all';
+  activeTab:
+    | 'all'
+    | 'pending'
+    | 'confirmed'
+    | 'shipped'
+    | 'delivered'
+    | 'completed' = 'all';
 
   // Statistiques
   stats = {
@@ -42,7 +48,7 @@ export class OrderTrackingComponent implements OnInit {
     completed: 0,
     cancelled: 0,
     totalRevenue: 0,
-    averageOrderValue: 0
+    averageOrderValue: 0,
   };
 
   // Options de filtre
@@ -53,23 +59,22 @@ export class OrderTrackingComponent implements OnInit {
     { id: 'shipped', name: 'Expédié' },
     { id: 'delivered', name: 'Livré' },
     { id: 'completed', name: 'Terminé' },
-    { id: 'cancelled', name: 'Annulé' }
+    { id: 'cancelled', name: 'Annulé' },
   ];
 
   dateOptions = [
     { id: 'all', name: 'Toute période' },
     { id: 'today', name: "Aujourd'hui" },
     { id: 'week', name: 'Cette semaine' },
-    { id: 'month', name: 'Ce mois' }
+    { id: 'month', name: 'Ce mois' },
   ];
 
   constructor(
-  private firebaseService: FirebaseService,
-  private salesService: SalesService,
-  private route: ActivatedRoute,
-  private notificationService: NotificationService   // ✅ AJOUT
-) {}
-
+    private firebaseService: FirebaseService,
+    private salesService: SalesService,
+    private route: ActivatedRoute,
+    private notificationService: NotificationService, // ✅ AJOUT
+  ) {}
 
   async ngOnInit() {
     this.isLoading = true;
@@ -87,7 +92,7 @@ export class OrderTrackingComponent implements OnInit {
     await this.loadOrders();
 
     // Vérifier si un ID de commande est passé dans l'URL
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params) => {
       if (params['orderId']) {
         this.showOrderDetails(params['orderId']);
       }
@@ -113,7 +118,6 @@ export class OrderTrackingComponent implements OnInit {
 
       // Appliquer les filtres par défaut
       this.applyFilters();
-
     } catch (error) {
       console.error('Erreur chargement commandes:', error);
       this.showNotification('Erreur de chargement des commandes', 'error');
@@ -123,16 +127,18 @@ export class OrderTrackingComponent implements OnInit {
   calculateStats() {
     this.stats = {
       total: this.orders.length,
-      pending: this.orders.filter(o => o.status === 'pending').length,
-      confirmed: this.orders.filter(o => o.status === 'confirmed').length,
-      shipped: this.orders.filter(o => o.status === 'shipped').length,
-      delivered: this.orders.filter(o => o.status === 'delivered').length,
-      completed: this.orders.filter(o => o.status === 'completed').length,
-      cancelled: this.orders.filter(o => o.status === 'cancelled').length,
+      pending: this.orders.filter((o) => o.status === 'pending').length,
+      confirmed: this.orders.filter((o) => o.status === 'confirmed').length,
+      shipped: this.orders.filter((o) => o.status === 'shipped').length,
+      delivered: this.orders.filter((o) => o.status === 'delivered').length,
+      completed: this.orders.filter((o) => o.status === 'completed').length,
+      cancelled: this.orders.filter((o) => o.status === 'cancelled').length,
       totalRevenue: this.orders.reduce((sum, o) => sum + o.totalAmount, 0),
-      averageOrderValue: this.orders.length > 0
-        ? this.orders.reduce((sum, o) => sum + o.totalAmount, 0) / this.orders.length
-        : 0
+      averageOrderValue:
+        this.orders.length > 0
+          ? this.orders.reduce((sum, o) => sum + o.totalAmount, 0) /
+            this.orders.length
+          : 0,
     };
   }
 
@@ -142,22 +148,25 @@ export class OrderTrackingComponent implements OnInit {
     // Filtre par recherche
     if (this.searchTerm.trim()) {
       const searchLower = this.searchTerm.toLowerCase().trim();
-      filtered = filtered.filter(order =>
-        order.orderNumber.toLowerCase().includes(searchLower) ||
-        order.productName.toLowerCase().includes(searchLower) ||
-        (this.isBuyer ? order.producerName : order.buyerName).toLowerCase().includes(searchLower)
+      filtered = filtered.filter(
+        (order) =>
+          order.orderNumber.toLowerCase().includes(searchLower) ||
+          order.productName.toLowerCase().includes(searchLower) ||
+          (this.isBuyer ? order.producerName : order.buyerName)
+            .toLowerCase()
+            .includes(searchLower),
       );
     }
 
     // Filtre par statut
     if (this.statusFilter && this.statusFilter !== 'all') {
-      filtered = filtered.filter(order => order.status === this.statusFilter);
+      filtered = filtered.filter((order) => order.status === this.statusFilter);
     }
 
     // Filtre par date
     if (this.dateFilter !== 'all') {
       const now = new Date();
-      filtered = filtered.filter(order => {
+      filtered = filtered.filter((order) => {
         const orderDate = new Date(order.orderDate);
 
         switch (this.dateFilter) {
@@ -179,7 +188,15 @@ export class OrderTrackingComponent implements OnInit {
   }
 
   // Navigation par onglets
-  setActiveTab(tab: 'all' | 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'completed') {
+  setActiveTab(
+    tab:
+      | 'all'
+      | 'pending'
+      | 'confirmed'
+      | 'shipped'
+      | 'delivered'
+      | 'completed',
+  ) {
     this.activeTab = tab;
     this.statusFilter = tab === 'all' ? 'all' : tab;
     this.applyFilters();
@@ -187,7 +204,7 @@ export class OrderTrackingComponent implements OnInit {
 
   // Afficher les détails d'une commande
   async showOrderDetails(orderId: string) {
-    this.selectedOrder = this.orders.find(o => o.id === orderId) || null;
+    this.selectedOrder = this.orders.find((o) => o.id === orderId) || null;
   }
 
   closeOrderDetails() {
@@ -195,54 +212,61 @@ export class OrderTrackingComponent implements OnInit {
   }
 
   // Mettre à jour le statut d'une commande (SEULEMENT pour producteur)
- async updateOrderStatus(orderId: string, newStatus: Sale['status']) {
-  if (!newStatus || !this.isProducer) return;
+  async updateOrderStatus(orderId: string, newStatus: Sale['status']) {
+    if (!newStatus || !this.isProducer) return;
 
-  try {
-    const result = await this.salesService.updateSaleStatus(orderId, newStatus);
-
-    if (result.success) {
-
-      // 🔔 CRÉATION NOTIFICATION POUR L’ACHETEUR
-      const order = this.orders.find(o => o.id === orderId);
-
-      if (order) {
-        await this.notificationService.createNotification({
-          userId: order.buyerId, // 🔴 UID de l’acheteur
-          type: 'order',
-          title: this.getNotificationTitle(newStatus),
-          message: `Commande ${order.orderNumber} : ${this.getStatusText(newStatus)}`,
-          link: '/buyer/tracking'
-        });
-      }
-
-      await this.loadOrders();
-      this.showNotification(
-        `Statut mis à jour: ${this.getStatusText(newStatus)}`,
-        'success'
+    try {
+      const result = await this.salesService.updateSaleStatus(
+        orderId,
+        newStatus,
       );
 
-    } else {
-      this.showNotification(`Erreur: ${result.error}`, 'error');
+      if (result.success) {
+        // 🔔 CRÉATION NOTIFICATION POUR L’ACHETEUR
+        const order = this.orders.find((o) => o.id === orderId);
+
+        if (order) {
+          await this.notificationService.createNotification({
+            userId: order.buyerId, // 🔴 UID de l’acheteur
+            type: 'order',
+            title: this.getNotificationTitle(newStatus),
+            message: `Commande ${order.orderNumber} : ${this.getStatusText(newStatus)}`,
+            link: '/buyer/tracking',
+          });
+        }
+
+        await this.loadOrders();
+        this.showNotification(
+          `Statut mis à jour: ${this.getStatusText(newStatus)}`,
+          'success',
+        );
+      } else {
+        this.showNotification(`Erreur: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      console.error('Erreur mise à jour statut:', error);
+      this.showNotification('Erreur lors de la mise à jour', 'error');
     }
-  } catch (error) {
-    console.error('Erreur mise à jour statut:', error);
-    this.showNotification('Erreur lors de la mise à jour', 'error');
   }
-}
 
-private getNotificationTitle(status: Sale['status']): string {
-  switch (status) {
-    case 'pending': return 'Commande en attente';
-    case 'confirmed': return 'Commande confirmée';
-    case 'shipped': return 'Commande expédiée';
-    case 'delivered': return 'Commande livrée';
-    case 'completed': return 'Commande terminée';
-    case 'cancelled': return 'Commande annulée';
-    default: return 'Mise à jour de commande';
+  private getNotificationTitle(status: Sale['status']): string {
+    switch (status) {
+      case 'pending':
+        return 'Commande en attente';
+      case 'confirmed':
+        return 'Commande confirmée';
+      case 'shipped':
+        return 'Commande expédiée';
+      case 'delivered':
+        return 'Commande livrée';
+      case 'completed':
+        return 'Commande terminée';
+      case 'cancelled':
+        return 'Commande annulée';
+      default:
+        return 'Mise à jour de commande';
+    }
   }
-}
-
 
   // ==================== UTILITAIRES POUR LE TEMPLATE ====================
 
@@ -256,27 +280,43 @@ private getNotificationTitle(status: Sale['status']): string {
 
   getStatusIcon(status: Sale['status']): string {
     switch (status) {
-      case 'pending': return '⏳';
-      case 'confirmed': return '✅';
-      case 'shipped': return '🚚';
-      case 'delivered': return '📦';
-      case 'completed': return '⭐';
-      case 'cancelled': return '❌';
-      case 'refunded': return '💸';
-      default: return '📋';
+      case 'pending':
+        return '⏳';
+      case 'confirmed':
+        return '✅';
+      case 'shipped':
+        return '🚚';
+      case 'delivered':
+        return '📦';
+      case 'completed':
+        return '⭐';
+      case 'cancelled':
+        return '❌';
+      case 'refunded':
+        return '💸';
+      default:
+        return '📋';
     }
   }
 
   getStatusBadgeClass(status: Sale['status']): string {
     switch (status) {
-      case 'pending': return 'badge-pending';
-      case 'confirmed': return 'badge-confirmed';
-      case 'shipped': return 'badge-shipped';
-      case 'delivered': return 'badge-delivered';
-      case 'completed': return 'badge-completed';
-      case 'cancelled': return 'badge-cancelled';
-      case 'refunded': return 'badge-refunded';
-      default: return 'badge-default';
+      case 'pending':
+        return 'badge-pending';
+      case 'confirmed':
+        return 'badge-confirmed';
+      case 'shipped':
+        return 'badge-shipped';
+      case 'delivered':
+        return 'badge-delivered';
+      case 'completed':
+        return 'badge-completed';
+      case 'cancelled':
+        return 'badge-cancelled';
+      case 'refunded':
+        return 'badge-refunded';
+      default:
+        return 'badge-default';
     }
   }
 
@@ -311,7 +351,7 @@ private getNotificationTitle(status: Sale['status']): string {
   getOrderProgress(order: Sale): number {
     const steps = ['pending', 'confirmed', 'shipped', 'delivered', 'completed'];
     const currentStepIndex = steps.indexOf(order.status);
-    return (currentStepIndex + 1) / steps.length * 100;
+    return ((currentStepIndex + 1) / steps.length) * 100;
   }
 
   // Réinitialiser les filtres
@@ -331,13 +371,16 @@ private getNotificationTitle(status: Sale['status']): string {
   }
 
   getPageSubtitle(): string {
-    if (this.isBuyer) return 'Suivez l\'état de vos commandes en temps réel';
+    if (this.isBuyer) return "Suivez l'état de vos commandes en temps réel";
     if (this.isProducer) return 'Gérez et suivez vos commandes clients';
     return 'Suivi des commandes';
   }
 
   // Notifications
-  private showNotification(message: string, type: 'success' | 'error' | 'info' = 'info') {
+  private showNotification(
+    message: string,
+    type: 'success' | 'error' | 'info' = 'info',
+  ) {
     const toast = document.createElement('div');
     toast.className = `notification toast-${type}`;
     toast.innerHTML = `

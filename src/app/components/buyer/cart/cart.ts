@@ -919,18 +919,6 @@ constructor(
     return new Promise((resolve) => setTimeout(resolve, 500));
   }
 
-  private saveUserAddress() {
-    const userData = this.authService.getUserData();
-    if (userData) {
-      userData.address = {
-        street: this.deliveryAddress.street,
-        city: this.deliveryAddress.city,
-        zipCode: this.deliveryAddress.zipCode,
-      };
-      this.authService.updateUserData(userData);
-    }
-  }
-
   // Sauvegarde et restauration
   saveCartForLater() {
     const savedCart: SavedCart = {

@@ -9,7 +9,11 @@
         "ignore": [
           "backdrop-filter",
           "user-select",
-          "-moz-appearance"
+          "-moz-appearance",
+          "scrollbar-width",
+          "scrollbar-width: none",
+          "scrollbar-color",
+          "scrollbar-width: thin"
         ]
       }
     ],

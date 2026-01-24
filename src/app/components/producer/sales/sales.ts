@@ -12,7 +12,7 @@ import {
   SalesStats,
   SalesFilter,
   StatCard,
-} from '../../../services/data.interfaces';
+} from '../../../interfaces/data.interfaces';
 
 @Component({
   selector: 'app-sales',
@@ -20,8 +20,7 @@ import {
   imports: [CommonModule, FormsModule],
   templateUrl: './sales.html',
   styleUrls: ['./sales.css'],
-    encapsulation: ViewEncapsulation.None,
-
+  encapsulation: ViewEncapsulation.None,
 })
 export class SalesComponent implements OnInit, OnDestroy {
   // Données
@@ -88,7 +87,7 @@ export class SalesComponent implements OnInit, OnDestroy {
 
   constructor(
     private firebaseService: FirebaseService,
-    private salesService: SalesService
+    private salesService: SalesService,
   ) {}
 
   async ngOnInit() {
@@ -116,7 +115,7 @@ export class SalesComponent implements OnInit, OnDestroy {
       // Charger les ventes
       this.sales = await this.salesService.getSales(
         currentUser.uid,
-        serviceFilter
+        serviceFilter,
       );
       this.filteredSales = [...this.sales];
 
@@ -165,7 +164,7 @@ export class SalesComponent implements OnInit, OnDestroy {
       const serviceFilter = this.prepareServiceFilter(this.filter);
       this.stats = await this.salesService.getSalesStats(
         currentUser.uid,
-        serviceFilter
+        serviceFilter,
       );
       this.updateStatCards();
     } catch (error) {
@@ -264,7 +263,7 @@ export class SalesComponent implements OnInit, OnDestroy {
           sale.productName.toLowerCase().includes(searchLower) ||
           sale.buyerName.toLowerCase().includes(searchLower) ||
           (sale.buyerPhone &&
-            sale.buyerPhone.includes(this.filter.searchQuery || ''))
+            sale.buyerPhone.includes(this.filter.searchQuery || '')),
       );
     }
 
@@ -276,14 +275,14 @@ export class SalesComponent implements OnInit, OnDestroy {
     // Filtre par méthode de paiement
     if (this.filter.paymentMethod && this.filter.paymentMethod !== 'all') {
       filtered = filtered.filter(
-        (sale) => sale.paymentMethod === this.filter.paymentMethod
+        (sale) => sale.paymentMethod === this.filter.paymentMethod,
       );
     }
 
     // Filtre par type de livraison
     if (this.filter.deliveryType && this.filter.deliveryType !== 'all') {
       filtered = filtered.filter(
-        (sale) => sale.deliveryType === this.filter.deliveryType
+        (sale) => sale.deliveryType === this.filter.deliveryType,
       );
     }
 
@@ -316,7 +315,7 @@ export class SalesComponent implements OnInit, OnDestroy {
     try {
       const result = await this.salesService.updateSaleStatus(
         saleId,
-        newStatus as any
+        newStatus as any,
       );
 
       if (result.success) {
@@ -344,7 +343,7 @@ export class SalesComponent implements OnInit, OnDestroy {
       const serviceFilter = this.prepareServiceFilter(this.filter);
       const csvContent = await this.salesService.exportSalesToCSV(
         currentUser.uid,
-        serviceFilter
+        serviceFilter,
       );
 
       if (csvContent) {
@@ -358,7 +357,7 @@ export class SalesComponent implements OnInit, OnDestroy {
         link.setAttribute('href', url);
         link.setAttribute(
           'download',
-          `ventes_${new Date().toISOString().split('T')[0]}.csv`
+          `ventes_${new Date().toISOString().split('T')[0]}.csv`,
         );
         link.style.visibility = 'hidden';
 
@@ -387,7 +386,7 @@ export class SalesComponent implements OnInit, OnDestroy {
           <p><strong>Numéro:</strong> ${sale.orderNumber}</p>
           <p><strong>Date:</strong> ${this.formatDate(sale.orderDate)}</p>
           <p><strong>Statut:</strong> <span class="status-badge ${this.getStatusClass(
-            sale.status
+            sale.status,
           )}">${this.getStatusText(sale.status)}</span></p>
         </div>
 
@@ -408,52 +407,52 @@ export class SalesComponent implements OnInit, OnDestroy {
           <p><strong>Nom:</strong> ${sale.productName}</p>
           <p><strong>Catégorie:</strong> ${sale.productCategory}</p>
           <p><strong>Quantité:</strong> ${sale.quantity} ${this.getProductUnit(
-      sale
-    )}</p>
+            sale,
+          )}</p>
           <p><strong>Prix unitaire:</strong> ${this.formatPrice(
-            sale.unitPrice
+            sale.unitPrice,
           )}/${this.getProductUnit(sale)}</p>
         </div>
 
         <div class="detail-section">
           <h4>💰 Montants</h4>
           <p><strong>Sous-total:</strong> ${this.formatPrice(
-            sale.totalAmount - (sale.deliveryFee || 0)
+            sale.totalAmount - (sale.deliveryFee || 0),
           )}</p>
           ${
             sale.deliveryFee
               ? `<p><strong>Frais de livraison:</strong> ${this.formatPrice(
-                  sale.deliveryFee
+                  sale.deliveryFee,
                 )}</p>`
               : ''
           }
           <p><strong class="total">Total:</strong> ${this.formatPrice(
-            sale.totalAmount
+            sale.totalAmount,
           )}</p>
         </div>
 
         <div class="detail-section">
           <h4>📊 Informations</h4>
           <p><strong>Méthode de paiement:</strong> ${this.getPaymentMethodText(
-            sale.paymentMethod
+            sale.paymentMethod,
           )}</p>
           <p><strong>Statut paiement:</strong> ${
             sale.paymentStatus || 'Non spécifié'
           }</p>
           <p><strong>Type de livraison:</strong> ${this.getDeliveryTypeText(
-            sale.deliveryType
+            sale.deliveryType,
           )}</p>
           ${
             sale.deliveryDate
               ? `<p><strong>Date de livraison:</strong> ${this.formatDate(
-                  sale.deliveryDate
+                  sale.deliveryDate,
                 )}</p>`
               : ''
           }
           ${
             sale.completionDate
               ? `<p><strong>Date de complétion:</strong> ${this.formatDate(
-                  sale.completionDate
+                  sale.completionDate,
                 )}</p>`
               : ''
           }
@@ -647,7 +646,7 @@ export class SalesComponent implements OnInit, OnDestroy {
   // Notifications
   private showNotification(
     message: string,
-    type: 'success' | 'error' | 'info' = 'success'
+    type: 'success' | 'error' | 'info' = 'success',
   ) {
     const toast = document.createElement('div');
     toast.className = `notification toast-${type}`;
@@ -738,6 +737,4 @@ export class SalesComponent implements OnInit, OnDestroy {
     const prefix = trend > 0 ? '+' : '';
     return `${prefix}${trend.toFixed(1)}%`;
   }
-
-
 }

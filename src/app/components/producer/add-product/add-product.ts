@@ -19,7 +19,7 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { FirebaseService } from '../../../services/firebase.service';
-import { Product } from '../../../services/data.interfaces';
+import { Product } from '../../../interfaces/data.interfaces';
 import { ViewEncapsulation } from '@angular/core';
 import { SalesService } from '../../../services/sales.service';
 import { NotificationService } from '../../../services/notification.service';
@@ -149,8 +149,7 @@ export class AddProductComponent implements OnInit, AfterViewInit {
   private router = inject(Router);
   private elementRef = inject(ElementRef);
   private salesService = inject(SalesService);
-private notificationService = inject(NotificationService);
-
+  private notificationService = inject(NotificationService);
 
   constructor() {
     this.productForm = this.fb.group({
@@ -242,7 +241,7 @@ private notificationService = inject(NotificationService);
 
   goToNextSection() {
     const currentIndex = this.sections.findIndex(
-      (s) => s.id === this.currentSection
+      (s) => s.id === this.currentSection,
     );
     if (currentIndex < this.sections.length - 1) {
       const nextSection = this.sections[currentIndex + 1];
@@ -252,7 +251,7 @@ private notificationService = inject(NotificationService);
 
   goToPreviousSection() {
     const currentIndex = this.sections.findIndex(
-      (s) => s.id === this.currentSection
+      (s) => s.id === this.currentSection,
     );
     if (currentIndex > 0) {
       const prevSection = this.sections[currentIndex - 1];
@@ -329,7 +328,7 @@ private notificationService = inject(NotificationService);
     });
 
     this.completionPercentage = Math.round(
-      (completedCount / this.sections.length) * 100
+      (completedCount / this.sections.length) * 100,
     );
 
     this.sections = this.sections.map((section) => ({
@@ -406,7 +405,7 @@ private notificationService = inject(NotificationService);
     if (!validTypes.includes(file.type)) {
       this.showNotification(
         'error',
-        'Format non supporté. Utilisez JPG, PNG ou WebP.'
+        'Format non supporté. Utilisez JPG, PNG ou WebP.',
       );
       return false;
     }
@@ -456,7 +455,7 @@ private notificationService = inject(NotificationService);
     if (this.productForm.invalid) {
       this.showNotification(
         'error',
-        'Veuillez corriger les erreurs dans le formulaire'
+        'Veuillez corriger les erreurs dans le formulaire',
       );
       this.markAllAsTouched();
       return;
@@ -505,30 +504,30 @@ private notificationService = inject(NotificationService);
 
       // Save to Firebase
       const result = await this.firebaseService.addProduct(productData);
-        if (result.success) {
-  // 🔔 NOTIFIER LES ACHETEURS DU PRODUCTEUR
-  const buyerIds = await this.salesService.getBuyersForProducer(
-    productData.producerId
-  );
+      if (result.success) {
+        // 🔔 NOTIFIER LES ACHETEURS DU PRODUCTEUR
+        const buyerIds = await this.salesService.getBuyersForProducer(
+          productData.producerId,
+        );
 
-  for (const buyerId of buyerIds) {
-    await this.notificationService.createNotification({
-      userId: buyerId,
-      type: 'product',
-      title: '🆕 Nouveau produit disponible',
-      message: `${productData.name} a été ajouté par ${productData.producerName}`,
-      link: '/buyer/market'
-    });
-  }
+        for (const buyerId of buyerIds) {
+          await this.notificationService.createNotification({
+            userId: buyerId,
+            type: 'product',
+            title: '🆕 Nouveau produit disponible',
+            message: `${productData.name} a été ajouté par ${productData.producerName}`,
+            link: '/buyer/market',
+          });
+        }
 
-  this.showNotification('success', 'Produit publié avec succès !');
+        this.showNotification('success', 'Produit publié avec succès !');
 
-  setTimeout(() => {
-    this.router.navigate(['/producer/products'], {
-      queryParams: { published: true },
-    });
-  }, 2000);
-}
+        setTimeout(() => {
+          this.router.navigate(['/producer/products'], {
+            queryParams: { published: true },
+          });
+        }, 2000);
+      }
 
       if (result.success) {
         this.showNotification('success', 'Produit publié avec succès !');
@@ -545,7 +544,7 @@ private notificationService = inject(NotificationService);
       console.error('Erreur:', error);
       this.showNotification(
         'error',
-        error.message || 'Une erreur est survenue'
+        error.message || 'Une erreur est survenue',
       );
     } finally {
       this.isSubmitting = false;
@@ -558,14 +557,14 @@ private notificationService = inject(NotificationService);
         !this.isSectionCompleted(s.id) &&
         s.id !== 'images' && // On exclut images de la vérification
         s.id !== 'certifications' &&
-        s.id !== 'additional-details'
+        s.id !== 'additional-details',
     );
 
     if (incompleteSections.length > 0) {
       const sectionNames = incompleteSections.map((s) => s.title).join(', ');
       this.showNotification(
         'warning',
-        `Veuillez compléter les sections : ${sectionNames}`
+        `Veuillez compléter les sections : ${sectionNames}`,
       );
 
       if (incompleteSections.length > 0) {
@@ -622,7 +621,7 @@ private notificationService = inject(NotificationService);
   cancelForm() {
     if (this.productForm.dirty) {
       const confirmLeave = confirm(
-        'Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?'
+        'Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?',
       );
       if (!confirmLeave) return;
     }
@@ -658,11 +657,11 @@ private notificationService = inject(NotificationService);
 
   private showNotification(
     type: 'success' | 'error' | 'info' | 'warning',
-    message: string
+    message: string,
   ) {
     // Remove any existing notifications
     const existingNotifications = document.querySelectorAll(
-      '.custom-notification'
+      '.custom-notification',
     );
     existingNotifications.forEach((notification) => notification.remove());
 
@@ -725,5 +724,4 @@ private notificationService = inject(NotificationService);
     if (!text || text.trim() === '') return 0;
     return text.trim().split(/\s+/).length;
   }
-  
 }

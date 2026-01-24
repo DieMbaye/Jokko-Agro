@@ -36,7 +36,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   // 🔥 NOUVEAU : État du chatbot
   isChatbotOpen = false;
-  
+
   // Configurations par défaut
   producerConfig: SidebarConfig = {
     type: 'producer',
@@ -99,7 +99,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   toggleChatbot() {
     this.isChatbotOpen = !this.isChatbotOpen;
     console.log('🤖 Chatbot:', this.isChatbotOpen ? 'ouvert' : 'fermé');
-    
+
     // Émettre un événement pour le composant parent
     if (this.isChatbotOpen) {
       this.openChatbotWindow();
@@ -138,7 +138,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       const container = document.createElement('div');
       container.innerHTML = chatbotHTML;
       document.body.appendChild(container.firstChild as Node);
-      
+
       // Ajouter les styles
       this.addChatbotStyles();
     }
@@ -165,12 +165,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
           overflow: hidden;
           animation: slideUp 0.3s ease;
         }
-        
+
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        
+
         .chatbot-sidebar-header {
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: white;
@@ -179,12 +179,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
           justify-content: space-between;
           align-items: center;
         }
-        
+
         .chatbot-sidebar-header h3 {
           margin: 0;
           font-size: 16px;
         }
-        
+
         .chatbot-sidebar-header button {
           background: none;
           border: none;
@@ -199,32 +199,32 @@ export class SidebarComponent implements OnInit, OnDestroy {
           justify-content: center;
           transition: background 0.3s;
         }
-        
+
         .chatbot-sidebar-header button:hover {
           background: rgba(255,255,255,0.2);
         }
-        
+
         .chatbot-sidebar-messages {
           flex: 1;
           padding: 15px;
           overflow-y: auto;
           background: #f8f9fa;
         }
-        
+
         .chatbot-sidebar-message {
           margin-bottom: 10px;
           padding: 10px 15px;
           border-radius: 15px;
           max-width: 80%;
         }
-        
+
         .chatbot-sidebar-message.bot {
           background: white;
           border: 1px solid #e0e0e0;
           align-self: flex-start;
           border-bottom-left-radius: 5px;
         }
-        
+
         .chatbot-sidebar-input {
           padding: 15px;
           background: white;
@@ -232,7 +232,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
           display: flex;
           gap: 10px;
         }
-        
+
         .chatbot-sidebar-input input {
           flex: 1;
           padding: 10px 15px;
@@ -241,7 +241,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
           font-size: 14px;
           outline: none;
         }
-        
+
         .chatbot-sidebar-input button {
           background: #667eea;
           color: white;
@@ -290,7 +290,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     return this.config.type === 'producer' ? '👨‍🌾 Producteur' : '🛒 Acheteur';
   }
 
- 
+
 
   getInitials(): string {
     if (!this.userData?.fullName) return 'U';

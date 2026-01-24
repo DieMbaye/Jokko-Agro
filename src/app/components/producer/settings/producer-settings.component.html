@@ -5,148 +5,77 @@
     ✅ Modifications enregistrées avec succès
   </div>
 
-  <!-- Sidebar -->
-  <aside class="producer-sidebar">
-    <div class="sidebar-header">
-      <div class="producer-avatar">{{ producerData.avatar }}</div>
-      <div class="producer-info">
-        <h3>{{ producerData.farmName }}</h3>
-        <p>{{ producerData.fullName }}</p>
-        <span class="subscription-badge" [class]="producerData.subscription">
-          {{ producerData.subscription === 'premium' ? '⭐ Premium' : 
-             producerData.subscription === 'pro' ? '🚀 Pro' : '🌱 Basique' }}
-        </span>
+  <!-- Header avec navigation horizontale -->
+  <header class="settings-header">
+    <div class="profile-summary">
+      <div class="producer-avatar-main">{{ producerData.avatar }}</div>
+      <div class="profile-info">
+        <h2>{{ producerData.farmName || 'Votre exploitation' }}</h2>
+        <div class="profile-meta">
+          <span>{{ producerData.fullName || 'Producteur' }}</span>
+          •
+          <span>Producteur depuis {{ producerData.joinDate | date:'MM/yyyy' }}</span>
+          •
+          <span class="subscription-badge-main" [class]="producerData.subscription">
+            {{ producerData.subscription === 'premium' ? '⭐ Premium' :
+               producerData.subscription === 'pro' ? '🚀 Pro' : '🌱 Basique' }}
+          </span>
+        </div>
       </div>
     </div>
 
-    <nav class="sidebar-nav">
-      <button (click)="activeSection = 'overview'" [class.active]="activeSection === 'overview'">
-        <span class="nav-icon">📊</span>
+    <!-- Navigation par onglets -->
+    <nav class="nav-tabs">
+      <button class="nav-tab" (click)="activeSection = 'overview'" [class.active]="activeSection === 'overview'">
+        <span class="tab-icon">📊</span>
         Vue d'ensemble
       </button>
 
-      <button (click)="activeSection = 'profile'" [class.active]="activeSection === 'profile'">
-        <span class="nav-icon">👤</span>
+      <button class="nav-tab" (click)="activeSection = 'profile'" [class.active]="activeSection === 'profile'">
+        <span class="tab-icon">👤</span>
         Profil
       </button>
 
-      <button (click)="activeSection = 'farm'" [class.active]="activeSection === 'farm'">
-        <span class="nav-icon">🏡</span>
+      <button class="nav-tab" (click)="activeSection = 'farm'" [class.active]="activeSection === 'farm'">
+        <span class="tab-icon">🏡</span>
         Exploitation
       </button>
 
-      <button (click)="activeSection = 'banking'" [class.active]="activeSection === 'banking'">
-        <span class="nav-icon">💰</span>
+      <button class="nav-tab" (click)="activeSection = 'banking'" [class.active]="activeSection === 'banking'">
+        <span class="tab-icon">💰</span>
         Paiements
       </button>
 
-      <button (click)="activeSection = 'products'" [class.active]="activeSection === 'products'">
-        <span class="nav-icon">📦</span>
-        Produits
-        <span *ngIf="stats.pendingOrders > 0" class="notification-badge">{{ stats.pendingOrders }}</span>
-      </button>
-
-      <button (click)="activeSection = 'certifications'" [class.active]="activeSection === 'certifications'">
-        <span class="nav-icon">🏆</span>
-        Certifications
-      </button>
-
-      <button (click)="activeSection = 'security'" [class.active]="activeSection === 'security'">
-        <span class="nav-icon">🔒</span>
+      <button class="nav-tab" (click)="activeSection = 'security'" [class.active]="activeSection === 'security'">
+        <span class="tab-icon">🔒</span>
         Sécurité
-      </button>
-
-      <!-- Actions rapides -->
-      <div class="nav-divider">Actions rapides</div>
-
-      <button (click)="navigateTo('/producer/add-product')" class="nav-action">
-        <span class="nav-icon">➕</span>
-        Ajouter un produit
-      </button>
-
-      <button (click)="navigateTo('/producer/sales')" class="nav-action">
-        <span class="nav-icon">📈</span>
-        Voir les ventes
-      </button>
-
-      <button (click)="navigateTo('/producer/certifications')" class="nav-action">
-        <span class="nav-icon">📋</span>
-        Gérer les certifications
+        <span *ngIf="unreadCount > 0" class="tab-badge">{{ unreadCount }}</span>
       </button>
     </nav>
-
-    <div class="sidebar-footer">
-      <button class="support-btn" (click)="navigateTo('/producer/messages')">
-        <span class="support-icon">💬</span>
-        Support
-      </button>
-      <button class="logout-btn" (click)="logout()">
-        <span class="logout-icon">🚪</span>
-        Déconnexion
-      </button>
-    </div>
-  </aside>
+  </header>
 
   <!-- Contenu principal -->
   <main class="producer-content">
-    
+
     <!-- Vue d'ensemble -->
     <div *ngIf="activeSection === 'overview'" class="overview-section">
       <div class="section-header">
-        <h1>Vue d'ensemble du compte</h1>
-        <p class="welcome-text">Bienvenue dans votre espace personnel, {{ producerData.fullName }} 👨‍🌾</p>
-      </div>
-
-      <!-- Cartes de statistiques -->
-      <div class="stats-cards">
-        <div class="stat-card">
-          <div class="stat-icon" style="background: #e3f2fd; color: #1976d2;">📦</div>
-          <div class="stat-info">
-            <h3>{{ stats.totalProducts }}</h3>
-            <p>Produits</p>
-          </div>
-          <div class="stat-detail">
-            <span class="active">{{ stats.activeProducts }} actifs</span>
-          </div>
-        </div>
-
-        <div class="stat-card" (click)="navigateTo('/producer/sales')">
-          <div class="stat-icon" style="background: #e8f5e9; color: #388e3c;">💰</div>
-          <div class="stat-info">
-            <h3>{{ stats.monthlyRevenue }}€</h3>
-            <p>Revenu mensuel</p>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon" style="background: #fff3e0; color: #f57c00;">⭐</div>
-          <div class="stat-info">
-            <h3>{{ stats.averageRating }}/5</h3>
-            <p>Note moyenne</p>
-          </div>
-        </div>
-
-        <div class="stat-card" (click)="activeSection = 'certifications'">
-          <div class="stat-icon" style="background: #f3e5f5; color: #7b1fa2;">🏆</div>
-          <div class="stat-info">
-            <h3>{{ stats.completedCertifications }}</h3>
-            <p>Certifications</p>
-          </div>
-        </div>
+        <h1>Tableau de bord producteur</h1>
+        <p class="welcome-text">Bienvenue dans votre espace, {{ producerData.fullName || 'Producteur' }} 👨‍🌾</p>
       </div>
 
       <!-- Produits récents -->
-      <div class="recent-products">
+      <div class="recent-products" *ngIf="recentProducts.length > 0">
         <div class="section-title">
-          <h2>📦 Produits récents</h2>
+          <h2>📦 Vos produits</h2>
           <button class="view-all" (click)="navigateTo('/producer/products')">Gérer les produits →</button>
         </div>
-        
+
         <div class="products-grid">
           <div *ngFor="let product of recentProducts" class="product-card">
             <div class="product-header">
               <h4>{{ product.name }}</h4>
-              <span class="product-category">{{ product.category }}</span>
+              <span class="product-category">{{ product.category || 'Produit' }}</span>
             </div>
             <div class="product-details">
               <div class="product-price">{{ product.price }}€/unité</div>
@@ -164,25 +93,20 @@
       <!-- Actions rapides -->
       <div class="quick-actions-grid">
         <div class="section-title">
-          <h2>⚡ Gestion rapide</h2>
+          <h2>⚡ Actions rapides</h2>
         </div>
-        
+
         <div class="actions-grid">
           <button class="action-card" (click)="navigateTo('/producer/add-product')">
             <span class="action-icon">➕</span>
             <span class="action-text">Ajouter produit</span>
           </button>
-          
-          <button class="action-card" (click)="navigateTo('/producer/tracking')">
+
+          <button class="action-card" (click)="navigateTo('/producer/orders')">
             <span class="action-icon">📦</span>
-            <span class="action-text">Suivi commandes</span>
+            <span class="action-text">Voir commandes</span>
           </button>
-          
-          <button class="action-card" (click)="navigateTo('/producer/certifications')">
-            <span class="action-icon">📋</span>
-            <span class="action-text">Certifications</span>
-          </button>
-          
+
           <button class="action-card" (click)="exportData()">
             <span class="action-icon">📥</span>
             <span class="action-text">Exporter données</span>
@@ -196,18 +120,27 @@
           <h2>🔔 Notifications récentes</h2>
           <button class="view-all" (click)="markAllAsRead()">Tout marquer lu</button>
         </div>
-        
+
         <div class="notifications-list">
-          <div *ngFor="let notification of notifications.slice(0, 3)" 
-               class="notification-item" 
+          <div *ngIf="notifications.length === 0" class="notification-item">
+            <div class="notification-icon">
+              <span>✅</span>
+            </div>
+            <div class="notification-content">
+              <h4>Aucune notification</h4>
+              <p>Toutes vos notifications sont lues</p>
+            </div>
+          </div>
+
+          <div *ngFor="let notification of notifications.slice(0, 3)"
+               class="notification-item"
                [class.unread]="!notification.read">
-            
+
             <div class="notification-icon">
               <span *ngIf="!notification.read" class="unread-dot"></span>
-              <span>{{ 
-                notification.type === 'order' ? '📦' : 
-                notification.type === 'stock' ? '📊' :
-                notification.type === 'certification' ? '🏆' : '🔔'
+              <span>{{
+                notification.type === 'order' ? '📦' :
+                notification.type === 'stock' ? '📊' : '🔔'
               }}</span>
             </div>
 
@@ -232,32 +165,27 @@
         <div class="form-grid">
           <div class="form-group">
             <label>Nom complet</label>
-            <input type="text" [(ngModel)]="producerData.fullName" name="fullName" placeholder="Votre nom complet">
+            <input type="text" [(ngModel)]="producerData.fullName" name="fullName"
+                   placeholder="Votre nom complet" required>
           </div>
 
           <div class="form-group">
             <label>Email</label>
-            <input type="email" [(ngModel)]="producerData.email" name="email" placeholder="producteur@email.com" disabled>
+            <input type="email" [(ngModel)]="producerData.email" name="email"
+                   placeholder="producteur@email.com" disabled>
             <small class="form-help">Contact principal pour les notifications</small>
           </div>
 
           <div class="form-group">
             <label>Téléphone</label>
-            <input type="tel" [(ngModel)]="producerData.phone" name="phone" placeholder="+33 6 12 34 56 78">
-          </div>
-
-          <div class="form-group">
-            <label>Photo de profil</label>
-            <div class="avatar-upload">
-              <div class="current-avatar">{{ producerData.avatar }}</div>
-              <button type="button" class="btn-secondary btn-small">Changer</button>
-            </div>
+            <input type="tel" [(ngModel)]="producerData.phone" name="phone"
+                   placeholder="+33 6 12 34 56 78">
           </div>
 
           <div class="form-group full-width">
-            <label>Description</label>
-            <textarea [(ngModel)]="producerData.farmDescription" name="farmDescription" 
-                     placeholder="Décrivez votre exploitation, vos méthodes de production..." 
+            <label>Description de votre exploitation</label>
+            <textarea [(ngModel)]="producerData.farmDescription" name="farmDescription"
+                     placeholder="Décrivez votre exploitation, vos méthodes de production, votre philosophie..."
                      rows="4"></textarea>
             <small class="form-help">Cette description apparaîtra sur votre profil public</small>
           </div>
@@ -283,24 +211,28 @@
         <div class="form-grid">
           <div class="form-group">
             <label>Nom de l'exploitation</label>
-            <input type="text" [(ngModel)]="producerData.farmName" name="farmName" placeholder="Nom de votre ferme">
+            <input type="text" [(ngModel)]="producerData.farmName" name="farmName"
+                   placeholder="Nom de votre ferme" required>
           </div>
 
           <div class="form-group">
             <label>Type d'exploitation</label>
             <select [(ngModel)]="producerData.farmType" name="farmType">
+              <option value="">Sélectionnez un type</option>
               <option *ngFor="let type of farmTypes" [value]="type.id">{{ type.label }}</option>
             </select>
           </div>
 
           <div class="form-group">
             <label>Surface (hectares)</label>
-            <input type="number" [(ngModel)]="producerData.farmSize" name="farmSize" placeholder="25">
+            <input type="number" [(ngModel)]="producerData.farmSize" name="farmSize"
+                   placeholder="25" min="0" step="0.1">
           </div>
 
           <div class="form-group full-width">
             <label>Adresse de l'exploitation</label>
-            <input type="text" [(ngModel)]="producerData.farmAddress" name="farmAddress" placeholder="123 Route des Champs">
+            <input type="text" [(ngModel)]="producerData.farmAddress" name="farmAddress"
+                   placeholder="123 Route des Champs">
           </div>
 
           <div class="form-group">
@@ -310,16 +242,8 @@
 
           <div class="form-group">
             <label>Code postal</label>
-            <input type="text" [(ngModel)]="producerData.farmPostalCode" name="farmPostalCode" placeholder="69000">
-          </div>
-
-          <div class="form-group full-width">
-            <label>Coordonnées GPS (optionnel)</label>
-            <div class="gps-input">
-              <input type="text" placeholder="Latitude" class="gps-coord">
-              <input type="text" placeholder="Longitude" class="gps-coord">
-              <button type="button" class="btn-secondary btn-small">📍 Localiser</button>
-            </div>
+            <input type="text" [(ngModel)]="producerData.farmPostalCode" name="farmPostalCode"
+                   placeholder="69000">
           </div>
         </div>
 
@@ -343,54 +267,34 @@
         <div class="banking-grid">
           <div class="banking-card">
             <h3>🏦 Compte bancaire</h3>
-            
+
             <div class="form-group">
               <label>Nom de la banque</label>
-              <input type="text" [(ngModel)]="bankingInfo.bankName" name="bankName" placeholder="Banque Agricole">
+              <input type="text" [(ngModel)]="bankingInfo.bankName" name="bankName"
+                     placeholder="Banque Agricole">
             </div>
 
             <div class="form-group">
               <label>Titulaire du compte</label>
-              <input type="text" [(ngModel)]="bankingInfo.accountHolder" name="accountHolder" placeholder="Jean Dupont">
+              <input type="text" [(ngModel)]="bankingInfo.accountHolder" name="accountHolder"
+                     placeholder="Jean Dupont">
             </div>
 
             <div class="form-group">
               <label>IBAN</label>
-              <input type="text" [(ngModel)]="bankingInfo.iban" name="iban" placeholder="FR76 3000 4000 0100 1234 5678 900">
+              <input type="text" [(ngModel)]="bankingInfo.iban" name="iban"
+                     placeholder="FR76 3000 4000 0100 1234 5678 900">
             </div>
 
             <div class="form-group">
               <label>BIC/SWIFT</label>
-              <input type="text" [(ngModel)]="bankingInfo.bic" name="bic" placeholder="AGRIFRPP">
+              <input type="text" [(ngModel)]="bankingInfo.bic" name="bic"
+                     placeholder="AGRIFRPP">
             </div>
 
             <div class="security-note">
               <span class="secure-icon">🔒</span>
               <span>Vos informations bancaires sont sécurisées et cryptées</span>
-            </div>
-          </div>
-
-          <div class="banking-card">
-            <h3>📊 Paiements & Commissions</h3>
-            
-            <div class="payment-info">
-              <div class="payment-item">
-                <span>Commission plateforme</span>
-                <strong>5%</strong>
-              </div>
-              <div class="payment-item">
-                <span>Délai de paiement</span>
-                <strong>7 jours</strong>
-              </div>
-              <div class="payment-item">
-                <span>Prochain paiement</span>
-                <strong>1 245€ (28 Fév)</strong>
-              </div>
-            </div>
-
-            <div class="payment-actions">
-              <button type="button" class="btn-secondary">Voir l'historique</button>
-              <button type="button" class="btn-primary">Télécharger relevé</button>
             </div>
           </div>
         </div>
@@ -402,148 +306,6 @@
           </button>
         </div>
       </form>
-    </div>
-
-    <!-- Section Produits -->
-    <div *ngIf="activeSection === 'products'" class="products-section">
-      <div class="section-header">
-        <h1>📦 Gestion des produits</h1>
-        <div class="header-actions">
-          <button class="btn-primary" (click)="navigateTo('/producer/add-product')">
-            ➕ Nouveau produit
-          </button>
-          <span class="products-count">{{ stats.activeProducts }} produits actifs</span>
-        </div>
-      </div>
-
-      <div class="products-management">
-        <div class="products-filters">
-          <button class="filter-btn active">Tous ({{ stats.totalProducts }})</button>
-          <button class="filter-btn">Actifs ({{ stats.activeProducts }})</button>
-          <button class="filter-btn">Rupture ({{ stats.totalProducts - stats.activeProducts }})</button>
-        </div>
-
-        <div class="products-table">
-          <div class="table-header">
-            <div class="table-cell">Produit</div>
-            <div class="table-cell">Catégorie</div>
-            <div class="table-cell">Prix</div>
-            <div class="table-cell">Stock</div>
-            <div class="table-cell">Statut</div>
-            <div class="table-cell">Actions</div>
-          </div>
-
-          <div *ngFor="let product of recentProducts" class="table-row">
-            <div class="table-cell">
-              <strong>{{ product.name }}</strong>
-              <small>#{{ product.id }}</small>
-            </div>
-            <div class="table-cell">{{ product.category }}</div>
-            <div class="table-cell">{{ product.price }}€</div>
-            <div class="table-cell">
-              <span [class]="product.stock > 0 ? 'stock-good' : 'stock-bad'">
-                {{ product.stock }}
-              </span>
-            </div>
-            <div class="table-cell">
-              <span class="status-badge" [class]="product.status">
-                {{ product.status === 'active' ? 'Actif' : 'Rupture' }}
-              </span>
-            </div>
-            <div class="table-cell actions">
-              <button class="btn-small btn-secondary">Modifier</button>
-              <button class="btn-small btn-text">Supprimer</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="stock-alerts">
-        <h3>🔔 Alertes stock</h3>
-        <div class="alerts-list">
-         <div *ngIf="hasLowStock" class="alert-item warning">
-  ⚠️ {{ lowStockCount }} produit(s) ont un stock faible
-</div>
-
-<div *ngIf="hasOutOfStock" class="alert-item danger">
-  ❌ {{ outOfStockCount }} produit(s) en rupture de stock
-</div>
-
-<div *ngIf="allStockOk" class="alert-item success">
-  ✅ Tous les stocks sont suffisants
-</div>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- Section Certifications -->
-    <div *ngIf="activeSection === 'certifications'" class="certifications-section">
-      <div class="section-header">
-        <h1>🏆 Certifications & Labels</h1>
-        <p>Gérez vos certifications pour renforcer la confiance</p>
-      </div>
-
-      <div class="certifications-grid">
-        <div *ngFor="let cert of certifications" class="certification-card" [class]="cert.status">
-          <div class="certification-header">
-            <h3>{{ cert.name }}</h3>
-            <span class="cert-status" [class]="cert.status">
-              {{ cert.status === 'active' ? 'Active' : 
-                 cert.status === 'pending' ? 'En attente' : 'Expirée' }}
-            </span>
-          </div>
-          
-          <div class="certification-details">
-            <div class="detail-item">
-              <span>Expiration:</span>
-              <strong>{{ cert.expiry }}</strong>
-            </div>
-            <div class="detail-item">
-              <span>ID Certification:</span>
-              <code>{{ cert.id }}</code>
-            </div>
-          </div>
-
-          <div class="certification-actions">
-            <button class="btn-small btn-primary" 
-                    [disabled]="cert.status === 'expired'"
-                    (click)="navigateTo('/producer/certification/' + cert.id)">
-              {{ cert.status === 'expired' ? 'Renouveler' : 'Voir détails' }}
-            </button>
-            <button class="btn-small btn-text">Télécharger</button>
-          </div>
-        </div>
-
-        <div class="certification-card add-certification">
-          <div class="add-cert-content">
-            <span class="add-icon">➕</span>
-            <h3>Ajouter une certification</h3>
-            <p>Renforcez la confiance dans vos produits</p>
-            <button class="btn-primary" (click)="navigateTo('/producer/certifications')">
-              Démarrer
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="certification-benefits">
-        <h3>🎯 Avantages des certifications</h3>
-        <div class="benefits-list">
-          <div class="benefit-item">
-            <span class="benefit-icon">💰</span>
-            <span>+30% de valorisation moyenne</span>
-          </div>
-          <div class="benefit-item">
-            <span class="benefit-icon">👥</span>
-            <span>Confiance accrue des clients</span>
-          </div>
-          <div class="benefit-item">
-            <span class="benefit-icon">📈</span>
-            <span>Visibilité améliorée</span>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Section Sécurité -->
@@ -560,21 +322,24 @@
           <form (ngSubmit)="updateSecurity()" #securityForm="ngForm" class="security-form">
             <div class="form-group">
               <label>Mot de passe actuel</label>
-              <input type="password" [(ngModel)]="security.currentPassword" name="currentPassword" required>
+              <input type="password" [(ngModel)]="security.currentPassword" name="currentPassword"
+                     required minlength="6">
             </div>
-            
+
             <div class="form-group">
               <label>Nouveau mot de passe</label>
-              <input type="password" [(ngModel)]="security.newPassword" name="newPassword" required>
+              <input type="password" [(ngModel)]="security.newPassword" name="newPassword"
+                     required minlength="6">
             </div>
-            
+
             <div class="form-group">
               <label>Confirmer le nouveau mot de passe</label>
-              <input type="password" [(ngModel)]="security.confirmPassword" name="confirmPassword" required>
+              <input type="password" [(ngModel)]="security.confirmPassword" name="confirmPassword"
+                     required minlength="6">
             </div>
-            
+
             <button type="submit" class="btn-primary" [disabled]="saving">
-              {{ saving ? 'Mise à jour...' : 'Mettre à jour' }}
+              {{ saving ? 'Mise à jour...' : 'Mettre à jour le mot de passe' }}
             </button>
           </form>
         </div>
@@ -598,6 +363,12 @@
         <div class="security-card wide">
           <h3>📋 Activité récente</h3>
           <div class="activity-list">
+            <div *ngIf="activityHistory.length === 0" class="activity-item">
+              <div class="activity-info">
+                <strong>Aucune activité récente</strong>
+              </div>
+            </div>
+
             <div *ngFor="let activity of activityHistory" class="activity-item">
               <div class="activity-icon">🔍</div>
               <div class="activity-info">

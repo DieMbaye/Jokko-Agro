@@ -1,34 +1,104 @@
+/* ============================================
+   REGISTER - STYLE ÉPURÉ
+   ============================================ */
+
 .register-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: url(../../../../assets/bg/bg_auth.jpg);
+  background-size: cover;
+  background-position: center;
   padding: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Effet de fond agricole amélioré */
+.register-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(
+      circle at 15% 15%,
+      rgba(47, 133, 90, 0.08) 0%,
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 85% 85%,
+      rgba(246, 173, 85, 0.08) 0%,
+      transparent 25%
+    ),
+    linear-gradient(
+      45deg,
+      transparent 48%,
+      rgba(56, 161, 105, 0.03) 50%,
+      transparent 52%
+    );
+  z-index: 0;
 }
 
 .register-card {
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  padding: 3rem;
+  background: rgba(255, 255, 255, 0.571);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: 3.5rem;
   width: 100%;
-  max-width: 450px;
+  max-width: 480px;
+  position: relative;
+  z-index: 1;
+  border: 1px solid var(--border-light);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.register-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
 }
 
 .register-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  position: relative;
 }
 
 .register-header h1 {
-  color: #2e7d32;
-  margin-bottom: 0.5rem;
+  color: var(--primary-green);
+  margin-bottom: 0.75rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  position: relative;
+  display: inline-block;
+}
+
+.register-header h1::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--primary-green),
+    var(--accent-orange)
+  );
+  border-radius: 2px;
 }
 
 .register-header p {
-  color: #666;
+  color: var(--text-gray);
   margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: 0.3px;
 }
 
 .register-form {
@@ -36,139 +106,386 @@
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  position: relative;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.5rem;
-  color: #333;
-  font-weight: 500;
+  margin-bottom: 0.75rem;
+  color: var(--text-dark);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
 }
 
+.form-group label::after {
+  content: " *";
+  color: var(--error-red);
+  font-size: 0.9em;
+}
+
+.form-group label:has(+ .role-options)::after {
+  display: none;
+}
+
+/* Inputs */
 .form-group input[type="text"],
 .form-group input[type="tel"],
 .form-group input[type="email"],
-.form-group input[type="password"] {
+.form-group input[type="password"],
+.form-group select {
   width: 100%;
-  padding: 0.8rem 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-lg);
   font-size: 1rem;
-  transition: border-color 0.3s;
+  transition: all 0.3s ease;
+  background: var(--bg-light);
+  font-family: inherit;
+  appearance: none;
 }
 
-.form-group input:focus {
+.form-group select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.25rem center;
+  background-size: 16px;
+  padding-right: 3rem;
+  cursor: pointer;
+}
+
+.form-group input::placeholder,
+.form-group select:invalid {
+  color: var(--text-light);
+  opacity: 0.7;
+}
+
+.form-group input:focus,
+.form-group select:focus {
   outline: none;
-  border-color: #2e7d32;
-  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+  border-color: var(--primary-green);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(47, 133, 90, 0.15);
+  transform: translateY(-1px);
 }
 
+.form-group select option {
+  padding: 1rem;
+  background: white;
+}
+
+/* Options de rôle */
 .role-options {
   display: flex;
   gap: 1rem;
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 .role-option {
   flex: 1;
   display: flex;
   align-items: center;
-  padding: 1rem;
-  border: 2px solid #ddd;
-  border-radius: 8px;
+  justify-content: center;
+  padding: 1.25rem;
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  background: var(--bg-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.role-option::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    var(--primary-green) 0%,
+    var(--accent-orange) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
 }
 
 .role-option:hover {
-  border-color: #4caf50;
-  background: #f9f9f9;
+  border-color: var(--primary-green);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .role-option input[type="radio"] {
-  margin-right: 0.5rem;
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
 .role-option span {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
+  gap: 0.75rem;
+  font-weight: 600;
+  color: var(--text-gray);
+  z-index: 1;
+  transition: color 0.3s ease;
+  font-size: 0.95rem;
 }
 
 .role-option input[type="radio"]:checked + span {
-  color: #2e7d32;
+  color: var(--text-white);
 }
 
+.role-option input[type="radio"]:checked + span::before {
+  content: "✓";
+  display: inline-block;
+  margin-right: 0.25rem;
+}
+
+.role-option input[type="radio"]:checked ~ .role-option::before {
+  opacity: 1;
+}
+
+.role-option input[type="radio"]:checked ~ .role-option {
+  border-color: var(--primary-green);
+  background: linear-gradient(
+    135deg,
+    var(--primary-green) 0%,
+    var(--primary-green-dark) 100%
+  );
+}
+
+/* Messages d'erreur */
+.error-message {
+  background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+  color: var(--error-red);
+  padding: 1.25rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 2rem;
+  text-align: center;
+  border-left: 4px solid var(--error-red);
+  animation: slideIn 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.error-text {
+  color: var(--error-red);
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.error-text::before {
+  content: "⚠";
+  font-size: 0.9rem;
+}
+
+/* Validation states */
+.form-group input.ng-valid.ng-touched,
+.form-group select.ng-valid.ng-touched {
+  border-color: var(--success-green);
+}
+
+.form-group input.ng-invalid.ng-touched,
+.form-group select.ng-invalid.ng-touched {
+  border-color: var(--error-red);
+}
+
+/* Bouton d'inscription */
 .btn-register {
   width: 100%;
-  padding: 1rem;
-  background: #2e7d32;
-  color: white;
+  padding: 1.25rem;
+  background: linear-gradient(
+    135deg,
+    var(--primary-green) 0%,
+    var(--primary-green-dark) 100%
+  );
+  color: var(--text-white);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   font-size: 1.1rem;
-  font-weight: bold;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.3s;
-  margin-top: 1rem;
+  transition: all 0.3s ease;
+  margin-top: 2rem;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-register::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
 }
 
 .btn-register:hover {
-  background: #1b5e20;
+  background: linear-gradient(
+    135deg,
+    var(--primary-green-light) 0%,
+    var(--primary-green) 100%
+  );
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-register:hover::before {
+  left: 100%;
+}
+
+.btn-register:active {
+  transform: translateY(0);
+}
+
+.btn-register:disabled {
+  background: linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-register:disabled::before {
+  display: none;
+}
+
+.btn-register span[ngIf="isLoading"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  animation: pulse 1.5s infinite;
+}
+
+.btn-register span[ngIf="isLoading"]::after {
+  content: "";
+  width: 16px;
+  height: 16px;
+  border: 2px solid white;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
 .register-footer {
+  margin-top: 2.5rem;
   text-align: center;
-  color: #666;
-}
-
-.register-footer a {
-  color: #2e7d32;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.register-footer a:hover {
-  text-decoration: underline;
+  color: var(--text-gray);
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-light);
 }
 
 .register-footer p {
-  margin: 0.5rem 0;
+  margin: 0.75rem 0;
+  font-size: 0.95rem;
+}
+
+.register-footer a {
+  color: var(--primary-green);
+  text-decoration: none;
+  font-weight: 600;
+  position: relative;
+  display: inline-block;
+  transition: color 0.3s ease;
+}
+
+.register-footer a::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--accent-orange);
+  transition: width 0.3s ease;
+}
+
+.register-footer a:hover {
+  color: var(--primary-green-dark);
+  text-decoration: none;
+}
+
+.register-footer a:hover::after {
+  width: 100%;
+}
+
+.register-footer a[routerLink="/"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.register-footer a[routerLink="/"]::before {
+  content: "←";
+  font-size: 1.1rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .register-card {
+    padding: 3rem 2rem;
+  }
 }
 
 @media (max-width: 480px) {
   .register-card {
-    padding: 2rem 1.5rem;
+    padding: 2.5rem 1.75rem;
+  }
+
+  .register-header h1 {
+    font-size: 2rem;
   }
 
   .role-options {
     flex-direction: column;
   }
-}
-.error-message {
-  background: #ffebee;
-  color: #c62828;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  text-align: center;
-  border-left: 4px solid #c62828;
+
+  .role-option {
+    padding: 1rem;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 0.9rem 1rem;
+  }
+
+  .btn-register {
+    padding: 1.1rem;
+  }
 }
 
-.error-text {
-  color: #c62828;
-  font-size: 0.85rem;
-  margin-top: 0.3rem;
-}
-
-.form-group input.ng-invalid.ng-touched {
-  border-color: #c62828;
-  background: #ffebee;
-}
-
-.btn-register:disabled {
-  background: #adb5bd;
-  cursor: not-allowed;
+@media (max-width: 360px) {
+  .register-card {
+    padding: 2rem 1.25rem;
+  }
 }

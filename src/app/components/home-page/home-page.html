@@ -1,42 +1,144 @@
+<!-- home-page.html - Version Premium -->
 <div class="home-container">
+  <!-- Header élégant -->
   <header class="header">
     <div class="logo-container">
-      <h1>Jokko Agro</h1>
-      <p>Votre marché agricole intelligent</p>
+      <div class="logo-icon animate-float">🌱</div>
+      <div class="logo-text">
+        <h1>Jokko Agro Intelligence</h1>
+        <p>L'avenir numérique de l'agriculture africaine</p>
+      </div>
     </div>
   </header>
 
+  <!-- Contenu principal -->
   <main class="main-content">
-    <div class="hero-section">
-      <h2>Connectez-vous au marché agricole</h2>
-      <p>Achetez et vendez des produits agricoles en toute confiance</p>
+    <!-- Section Hero Magnifique -->
+    <section class="hero-section animate-fadeInUp">
+      <h2>Transformez votre agriculture avec l'intelligence artificielle</h2>
+      <p class="subtitle">Plateforme intelligente combinant IA, Blockchain et technologie de pointe pour connecter producteurs et acheteurs en toute confiance</p>
+
+      <div class="stats-container">
+        <div class="stat-item">
+          <span class="stat-number">{{stats.farmers | number:'1.0-0'}}</span>
+          <span class="stat-label">Producteurs Actifs</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">{{stats.products | number:'1.0-0'}}</span>
+          <span class="stat-label">Produits Certifiés</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">{{stats.transactions | number:'1.0-0'}}</span>
+          <span class="stat-label">Transactions Sécurisées</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">{{stats.traceability}}%</span>
+          <span class="stat-label">Traçabilité Garantie</span>
+        </div>
+      </div>
 
       <div class="auth-buttons">
-        <a routerLink="/login" class="btn btn-primary">
-          Se connecter
+        <a routerLink="/login" class="btn btn-primary animate-pulse">
+          <span class="btn-icon">🚀</span>
+          Démarrer l'expérience
         </a>
         <a routerLink="/register" class="btn btn-secondary">
-          Créer un compte
+          <span class="btn-icon">⭐</span>
+          Essai gratuit 30 jours
         </a>
       </div>
-    </div>
+    </section>
 
-    <div class="features">
-      <div class="feature-card">
-        <h3>🛒 Acheter</h3>
-        <p>Produits certifiés blockchain</p>
+    <!-- Fonctionnalités Premium -->
+    <section class="features-section">
+      <h2 class="section-title">Technologies révolutionnaires</h2>
+
+      <div class="features-grid">
+        <div class="feature-card animate-fadeInUp" 
+             [style.animation-delay]="feature.delay + 's'" 
+             *ngFor="let feature of features">
+          <span class="feature-icon">{{feature.icon}}</span>
+          <h3>{{feature.title}}</h3>
+          <p>{{feature.description}}</p>
+          <div class="feature-badge">{{feature.badge}}</div>
+        </div>
       </div>
-      <div class="feature-card">
-        <h3>👨‍🌾 Vendre</h3>
-        <p>Certifiez vos produits facilement</p>
+    </section>
+
+    <!-- Processus Premium -->
+    <section class="process-section">
+      <h2 class="section-title">Simplicité d'utilisation</h2>
+
+      <div class="process-steps">
+        <div class="process-step animate-fadeInUp" [style.animation-delay]="'0.1s'">
+          <div class="step-number">1</div>
+          <h3>📸 Enregistrement</h3>
+          <p>Photo géolocalisée avec métadonnées sécurisées</p>
+        </div>
+
+        <div class="process-step animate-fadeInUp" [style.animation-delay]="'0.2s'">
+          <div class="step-number">2</div>
+          <h3>🔗 Blockchain</h3>
+          <p>Certification immuable dans la chaîne de blocs</p>
+        </div>
+
+        <div class="process-step animate-fadeInUp" [style.animation-delay]="'0.3s'">
+          <div class="step-number">3</div>
+          <h3>🤖 Vérification IA</h3>
+          <p>Analyse automatique et validation intelligente</p>
+        </div>
+
+        <div class="process-step animate-fadeInUp" [style.animation-delay]="'0.4s'">
+          <div class="step-number">4</div>
+          <h3>✅ Certification</h3>
+          <p>QR Code unique et label de qualité délivré</p>
+        </div>
       </div>
-      <div class="feature-card">
-        <h3>🎤 IA Vocale</h3>
-        <p>Navigation par commande vocale</p>
+    </section>
+
+    <!-- Technologies Premium -->
+    <section class="tech-section animate-fadeInUp">
+      <h2 class="section-title">Stack technologique</h2>
+
+      <div class="tech-grid">
+        <div class="tech-card" *ngFor="let tech of technologies; let i = index" 
+             [style.animation-delay]="(i * 0.1) + 's'">
+          <h4>{{tech.title}}</h4>
+          <ul>
+            <li *ngFor="let item of tech.items">{{item}}</li>
+          </ul>
+        </div>
       </div>
-    </div>
+    </section>
+
+    <!-- CTA Final Premium -->
+    <section class="hero-section" style="margin-top: 4rem; background: linear-gradient(135deg, rgba(56, 161, 105, 0.05), rgba(47, 133, 90, 0.1));">
+      <h2>Prêt à rejoindre la révolution agricole ?</h2>
+      <p class="subtitle">Rejoignez des milliers de producteurs et acheteurs qui ont déjà transformé leur expérience agricole</p>
+
+      <div class="auth-buttons">
+        <a routerLink="/register" class="btn btn-primary" 
+           style="background: linear-gradient(135deg, #F6AD55, #ED8936); box-shadow: 0 10px 30px rgba(246, 173, 85, 0.3);">
+          <span class="btn-icon">🌟</span>
+          Commencer gratuitement
+        </a>
+        <a href="#" class="btn btn-secondary" (click)="showDemo(); $event.preventDefault()">
+          <span class="btn-icon">▶️</span>
+          Voir la démo vidéo
+        </a>
+      </div>
+    </section>
   </main>
 
-  <!-- Assistant vocal fixe en bas à droite -->
+  <!-- Footer Premium -->
+  <footer class="footer">
+    <div class="footer-content">
+      <p>🌾 Jokko Agro Intelligence - Excellence digitale agricole depuis 2024</p>
+      <p>📍 Dakar, Sénégal | 🌍 Support multilingue | 🔒 Sécurité militaire</p>
+      <p>💡 Innovation au service de l'agriculture africaine</p>
+    </div>
+  </footer>
+
+  <!-- Assistant vocal -->
   <app-voice-assistant />
 </div>

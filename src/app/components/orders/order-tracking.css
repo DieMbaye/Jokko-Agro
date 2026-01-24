@@ -1,54 +1,4 @@
 /* ============================================
-   VARIABLES CSS (palette dashboard agricole)
-   ============================================ */
-:root {
-  /* Palette verte agricole */
-  --primary-green: #2F855A;
-  --primary-green-light: #38A169;
-  --primary-green-dark: #276749;
-  
-  /* Accents */
-  --accent-orange: #ED8936;
-  --accent-orange-dark: #DD6B20;
-  
-  /* Couleurs de statut */
-  --status-pending: #ED8936;
-  --status-confirmed: #4299E1;
-  --status-shipped: #9F7AEA;
-  --status-delivered: #48BB78;
-  --status-completed: #2F855A;
-  --status-cancelled: #F56565;
-  
-  /* Niveaux de gris */
-  --text-dark: #2D3748;
-  --text-gray: #4A5568;
-  --text-light: #718096;
-  --text-white: #FFFFFF;
-  
-  --bg-white: #FFFFFF;
-  --bg-light: #F7FAFC;
-  --bg-gray: #EDF2F7;
-  --bg-green-light: rgba(47, 133, 90, 0.05);
-  
-  --border-light: #E2E8F0;
-  --border-medium: #CBD5E0;
-  --border-green: rgba(47, 133, 90, 0.3);
-  
-  /* Ombres */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
-  
-  /* Bordures arrondies */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-full: 9999px;
-}
-
-/* ============================================
    CONTAINER PRINCIPAL
    ============================================ */
 .order-tracking-container {
@@ -693,13 +643,6 @@
   margin: 0 0 1rem 0;
 }
 
-/* Informations utilisateur */
-.user-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
 .producer-info,
 .buyer-info {
   display: flex;
@@ -1006,7 +949,7 @@
   .tracking-content {
     grid-template-columns: 1fr;
   }
-  
+
   .tracking-sidebar {
     order: 2;
   }
@@ -1016,55 +959,55 @@
   .order-tracking-container {
     padding: 1rem;
   }
-  
+
   .tracking-header {
     flex-direction: column;
     gap: 1.5rem;
   }
-  
+
   .header-stats {
     justify-content: center;
   }
-  
+
   .filters-bar {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .search-container,
   .filter-group {
     min-width: 100%;
   }
-  
+
   .filter-controls {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .order-timeline {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(2, auto);
   }
-  
+
   .order-timeline::before {
     display: none;
   }
-  
+
   .detail-row {
     grid-template-columns: 1fr;
   }
-  
+
   .order-actions {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .producer-actions,
   .buyer-actions {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .status-select {
     width: 100%;
   }
@@ -1074,24 +1017,24 @@
   .quick-tabs {
     flex-direction: column;
   }
-  
+
   .quick-tab {
     width: 100%;
     justify-content: center;
   }
-  
+
   .product-section {
     flex-direction: column;
     align-items: center;
     text-align: center;
   }
-  
+
   .order-header {
     flex-direction: column;
     gap: 1rem;
     align-items: flex-start;
   }
-  
+
   .modal-content {
     padding: 1rem;
     width: 95%;
@@ -1132,7 +1075,7 @@
   .stat-item:hover {
     transform: none;
   }
-  
+
   .btn:hover {
     transform: scale(0.98);
   }
