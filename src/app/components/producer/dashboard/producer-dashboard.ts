@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { FirebaseService } from '../../../services/firebase.service';
 import { SalesService } from '../../../services/sales.service';
-import { Product } from '../../../services/data.interfaces';
+import { Product } from '../../../interfaces/data.interfaces';
 
 interface DashboardStat {
   label: string;
@@ -68,7 +68,7 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private firebaseService: FirebaseService,
-    private salesService: SalesService
+    private salesService: SalesService,
   ) {}
 
   async ngOnInit() {
@@ -82,8 +82,8 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
   }
 
   toggleNotifications() {
-  this.showNotifications = !this.showNotifications;
-}
+    this.showNotifications = !this.showNotifications;
+  }
   async loadDashboardData() {
     this.isLoading = true;
 
@@ -96,7 +96,9 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
       }
 
       // 1. Charger les produits
-      const products = await this.firebaseService.getProducerProducts(currentUser.uid);
+      const products = await this.firebaseService.getProducerProducts(
+        currentUser.uid,
+      );
       this.totalProducts = products.length;
       this.currentSales = products.reduce((sum, p) => sum + (p.sales || 0), 0);
 
@@ -116,14 +118,15 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
       this.unreadMessages = await this.countUnreadMessages(currentUser.uid);
 
       // 7. Calculer la performance
-      this.salesPerformance = await this.calculateSalesPerformance(currentUser.uid);
+      this.salesPerformance = await this.calculateSalesPerformance(
+        currentUser.uid,
+      );
 
       // 8. Mettre à jour les cartes de statistiques
       this.updateStatsCards();
 
       // 9. Charger les ventes récentes
       await this.loadRecentSales(currentUser.uid);
-
     } catch (error) {
       console.error('Erreur chargement dashboard:', error);
       this.loadStaticData();
@@ -137,27 +140,33 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
       // Récupérer les ventes du mois en cours
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+      const endOfMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+      );
 
       const sales = await this.salesService.getSales(producerId, {
         period: 'custom',
         startDate: startOfMonth,
         endDate: endOfMonth,
-        status: 'completed'
+        status: 'completed',
       });
 
       this.monthlySales = sales.length;
 
       // Mettre à jour les ventes récentes pour l'affichage
-      this.recentSales = sales.slice(0, 5).map(sale => ({
+      this.recentSales = sales.slice(0, 5).map((sale) => ({
         id: sale.orderNumber,
         product: sale.productName,
         buyer: sale.buyerName,
         date: sale.orderDate.toLocaleDateString('fr-FR'),
         amount: sale.totalAmount,
-        status: 'completed' as const
+        status: 'completed' as const,
       }));
-
     } catch (error) {
       console.error('Erreur chargement ventes:', error);
       this.monthlySales = 0;
@@ -169,7 +178,7 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
       // Récupérer toutes les ventes complétées
       const sales = await this.salesService.getSales(producerId, {
         period: 'all',
-        status: 'completed'
+        status: 'completed',
       });
 
       return sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
@@ -183,13 +192,16 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
     try {
       const sales = await this.salesService.getSales(producerId, {
         period: 'all',
-        status: 'completed'
+        status: 'completed',
       });
 
-      const ratedSales = sales.filter(sale => sale.rating && sale.rating > 0);
+      const ratedSales = sales.filter((sale) => sale.rating && sale.rating > 0);
       if (ratedSales.length === 0) return 0;
 
-      const totalRating = ratedSales.reduce((sum, sale) => sum + (sale.rating || 0), 0);
+      const totalRating = ratedSales.reduce(
+        (sum, sale) => sum + (sale.rating || 0),
+        0,
+      );
       return totalRating / ratedSales.length;
     } catch (error) {
       console.error('Erreur calcul note moyenne:', error);
@@ -200,7 +212,7 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
   private countCertifications(products: Product[]): number {
     let certCount = 0;
 
-    products.forEach(product => {
+    products.forEach((product) => {
       // Compter les certifications du produit
       if (product.certifications && product.certifications.length > 0) {
         certCount += product.certifications.length;
@@ -239,16 +251,26 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
 
       // Ventes du mois en cours
       const currentMonthStart = new Date(currentYear, currentMonth, 1);
-      const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+      const currentMonthEnd = new Date(
+        currentYear,
+        currentMonth + 1,
+        0,
+        23,
+        59,
+        59,
+      );
 
       const currentMonthSales = await this.salesService.getSales(producerId, {
         period: 'custom',
         startDate: currentMonthStart,
         endDate: currentMonthEnd,
-        status: 'completed'
+        status: 'completed',
       });
 
-      const currentRevenue = currentMonthSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+      const currentRevenue = currentMonthSales.reduce(
+        (sum, sale) => sum + sale.totalAmount,
+        0,
+      );
 
       // Ventes du mois précédent
       const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
@@ -261,10 +283,13 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
         period: 'custom',
         startDate: prevMonthStart,
         endDate: prevMonthEnd,
-        status: 'completed'
+        status: 'completed',
       });
 
-      const prevRevenue = prevMonthSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+      const prevRevenue = prevMonthSales.reduce(
+        (sum, sale) => sum + sale.totalAmount,
+        0,
+      );
 
       if (prevRevenue === 0) return currentRevenue > 0 ? 100 : 0;
 
@@ -284,7 +309,7 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
         color: '#4CAF50',
         link: '/producer/products',
         trend: 0,
-        change: 0
+        change: 0,
       },
       {
         label: 'Ventes du mois',
@@ -292,8 +317,9 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
         icon: '💰',
         color: '#2196F3',
         link: '/producer/sales',
-        trend: this.salesPerformance > 0 ? 1 : this.salesPerformance < 0 ? -1 : 0,
-        change: Math.abs(this.salesPerformance)
+        trend:
+          this.salesPerformance > 0 ? 1 : this.salesPerformance < 0 ? -1 : 0,
+        change: Math.abs(this.salesPerformance),
       },
       {
         label: 'Revenus total',
@@ -301,7 +327,7 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
         icon: '💳',
         color: '#FF9800',
         trend: 0,
-        change: 0
+        change: 0,
       },
       {
         label: 'Note moyenne',
@@ -309,7 +335,7 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
         icon: '⭐',
         color: '#FFC107',
         trend: 0,
-        change: 0
+        change: 0,
       },
       {
         label: 'Certifications',
@@ -318,7 +344,7 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
         color: '#9C27B0',
         link: '/producer/certifications',
         trend: 0,
-        change: 0
+        change: 0,
       },
       {
         label: 'Messages non lus',
@@ -327,7 +353,7 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
         color: '#E91E63',
         link: '/producer/messages',
         trend: 0,
-        change: 0
+        change: 0,
       },
     ];
   }
@@ -336,21 +362,20 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
     try {
       const sales = await this.salesService.getSales(producerId, {
         period: 'month',
-        status: 'all'
+        status: 'all',
       });
 
       // Prendre les 5 ventes les plus récentes
       const recent = sales.slice(0, 5);
 
-      this.recentSales = recent.map(sale => ({
+      this.recentSales = recent.map((sale) => ({
         id: sale.orderNumber,
         product: sale.productName,
         buyer: sale.buyerName,
         date: sale.orderDate.toLocaleDateString('fr-FR'),
         amount: sale.totalAmount,
-        status: this.mapSaleStatus(sale.status)
+        status: this.mapSaleStatus(sale.status),
       }));
-
     } catch (error) {
       console.error('Erreur chargement ventes récentes:', error);
       this.loadStaticRecentSales();
@@ -383,9 +408,9 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
           id: 1,
           title: 'Nouvelle commande',
           message: `Vous avez reçu ${this.monthlySales} nouvelle(s) commande(s) ce mois`,
-          time: 'Aujourd\'hui',
+          time: "Aujourd'hui",
           read: false,
-          type: 'sale'
+          type: 'sale',
         },
         {
           id: 2,
@@ -393,7 +418,7 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
           message: 'Certains produits sont bientôt en rupture de stock',
           time: 'Hier',
           read: true,
-          type: 'stock'
+          type: 'stock',
         },
         {
           id: 3,
@@ -401,8 +426,8 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
           message: `Note moyenne: ${this.averageRating.toFixed(1)}/5`,
           time: 'Il y a 2 jours',
           read: true,
-          type: 'review'
-        }
+          type: 'review',
+        },
       ];
 
       // Ajouter des notifications basées sur les données réelles
@@ -413,10 +438,9 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
           message: `Progression: ${this.currentSales}/${this.monthlyGoal} produits vendus`,
           time: 'Mise à jour',
           read: false,
-          type: 'system'
+          type: 'system',
         });
       }
-
     } catch (error) {
       console.error('Erreur chargement notifications:', error);
       this.loadStaticNotifications();
@@ -520,7 +544,7 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
   // Méthodes existantes
   markAsRead(notificationId: number) {
     const notification = this.notifications.find(
-      (n) => n.id === notificationId
+      (n) => n.id === notificationId,
     );
     if (notification) {
       notification.read = true;

@@ -2,7 +2,12 @@
 import { Injectable } from '@angular/core';
 import { FirebaseService } from './firebase.service';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Conversation, Message, Producer, UserData } from './data.interfaces';
+import {
+  Conversation,
+  Message,
+  Producer,
+  UserData,
+} from '../interfaces/data.interfaces';
 
 import {
   collection,
@@ -35,7 +40,7 @@ export class MessageService {
   private messagesSubject = new BehaviorSubject<Message[]>([]);
   private unreadCountSubject = new BehaviorSubject<number>(0);
   private typingStatusSubject = new BehaviorSubject<Map<string, boolean>>(
-    new Map()
+    new Map(),
   );
 
   constructor(private firebaseService: FirebaseService) {}
@@ -49,7 +54,7 @@ export class MessageService {
 
   async getConversations(
     userId: string,
-    userRole: 'producer' | 'buyer'
+    userRole: 'producer' | 'buyer',
   ): Promise<Conversation[]> {
     try {
       const fieldToCheck = userRole === 'producer' ? 'producerId' : 'buyerId';
@@ -59,7 +64,7 @@ export class MessageService {
         where(fieldToCheck, '==', userId),
         where('status', '!=', 'deleted'),
         orderBy('updatedAt', 'desc'),
-        limit(50)
+        limit(50),
       );
 
       const querySnapshot = await getDocs(q);
@@ -73,7 +78,7 @@ export class MessageService {
       // Mettre à jour le compteur de messages non lus
       const totalUnread = conversations.reduce(
         (sum, conv) => sum + conv.unreadCount,
-        0
+        0,
       );
       this.unreadCountSubject.next(totalUnread);
 
@@ -87,7 +92,7 @@ export class MessageService {
   subscribeToConversations(
     userId: string,
     userRole: 'producer' | 'buyer',
-    callback: (conversations: Conversation[]) => void
+    callback: (conversations: Conversation[]) => void,
   ): () => void {
     const fieldToCheck = userRole === 'producer' ? 'producerId' : 'buyerId';
 
@@ -95,7 +100,7 @@ export class MessageService {
       collection(this.firestore, 'conversations'),
       where(fieldToCheck, '==', userId),
       where('status', '!=', 'deleted'),
-      orderBy('updatedAt', 'desc')
+      orderBy('updatedAt', 'desc'),
     );
 
     return onSnapshot(q, (querySnapshot) => {
@@ -124,13 +129,13 @@ export class MessageService {
     producerAvatar: string,
     initialMessage: string,
     productId?: string,
-    productName?: string
+    productName?: string,
   ): Promise<{ success: boolean; conversationId?: string; error?: string }> {
     try {
       // Vérifier si une conversation existe déjà
       const existingConv = await this.findExistingConversation(
         buyerId,
-        producerId
+        producerId,
       );
 
       if (existingConv && existingConv.id) {
@@ -188,7 +193,7 @@ export class MessageService {
 
       const docRef = await addDoc(
         collection(this.firestore, 'conversations'),
-        conversationData
+        conversationData,
       );
 
       // Envoyer le message initial
@@ -219,14 +224,14 @@ export class MessageService {
 
   private async findExistingConversation(
     buyerId: string,
-    producerId: string
+    producerId: string,
   ): Promise<Conversation | null> {
     try {
       const q = query(
         collection(this.firestore, 'conversations'),
         where('buyerId', '==', buyerId),
         where('producerId', '==', producerId),
-        where('status', 'in', ['active', 'archived'])
+        where('status', 'in', ['active', 'archived']),
       );
 
       const querySnapshot = await getDocs(q);
@@ -246,7 +251,7 @@ export class MessageService {
   async getMessages(
     conversationId: string,
     limitCount: number = 20,
-    lastMessageId?: string
+    lastMessageId?: string,
   ): Promise<Message[]> {
     try {
       let messagesQuery: Query;
@@ -254,7 +259,7 @@ export class MessageService {
       if (lastMessageId) {
         // Récupérer le dernier document pour la pagination
         const lastDoc = await getDoc(
-          doc(this.firestore, 'messages', lastMessageId)
+          doc(this.firestore, 'messages', lastMessageId),
         );
 
         messagesQuery = query(
@@ -262,14 +267,14 @@ export class MessageService {
           where('conversationId', '==', conversationId),
           orderBy('timestamp', 'desc'),
           startAfter(lastDoc),
-          limit(limitCount)
+          limit(limitCount),
         );
       } else {
         messagesQuery = query(
           collection(this.firestore, 'messages'),
           where('conversationId', '==', conversationId),
           orderBy('timestamp', 'desc'),
-          limit(limitCount)
+          limit(limitCount),
         );
       }
 
@@ -290,7 +295,7 @@ export class MessageService {
   }
 
   async sendMessage(
-    messageData: Omit<Message, 'id'>
+    messageData: Omit<Message, 'id'>,
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
       const messageWithTimestamp = {
@@ -300,13 +305,13 @@ export class MessageService {
 
       const docRef = await addDoc(
         collection(this.firestore, 'messages'),
-        messageWithTimestamp
+        messageWithTimestamp,
       );
 
       // Mettre à jour la conversation
       await this.updateConversationAfterMessage(
         messageData.conversationId,
-        messageData
+        messageData,
       );
 
       return { success: true, messageId: docRef.id };
@@ -321,13 +326,13 @@ export class MessageService {
 
   private async updateConversationAfterMessage(
     conversationId: string,
-    messageData: Omit<Message, 'id'>
+    messageData: Omit<Message, 'id'>,
   ): Promise<void> {
     try {
       const conversationRef = doc(
         this.firestore,
         'conversations',
-        conversationId
+        conversationId,
       );
       const conversationSnap = await getDoc(conversationRef);
 
@@ -362,12 +367,12 @@ export class MessageService {
 
   subscribeToMessages(
     conversationId: string,
-    callback: (messages: Message[]) => void
+    callback: (messages: Message[]) => void,
   ): () => void {
     const q = query(
       collection(this.firestore, 'messages'),
       where('conversationId', '==', conversationId),
-      orderBy('timestamp', 'asc')
+      orderBy('timestamp', 'asc'),
     );
 
     return onSnapshot(q, (querySnapshot) => {
@@ -384,7 +389,7 @@ export class MessageService {
   async markMessagesAsRead(
     conversationId: string,
     userId: string,
-    userRole: 'producer' | 'buyer'
+    userRole: 'producer' | 'buyer',
   ): Promise<void> {
     try {
       // Mettre à jour les messages non lus
@@ -392,7 +397,7 @@ export class MessageService {
         collection(this.firestore, 'messages'),
         where('conversationId', '==', conversationId),
         where('senderId', '!=', userId),
-        where('read', '==', false)
+        where('read', '==', false),
       );
 
       const querySnapshot = await getDocs(q);
@@ -416,7 +421,7 @@ export class MessageService {
       const conversationRef = doc(
         this.firestore,
         'conversations',
-        conversationId
+        conversationId,
       );
       const conversationSnap = await getDoc(conversationRef);
 
@@ -450,13 +455,13 @@ export class MessageService {
     conversationId: string,
     userId: string,
     userRole: 'producer' | 'buyer',
-    isTyping: boolean
+    isTyping: boolean,
   ): Promise<void> {
     try {
       const conversationRef = doc(
         this.firestore,
         'conversations',
-        conversationId
+        conversationId,
       );
       const field =
         userRole === 'buyer' ? 'isTyping.buyer' : 'isTyping.producer';
@@ -468,7 +473,7 @@ export class MessageService {
     } catch (error) {
       console.error(
         'Erreur lors de la mise à jour du statut de frappe:',
-        error
+        error,
       );
     }
   }
@@ -480,7 +485,7 @@ export class MessageService {
       let q = query(
         collection(this.firestore, 'users'),
         where('role', '==', 'producer'),
-        orderBy('fullName')
+        orderBy('fullName'),
       );
 
       const querySnapshot = await getDocs(q);
@@ -491,10 +496,10 @@ export class MessageService {
 
         // Récupérer les statistiques
         const productsCount = await this.getProducerProductsCount(
-          producerDoc.id
+          producerDoc.id,
         );
         const responseStats = await this.getProducerResponseStats(
-          producerDoc.id
+          producerDoc.id,
         );
 
         const producer: Producer = {
@@ -545,7 +550,7 @@ export class MessageService {
           producer.name.toLowerCase().includes(term) ||
           producer.farmName.toLowerCase().includes(term) ||
           producer.location.toLowerCase().includes(term) ||
-          producer.description.toLowerCase().includes(term)
+          producer.description.toLowerCase().includes(term),
       );
     } catch (error) {
       console.error('Erreur lors de la recherche des producteurs:', error);
@@ -558,7 +563,7 @@ export class MessageService {
       const q = query(
         collection(this.firestore, 'products'),
         where('producerId', '==', producerId),
-        where('status', '==', 'available')
+        where('status', '==', 'available'),
       );
       const querySnapshot = await getDocs(q);
       return querySnapshot.size;
@@ -568,13 +573,13 @@ export class MessageService {
   }
 
   private async getProducerResponseStats(
-    producerId: string
+    producerId: string,
   ): Promise<{ responseRate: number; averageResponseTime: number }> {
     try {
       // Récupérer les conversations pour calculer les statistiques
       const q = query(
         collection(this.firestore, 'conversations'),
-        where('producerId', '==', producerId)
+        where('producerId', '==', producerId),
       );
 
       const querySnapshot = await getDocs(q);
@@ -673,7 +678,7 @@ export class MessageService {
   async updateConversationStatus(
     conversationId: string,
     userId: string,
-    status: 'active' | 'archived' | 'blocked'
+    status: 'active' | 'archived' | 'blocked',
   ): Promise<void> {
     try {
       await updateDoc(doc(this.firestore, 'conversations', conversationId), {
@@ -688,14 +693,14 @@ export class MessageService {
 
   async archiveConversation(
     conversationId: string,
-    userId: string
+    userId: string,
   ): Promise<void> {
     return this.updateConversationStatus(conversationId, userId, 'archived');
   }
 
   async deleteConversation(
     conversationId: string,
-    userId: string
+    userId: string,
   ): Promise<void> {
     try {
       // Marquer comme supprimé plutôt que supprimer complètement
@@ -724,7 +729,7 @@ export class MessageService {
       // Archiver toutes les conversations entre ces utilisateurs
       const q = query(
         collection(this.firestore, 'conversations'),
-        where('participants', 'array-contains', blockerId)
+        where('participants', 'array-contains', blockerId),
       );
 
       const querySnapshot = await getDocs(q);

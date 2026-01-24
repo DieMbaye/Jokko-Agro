@@ -20,7 +20,7 @@ import {
   Producer,
   NewConversationModalData,
   ProfileModalData,
-} from '../../services/data.interfaces';
+} from '../../interfaces/data.interfaces';
 
 @Component({
   selector: 'app-messages',
@@ -107,7 +107,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
   constructor(
     private authService: AuthService,
     private messageService: MessageService,
-    private router: Router
+    private router: Router,
   ) {}
 
   async ngOnInit() {
@@ -170,7 +170,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
     try {
       this.conversations = await this.messageService.getConversations(
         this.currentUser.uid,
-        this.userRole
+        this.userRole,
       );
     } catch (error) {
       console.error('Erreur lors du chargement des conversations:', error);
@@ -192,13 +192,13 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
           // Mettre à jour la conversation sélectionnée si elle existe
           if (this.selectedConversation) {
             const updatedConversation = conversations.find(
-              (c) => c.id === this.selectedConversation?.id
+              (c) => c.id === this.selectedConversation?.id,
             );
             if (updatedConversation) {
               this.selectedConversation = updatedConversation;
             }
           }
-        }
+        },
       );
   }
 
@@ -249,7 +249,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
       conversation.id!,
       (newMessages) => {
         this.handleNewMessages(newMessages);
-      }
+      },
     );
 
     this.otherUserTyping = false;
@@ -260,7 +260,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
       await this.messageService.markMessagesAsRead(
         conversation.id!,
         this.currentUser.uid,
-        this.userRole
+        this.userRole,
       );
 
       // Mettre à jour localement
@@ -270,7 +270,8 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
         conversation.unreadBy.producer = 0;
       }
 
-      conversation.unreadCount = conversation.unreadBy.buyer + conversation.unreadBy.producer;
+      conversation.unreadCount =
+        conversation.unreadBy.buyer + conversation.unreadBy.producer;
     } catch (error) {
       console.error('Erreur lors du marquage des messages comme lus:', error);
     }
@@ -281,7 +282,10 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.messages = newMessages;
 
     // Détecter les nouveaux messages
-    if (previousMessagesCount > 0 && newMessages.length > previousMessagesCount) {
+    if (
+      previousMessagesCount > 0 &&
+      newMessages.length > previousMessagesCount
+    ) {
       const newMessagesCount = newMessages.length - previousMessagesCount;
 
       // Si l'utilisateur est en bas de la discussion, scroll automatique
@@ -334,7 +338,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
       const olderMessages = await this.messageService.getMessages(
         this.selectedConversation.id!,
         20,
-        this.messages[0]?.id
+        this.messages[0]?.id,
       );
 
       if (olderMessages.length > 0) {
@@ -384,7 +388,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     const element = this.messagesContainer.nativeElement;
     const distanceFromBottom = Math.abs(
-      element.scrollHeight - element.scrollTop - element.clientHeight
+      element.scrollHeight - element.scrollTop - element.clientHeight,
     );
 
     // Considérer comme "en bas" si à moins de 100px du bas
@@ -464,7 +468,9 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     // Délai pour éviter les appels multiples
     this.markAsReadTimeout = setTimeout(async () => {
-      const userUnreadCount = this.getConversationUnreadCount(this.selectedConversation!);
+      const userUnreadCount = this.getConversationUnreadCount(
+        this.selectedConversation!,
+      );
 
       if (userUnreadCount > 0) {
         try {
@@ -582,13 +588,13 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.selectedConversation.id!,
         this.currentUser.uid,
         this.userRole,
-        isTyping
+        isTyping,
       );
       this.isTyping = isTyping;
     } catch (error) {
       console.error(
         'Erreur lors de la mise à jour du statut de frappe:',
-        error
+        error,
       );
     }
   }
@@ -661,13 +667,13 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
         producer.name.toLowerCase().includes(query) ||
         producer.farmName.toLowerCase().includes(query) ||
         producer.location.toLowerCase().includes(query) ||
-        producer.description.toLowerCase().includes(query)
+        producer.description.toLowerCase().includes(query),
     );
   }
 
   getSelectedProducerName(): string {
     const producer = this.availableProducers.find(
-      (p) => p.id === this.modalData.selectedProducerId
+      (p) => p.id === this.modalData.selectedProducerId,
     );
     return producer ? producer.name : '';
   }
@@ -686,7 +692,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
 
     const selectedProducer = this.availableProducers.find(
-      (p) => p.id === this.modalData.selectedProducerId
+      (p) => p.id === this.modalData.selectedProducerId,
     );
 
     if (!selectedProducer) {
@@ -704,7 +710,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
         selectedProducer.id,
         selectedProducer.name,
         selectedProducer.avatar || '👨‍🌾',
-        this.modalData.message.trim()
+        this.modalData.message.trim(),
       );
 
       if (result.success && result.conversationId) {
@@ -712,7 +718,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
         await this.loadConversations();
 
         const newConversation = this.conversations.find(
-          (c) => c.id === result.conversationId
+          (c) => c.id === result.conversationId,
         );
 
         if (newConversation) {
@@ -796,7 +802,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.profileModalData.userRole === 'producer') {
       // Trouver le producteur dans la liste
       const producer = this.availableProducers.find(
-        (p) => p.name === this.profileModalData.userName
+        (p) => p.name === this.profileModalData.userName,
       );
 
       if (producer) {
@@ -827,7 +833,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
       await this.messageService.updateConversationStatus(
         conversation.id!,
         this.currentUser.uid,
-        newStatus
+        newStatus,
       );
 
       // Mettre à jour localement
@@ -840,7 +846,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
       alert(
         `Conversation ${
           newStatus === 'archived' ? 'archivée' : 'désarchivée'
-        } avec succès`
+        } avec succès`,
       );
     } catch (error) {
       console.error('Erreur lors du changement de statut:', error);
@@ -851,7 +857,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
   async deleteConversation(conversation: Conversation) {
     if (
       !confirm(
-        'Voulez-vous vraiment supprimer cette conversation? Cette action est irréversible.'
+        'Voulez-vous vraiment supprimer cette conversation? Cette action est irréversible.',
       )
     ) {
       return;
@@ -860,12 +866,12 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
     try {
       await this.messageService.deleteConversation(
         conversation.id!,
-        this.currentUser.uid
+        this.currentUser.uid,
       );
 
       // Retirer de la liste
       this.conversations = this.conversations.filter(
-        (c) => c.id !== conversation.id
+        (c) => c.id !== conversation.id,
       );
 
       if (this.selectedConversation?.id === conversation.id) {
@@ -891,7 +897,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     if (
       !confirm(
-        `Voulez-vous vraiment bloquer ${otherUserName}? Vous ne pourrez plus recevoir de messages de cette personne.`
+        `Voulez-vous vraiment bloquer ${otherUserName}? Vous ne pourrez plus recevoir de messages de cette personne.`,
       )
     ) {
       return;
@@ -929,7 +935,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
         (conversation) =>
           this.getOtherUserName(conversation).toLowerCase().includes(query) ||
           conversation.lastMessage.toLowerCase().includes(query) ||
-          (conversation.productName || '').toLowerCase().includes(query)
+          (conversation.productName || '').toLowerCase().includes(query),
       );
     }
 
@@ -937,7 +943,8 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
     switch (this.conversationFilter) {
       case 'unread':
         filtered = filtered.filter(
-          (c) => this.getConversationUnreadCount(c) > 0 && c.status !== 'archived'
+          (c) =>
+            this.getConversationUnreadCount(c) > 0 && c.status !== 'archived',
         );
         break;
       case 'archived':
@@ -1016,7 +1023,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     // Cette semaine
     const diffDays = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
     );
     if (diffDays < 7) {
       return date.toLocaleDateString('fr-FR', { weekday: 'long' });

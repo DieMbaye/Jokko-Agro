@@ -1,20 +1,17 @@
-// app.routes.ts - version mise à jour
+// app.routes.ts
 import { Routes } from '@angular/router';
 import {
   authGuard,
   producerGuard,
   buyerGuard,
 } from './services/auth-guard.service';
-import { BuyerPurchasesComponent } from './buyer/buyer-purchases/buyer-purchases.component';
-import { BuyerSettingsComponent } from './buyer/settings/buyer-settings.component';
-
 export const routes: Routes = [
   // Routes publiques
   {
     path: '',
     loadComponent: () =>
       import('./components/home-page/home-page').then(
-        (m) => m.HomePageComponent
+        (m) => m.HomePageComponent,
       ),
   },
   {
@@ -26,7 +23,7 @@ export const routes: Routes = [
     path: 'register',
     loadComponent: () =>
       import('./components/auth/register/register').then(
-        (m) => m.RegisterComponent
+        (m) => m.RegisterComponent,
       ),
   },
 
@@ -35,7 +32,7 @@ export const routes: Routes = [
     path: 'select-role',
     loadComponent: () =>
       import('./components/role-selection/role-selection').then(
-        (m) => m.RoleSelectionComponent
+        (m) => m.RoleSelectionComponent,
       ),
     canActivate: [authGuard],
   },
@@ -45,7 +42,7 @@ export const routes: Routes = [
     path: 'producer/dashboard',
     loadComponent: () =>
       import('./components/producer/dashboard/producer-dashboard').then(
-        (m) => m.ProducerDashboardComponent
+        (m) => m.ProducerDashboardComponent,
       ),
     canActivate: [producerGuard],
   },
@@ -53,7 +50,7 @@ export const routes: Routes = [
     path: 'producer/add-product',
     loadComponent: () =>
       import('./components/producer/add-product/add-product').then(
-        (m) => m.AddProductComponent
+        (m) => m.AddProductComponent,
       ),
     canActivate: [producerGuard],
   },
@@ -61,7 +58,7 @@ export const routes: Routes = [
     path: 'producer/products',
     loadComponent: () =>
       import('./components/producer/products/products').then(
-        (m) => m.ProductsComponent
+        (m) => m.ProductsComponent,
       ),
     canActivate: [producerGuard],
   },
@@ -81,7 +78,7 @@ export const routes: Routes = [
     path: 'producer/reputation',
     loadComponent: () =>
       import('./components/producer/reputation/reputation').then(
-        (m) => m.ReputationComponent
+        (m) => m.ReputationComponent,
       ),
     canActivate: [producerGuard],
   },
@@ -89,7 +86,7 @@ export const routes: Routes = [
     path: 'producer/tracking',
     loadComponent: () =>
       import('./components/orders/order-tracking').then(
-        (m) => m.OrderTrackingComponent
+        (m) => m.OrderTrackingComponent,
       ),
     canActivate: [producerGuard],
   },
@@ -97,50 +94,48 @@ export const routes: Routes = [
     path: 'producer/certifications',
     loadComponent: () =>
       import('./components/producer/certifications/certifications').then(
-        (m) => m.CertificationsComponent
+        (m) => m.CertificationsComponent,
       ),
     canActivate: [producerGuard],
   },
   {
     path: 'producer/certification/:id',
     loadComponent: () =>
-      import('./components/producer/certifications/certification-detail').then(
-        (m) => m.CertificationDetailComponent
+      import('./components/producer/certifications/details/certification-detail.component').then(
+        (m) => m.CertificationDetailComponent,
       ),
     canActivate: [producerGuard],
   },
   {
     path: 'producer/certification/:id/checkpoint/:checkpointId',
     loadComponent: () =>
-      import('./components/producer/certifications/complete-checkpoint').then(
-        (m) => m.CompleteCheckpointComponent
+      import('./components/producer/certifications/checkpoint/complete-checkpoint.component').then(
+        (m) => m.CompleteCheckpointComponent,
       ),
     canActivate: [producerGuard],
   },
   {
     path: 'verify/:id',
     loadComponent: () =>
-      import('./components/producer/certifications/verification').then(
-        (m) => m.VerificationComponent
+      import('./components/producer/certifications/verification/verification.component').then(
+        (m) => m.VerificationComponent,
       ),
   },
-  // AJOUT DE LA NOUVELLE ROUTE PRODUCTEUR SETTINGS
-{
-  path: 'producer/settings',
-  loadComponent: () =>
-    import('./components/producer/settings/producer-settings.component')
-      .then(m => m.ProducerSettingsComponent),
-  canActivate: [producerGuard],
-},
-
-
+  {
+    path: 'producer/settings',
+    loadComponent: () =>
+      import('./components/producer/settings/producer-settings.component').then(
+        (m) => m.ProducerSettingsComponent,
+      ),
+    canActivate: [producerGuard],
+  },
 
   // ==================== ROUTES ACHETEUR ====================
   {
     path: 'buyer/dashboard',
     loadComponent: () =>
       import('./components/buyer/dashboard/buyer-dashboard').then(
-        (m) => m.BuyerDashboardComponent
+        (m) => m.BuyerDashboardComponent,
       ),
     canActivate: [buyerGuard],
   },
@@ -172,19 +167,25 @@ export const routes: Routes = [
     path: 'buyer/tracking',
     loadComponent: () =>
       import('./components/orders/order-tracking').then(
-        (m) => m.OrderTrackingComponent
+        (m) => m.OrderTrackingComponent,
       ),
     canActivate: [buyerGuard],
   },
   {
     path: 'buyer/purchases',
-    component: BuyerPurchasesComponent,
-    canActivate: [authGuard]
+    loadComponent: () =>
+      import('./components/buyer/buyer-purchases/buyer-purchases.component').then(
+        (m) => m.BuyerPurchasesComponent,
+      ),
+    canActivate: [buyerGuard],
   },
   {
     path: 'buyer/settings',
-    component: BuyerSettingsComponent,
-    canActivate: [buyerGuard]
+    loadComponent: () =>
+      import('./components/buyer/settings/buyer-settings.component').then(
+        (m) => m.BuyerSettingsComponent,
+      ),
+    canActivate: [buyerGuard],
   },
 
   { path: '**', redirectTo: '' },

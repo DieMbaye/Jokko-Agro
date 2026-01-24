@@ -1,0 +1,104 @@
+<div class="verification-container">
+  <div class="verification-header">
+    <h1>🏆 Vérification de Certification</h1>
+    <p>Scannez ce QR code pour vérifier l'authenticité du produit</p>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading">Chargement...</div>
+  }
+
+  @if (!isLoading && certification) {
+    <div class="verification-card">
+      <!-- En-tête de vérification -->
+      <div class="verification-status" [class]="getVerificationClass()">
+        <div class="status-icon">{{ getVerificationIcon() }}</div>
+        <div class="status-text">{{ getVerificationText() }}</div>
+      </div>
+
+      <!-- Informations du produit -->
+      <div class="product-section">
+        <h2>{{ certification.productName }}</h2>
+        <div class="product-details">
+          <div class="detail-item">
+            <span class="label">🌱 Type:</span>
+            <span class="value">{{ certification.productType | titlecase }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">👨‍🌾 Producteur:</span>
+            <span class="value">{{ certification.producerName }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">📍 Localisation:</span>
+            <span class="value">{{ certification.location.address || 'Localisation certifiée' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">📅 Période:</span>
+            <span class="value">
+              {{ certification.startDate | date:'dd/MM/yyyy' }} -
+              {{ certification.expectedHarvestDate | date:'dd/MM/yyyy' }}
+            </span>
+          </div>
+          <div class="detail-item">
+            <span class="label">⭐ Score:</span>
+            <span class="value score">{{ certification.validationScore }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline de certification -->
+      <div class="certification-timeline">
+        <h3>📋 Points de contrôle</h3>
+        <div class="timeline">
+          @for (checkpoint of certification.checkpoints; track checkpoint.id; let i = $index) {
+            <div class="timeline-item" [class.completed]="checkpoint.completed">
+              <div class="timeline-marker">
+                <div class="marker-dot"></div>
+                @if (i < certification.checkpoints.length - 1) {
+                  <div class="marker-line"></div>
+                }
+              </div>
+              <div class="timeline-content">
+                <div class="checkpoint-info">
+                  <h4>{{ checkpoint.title }} (J+{{ checkpoint.dayOffset }})</h4>
+                  <p>{{ checkpoint.description }}</p>
+                  <div class="checkpoint-status">
+                    <span [class]="'status ' + (checkpoint.completed ? 'completed' : 'pending')">
+                      {{ checkpoint.completed ? '✅ Complété' : '⏳ En attente' }}
+                    </span>
+                    @if (checkpoint.completed) {
+                      <span class="score">Score: {{ checkpoint.verificationScore }}%</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- QR Code -->
+      <div class="qr-section">
+        <h3>📱 Code de vérification</h3>
+        <div class="qr-container">
+          <img [src]="getQRCodeUrl()" alt="QR Code de vérification">
+          <div class="qr-info">
+            <p><strong>ID de certification:</strong> {{ certification.id }}</p>
+            <p><strong>Date de vérification:</strong> {{ today | date:'dd/MM/yyyy à HH:mm' }}</p>
+          </div>
+        </div>
+        <button class="btn-download" (click)="downloadCertificate()">
+          📄 Télécharger le certificat
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (!isLoading && !certification) {
+    <div class="not-found">
+      <div class="not-found-icon">❌</div>
+      <h3>Certification non trouvée</h3>
+      <p>Le code de vérification est invalide ou la certification a été supprimée.</p>
+    </div>
+  }
+</div>

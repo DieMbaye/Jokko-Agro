@@ -7,33 +7,39 @@
       </div>
       <div class="user-details" *ngIf="!isCollapsed">
         <h3>{{ userData?.fullName || 'Utilisateur' }}</h3>
-        <p class="role-badge" [style.backgroundColor]="getRoleColor() + '20'"
-           [style.color]="getRoleColor()">
+        <p
+          class="role-badge"
+          [style.backgroundColor]="getRoleColor() + '20'"
+          [style.color]="getRoleColor()"
+        >
           {{ getRoleLabel() }}
         </p>
       </div>
     </div>
 
-    <button class="collapse-btn" (click)="toggleCollapse()" title="Réduire/Afficher">
+    <button
+      class="collapse-btn"
+      (click)="toggleCollapse()"
+      title="Réduire/Afficher"
+    >
       {{ isCollapsed ? '→' : '←' }}
     </button>
   </div>
 
   <!-- Navigation -->
   <nav class="sidebar-nav">
-    <a *ngFor="let item of config.items"
-       [routerLink]="item.route"
-       routerLinkActive="active"
-       [routerLinkActiveOptions]="{ exact: false }"
-       class="nav-item"
-       [title]="item.label"
-       [class.disabled]="item.disabled">
-
+    <a
+      *ngFor="let item of config.items"
+      [routerLink]="item.route"
+      routerLinkActive="active active-enhanced"
+      [routerLinkActiveOptions]="{ exact: false }"
+      class="nav-item"
+      [title]="item.label"
+      [class.disabled]="item.disabled"
+    >
       <span class="nav-icon">{{ item.icon }}</span>
 
-      <span class="nav-label" *ngIf="!isCollapsed">
-        {{ item.label }}
-      </span>
+      <span class="nav-label" *ngIf="!isCollapsed"> {{ item.label }} </span>
 
       <span *ngIf="getItemBadge(item) && getItemBadge(item)! > 0" class="badge">
         {{ getItemBadge(item)! > 99 ? '99+' : getItemBadge(item) }}
@@ -44,19 +50,31 @@
   <!-- Footer du sidebar -->
   <div class="sidebar-footer">
     <!-- Indicateur de panier en version réduite -->
-    <a *ngIf="isCollapsed && config.type === 'buyer' && cartItemCount > 0"
-       routerLink="/buyer/cart"
-       class="cart-mini-indicator">
+    <a
+      *ngIf="isCollapsed && config.type === 'buyer' && cartItemCount > 0"
+      routerLink="/buyer/cart"
+      class="cart-mini-indicator"
+    >
       <span class="nav-icon">🛒</span>
       <span class="mini-badge">{{ cartItemCount }}</span>
     </a>
 
-    <button class="logout-btn" (click)="onLogout()" *ngIf="!isCollapsed" title="Déconnexion">
+    <button
+      class="logout-btn"
+      (click)="onLogout()"
+      *ngIf="!isCollapsed"
+      title="Déconnexion"
+    >
       <span class="nav-icon">🚪</span>
       <span class="nav-label">Déconnexion</span>
     </button>
 
-    <button class="logout-btn collapsed" (click)="onLogout()" *ngIf="isCollapsed" title="Déconnexion">
+    <button
+      class="logout-btn collapsed"
+      (click)="onLogout()"
+      *ngIf="isCollapsed"
+      title="Déconnexion"
+    >
       <span class="nav-icon">🚪</span>
     </button>
   </div>

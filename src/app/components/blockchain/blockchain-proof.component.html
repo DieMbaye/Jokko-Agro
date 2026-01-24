@@ -1,0 +1,558 @@
+<div class="blockchain-proof-container">
+  <!-- En-tête -->
+  <div class="header">
+    <button class="back-btn" (click)="goBack()">← Retour</button>
+    <h1>🔗 Preuve Blockchain</h1>
+    <p>
+      Vérifiez l'authenticité et l'intégrité des preuves de certification
+    </p>
+  </div>
+
+  <!-- Sélection de produit -->
+  <div class="product-selector">
+    <div class="form-group">
+      <label>ID de produit/certification</label>
+      <div class="input-group">
+        <input
+          type="text"
+          [(ngModel)]="productId"
+          placeholder="Ex: cert_123456789"
+          (keyup.enter)="loadProductData()"
+        />
+        <button class="btn-primary" (click)="loadProductData()">
+          🔍 Rechercher
+        </button>
+      </div>
+    </div>
+
+    <div class="current-product" *ngIf="currentProduct">
+      <div class="product-info">
+        <h3>{{ currentProduct.productName }}</h3>
+        <p>Type: {{ currentProduct.productType }}</p>
+        <p>Producteur: {{ currentProduct.producerName }}</p>
+      </div>
+      <div class="product-actions">
+        <button class="action-btn" (click)="viewAllProofs()">
+          📋 Voir toutes les preuves
+        </button>
+        <button class="action-btn" (click)="verifyCompleteHistory()">
+          ✅ Vérifier l'historique complet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onglets -->
+  <div class="tabs">
+    <button
+      [class.active]="activeTab === 'register'"
+      (click)="activeTab = 'register'"
+    >
+      📝 Enregistrer une preuve
+    </button>
+    <button
+      [class.active]="activeTab === 'verify'"
+      (click)="activeTab = 'verify'"
+    >
+      🔍 Vérifier une preuve
+    </button>
+    <button
+      [class.active]="activeTab === 'history'"
+      (click)="activeTab = 'history'"
+    >
+      📊 Historique blockchain
+    </button>
+    <button [class.active]="activeTab === 'qr'" (click)="activeTab = 'qr'">
+      📱 QR Code de vérification
+    </button>
+  </div>
+
+  <!-- Contenu des onglets -->
+  <div class="tab-content">
+    <!-- Enregistrement de preuve -->
+    @if (activeTab === 'register') {
+      <div class="register-proof">
+        <h2>📝 Enregistrer une nouvelle preuve</h2>
+
+        <div class="form-section">
+          <label>Étape du cycle</label>
+          <select [(ngModel)]="newProof.step">
+            <option value="INIT">🌱 INIT - Photo initiale</option>
+            <option value="FOLLOW_UP">
+              📊 FOLLOW_UP - Suivi de croissance
+            </option>
+            <option value="CHECKPOINT">
+              📋 CHECKPOINT - Point de contrôle
+            </option>
+            <option value="HARVEST">🌾 HARVEST - Récolte</option>
+          </select>
+        </div>
+
+        <div class="form-section">
+          <label>📸 Photo du champ (capture directe)</label>
+          <div class="photo-upload" (click)="capturePhoto()">
+            <input
+              type="file"
+              #photoInput
+              accept="image/*"
+              capture="environment"
+              (change)="onPhotoSelected($event)"
+              hidden
+            />
+
+            @if (newProof.photoPreview) {
+              <img [src]="newProof.photoPreview" class="photo-preview" />
+              <div class="photo-overlay">
+                <button class="btn-change" (click)="capturePhoto()">
+                  📸 Changer la photo
+                </button>
+              </div>
+            } @else {
+              <div class="upload-placeholder">
+                <div class="upload-icon">📸</div>
+                <p>Cliquez pour prendre une photo</p>
+                <small>Utilisez l'appareil photo de votre téléphone</small>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="form-section" *ngIf="showGpsInfo">
+          <label>📍 Coordonnées GPS</label>
+          <div class="gps-info">
+            <p>Latitude: {{ newProof.lat | number: '1.6-6' }}</p>
+            <p>Longitude: {{ newProof.lng | number: '1.6-6' }}</p>
+            <p>Précision: {{ newProof.accuracy }} mètres</p>
+            <button class="btn-small" (click)="getCurrentLocation()">
+              🔄 Actualiser GPS
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="form-section"
+          *ngIf="currentProduct && newProof.step === 'CHECKPOINT'"
+        >
+          <label>Point de contrôle</label>
+          <select [(ngModel)]="newProof.checkpointId">
+            <option value="">-- Sélectionner un checkpoint --</option>
+            <option
+              *ngFor="let cp of currentProduct.checkpoints"
+              [value]="cp.id"
+            >
+              {{ cp.title }} (J+{{ cp.dayOffset }})
+            </option>
+          </select>
+        </div>
+
+        <div class="preview-section" *ngIf="newProof.photoFile">
+          <h3>📋 Aperçu de la preuve canonique</h3>
+          <div class="canonical-preview">
+            <pre>{{ getCanonicalPreview() }}</pre>
+          </div>
+
+          <div class="hash-info">
+            <p>
+              <strong>Hash de la photo:</strong>
+              {{ newProof.photoHash | slice: 0 : 16 }}...
+            </p>
+            <p>
+              <strong>Hash de la preuve (calculé):</strong>
+              {{ newProof.proofHash | slice: 0 : 16 }}...
+            </p>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-secondary" (click)="resetNewProof()">
+            🗑️ Effacer
+          </button>
+          <button
+            class="btn-primary"
+            [disabled]="!canRegisterProof() || isRegistering"
+            (click)="registerProof()"
+          >
+            @if (isRegistering) {
+              <span class="spinner"></span> Enregistrement sur blockchain...
+            } @else {
+              🔗 Enregistrer sur la blockchain
+            }
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Vérification de preuve -->
+    @if (activeTab === 'verify') {
+      <div class="verify-proof">
+        <h2>🔍 Vérifier une preuve existante</h2>
+
+        <div class="verification-methods">
+          <div
+            class="method-card"
+            (click)="verificationMethod = 'transaction'"
+          >
+            <div class="method-icon">📄</div>
+            <h4>Par ID de transaction</h4>
+            <p>
+              Vérifiez une preuve spécifique avec son ID de transaction
+              blockchain
+            </p>
+          </div>
+
+          <div class="method-card" (click)="verificationMethod = 'qr'">
+            <div class="method-icon">📱</div>
+            <h4>Par QR Code</h4>
+            <p>
+              Scannez un QR Code de produit pour vérifier toutes les preuves
+            </p>
+          </div>
+
+          <div class="method-card" (click)="verificationMethod = 'manual'">
+            <div class="method-icon">📝</div>
+            <h4>Manuellement</h4>
+            <p>Fournissez manuellement les données pour vérification</p>
+          </div>
+        </div>
+
+        <!-- Vérification par transaction -->
+        @if (verificationMethod === 'transaction') {
+          <div class="verification-form">
+            <div class="form-section">
+              <label>ID de transaction blockchain</label>
+              <input
+                type="text"
+                [(ngModel)]="verificationData.transactionId"
+                placeholder="Ex: TX_ABC123DEF456"
+              />
+              <button class="btn-small" (click)="loadTransaction()">
+                📥 Charger la transaction
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Vérification manuelle -->
+        @if (verificationMethod === 'manual') {
+          <div class="verification-form">
+            <div class="form-section">
+              <label>Hash de la photo</label>
+              <input
+                type="text"
+                [(ngModel)]="verificationData.photoHash"
+                placeholder="64 caractères hexadécimaux"
+              />
+            </div>
+
+            <div class="form-section">
+              <label>Coordonnées GPS</label>
+              <div class="gps-inputs">
+                <input
+                  type="number"
+                  [(ngModel)]="verificationData.lat"
+                  placeholder="Latitude"
+                  step="0.000001"
+                />
+                <input
+                  type="number"
+                  [(ngModel)]="verificationData.lng"
+                  placeholder="Longitude"
+                  step="0.000001"
+                />
+              </div>
+            </div>
+
+            <div class="form-section">
+              <label>Horodatage (secondes UTC)</label>
+              <input
+                type="number"
+                [(ngModel)]="verificationData.timestamp"
+                placeholder="Ex: 1700000000"
+              />
+            </div>
+          </div>
+        }
+
+        <!-- Résultat de vérification -->
+        @if (verificationResult) {
+          <div
+            class="verification-result"
+            [class.valid]="verificationResult.isValid"
+            [class.invalid]="!verificationResult.isValid"
+          >
+            <div class="result-header">
+              <div class="result-icon">
+                {{ verificationResult.isValid ? '✅' : '❌' }}
+              </div>
+              <h3>
+                {{
+                  verificationResult.isValid
+                    ? 'Preuve valide'
+                    : 'Preuve invalide'
+                }}
+              </h3>
+            </div>
+
+            <div class="result-details">
+              <div class="detail-item">
+                <span class="label">ID Transaction:</span>
+                <span class="value">{{
+                  verificationResult.blockRecord?.transactionId
+                }}</span>
+              </div>
+
+              <div class="detail-item">
+                <span class="label">Hash blockchain:</span>
+                <span class="value hash"
+                  >{{
+                    verificationResult.blockRecord?.proofHash
+                      | slice: 0 : 16
+                  }}...</span
+                >
+              </div>
+
+              <div class="detail-item">
+                <span class="label">Hash recalculé:</span>
+                <span class="value hash"
+                  >{{
+                    verificationResult.recalculatedHash | slice: 0 : 16
+                  }}...</span
+                >
+              </div>
+
+              <div class="detail-item">
+                <span class="label">Correspondance:</span>
+                <span class="value">{{
+                  verificationResult.match
+                    ? '✅ Correspond'
+                    : '❌ Ne correspond pas'
+                }}</span>
+              </div>
+
+              @if (verificationResult.timestampDifference) {
+                <div class="detail-item">
+                  <span class="label">Différence temporelle:</span>
+                  <span class="value"
+                    >{{
+                      verificationResult.timestampDifference
+                    }}
+                    secondes</span
+                  >
+                </div>
+              }
+
+              @if (verificationResult.reason) {
+                <div class="detail-item">
+                  <span class="label">Raison:</span>
+                  <span class="value reason">{{ verificationResult.reason }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="actions">
+          <button class="btn-secondary" (click)="resetVerification()">
+            Effacer
+          </button>
+          <button
+            class="btn-primary"
+            [disabled]="!canVerifyProof() || isVerifying"
+            (click)="verifyProof()"
+          >
+            @if (isVerifying) {
+              <span class="spinner"></span> Vérification...
+            } @else {
+              🔍 Vérifier la preuve
+            }
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Historique blockchain -->
+    @if (activeTab === 'history') {
+      <div class="blockchain-history">
+        <div class="history-header">
+          <h2>📊 Historique blockchain pour {{ productId || '...' }}</h2>
+          <button class="btn-small" (click)="refreshHistory()">
+            🔄 Actualiser
+          </button>
+        </div>
+
+        @if (blockchainRecords.length === 0) {
+          <div class="empty-history">
+            <div class="empty-icon">🔗</div>
+            <h4>Aucun enregistrement blockchain</h4>
+            <p>
+              Aucune preuve n'a été enregistrée sur la blockchain pour ce
+              produit
+            </p>
+          </div>
+        } @else {
+          <!-- Statistiques -->
+          <div class="history-stats">
+            <div class="stat-card">
+              <div class="stat-icon total">📄</div>
+              <div class="stat-info">
+                <h3>{{ blockchainRecords.length }}</h3>
+                <p>Transactions</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon valid">✅</div>
+              <div class="stat-info">
+                <h3>{{ getVerifiedBlockchainRecordsCount() }}</h3>
+                <p>Preuves vérifiées</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon blocks">⛏️</div>
+              <div class="stat-info">
+                <h3>{{ getUniqueBlocks().length }}</h3>
+                <p>Blocs</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Liste des transactions -->
+          <div class="transactions-list">
+            <h3>Transactions blockchain</h3>
+
+            <div class="transaction-filters">
+              <input
+                type="text"
+                [(ngModel)]="historyFilter"
+                placeholder="Filtrer par étape ou transaction ID..."
+              />
+              <select [(ngModel)]="historySort">
+                <option value="timestamp-desc">Plus récent d'abord</option>
+                <option value="timestamp-asc">Plus ancien d'abord</option>
+                <option value="step">Par étape</option>
+              </select>
+            </div>
+
+            <div class="transactions">
+              @for (
+                record of getFilteredRecords();
+                track record.transactionId
+              ) {
+                <div
+                  class="transaction-card"
+                  [class.verified]="record.verified"
+                >
+                  <div class="transaction-header">
+                    <div class="transaction-id">
+                      {{ record.transactionId }}
+                    </div>
+                    <span class="transaction-status">
+                      {{ record.verified ? '✅ Vérifié' : '⏳ En attente' }}
+                    </span>
+                  </div>
+
+                  <div class="transaction-details">
+                    <div class="detail">
+                      <span class="label">Étape:</span>
+                      <span class="value step"
+                        >{{ getStepIcon(record.step) }}
+                        {{ record.step }}</span
+                      >
+                    </div>
+
+                    <div class="detail">
+                      <span class="label">Horodatage:</span>
+                      <span class="value">{{ record.timestamp * 1000 | date: 'dd/MM/yyyy HH:mm:ss' }}</span>
+                    </div>
+
+                    <div class="detail">
+                      <span class="label">Hash de preuve:</span>
+                      <span class="value hash">{{ record.proofHash | slice: 0 : 20 }}...</span>
+                    </div>
+
+                    @if (record.blockNumber) {
+                      <div class="detail">
+                        <span class="label">Bloc #:</span>
+                        <span class="value">{{ record.blockNumber }}</span>
+                      </div>
+                    }
+                  </div>
+
+                  <div class="transaction-actions">
+                    <button
+                      class="btn-small"
+                      (click)="verifyTransaction(record.transactionId)"
+                    >
+                      🔍 Vérifier
+                    </button>
+                    <button
+                      class="btn-small"
+                      (click)="viewTransactionDetails(record)"
+                    >
+                      📋 Détails
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- QR Code -->
+    @if (activeTab === 'qr') {
+      <div class="qr-section">
+        <h2>📱 QR Code de vérification</h2>
+
+        @if (productId) {
+          <div class="qr-container">
+            <img [src]="qrCodeUrl" alt="QR Code de vérification" />
+            <div class="qr-info">
+              <p><strong>Produit ID:</strong> {{ productId }}</p>
+              <p>
+                <strong>Lien de vérification:</strong> {{ verificationUrl }}
+              </p>
+              <p>
+                <strong>Preuves blockchain:</strong>
+                {{ blockchainRecords.length }}
+              </p>
+            </div>
+          </div>
+
+          <div class="qr-actions">
+            <button class="btn-secondary" (click)="downloadQRCode()">
+              📥 Télécharger QR Code
+            </button>
+            <button class="btn-secondary" (click)="copyVerificationLink()">
+              🔗 Copier le lien
+            </button>
+            <button
+              class="btn-primary"
+              (click)="generateVerificationReport()"
+            >
+              📄 Générer un rapport
+            </button>
+          </div>
+        } @else {
+          <div class="qr-empty">
+            <p>
+              Veuillez sélectionner un produit pour générer le QR Code de
+              vérification
+            </p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Messages -->
+  @if (errorMessage) {
+    <div class="error-message">❌ {{ errorMessage }}</div>
+  }
+
+  @if (successMessage) {
+    <div class="success-message">✅ {{ successMessage }}</div>
+  }
+</div>

@@ -30,7 +30,7 @@ import {
   limit,
 } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Product } from './data.interfaces';
+import { Product } from '../interfaces/data.interfaces';
 
 // Define the Order interface if not already defined elsewhere
 export interface Order {
@@ -60,16 +60,16 @@ export interface Order {
   certified: boolean;
 
   // ⭐ Notation
-  rated?: boolean;        // true si déjà noté
-  ratingValue?: number;  // 1 à 5 (optionnel)
+  rated?: boolean; // true si déjà noté
+  ratingValue?: number; // 1 à 5 (optionnel)
 
   // ⏱️ Dates Firestore
   createdAt: any; // Timestamp Firestore
   deliveredAt?: any;
 }
 
-
 import { environment } from '../../environments/environment';
+import { authState } from '@angular/fire/auth';
 
 // Interface pour les données utilisateur (garder seulement celle-ci)
 export interface FirebaseUserData {
@@ -88,40 +88,35 @@ export interface FirebaseUserData {
   providedIn: 'root',
 })
 export class FirebaseService {
-async submitRating(data: {
-  productId: string;
-  producerId: string;
-  buyerId: string;
-  stars: number;
-}) {
-  await addDoc(collection(this.firestore, 'ratings'), {
-    productId: data.productId,
-    producerId: data.producerId,
-    buyerId: data.buyerId,
-    stars: data.stars,
-    createdAt: serverTimestamp()
-  });
-}
+  async submitRating(data: {
+    productId: string;
+    producerId: string;
+    buyerId: string;
+    stars: number;
+  }) {
+    await addDoc(collection(this.firestore, 'ratings'), {
+      productId: data.productId,
+      producerId: data.producerId,
+      buyerId: data.buyerId,
+      stars: data.stars,
+      createdAt: serverTimestamp(),
+    });
+  }
 
+  async getAverageRatingForProduct(productId: string): Promise<number> {
+    const q = query(
+      collection(this.firestore, 'ratings'),
+      where('productId', '==', productId),
+    );
 
-async getAverageRatingForProduct(productId: string): Promise<number> {
-  const q = query(
-    collection(this.firestore, 'ratings'),
-    where('productId', '==', productId)
-  );
+    const snap = await getDocs(q);
 
-  const snap = await getDocs(q);
+    if (snap.empty) return 0;
 
-  if (snap.empty) return 0;
+    const total = snap.docs.reduce((sum, d) => sum + d.data()['stars'], 0);
 
-  const total = snap.docs.reduce(
-    (sum, d) => sum + d.data()['stars'],
-    0
-  );
-
-  return Number((total / snap.size).toFixed(1));
-}
-
+    return Number((total / snap.size).toFixed(1));
+  }
 
   private app = initializeApp(environment.firebase);
   private auth = getAuth(this.app);
@@ -133,50 +128,77 @@ async getAverageRatingForProduct(productId: string): Promise<number> {
   isLoading = true;
   getProducers: any;
 
-constructor() {
-  this.setupAuthPersistence();
-  this.setupAuthListener();
-}
-
-
-  private async setupAuthPersistence() {
-    try {
-      await setPersistence(this.auth, browserLocalPersistence);
-    } catch (error) {
-      console.error('Erreur de configuration de persistance:', error);
-    }
+  // Dans le constructeur de firebase.service.ts
+  constructor() {
+    this.setupAuthListener();
   }
 
-  private setupAuthListener() {
+  // firebase.service.ts - CORRIGEZ setupAuthListener
+  private async setupAuthListener() {
+    try {
+      // ✅ Configurer la persistance avec Firebase SDK standard
+      await setPersistence(this.auth, browserLocalPersistence);
+      console.log('✅ Persistance Firebase configurée');
+    } catch (error) {
+      console.error('❌ Erreur de configuration de persistance:', error);
+    }
+
+    // ✅ Utilisez onAuthStateChanged de Firebase SDK, PAS authState d'AngularFire
     onAuthStateChanged(this.auth, async (user) => {
+      console.log('🔄 Auth state changé:', user?.email || 'undefined');
+
       this.isLoading = true;
       this.currentUser = user;
 
       if (user) {
+        console.log('✅ Utilisateur Firebase trouvé:', user.email);
         await this.loadUserData(user.uid);
       } else {
-        console.log('Aucun utilisateur connecté');
+        console.log('👤 Aucun utilisateur Firebase (déconnecté)');
         this.userData = null;
+        localStorage.removeItem('userData');
       }
 
       this.isLoading = false;
     });
   }
-
-  isAuthInitialized(): boolean {
-    return !this.isLoading && this.auth.currentUser !== undefined;
-  }
-
-  getCurrentAuthUser(): User | null {
+  getCurrentAuthUser() {
     return this.auth.currentUser;
   }
 
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log('🔐 Tentative de connexion pour:', email);
+      const userCredential = await signInWithEmailAndPassword(
+        this.auth,
+        email,
+        password,
+      );
+
+      console.log(
+        '✅ Connexion réussie, utilisateur:',
+        userCredential.user?.email,
+      );
+      console.log('📊 État auth.currentUser:', this.auth.currentUser?.email);
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('❌ Erreur de connexion:', error);
+      return {
+        success: false,
+        error: this.getFirebaseErrorMessage(error.code),
+      };
+    }
+  }
   async register(userData: any): Promise<{ success: boolean; error?: string }> {
     try {
       const userCredential = await createUserWithEmailAndPassword(
         this.auth,
         userData.email,
-        userData.password
+        userData.password,
       );
 
       const userDataToSave: any = {
@@ -193,11 +215,9 @@ constructor() {
         userDataToSave.reputation = 0;
       }
 
-      console.log('Données utilisateur à enregistrer:', userDataToSave);
-
       await setDoc(
         doc(this.firestore, 'users', userCredential.user.uid),
-        userDataToSave
+        userDataToSave,
       );
 
       // Stocker localement avec les données de base
@@ -221,145 +241,137 @@ constructor() {
       };
     }
   }
+  async getMyOrders(buyerId: string): Promise<Order[]> {
+    const q = query(
+      collection(this.firestore, 'sales'),
+      where('buyerId', '==', buyerId),
+      orderBy('createdAt', 'desc'),
+    );
 
-  async login(
-    email: string,
-    password: string
-  ): Promise<{ success: boolean; error?: string }> {
-    try {
-      await signInWithEmailAndPassword(this.auth, email, password);
-      return { success: true };
-    } catch (error: any) {
-      console.error('Erreur de connexion:', error);
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.map((docSnap) => {
+      const data = docSnap.data();
       return {
-        success: false,
-        error: this.getFirebaseErrorMessage(error.code),
-      };
-    }
-  }
-async getMyOrders(buyerId: string): Promise<Order[]> {
-  const q = query(
-    collection(this.firestore, 'sales'),
-    where('buyerId', '==', buyerId),
-    orderBy('createdAt', 'desc')
-  );
+        id: docSnap.id,
+        buyerId: data['buyerId'] || '',
+        producerId: data['producerId'] || '',
+        productId: data['productId'] || '',
+        quantity: data['quantity'] || 0,
+        totalPrice: data['totalPrice'] || 0,
+        status: data['status'] || '',
+        amount: data['amount'] || data['totalPrice'] || 0,
 
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map(docSnap => {
-    const data = docSnap.data();
-    return {
-      id: docSnap.id,
-      buyerId: data['buyerId'] || '',
-      producerId: data['producerId'] || '',
-      productId: data['productId'] || '',
-      quantity: data['quantity'] || 0,
-      totalPrice: data['totalPrice'] || 0,
-      status: data['status'] || '',
-      amount: data['amount'] || data['totalPrice'] || 0,
-
-      createdAt: data['createdAt']?.toDate ? data['createdAt'].toDate() : new Date(),
-      updatedAt: data['updatedAt']?.toDate ? data['updatedAt'].toDate() : undefined,
-      ...data
-    } as unknown as Order;
-  });
-}
-
-async getBuyerSales(): Promise<any[]> {
-  const user = this.auth.currentUser;
-  if (!user) return [];
-
-  const salesRef = collection(this.firestore, 'sales');
-  const q = query(
-    salesRef,
-    where('buyerId', '==', user.uid),
-    orderBy('createdAt', 'desc')
-  );
-
-  const snapshot = await getDocs(q);
-  const results: any[] = [];
-
-  for (const docSnap of snapshot.docs) {
-    const sale = docSnap.data();
-
-    // =========================
-    // 🔹 Récupération PRODUIT
-    // =========================
-    let productData: any = null;
-    if (sale['productId']) {
-      const productSnap = await getDoc(
-        doc(this.firestore, 'products', sale['productId'])
-      );
-      productData = productSnap.exists() ? productSnap.data() : null;
-    }
-
-    // =========================
-    // 🔹 Récupération PRODUCTEUR
-    // =========================
-    let producerData: any = null;
-    if (sale['producerId']) {
-      const producerSnap = await getDoc(
-        doc(this.firestore, 'users', sale['producerId'])
-      );
-      producerData = producerSnap.exists() ? producerSnap.data() : null;
-    }
-
-    // =========================
-    // ⭐ LOGIQUE DE CERTIFICATION (UNIQUE)
-    // EXACTEMENT COMME "Produits recommandés"
-    // =========================
-    const isCertified =
-      productData?.certifications &&
-      Array.isArray(productData.certifications) &&
-      productData.certifications.length > 0;
-
-    // =========================
-    // 📦 PUSH FINAL
-    // =========================
-    results.push({
-      id: docSnap.id,
-      product: productData?.name || 'Produit inconnu',
-      producer: producerData?.fullName || 'Producteur inconnu',
-      date: sale['createdAt']?.toDate
-        ? sale['createdAt'].toDate().toISOString().split('T')[0]
-        : '',
-      amount: sale['totalAmount'] || 0,
-
-      // statut réel
-      status: sale['status'] || 'pending',
-
-      // ✅ CERTIFICATION CORRECTE
-      certified: isCertified,
-
-      // 🔗 pour rating
-      productId: sale['productId'],
-      producerId: sale['producerId']
+        createdAt: data['createdAt']?.toDate
+          ? data['createdAt'].toDate()
+          : new Date(),
+        updatedAt: data['updatedAt']?.toDate
+          ? data['updatedAt'].toDate()
+          : undefined,
+        ...data,
+      } as unknown as Order;
     });
   }
 
-  return results;
-}
-  db(db: any, arg1: string, arg2: any): import("@firebase/firestore").DocumentReference<import("@firebase/firestore").DocumentData, import("@firebase/firestore").DocumentData> {
+  async getBuyerSales(): Promise<any[]> {
+    const user = this.auth.currentUser;
+    if (!user) return [];
+
+    const salesRef = collection(this.firestore, 'sales');
+    const q = query(
+      salesRef,
+      where('buyerId', '==', user.uid),
+      orderBy('createdAt', 'desc'),
+    );
+
+    const snapshot = await getDocs(q);
+    const results: any[] = [];
+
+    for (const docSnap of snapshot.docs) {
+      const sale = docSnap.data();
+
+      // =========================
+      // 🔹 Récupération PRODUIT
+      // =========================
+      let productData: any = null;
+      if (sale['productId']) {
+        const productSnap = await getDoc(
+          doc(this.firestore, 'products', sale['productId']),
+        );
+        productData = productSnap.exists() ? productSnap.data() : null;
+      }
+
+      // =========================
+      // 🔹 Récupération PRODUCTEUR
+      // =========================
+      let producerData: any = null;
+      if (sale['producerId']) {
+        const producerSnap = await getDoc(
+          doc(this.firestore, 'users', sale['producerId']),
+        );
+        producerData = producerSnap.exists() ? producerSnap.data() : null;
+      }
+
+      // =========================
+      // ⭐ LOGIQUE DE CERTIFICATION (UNIQUE)
+      // EXACTEMENT COMME "Produits recommandés"
+      // =========================
+      const isCertified =
+        productData?.certifications &&
+        Array.isArray(productData.certifications) &&
+        productData.certifications.length > 0;
+
+      // =========================
+      // 📦 PUSH FINAL
+      // =========================
+      results.push({
+        id: docSnap.id,
+        product: productData?.name || 'Produit inconnu',
+        producer: producerData?.fullName || 'Producteur inconnu',
+        date: sale['createdAt']?.toDate
+          ? sale['createdAt'].toDate().toISOString().split('T')[0]
+          : '',
+        amount: sale['totalAmount'] || 0,
+
+        // statut réel
+        status: sale['status'] || 'pending',
+
+        // ✅ CERTIFICATION CORRECTE
+        certified: isCertified,
+
+        // 🔗 pour rating
+        productId: sale['productId'],
+        producerId: sale['producerId'],
+      });
+    }
+
+    return results;
+  }
+  db(
+    db: any,
+    arg1: string,
+    arg2: any,
+  ): import('@firebase/firestore').DocumentReference<
+    import('@firebase/firestore').DocumentData,
+    import('@firebase/firestore').DocumentData
+  > {
     throw new Error('Method not implemented.');
   }
 
-async getMyRatings(): Promise<any[]> {
-  const user = this.getCurrentAuthUser();
-  if (!user) return [];
+  async getMyRatings(): Promise<any[]> {
+    const user = this.getCurrentAuthUser();
+    if (!user) return [];
 
-  const ratingsRef = collection(this.firestore, 'ratings');
-  const q = query(
-    ratingsRef,
-    where('buyerId', '==', user.uid)
-  );
+    const ratingsRef = collection(this.firestore, 'ratings');
+    const q = query(ratingsRef, where('buyerId', '==', user.uid));
 
-  const snapshot = await getDocs(q);
+    const snapshot = await getDocs(q);
 
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
-}
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  }
 
   async logout(): Promise<void> {
     try {
@@ -399,12 +411,11 @@ async getMyRatings(): Promise<any[]> {
       } else {
         console.warn(
           'Document utilisateur non trouvé dans Firestore pour uid:',
-          uid
+          uid,
         );
 
         const currentUser = this.auth.currentUser;
         if (currentUser && currentUser.uid === uid) {
-          console.log('Création du document utilisateur manquant...');
           await this.createMissingUserDocument(uid);
         }
       }
@@ -415,11 +426,10 @@ async getMyRatings(): Promise<any[]> {
       if (cachedData) {
         try {
           this.userData = JSON.parse(cachedData);
-          console.log('Données utilisateur restaurées depuis localStorage');
         } catch (parseError) {
           console.error(
             'Erreur de parsing des données localStorage:',
-            parseError
+            parseError,
           );
         }
       }
@@ -444,13 +454,12 @@ async getMyRatings(): Promise<any[]> {
       };
 
       await setDoc(doc(this.firestore, 'users', uid), userDataToSave);
-      console.log('Document utilisateur créé pour:', uid);
 
       await this.loadUserData(uid);
     } catch (error) {
       console.error(
         'Erreur lors de la création du document utilisateur:',
-        error
+        error,
       );
     }
   }
@@ -512,7 +521,7 @@ async getMyRatings(): Promise<any[]> {
   // ==================== GESTION DES PRODUITS ====================
 
   async addProduct(
-    productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>
+    productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<{ success: boolean; productId?: string; error?: string }> {
     try {
       const productWithTimestamp = {
@@ -530,10 +539,8 @@ async getMyRatings(): Promise<any[]> {
 
       const docRef = await addDoc(
         collection(this.firestore, 'products'),
-        productWithTimestamp
+        productWithTimestamp,
       );
-
-      console.log('Produit ajouté avec ID:', docRef.id);
 
       return {
         success: true,
@@ -556,7 +563,7 @@ async getMyRatings(): Promise<any[]> {
       const q = query(
         collection(this.firestore, 'products'),
         where('producerId', '==', producerId),
-        orderBy('createdAt', 'desc')
+        orderBy('createdAt', 'desc'),
       );
 
       const querySnapshot = await getDocs(q);
@@ -601,7 +608,7 @@ async getMyRatings(): Promise<any[]> {
   async getProductById(productId: string): Promise<Product | null> {
     try {
       const productDoc = await getDoc(
-        doc(this.firestore, 'products', productId)
+        doc(this.firestore, 'products', productId),
       );
 
       if (productDoc.exists()) {
@@ -646,7 +653,7 @@ async getMyRatings(): Promise<any[]> {
 
   async updateProduct(
     productId: string,
-    productData: Partial<Product>
+    productData: Partial<Product>,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const updateData = {
@@ -669,11 +676,10 @@ async getMyRatings(): Promise<any[]> {
   }
 
   async deleteProduct(
-    productId: string
+    productId: string,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       await deleteDoc(doc(this.firestore, 'products', productId));
-      console.log('Produit supprimé:', productId);
       return { success: true };
     } catch (error: any) {
       console.error('Erreur lors de la suppression du produit:', error);
@@ -688,7 +694,7 @@ async getMyRatings(): Promise<any[]> {
 
   async updateProductStatus(
     productId: string,
-    status: Product['status']
+    status: Product['status'],
   ): Promise<{ success: boolean; error?: string }> {
     try {
       await updateDoc(doc(this.firestore, 'products', productId), {
@@ -728,7 +734,7 @@ async getMyRatings(): Promise<any[]> {
         where('status', '==', 'available'),
         where('isActive', '==', true),
         where('quantity', '>', 0),
-        orderBy('createdAt', 'desc')
+        orderBy('createdAt', 'desc'),
       );
 
       const querySnapshot = await getDocs(q);
@@ -773,7 +779,7 @@ async getMyRatings(): Promise<any[]> {
         if (!product.producerId) {
           console.warn(
             '⚠️ ATTENTION: product.producerId est vide pour:',
-            product.name
+            product.name,
           );
           product.producerId =
             this.extractProducerIdFromEmail(data['producerEmail']) || '';
@@ -782,12 +788,11 @@ async getMyRatings(): Promise<any[]> {
         products.push(product);
       });
 
-      console.log(`${products.length} produits disponibles récupérés`);
       return products;
     } catch (error) {
       console.error(
         'Erreur lors de la récupération des produits disponibles:',
-        error
+        error,
       );
       return [];
     }
@@ -811,7 +816,7 @@ async getMyRatings(): Promise<any[]> {
           product.description
             ?.toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          product.producerName.toLowerCase().includes(searchTerm.toLowerCase())
+          product.producerName.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     } catch (error) {
       console.error('Erreur lors de la recherche de produits:', error);
@@ -849,7 +854,7 @@ async getMyRatings(): Promise<any[]> {
       collection(this.firestore, 'products'),
       where('certification', '!=', null),
       where('status', '==', 'available'),
-      orderBy('createdAt', 'desc')
+      orderBy('createdAt', 'desc'),
     );
 
     const snapshot = await getDocs(q);
@@ -889,7 +894,7 @@ async getMyRatings(): Promise<any[]> {
   }
 
   async getProductWithCertification(
-    productId: string
+    productId: string,
   ): Promise<Product | null> {
     const product = await this.getProductById(productId);
     if (!product) return null;
@@ -897,7 +902,7 @@ async getMyRatings(): Promise<any[]> {
     if (product.certification?.id) {
       try {
         const cert = await getDoc(
-          doc(this.firestore, 'certifications', product.certification.id)
+          doc(this.firestore, 'certifications', product.certification.id),
         );
 
         if (cert.exists()) {
@@ -910,5 +915,4 @@ async getMyRatings(): Promise<any[]> {
 
     return product;
   }
-
 }

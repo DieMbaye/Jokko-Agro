@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
-import { Product } from '../services/data.interfaces';
+import { Product } from '../interfaces/data.interfaces';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ChatbotService {
   async getIntelligentResponse(
     question: string,
     products: Product[],
-    producers: any[]
+    producers: any[],
   ): Promise<string> {
     const q = question.toLowerCase().trim();
 
@@ -46,7 +46,7 @@ export class ChatbotService {
       if (productName) {
         return this.getMarketPriceEstimate(productName, products);
       } else {
-        return "🤔 Pour quel produit souhaitez-vous une estimation de prix ? (ex: tomates, riz, mangues)";
+        return '🤔 Pour quel produit souhaitez-vous une estimation de prix ? (ex: tomates, riz, mangues)';
       }
     }
 
@@ -65,7 +65,7 @@ export class ChatbotService {
       if (productName) {
         return this.compareProducersForProduct(productName, products);
       } else {
-        return "🤔 Pour quel produit souhaitez-vous comparer les producteurs ? (ex: tomates, riz, mangues)";
+        return '🤔 Pour quel produit souhaitez-vous comparer les producteurs ? (ex: tomates, riz, mangues)';
       }
     }
 
@@ -77,19 +77,23 @@ export class ChatbotService {
       if (productName) {
         return this.getExactProductPrice(productName, products);
       } else {
-        return "🤔 De quel produit souhaitez-vous connaître le prix ?";
+        return '🤔 De quel produit souhaitez-vous connaître le prix ?';
       }
     }
 
     /* =============================
        6️⃣ COMMANDER / QUI VEND
     ============================= */
-    if (q.includes('commander') || q.includes('acheter') || q.includes('qui vend')) {
+    if (
+      q.includes('commander') ||
+      q.includes('acheter') ||
+      q.includes('qui vend')
+    ) {
       const productName = this.extractProductNameFromQuestion(q);
       if (productName) {
         return this.getProductInfo(productName, products);
       } else {
-        return "🤔 Quel produit souhaitez-vous commander ?";
+        return '🤔 Quel produit souhaitez-vous commander ?';
       }
     }
 
@@ -125,22 +129,49 @@ export class ChatbotService {
      OUTILS LINGUISTIQUES
   ===================================================== */
   private isThankYouMessage(msg: string): boolean {
-    return ['merci', 'thanks', 'thank you', 'cimer'].some(w => msg.includes(w));
+    return ['merci', 'thanks', 'thank you', 'cimer'].some((w) =>
+      msg.includes(w),
+    );
   }
 
   private extractProductNameFromQuestion(question: string): string {
     const stopWords = [
-      'compare', 'comparer', 'comparaison',
-      'meilleur', 'meilleure',
-      'producteur', 'producteurs',
-      'vendeur', 'vendeurs',
-      'qui', 'est',
-      'prix', 'marche', 'marché', 'moyen', 'estimation',
-      'combien', 'coûte',
-      'je', 'veux', 'de', 'du', 'des', 'la', 'le', 'les',
-      'un', 'une', 'faire',
-      'commander', 'acheter', 'vend', 'vendre',
-      'pour', 'avec', 'sur'
+      'compare',
+      'comparer',
+      'comparaison',
+      'meilleur',
+      'meilleure',
+      'producteur',
+      'producteurs',
+      'vendeur',
+      'vendeurs',
+      'qui',
+      'est',
+      'prix',
+      'marche',
+      'marché',
+      'moyen',
+      'estimation',
+      'combien',
+      'coûte',
+      'je',
+      'veux',
+      'de',
+      'du',
+      'des',
+      'la',
+      'le',
+      'les',
+      'un',
+      'une',
+      'faire',
+      'commander',
+      'acheter',
+      'vend',
+      'vendre',
+      'pour',
+      'avec',
+      'sur',
     ];
 
     // Extraire le nom du produit après certains mots-clés
@@ -153,7 +184,7 @@ export class ChatbotService {
       /qui vend\s+(.+)/i,
       /compare[r]?\s+(.+)/i,
       /comparer\s+(.+)/i,
-      /producteurs?\s+pour\s+(.+)/i
+      /producteurs?\s+pour\s+(.+)/i,
     ];
 
     for (const pattern of patterns) {
@@ -162,13 +193,13 @@ export class ChatbotService {
         const extracted = match[1]
           .replace(/[^\w\s]/g, '')
           .split(' ')
-          .filter(word =>
-            word.length > 2 &&
-            !stopWords.includes(word.toLowerCase())
+          .filter(
+            (word) =>
+              word.length > 2 && !stopWords.includes(word.toLowerCase()),
           )
           .join(' ')
           .trim();
-        
+
         if (extracted) return extracted;
       }
     }
@@ -178,10 +209,7 @@ export class ChatbotService {
       .toLowerCase()
       .replace(/[^\w\s]/g, '')
       .split(' ')
-      .filter(word =>
-        word.length > 2 &&
-        !stopWords.includes(word)
-      )
+      .filter((word) => word.length > 2 && !stopWords.includes(word))
       .join(' ')
       .trim();
   }
@@ -189,27 +217,31 @@ export class ChatbotService {
   /* =====================================================
      ESTIMATION DU PRIX DU MARCHÉ
   ===================================================== */
-  private getMarketPriceEstimate(productName: string, products: Product[]): string {
+  private getMarketPriceEstimate(
+    productName: string,
+    products: Product[],
+  ): string {
     const key = productName.toLowerCase().trim();
 
-    const matches = products.filter(p =>
-      p.name.toLowerCase().includes(key) &&
-      p.status === 'available' &&
-      p.quantity > 0
+    const matches = products.filter(
+      (p) =>
+        p.name.toLowerCase().includes(key) &&
+        p.status === 'available' &&
+        p.quantity > 0,
     );
 
     if (matches.length === 0) {
       return `❌ Aucune donnée de marché disponible pour "${productName}". Ce produit n'est pas disponible actuellement.`;
     }
 
-    const prices = matches.map(p => p.price);
+    const prices = matches.map((p) => p.price);
     const unit = matches[0].unit;
 
     const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
     const min = Math.min(...prices);
     const max = Math.max(...prices);
 
-    const producers = Array.from(new Set(matches.map(p => p.producerName)));
+    const producers = Array.from(new Set(matches.map((p) => p.producerName)));
 
     let res =
       `📊 **ESTIMATION DE PRIX – ${productName.toUpperCase()}**\n\n` +
@@ -220,10 +252,15 @@ export class ChatbotService {
     if (matches.length > 0) {
       res += `👨‍🌾 **Producteurs disponibles (${producers.length}) :**\n`;
       producers.forEach((name, index) => {
-        const producerProducts = matches.filter(p => p.producerName === name);
-        const producerMinPrice = Math.min(...producerProducts.map(p => p.price));
-        const producerStock = producerProducts.reduce((sum, p) => sum + p.quantity, 0);
-        
+        const producerProducts = matches.filter((p) => p.producerName === name);
+        const producerMinPrice = Math.min(
+          ...producerProducts.map((p) => p.price),
+        );
+        const producerStock = producerProducts.reduce(
+          (sum, p) => sum + p.quantity,
+          0,
+        );
+
         res += `${index + 1}. **${name}** - ${producerMinPrice.toLocaleString()} FCFA/${unit} (Stock: ${producerStock})\n`;
       });
     }
@@ -238,12 +275,13 @@ export class ChatbotService {
   ===================================================== */
   compareProducersForProduct(productName: string, products: Product[]): string {
     if (!productName || productName.trim() === '') {
-      return "❌ Veuillez spécifier un produit à comparer. (ex : tomates, riz, mangues)";
+      return '❌ Veuillez spécifier un produit à comparer. (ex : tomates, riz, mangues)';
     }
 
-    const matches = products.filter(p =>
-      p.name.toLowerCase().includes(productName.toLowerCase()) &&
-      p.status === 'available'
+    const matches = products.filter(
+      (p) =>
+        p.name.toLowerCase().includes(productName.toLowerCase()) &&
+        p.status === 'available',
     );
 
     if (matches.length === 0) {
@@ -252,17 +290,19 @@ export class ChatbotService {
 
     if (matches.length === 1) {
       const p = matches[0];
-      return `⚠️ Seul **${p.producerName}** propose **${p.name}** actuellement.\n\n` +
-             `💰 Prix : ${p.price.toLocaleString()} FCFA / ${p.unit}\n` +
-             `📦 Stock : ${p.quantity} ${p.unit}\n` +
-             (p.certifications?.length > 0 ? `🏅 Certifié : Oui\n` : '') +
-             (p.rating ? `⭐ Note : ${p.rating}/5\n` : '');
+      return (
+        `⚠️ Seul **${p.producerName}** propose **${p.name}** actuellement.\n\n` +
+        `💰 Prix : ${p.price.toLocaleString()} FCFA / ${p.unit}\n` +
+        `📦 Stock : ${p.quantity} ${p.unit}\n` +
+        (p.certifications?.length > 0 ? `🏅 Certifié : Oui\n` : '') +
+        (p.rating ? `⭐ Note : ${p.rating}/5\n` : '')
+      );
     }
 
     // Regrouper par producteur
     const grouped: Record<string, Product[]> = {};
 
-    matches.forEach(p => {
+    matches.forEach((p) => {
       if (!grouped[p.producerName]) {
         grouped[p.producerName] = [];
       }
@@ -271,12 +311,18 @@ export class ChatbotService {
 
     // Analyser chaque producteur
     const analysis = Object.entries(grouped).map(([producer, prods]) => {
-      const avgPrice = Math.round(prods.reduce((s, p) => s + p.price, 0) / prods.length);
+      const avgPrice = Math.round(
+        prods.reduce((s, p) => s + p.price, 0) / prods.length,
+      );
       const totalStock = prods.reduce((s, p) => s + (p.quantity || 0), 0);
-      const avgRating = Math.round(
-        (prods.reduce((s, p) => s + (p.rating || 0), 0) / prods.length) * 10
-      ) / 10;
-      const certifications = prods.reduce((s, p) => s + (p.certifications?.length || 0), 0);
+      const avgRating =
+        Math.round(
+          (prods.reduce((s, p) => s + (p.rating || 0), 0) / prods.length) * 10,
+        ) / 10;
+      const certifications = prods.reduce(
+        (s, p) => s + (p.certifications?.length || 0),
+        0,
+      );
       const hasCertification = certifications > 0;
 
       return {
@@ -285,37 +331,37 @@ export class ChatbotService {
         totalStock,
         avgRating: avgRating || 0,
         hasCertification,
-        productCount: prods.length
+        productCount: prods.length,
       };
     });
 
     // Calculer un score pour chaque producteur
-    const minPrice = Math.min(...analysis.map(a => a.avgPrice));
-    const maxStock = Math.max(...analysis.map(a => a.totalStock));
+    const minPrice = Math.min(...analysis.map((a) => a.avgPrice));
+    const maxStock = Math.max(...analysis.map((a) => a.totalStock));
 
-    const scoredAnalysis = analysis.map(a => {
+    const scoredAnalysis = analysis.map((a) => {
       let score = 0;
-      
+
       // Score prix (plus bas = meilleur)
       if (minPrice > 0) {
         score += (minPrice / a.avgPrice) * 40;
       }
-      
+
       // Score stock (plus élevé = meilleur)
       if (maxStock > 0) {
         score += (a.totalStock / maxStock) * 25;
       }
-      
+
       // Score certification
       if (a.hasCertification) {
         score += 20;
       }
-      
+
       // Score note
       if (a.avgRating > 0) {
         score += (a.avgRating / 5) * 15;
       }
-      
+
       return { ...a, score: Math.round(score) };
     });
 
@@ -328,7 +374,7 @@ export class ChatbotService {
 
     scoredAnalysis.forEach((a, i) => {
       const badge = i === 0 ? '🏆 **MEILLEUR CHOIX**' : `${i + 1}.`;
-      
+
       res += `${badge} **${a.producer}**\n`;
       res += `   💰 Prix moyen : ${a.avgPrice.toLocaleString()} FCFA\n`;
       res += `   📦 Stock total : ${a.totalStock} ${matches[0].unit}\n`;
@@ -341,7 +387,7 @@ export class ChatbotService {
     const best = scoredAnalysis[0];
     res += `👉 **RECOMMANDATION :**\n`;
     res += `**${best.producer}** est recommandé pour **${productName}** car :\n`;
-    
+
     const reasons: string[] = [];
     if (best.avgPrice === minPrice) {
       reasons.push('offre le meilleur prix');
@@ -355,7 +401,7 @@ export class ChatbotService {
     if (best.avgRating >= 4) {
       reasons.push('excellente note des clients');
     }
-    
+
     if (reasons.length > 0) {
       res += `• ${reasons.join('\n• ')}\n`;
     }
@@ -366,12 +412,14 @@ export class ChatbotService {
   /* =====================================================
      PRIX EXACT D'UN PRODUIT
   ===================================================== */
-  private getExactProductPrice(productName: string, products: Product[]): string {
+  private getExactProductPrice(
+    productName: string,
+    products: Product[],
+  ): string {
     const key = productName.toLowerCase().trim();
 
-    const matches = products.filter(p =>
-      p.name.toLowerCase().includes(key) &&
-      p.status === 'available'
+    const matches = products.filter(
+      (p) => p.name.toLowerCase().includes(key) && p.status === 'available',
     );
 
     if (matches.length === 0) {
@@ -380,7 +428,7 @@ export class ChatbotService {
 
     let res = `💰 **PRIX POUR ${productName.toUpperCase()}**\n\n`;
 
-    matches.forEach(p => {
+    matches.forEach((p) => {
       res += `• **${p.name}**\n`;
       res += `  👨‍🌾 Producteur : ${p.producerName}\n`;
       res += `  💰 Prix : ${p.price.toLocaleString()} FCFA / ${p.unit}\n`;
@@ -395,7 +443,7 @@ export class ChatbotService {
     });
 
     if (matches.length > 1) {
-      const prices = matches.map(p => p.price);
+      const prices = matches.map((p) => p.price);
       const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
       res += `📊 **Prix moyen :** ${avg.toLocaleString()} FCFA/${matches[0].unit}\n`;
     }
@@ -409,9 +457,8 @@ export class ChatbotService {
   private getProductInfo(productName: string, products: Product[]): string {
     const key = productName.toLowerCase().trim();
 
-    const matches = products.filter(p =>
-      p.name.toLowerCase().includes(key) &&
-      p.status === 'available'
+    const matches = products.filter(
+      (p) => p.name.toLowerCase().includes(key) && p.status === 'available',
     );
 
     if (matches.length === 0) {
@@ -420,7 +467,7 @@ export class ChatbotService {
 
     let res = `📦 **${matches.length} PRODUIT(S) DISPONIBLE(S) POUR "${productName.toUpperCase()}"**\n\n`;
 
-    matches.forEach(p => {
+    matches.forEach((p) => {
       res += `• **${p.name}**\n`;
       res += `  💰 ${p.price.toLocaleString()} FCFA/${p.unit}\n`;
       res += `  👨‍🌾 ${p.producerName}\n`;
@@ -444,19 +491,18 @@ export class ChatbotService {
      PRODUITS DISPONIBLES
   ===================================================== */
   private getAvailableProducts(products: Product[]): string {
-    const available = products.filter(p => 
-      p.status === 'available' && 
-      p.quantity > 0
+    const available = products.filter(
+      (p) => p.status === 'available' && p.quantity > 0,
     );
 
     if (available.length === 0) {
-      return "❌ Aucun produit disponible pour le moment.";
+      return '❌ Aucun produit disponible pour le moment.';
     }
 
     // Grouper par catégorie
     const categories: { [key: string]: Product[] } = {};
 
-    available.forEach(p => {
+    available.forEach((p) => {
       const category = p.category?.toLowerCase() || 'autres';
       if (!categories[category]) {
         categories[category] = [];
@@ -469,12 +515,12 @@ export class ChatbotService {
     Object.entries(categories).forEach(([category, prods]) => {
       const categoryName = this.formatCategoryName(category);
       res += `**${categoryName}** (${prods.length})\n`;
-      
+
       // Limiter à 5 produits par catégorie pour éviter une réponse trop longue
-      prods.slice(0, 5).forEach(p => {
+      prods.slice(0, 5).forEach((p) => {
         res += `• ${p.name} - ${p.price.toLocaleString()} FCFA/${p.unit}\n`;
       });
-      
+
       if (prods.length > 5) {
         res += `  ... et ${prods.length - 5} autres\n`;
       }
@@ -491,20 +537,20 @@ export class ChatbotService {
   ===================================================== */
   private getActiveProducers(producers: any[], products: Product[]): string {
     if (!products || products.length === 0) {
-      return "❌ Aucun producteur actif pour le moment.";
+      return '❌ Aucun producteur actif pour le moment.';
     }
 
     const producerMap = new Map<string, number>();
 
     products
-      .filter(p => p.status === 'available' && p.quantity > 0)
-      .forEach(p => {
+      .filter((p) => p.status === 'available' && p.quantity > 0)
+      .forEach((p) => {
         const name = p.producerName;
         producerMap.set(name, (producerMap.get(name) || 0) + 1);
       });
 
     if (producerMap.size === 0) {
-      return "❌ Aucun producteur actif pour le moment.";
+      return '❌ Aucun producteur actif pour le moment.';
     }
 
     const sortedProducers = Array.from(producerMap.entries())
@@ -514,13 +560,12 @@ export class ChatbotService {
     let res = `👨‍🌾 **PRODUCTEURS ACTIFS (${producerMap.size})**\n\n`;
 
     sortedProducers.forEach(([name, count], index) => {
-      const producerProducts = products.filter(p => 
-        p.producerName === name && 
-        p.status === 'available'
+      const producerProducts = products.filter(
+        (p) => p.producerName === name && p.status === 'available',
       );
-      
-      const certifications = producerProducts.filter(p => 
-        p.certifications && p.certifications.length > 0
+
+      const certifications = producerProducts.filter(
+        (p) => p.certifications && p.certifications.length > 0,
       ).length;
 
       const badge = index < 3 ? ['🥇', '🥈', '🥉'][index] : `${index + 1}.`;
@@ -599,39 +644,44 @@ export class ChatbotService {
   ===================================================== */
   private formatCategoryName(category: string): string {
     const categoryMap: { [key: string]: string } = {
-      'fruit': '🍎 Fruits',
-      'fruits': '🍎 Fruits',
-      'légume': '🥦 Légumes',
-      'légumes': '🥦 Légumes',
-      'vegetable': '🥦 Légumes',
-      'vegetables': '🥦 Légumes',
-      'céréale': '🌾 Céréales',
-      'céréales': '🌾 Céréales',
-      'cereal': '🌾 Céréales',
-      'cereals': '🌾 Céréales',
-      'epicerie': '🛒 Épicerie',
-      'épicerie': '🛒 Épicerie',
-      'grocery': '🛒 Épicerie'
+      fruit: '🍎 Fruits',
+      fruits: '🍎 Fruits',
+      légume: '🥦 Légumes',
+      légumes: '🥦 Légumes',
+      vegetable: '🥦 Légumes',
+      vegetables: '🥦 Légumes',
+      céréale: '🌾 Céréales',
+      céréales: '🌾 Céréales',
+      cereal: '🌾 Céréales',
+      cereals: '🌾 Céréales',
+      epicerie: '🛒 Épicerie',
+      épicerie: '🛒 Épicerie',
+      grocery: '🛒 Épicerie',
     };
 
-    return categoryMap[category] || `📦 ${category.charAt(0).toUpperCase() + category.slice(1)}`;
+    return (
+      categoryMap[category] ||
+      `📦 ${category.charAt(0).toUpperCase() + category.slice(1)}`
+    );
   }
 
   private calculateProducerScore(
     product: Product,
-    context: { minPrice: number; maxStock: number }
+    context: { minPrice: number; maxStock: number },
   ): number {
     const priceScore = (context.minPrice / product.price) * 100;
-    const certScore = product.certifications && product.certifications.length > 0 ? 100 : 0;
+    const certScore =
+      product.certifications && product.certifications.length > 0 ? 100 : 0;
     const ratingScore = product.rating ? (product.rating / 5) * 100 : 0;
-    const stockScore = context.maxStock > 0
-      ? Math.min((product.quantity / context.maxStock) * 100, 100)
-      : 0;
+    const stockScore =
+      context.maxStock > 0
+        ? Math.min((product.quantity / context.maxStock) * 100, 100)
+        : 0;
 
     return (
       priceScore * 0.35 +
-      certScore * 0.30 +
-      ratingScore * 0.20 +
+      certScore * 0.3 +
+      ratingScore * 0.2 +
       stockScore * 0.15
     );
   }
@@ -639,7 +689,7 @@ export class ChatbotService {
   private explainScore(scored: any[]): string {
     let response = `📊 **COMPARAISON DES PRODUCTEURS**\n\n`;
 
-    scored.forEach(s => {
+    scored.forEach((s) => {
       const p = s.product;
 
       response += `👨‍🌾 **${p.producerName}**\n`;
@@ -656,9 +706,9 @@ export class ChatbotService {
     response += `👉 **${best.producerName}** est recommandé pour :\n`;
 
     const reasons: string[] = [];
-    
+
     // Vérifier le prix
-    const minPrice = Math.min(...scored.map(s => s.product.price));
+    const minPrice = Math.min(...scored.map((s) => s.product.price));
     if (best.price === minPrice) {
       reasons.push('offre le meilleur prix');
     }
@@ -674,13 +724,13 @@ export class ChatbotService {
     }
 
     // Vérifier le stock
-    const maxStock = Math.max(...scored.map(s => s.product.quantity));
+    const maxStock = Math.max(...scored.map((s) => s.product.quantity));
     if (best.quantity === maxStock) {
       reasons.push('stock important disponible');
     }
 
     if (reasons.length > 0) {
-      reasons.forEach(reason => {
+      reasons.forEach((reason) => {
         response += `• ${reason}\n`;
       });
     } else {

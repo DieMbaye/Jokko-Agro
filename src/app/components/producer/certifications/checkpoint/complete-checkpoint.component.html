@@ -1,0 +1,190 @@
+<div class="complete-checkpoint-container">
+  <div class="checkpoint-header">
+    <button class="back-btn" (click)="goBack()">← Retour</button>
+    <h1>📸 Compléter le point de contrôle</h1>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading">Chargement...</div>
+  }
+
+  @if (!isLoading && certification && checkpoint) {
+    <div class="checkpoint-content">
+      <!-- Informations du checkpoint -->
+      <div class="checkpoint-info">
+        <div class="checkpoint-card">
+          <div class="checkpoint-header">
+            <div class="checkpoint-icon">
+              @switch (checkpoint.requiredProofs[0]) {
+                @case ('photo') {
+                  📸
+                }
+                @case ('gps') {
+                  📍
+                }
+                @case ('measurement') {
+                  📏
+                }
+                @case ('note') {
+                  📝
+                }
+                @default {
+                  📋
+                }
+              }
+            </div>
+            <div class="checkpoint-details">
+              <h3>{{ checkpoint.title }}</h3>
+              <p class="checkpoint-description">
+                {{ checkpoint.description }}
+              </p>
+              <div class="checkpoint-meta">
+                <span class="day-badge">J+{{ checkpoint.dayOffset }}</span>
+                <span
+                  class="status-badge"
+                  [class.completed]="checkpoint.completed"
+                >
+                  {{ checkpoint.completed ? 'Complété' : 'À compléter' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="instructions">
+            <h4>📋 Instructions</h4>
+            <p>{{ checkpoint.instructions }}</p>
+
+            <div class="required-proofs">
+              <h5>Preuves requises:</h5>
+              <div class="proofs-list">
+                @for (proof of checkpoint.requiredProofs; track proof) {
+                  <span class="proof-badge">
+                    {{
+                      proof === 'photo'
+                        ? '📸 Photo'
+                        : proof === 'gps'
+                          ? '📍 Localisation GPS'
+                          : proof === 'measurement'
+                            ? '📏 Mesure'
+                            : '📝 Note'
+                    }}
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Informations de la certification -->
+        <div class="certification-info">
+          <h4>🌱 Certification</h4>
+          <div class="cert-details">
+            <p><strong>Produit:</strong> {{ certification.productName }}</p>
+            <p><strong>Type:</strong> {{ certification.productType }}</p>
+            <p>
+              <strong>Localisation:</strong>
+              {{ certification.location.address }}
+            </p>
+            <p>
+              <strong>Date de début:</strong>
+              {{ certification.startDate | date: 'dd/MM/yyyy' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulaire de complétion -->
+      <div class="checkpoint-form">
+        <h3>Ajouter les preuves</h3>
+
+        <!-- Photo -->
+        @if (checkpoint.requiredProofs.includes('photo')) {
+          <div class="form-section">
+            <label>📸 Photo du champ</label>
+            <div class="photo-upload-area" (click)="triggerPhotoUpload()">
+              <input
+                #photoInput
+                type="file"
+                accept="image/*"
+                capture="environment"
+                (change)="onPhotoSelected($event)"
+                hidden
+              />
+
+              @if (photoPreview) {
+                <img [src]="photoPreview" class="photo-preview" />
+                <div class="photo-overlay">
+                  <button type="button" class="btn-change">
+                    Changer la photo
+                  </button>
+                </div>
+              } @else {
+                <div class="upload-instructions">
+                  <div class="upload-icon">📸</div>
+                  <p>Cliquez pour prendre une photo</p>
+                  <small>Photo actuelle du champ/plantation</small>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Mesure -->
+        @if (
+          checkpoint.requiredProofs.includes('measurement') &&
+          checkpoint.measurementType
+        ) {
+          <div class="form-section">
+            <label
+              >📏 Mesure -
+              {{ getMeasurementLabel(checkpoint.measurementType) }}</label
+            >
+            <div class="measurement-input">
+              <input
+                type="number"
+                [(ngModel)]="measurementValue"
+                [placeholder]="'Valeur en ' + checkpoint.measurementUnit"
+                step="0.01"
+                min="0"
+              />
+              <span class="measurement-unit">{{ checkpoint.measurementUnit }}</span>
+            </div>
+          </div>
+        }
+
+        <!-- Note -->
+        @if (checkpoint.requiredProofs.includes('note')) {
+          <div class="form-section">
+            <label>📝 Notes et observations</label>
+            <textarea
+              [(ngModel)]="noteText"
+              placeholder="Décrivez l'état de la culture, observations..."
+              rows="4"
+            ></textarea>
+          </div>
+        }
+
+        <!-- Boutons d'action -->
+        <div class="form-actions">
+          <button class="btn-secondary" (click)="goBack()">Annuler</button>
+          <button
+            class="btn-primary"
+            [disabled]="!isFormValid() || isSubmitting"
+            (click)="submitCheckpoint()"
+          >
+            @if (isSubmitting) {
+              <span class="spinner"></span> Enregistrement...
+            } @else {
+              ✅ Soumettre le point de contrôle
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Message d'erreur -->
+  @if (errorMessage) {
+    <div class="error-message">❌ {{ errorMessage }}</div>
+  }
+</div>

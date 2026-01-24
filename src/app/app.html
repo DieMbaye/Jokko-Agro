@@ -1,39 +1,41 @@
-  <!-- Indicateur de chargement -->
-    @if (isLoading) {
-      <div class="loading-overlay">
-        <div class="loading-spinner">
-          <div class="spinner"></div>
-          <p>Chargement...</p>
-        </div>
-      </div>
+<!-- app.html -->
+<!-- Indicateur de chargement global -->
+@if (isLoading) {
+  <div class="global-loading-overlay">
+    <div class="global-loading-content">
+      <div class="spinner-large"></div>
+      <p>Chargement de l'application...</p>
+    </div>
+  </div>
+}
+
+<!-- Pages publiques (login, register, home) -->
+@if (isPublicPage()) {
+  <router-outlet />
+}
+
+<!-- Pages avec layout (sidebar) -->
+@if (!isPublicPage() && !isLoading) {
+  <div class="app-layout">
+    <!-- Sidebar conditionnel -->
+    @if (showSidebar && sidebarConfig) {
+      <app-sidebar
+        [config]="sidebarConfig"
+        [isCollapsed]="isCollapsed"
+        (logout)="onLogout()"
+      />
     }
 
-    <div class="app-container">
-      <!-- Sidebar conditionnel -->
-      @if (showSidebar && sidebarConfig && !isLoading) {
-        <app-sidebar
-          [config]="sidebarConfig"
-          [isCollapsed]="isCollapsed"
-          (logout)="onLogout()"
-        />
-      }
+    <!-- Contenu principal -->
+    <main class="main-content"
+          [class.with-sidebar]="showSidebar && sidebarConfig"
+          [class.sidebar-collapsed]="isCollapsed">
+      <router-outlet />
+    </main>
 
-      <!-- Contenu principal -->
-      <main class="main-content" [class.with-sidebar]="showSidebar && sidebarConfig && !isLoading"
-            [class.sidebar-collapsed]="isCollapsed">
-
-        <!-- Indicateur de chargement minimal -->
-        @if (isLoading && showSidebar) {
-          <div class="content-loading">
-            <div class="spinner small"></div>
-          </div>
-        }
-
-        <router-outlet />
-      </main>
-
-      <!-- Assistant vocal conditionnel -->
-      @if (showVoiceAssistant && !isLoading) {
-        <app-voice-assistant />
-      }
-    </div>
+    <!-- Assistant vocal conditionnel -->
+    @if (showVoiceAssistant) {
+      <app-voice-assistant />
+    }
+  </div>
+}

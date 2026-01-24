@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { FirebaseService } from '../../../services/firebase.service';
-import { Product } from '../../../services/data.interfaces';
+import { Product } from '../../../interfaces/data.interfaces';
 // Interface pour les catégories
 interface ProductCategory {
   id: string;
@@ -17,7 +17,7 @@ interface ProductCategory {
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './products.html',
-  styleUrls: ['./products.css']
+  styleUrls: ['./products.css'],
 })
 export class ProductsComponent implements OnInit {
   products: Product[] = [];
@@ -37,14 +37,14 @@ export class ProductsComponent implements OnInit {
     { id: 'legumes', name: 'Légumineuses', icon: '🥜' },
     { id: 'spices', name: 'Épices', icon: '🌶️' },
     { id: 'dairy', name: 'Produits laitiers', icon: '🥛' },
-    { id: 'poultry', name: 'Volaille', icon: '🐔' }
+    { id: 'poultry', name: 'Volaille', icon: '🐔' },
   ];
 
   statuses = [
     { id: 'all', name: 'Tous les statuts' },
     { id: 'available', name: 'Disponible' },
     { id: 'sold_out', name: 'Épuisé' },
-    { id: 'draft', name: 'Brouillon' }
+    { id: 'draft', name: 'Brouillon' },
   ];
 
   sortBy = 'recent';
@@ -54,12 +54,12 @@ export class ProductsComponent implements OnInit {
     { id: 'price_low', name: 'Prix croissant' },
     { id: 'price_high', name: 'Prix décroissant' },
     { id: 'sales', name: 'Meilleures ventes' },
-    { id: 'rating', name: 'Meilleures notes' }
+    { id: 'rating', name: 'Meilleures notes' },
   ];
 
   constructor(
     private authService: AuthService,
-    private firebaseService: FirebaseService
+    private firebaseService: FirebaseService,
   ) {}
 
   async ngOnInit() {
@@ -78,10 +78,8 @@ export class ProductsComponent implements OnInit {
 
       this.products = await this.firebaseService.getProducerProducts(user.uid);
 
-
       this.filteredProducts = [...this.products];
       this.applyFilters();
-
     } catch (error) {
       console.error('Erreur lors du chargement des produits:', error);
       this.loadFallbackData();
@@ -118,8 +116,8 @@ export class ProductsComponent implements OnInit {
         isActive: true,
         createdAt: new Date('2024-01-10'),
         updatedAt: new Date('2024-01-15'),
-        badges: []
-      }
+        badges: [],
+      },
     ];
     this.filteredProducts = [...this.products];
     this.applyFilters();
@@ -129,83 +127,102 @@ export class ProductsComponent implements OnInit {
     let filtered = [...this.products];
 
     if (this.searchQuery) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        product.description?.toLowerCase().includes(this.searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (product) =>
+          product.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          product.description
+            ?.toLowerCase()
+            .includes(this.searchQuery.toLowerCase()),
       );
     }
 
     if (this.selectedCategory !== 'all') {
-      filtered = filtered.filter(product => product.category === this.selectedCategory);
+      filtered = filtered.filter(
+        (product) => product.category === this.selectedCategory,
+      );
     }
 
     if (this.selectedStatus !== 'all') {
-      filtered = filtered.filter(product => product.status === this.selectedStatus);
+      filtered = filtered.filter(
+        (product) => product.status === this.selectedStatus,
+      );
     }
 
-   filtered.sort((a, b) => {
-  switch (this.sortBy) {
-    case 'recent':
-      // Tri par date de mise à jour (récent → ancien)
-      const updatedA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
-      const updatedB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
-      return updatedB - updatedA;
+    filtered.sort((a, b) => {
+      switch (this.sortBy) {
+        case 'recent':
+          // Tri par date de mise à jour (récent → ancien)
+          const updatedA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+          const updatedB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+          return updatedB - updatedA;
 
-    case 'oldest':
-      // Tri par date de mise à jour (ancien → récent)
-      const oldestA = a.updatedAt ? new Date(a.updatedAt).getTime() : Date.now();
-      const oldestB = b.updatedAt ? new Date(b.updatedAt).getTime() : Date.now();
-      return oldestA - oldestB;
+        case 'oldest':
+          // Tri par date de mise à jour (ancien → récent)
+          const oldestA = a.updatedAt
+            ? new Date(a.updatedAt).getTime()
+            : Date.now();
+          const oldestB = b.updatedAt
+            ? new Date(b.updatedAt).getTime()
+            : Date.now();
+          return oldestA - oldestB;
 
-    case 'price_low':
-      // Prix croissant (bas → haut)
-      return (a.price || 0) - (b.price || 0);
+        case 'price_low':
+          // Prix croissant (bas → haut)
+          return (a.price || 0) - (b.price || 0);
 
-    case 'price_high':
-      // Prix décroissant (haut → bas)
-      return (b.price || 0) - (a.price || 0);
+        case 'price_high':
+          // Prix décroissant (haut → bas)
+          return (b.price || 0) - (a.price || 0);
 
-    case 'sales':
-      // Ventes décroissantes (plus vendu → moins vendu)
-      return (b.sales || 0) - (a.sales || 0);
+        case 'sales':
+          // Ventes décroissantes (plus vendu → moins vendu)
+          return (b.sales || 0) - (a.sales || 0);
 
-    case 'rating':
-      // Note décroissante (meilleure note → pire note)
-      return (b.rating || 0) - (a.rating || 0);
+        case 'rating':
+          // Note décroissante (meilleure note → pire note)
+          return (b.rating || 0) - (a.rating || 0);
 
-    default:
-      return 0;
-  }
-});
+        default:
+          return 0;
+      }
+    });
 
     this.filteredProducts = filtered;
   }
 
   getCategoryName(categoryId: string): string {
-    const category = this.categories.find(c => c.id === categoryId);
+    const category = this.categories.find((c) => c.id === categoryId);
     return category ? category.name : categoryId;
   }
 
   getCategoryIcon(categoryId: string): string {
-    const category = this.categories.find(c => c.id === categoryId);
+    const category = this.categories.find((c) => c.id === categoryId);
     return category ? category.icon : '📦';
   }
 
   getStatusText(status: string): string {
     switch (status) {
-      case 'available': return 'Disponible';
-      case 'sold_out': return 'Épuisé';
-      case 'inactive': return 'Inactif';
-      default: return status;
+      case 'available':
+        return 'Disponible';
+      case 'sold_out':
+        return 'Épuisé';
+      case 'inactive':
+        return 'Inactif';
+      default:
+        return status;
     }
   }
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'available': return 'status-available';
-      case 'sold_out': return 'status-sold-out';
-      case 'inactive': return 'status-inactive';
-      default: return '';
+      case 'available':
+        return 'status-available';
+      case 'sold_out':
+        return 'status-sold-out';
+      case 'inactive':
+        return 'status-inactive';
+      default:
+        return '';
     }
   }
 
@@ -218,7 +235,11 @@ export class ProductsComponent implements OnInit {
   }
 
   async deleteProduct(productId: string) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.')) {
+    if (
+      confirm(
+        'Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.',
+      )
+    ) {
       try {
         await this.firebaseService.deleteProduct(productId);
         await this.loadProducts();
@@ -234,7 +255,10 @@ export class ProductsComponent implements OnInit {
 
   async updateStatus(productId: string, newStatus: string) {
     try {
-      await this.firebaseService.updateProductStatus(productId, newStatus as Product['status']);
+      await this.firebaseService.updateProductStatus(
+        productId,
+        newStatus as Product['status'],
+      );
       await this.loadProducts();
     } catch (error) {
       alert('Erreur lors de la mise à jour du statut');
@@ -246,17 +270,18 @@ export class ProductsComponent implements OnInit {
   }
 
   getAvailableProductsCount(): number {
-    return this.products.filter(p => p.status === 'available').length;
+    return this.products.filter((p) => p.status === 'available').length;
   }
 
   getTotalValueSum(): number {
-    return this.products.reduce((sum, product) => sum + this.getTotalValue(product), 0);
+    return this.products.reduce(
+      (sum, product) => sum + this.getTotalValue(product),
+      0,
+    );
   }
 
   getTopSellingProducts(): Product[] {
-    return [...this.products]
-      .sort((a, b) => b.sales - a.sales)
-      .slice(0, 3);
+    return [...this.products].sort((a, b) => b.sales - a.sales).slice(0, 3);
   }
 
   handleVoiceCommand(command: string) {
@@ -264,13 +289,18 @@ export class ProductsComponent implements OnInit {
 
     if (lowerCommand.includes('ajouter') || lowerCommand.includes('nouveau')) {
       window.location.href = '/producer/add-product';
-    } else if (lowerCommand.includes('rechercher') && lowerCommand.includes('tomates')) {
+    } else if (
+      lowerCommand.includes('rechercher') &&
+      lowerCommand.includes('tomates')
+    ) {
       this.searchQuery = 'tomates';
       this.applyFilters();
-    } else if (lowerCommand.includes('filtrer') && lowerCommand.includes('disponible')) {
+    } else if (
+      lowerCommand.includes('filtrer') &&
+      lowerCommand.includes('disponible')
+    ) {
       this.selectedStatus = 'available';
       this.applyFilters();
     }
   }
-
 }

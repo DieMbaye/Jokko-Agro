@@ -8,7 +8,6 @@ import { filter } from 'rxjs/operators';
 import { FirebaseService } from './services/firebase.service';
 import { ThemeService } from './services/theme.service';
 
-
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -20,7 +19,7 @@ import { ThemeService } from './services/theme.service';
   ],
   templateUrl: './app.html',
   styleUrls: ['./app.css'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class App implements OnInit {
   showSidebar = false;
@@ -35,9 +34,8 @@ export class App implements OnInit {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private firebaseService: FirebaseService ,
-    private themeService: ThemeService // 👈 AJOUT ICI
-
+    private firebaseService: FirebaseService,
+    private themeService: ThemeService, // 👈 AJOUT ICI
   ) {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
@@ -46,45 +44,70 @@ export class App implements OnInit {
       });
   }
 
-async ngOnInit() {
-  this.themeService.initTheme();
-  await this.waitForInitialization();
-  this.updateUIState(this.router.url);
-}
+  // Dans app.ts - ngOnInit
+  async ngOnInit() {
+    this.themeService.initTheme();
 
+    // ✅ Attendre l'initialisation de Firebase
+    await this.waitForFirebaseInitialization();
 
-  private async waitForInitialization(): Promise<void> {
+    // ✅ Maintenant vérifier l'état
+    this.updateUIState(this.router.url);
+  }
+
+  // Modifiez waitForFirebaseInitialization :
+  private async waitForFirebaseInitialization(): Promise<void> {
     return new Promise((resolve) => {
+      let attempts = 0;
+      const maxAttempts = 50; // 5 secondes max
+
       const checkInitialization = () => {
+        attempts++;
+
         const firebaseUser = this.firebaseService.getCurrentAuthUser();
+        const hasUserData = !!this.firebaseService.userData;
         const isLoading = this.firebaseService.isLoading;
 
-        if (!isLoading) {
+        console.log(`🔄 Tentative ${attempts}:`, {
+          firebaseUser: firebaseUser?.email,
+          hasUserData,
+          isLoading,
+        });
+
+        // ✅ Condition améliorée
+        if (
+          (!isLoading && firebaseUser && hasUserData) ||
+          (!isLoading && !firebaseUser) ||
+          attempts >= maxAttempts
+        ) {
+          console.log('✅ Initialisation Firebase terminée:', {
+            authenticated: !!firebaseUser,
+            userData: hasUserData,
+            attempts,
+          });
+
           this.isLoading = false;
           resolve();
         } else {
           setTimeout(checkInitialization, 100);
         }
       };
+
       checkInitialization();
     });
   }
-
-
-
-
   private updateUIState(url: string) {
     // Mettre à jour le chargement
     this.isLoading = this.firebaseService.isLoading;
 
     // Déterminer si on doit montrer le sidebar
     this.showSidebar = !this.noSidebarRoutes.some(
-      (route) => url === route || url.startsWith(route + '/')
+      (route) => url === route || url.startsWith(route + '/'),
     );
 
     // Déterminer si on doit montrer l'assistant vocal
     this.showVoiceAssistant = !this.noVoiceAssistantRoutes.some(
-      (route) => url === route || url.startsWith(route + '/')
+      (route) => url === route || url.startsWith(route + '/'),
     );
 
     // Configurer le sidebar si nécessaire
@@ -93,6 +116,13 @@ async ngOnInit() {
     }
   }
 
+  // app.ts - ajoutez cette méthode
+isPublicPage(): boolean {
+  const currentUrl = this.router.url;
+  return this.noSidebarRoutes.some(
+    (route) => currentUrl === route || currentUrl.startsWith(route + '/')
+  );
+}
   private setupSidebarConfig() {
     const firebaseUser = this.firebaseService.getCurrentAuthUser();
 

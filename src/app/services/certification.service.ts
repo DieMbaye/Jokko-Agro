@@ -8,8 +8,8 @@ import {
   CheckpointProof,
   CertificationTemplate,
   CertificationStats,
-} from './certification.interfaces';
-import { Product } from './data.interfaces';
+} from '../interfaces/certification.interfaces';
+import { Product } from '../interfaces/data.interfaces';
 import {
   collection,
   doc,

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FirebaseService, FirebaseUserData } from './firebase.service';
-import { UserData } from './data.interfaces';
+import { UserData } from '../interfaces/data.interfaces';
 import { getAuth } from 'firebase/auth';
 
 @Injectable({
@@ -62,12 +62,25 @@ export class AuthService {
     }
   }
 
+  // Dans auth.service.ts
+  // Modifiez la méthode isAuthenticated :
   isAuthenticated(): boolean {
-    // Utiliser la méthode directe de Firebase
-    const firebaseAuth = getAuth();
-    const currentUser = firebaseAuth.currentUser;
+    // ✅ Attendre que l'initialisation soit complète
+    if (this.firebaseService.isLoading) {
+      return false;
+    }
 
-    return !!currentUser;
+    const firebaseUser = this.firebaseService.getCurrentAuthUser();
+    const hasUserData = !!this.firebaseService.userData;
+
+    // ✅ Vérifier la cohérence entre Firebase et userData
+    if (firebaseUser && !hasUserData) {
+      console.warn('⚠️ Firebase user existe mais userData est null');
+      return false;
+    }
+
+    // ✅ L'utilisateur est authentifié s'il existe dans Firebase ET qu'on a ses données
+    return !!firebaseUser && hasUserData;
   }
   getUserRole(): 'producer' | 'buyer' | null {
     return this.firebaseService.getUserRole();
@@ -106,5 +119,4 @@ export class AuthService {
     });
   }
   isLoading = true;
-
 }

@@ -1,12 +1,23 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, HostListener } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  AfterViewChecked,
+  HostListener,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { FirebaseService } from '../../../services/firebase.service';
-import { Product } from '../../../services/data.interfaces';
+import { Product } from '../../../interfaces/data.interfaces';
 import { ChatbotService } from '../../../services/chatbot.service';
-import { NotificationService, AppNotification } from '../../../services/notification.service';
+import {
+  NotificationService,
+  AppNotification,
+} from '../../../services/notification.service';
 import { Subscription } from 'rxjs';
 
 interface DashboardStat {
@@ -58,21 +69,22 @@ interface ChatMessage {
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './buyer-dashboard.html',
-  styleUrls: ['./buyer-dashboard.css']
+  styleUrls: ['./buyer-dashboard.css'],
 })
-export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class BuyerDashboardComponent
+  implements OnInit, OnDestroy, AfterViewChecked
+{
   userData: any;
   stats: DashboardStat[] = [];
   recentPurchases: RecentPurchase[] = [];
   recommendedProducts: RecommendedProduct[] = [];
   chatMode: 'normal' | 'estimate' | 'compare' = 'normal';
 
-  
   categories = [
     { name: 'Légumes', icon: '🥦', count: 0 },
     { name: 'Fruits', icon: '🍎', count: 0 },
     { name: 'Céréales', icon: '🌾', count: 0 },
-    { name: 'Épicerie', icon: '🛒', count: 0 }
+    { name: 'Épicerie', icon: '🛒', count: 0 },
   ];
 
   // Variables pour la recherche vocale
@@ -98,24 +110,24 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy, AfterViewChec
   isLoadingProducts = false;
   allPurchases: RecentPurchase[] = [];
   // 🔥 CONTEXTE DES QUESTIONS MULTI-ÉTAPES
-pendingIntent: 'estimate' | 'compare' | null = null;
-
+  pendingIntent: 'estimate' | 'compare' | null = null;
 
   // DICTIONNAIRE WOLOF-FRANÇAIS
   private wolofToFrench: { [key: string]: string } = {
-    'tomater': 'tomate',
-    'manguo': 'mangue',
-    'carotte': 'carotte',
-    'orange': 'orange',
-    'riz': 'riz',
-    'oignon': 'oignon',
-    'banane': 'banane',
-    'citron': 'citron'
+    tomater: 'tomate',
+    manguo: 'mangue',
+    carotte: 'carotte',
+    orange: 'orange',
+    riz: 'riz',
+    oignon: 'oignon',
+    banane: 'banane',
+    citron: 'citron',
   };
 
   private recognition: any;
-  private SpeechRecognition = (window as any).webkitSpeechRecognition ||
-                              (window as any).SpeechRecognition;
+  private SpeechRecognition =
+    (window as any).webkitSpeechRecognition ||
+    (window as any).SpeechRecognition;
 
   // ==================== CHATBOT ====================
   isChatbotOpen = false;
@@ -123,7 +135,7 @@ pendingIntent: 'estimate' | 'compare' | null = null;
   chatHistory: ChatMessage[] = [];
   currentMessage = '';
   isProcessing = false;
-  
+
   @ViewChild('chatMessages') chatMessages!: ElementRef<HTMLDivElement>;
   @ViewChild('chatInput') chatInput!: ElementRef<HTMLInputElement>;
 
@@ -146,7 +158,7 @@ pendingIntent: 'estimate' | 'compare' | null = null;
     private authService: AuthService,
     private firebaseService: FirebaseService,
     private chatbotService: ChatbotService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
   ) {}
 
   async ngOnInit() {
@@ -156,9 +168,9 @@ pendingIntent: 'estimate' | 'compare' | null = null;
 
     this.notifSub = this.notificationService
       .listenUserNotifications()
-      .subscribe(notifs => {
+      .subscribe((notifs) => {
         this.notifications = notifs;
-        this.unreadCount = notifs.filter(n => !n.read).length;
+        this.unreadCount = notifs.filter((n) => !n.read).length;
       });
 
     await this.loadDashboardData();
@@ -171,17 +183,18 @@ pendingIntent: 'estimate' | 'compare' | null = null;
       this.scrollChatToBottom();
     }
   }
-askEstimateProduct() {
-  this.pendingIntent = 'estimate';
-  this.addMessage("📊 Quel produit souhaitez-vous estimer ?", false);
-}
+  askEstimateProduct() {
+    this.pendingIntent = 'estimate';
+    this.addMessage('📊 Quel produit souhaitez-vous estimer ?', false);
+  }
 
-askCompareProducers() {
-  this.pendingIntent = 'compare';
-  this.addMessage("🏆 Pour quel produit voulez-vous comparer les producteurs ?", false);
-}
-
-
+  askCompareProducers() {
+    this.pendingIntent = 'compare';
+    this.addMessage(
+      '🏆 Pour quel produit voulez-vous comparer les producteurs ?',
+      false,
+    );
+  }
 
   ngOnDestroy() {
     if (this.recognition) {
@@ -235,49 +248,46 @@ askCompareProducers() {
     }
   }
 
-sendMessage() {
-  if (!this.currentMessage.trim() || this.isProcessing) return;
+  sendMessage() {
+    if (!this.currentMessage.trim() || this.isProcessing) return;
 
-  const userInput = this.currentMessage.trim();
-  this.currentMessage = '';
+    const userInput = this.currentMessage.trim();
+    this.currentMessage = '';
 
-  this.isProcessing = true;
+    this.isProcessing = true;
 
-  // afficher message utilisateur
-  this.addMessage(userInput, true);
+    // afficher message utilisateur
+    this.addMessage(userInput, true);
 
-  let finalQuestion = userInput;
+    let finalQuestion = userInput;
 
-  // 🔥 INTELLIGENCE CONTEXTUELLE
-  if (this.pendingIntent === 'estimate') {
-    finalQuestion = `estimation ${userInput}`;
-    this.pendingIntent = null;
+    // 🔥 INTELLIGENCE CONTEXTUELLE
+    if (this.pendingIntent === 'estimate') {
+      finalQuestion = `estimation ${userInput}`;
+      this.pendingIntent = null;
+    }
+
+    if (this.pendingIntent === 'compare') {
+      finalQuestion = `comparer producteurs ${userInput}`;
+      this.pendingIntent = null;
+    }
+
+    this.processQuestion(finalQuestion)
+      .then((response) => {
+        this.addMessage(response, false);
+
+        if (this.isVoiceInput) {
+          this.speak(response);
+        }
+      })
+      .catch(() => {
+        this.addMessage('❌ Une erreur est survenue.', false);
+      })
+      .finally(() => {
+        this.isProcessing = false;
+        this.isVoiceInput = false;
+      });
   }
-
-  if (this.pendingIntent === 'compare') {
-    finalQuestion = `comparer producteurs ${userInput}`;
-    this.pendingIntent = null;
-  }
-
-  this.processQuestion(finalQuestion)
-    .then(response => {
-      this.addMessage(response, false);
-
-      if (this.isVoiceInput) {
-        this.speak(response);
-      }
-    })
-    .catch(() => {
-      this.addMessage("❌ Une erreur est survenue.", false);
-    })
-    .finally(() => {
-      this.isProcessing = false;
-      this.isVoiceInput = false;
-    });
-}
-
-
-
 
   askQuestion(question: string) {
     this.currentMessage = question;
@@ -292,15 +302,22 @@ sendMessage() {
   private isThankYouMessage(message: string): boolean {
     const lowerMessage = message.toLowerCase().trim();
     const thankYouWords = [
-      'merci', 'thank you', 'thanks', 'merci beaucoup',
-      'je te remercie', 'cimer', 'merci bien'
+      'merci',
+      'thank you',
+      'thanks',
+      'merci beaucoup',
+      'je te remercie',
+      'cimer',
+      'merci bien',
     ];
-    return thankYouWords.some(word => lowerMessage.includes(word));
+    return thankYouWords.some((word) => lowerMessage.includes(word));
   }
 
   private processThankYou(): string {
-    return "🙏 De rien ! N'hésitez pas si vous avez d'autres questions.<br>" +
-           "Je suis là pour vous aider à trouver les meilleurs produits !";
+    return (
+      "🙏 De rien ! N'hésitez pas si vous avez d'autres questions.<br>" +
+      'Je suis là pour vous aider à trouver les meilleurs produits !'
+    );
   }
 
   initSpeechRecognition() {
@@ -333,7 +350,7 @@ sendMessage() {
     this.recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
       this.currentMessage = transcript;
-      
+
       setTimeout(() => {
         this.sendMessage();
       }, 300);
@@ -342,7 +359,7 @@ sendMessage() {
 
   startVoiceInput() {
     if (!this.recognition) {
-      alert('⚠️ La reconnaissance vocale n\'est pas supportée.');
+      alert("⚠️ La reconnaissance vocale n'est pas supportée.");
       return;
     }
 
@@ -386,23 +403,21 @@ sendMessage() {
     this.addMessage('', false, true);
 
     try {
-      const response: string =
-        await this.chatbotService.getIntelligentResponse(
-          question,
-          this.allProducts,
-          this.allProducers
-        );
+      const response: string = await this.chatbotService.getIntelligentResponse(
+        question,
+        this.allProducts,
+        this.allProducers,
+      );
 
       this.removeLoadingMessage();
       return this.formatBotResponse(response);
-
     } catch (error) {
       console.error('Erreur chatbot:', error);
       this.removeLoadingMessage();
 
       return (
-        "❌ <strong>Désolé, je rencontre une difficulté technique.</strong><br>" +
-        "Veuillez réessayer dans quelques instants."
+        '❌ <strong>Désolé, je rencontre une difficulté technique.</strong><br>' +
+        'Veuillez réessayer dans quelques instants.'
       );
     }
   }
@@ -417,7 +432,7 @@ sendMessage() {
       text: text,
       isUser: isUser,
       timestamp: new Date(),
-      isLoading: isLoading
+      isLoading: isLoading,
     };
 
     this.chatHistory.push(message);
@@ -426,11 +441,14 @@ sendMessage() {
   }
 
   private addLoadingMessage() {
-    this.addMessage("", false, true);
+    this.addMessage('', false, true);
   }
 
   private removeLoadingMessage() {
-    if (this.chatHistory.length > 0 && this.chatHistory[this.chatHistory.length - 1].isLoading) {
+    if (
+      this.chatHistory.length > 0 &&
+      this.chatHistory[this.chatHistory.length - 1].isLoading
+    ) {
       this.chatHistory.pop();
     }
   }
@@ -448,7 +466,7 @@ sendMessage() {
 
         container.scrollTo({
           top: container.scrollHeight,
-          behavior: 'smooth'
+          behavior: 'smooth',
         });
 
         setTimeout(() => {
@@ -465,13 +483,20 @@ sendMessage() {
   onChatScroll() {
     const container = this.chatMessages?.nativeElement;
     if (container) {
-      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+      const isNearBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight <
+        100;
       this.shouldScroll = isNearBottom;
     }
   }
 
   private getInitials(name: string): string {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   }
 
   // ==================== DASHBOARD ====================
@@ -480,16 +505,14 @@ sendMessage() {
       await Promise.all([
         this.loadRealProducts(),
         this.loadProducers(),
-        this.loadRecentPurchases()
+        this.loadRecentPurchases(),
       ]);
 
       this.updateRecommendedProducts();
       this.computeStats();
-
     } catch (error) {
       console.error('Erreur chargement dashboard:', error);
-    }
-    finally {
+    } finally {
       this.isDashboardLoading = false;
     }
   }
@@ -498,12 +521,12 @@ sendMessage() {
     const purchases = await this.firebaseService.getBuyerSales();
     const ratings = await this.firebaseService.getMyRatings();
 
-    this.allPurchases = purchases.map(p => {
-      const rating = ratings.find(r => r.productId === p.productId);
+    this.allPurchases = purchases.map((p) => {
+      const rating = ratings.find((r) => r.productId === p.productId);
       return {
         ...p,
         rated: !!rating,
-        ratingValue: rating?.stars || 0
+        ratingValue: rating?.stars || 0,
       };
     });
 
@@ -515,17 +538,17 @@ sendMessage() {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
-    const purchasesThisMonth = this.allPurchases.filter(p => {
+    const purchasesThisMonth = this.allPurchases.filter((p) => {
       const d = new Date(p.date);
       return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
     });
 
     const totalSpent = this.allPurchases.reduce(
       (sum, p) => sum + (p.amount || 0),
-      0
+      0,
     );
 
-    const certifiedCount = this.allPurchases.filter(p => p.certified).length;
+    const certifiedCount = this.allPurchases.filter((p) => p.certified).length;
 
     this.stats = [
       {
@@ -533,26 +556,26 @@ sendMessage() {
         value: purchasesThisMonth.length,
         icon: '🛍️',
         color: '#2196F3',
-        link: '/buyer/purchases'
+        link: '/buyer/purchases',
       },
       {
         label: 'Dépenses totales',
         value: totalSpent.toLocaleString() + ' FCFA',
         icon: '💰',
-        color: '#4CAF50'
+        color: '#4CAF50',
       },
       {
         label: 'Certifications vérifiées',
         value: certifiedCount,
         icon: '✅',
-        color: '#FF9800'
+        color: '#FF9800',
       },
       {
         label: 'Vendeurs favoris',
         value: 0,
         icon: '❤️',
-        color: '#E91E63'
-      }
+        color: '#E91E63',
+      },
     ];
   }
 
@@ -562,12 +585,12 @@ sendMessage() {
     try {
       const products = await this.firebaseService.getAllAvailableProducts();
 
-      this.allProducts = products.map(p => ({
+      this.allProducts = products.map((p) => ({
         ...p,
         rating: p.rating ?? 0,
         certifications: p.certifications ?? [],
         images: p.images ?? [],
-        badges: p.badges ?? []
+        badges: p.badges ?? [],
       }));
 
       this.updateCategoryCounts();
@@ -590,7 +613,7 @@ sendMessage() {
       productId: purchase.productId,
       producerId: purchase.producerId,
       stars: purchase.tempRating,
-      buyerId: ''
+      buyerId: '',
     });
 
     purchase.ratingValue = purchase.tempRating;
@@ -614,42 +637,51 @@ sendMessage() {
 
   private extractProducersFromProducts() {
     const producers = new Set<string>();
-    this.allProducts.forEach(product => {
+    this.allProducts.forEach((product) => {
       if (product.producerName) {
         producers.add(product.producerName);
       }
     });
 
-    this.allProducers = Array.from(producers).map(name => ({
+    this.allProducers = Array.from(producers).map((name) => ({
       name: name,
-      productCount: this.allProducts.filter(p => p.producerName === name).length
+      productCount: this.allProducts.filter((p) => p.producerName === name)
+        .length,
     }));
 
-    console.log(`👨‍🌾 ${this.allProducers.length} producteurs extraits des produits`);
+    console.log(
+      `👨‍🌾 ${this.allProducers.length} producteurs extraits des produits`,
+    );
   }
 
   private updateCategoryCounts() {
-    this.categories.forEach(cat => cat.count = 0);
+    this.categories.forEach((cat) => (cat.count = 0));
 
-    this.allProducts.forEach(product => {
+    this.allProducts.forEach((product) => {
       const category = product.category?.toLowerCase();
 
       if (category) {
         if (category.includes('fruit')) {
-          this.categories.find(c => c.name === 'Fruits')!.count++;
-        } else if (category.includes('légume') || category.includes('vegetable')) {
-          this.categories.find(c => c.name === 'Légumes')!.count++;
-        } else if (category.includes('céréale') || category.includes('cereal')) {
-          this.categories.find(c => c.name === 'Céréales')!.count++;
+          this.categories.find((c) => c.name === 'Fruits')!.count++;
+        } else if (
+          category.includes('légume') ||
+          category.includes('vegetable')
+        ) {
+          this.categories.find((c) => c.name === 'Légumes')!.count++;
+        } else if (
+          category.includes('céréale') ||
+          category.includes('cereal')
+        ) {
+          this.categories.find((c) => c.name === 'Céréales')!.count++;
         } else {
-          this.categories.find(c => c.name === 'Épicerie')!.count++;
+          this.categories.find((c) => c.name === 'Épicerie')!.count++;
         }
       }
     });
   }
 
   private updateRecommendedProducts() {
-    this.recommendedProducts = this.allProducts.slice(0, 4).map(p => ({
+    this.recommendedProducts = this.allProducts.slice(0, 4).map((p) => ({
       id: p.id!,
       name: p.name,
       producer: p.producerName,
@@ -659,7 +691,7 @@ sendMessage() {
       certified: p.certifications.length > 0,
       category: p.category,
       unit: p.unit,
-      stock: p.quantity
+      stock: p.quantity,
     }));
   }
 
@@ -734,14 +766,16 @@ sendMessage() {
   private searchProductsByVoice(searchTerm: string) {
     const searchTermLower = searchTerm.toLowerCase();
 
-    const filtered = this.allProducts.filter(product => {
+    const filtered = this.allProducts.filter((product) => {
       if (product.name?.toLowerCase().includes(searchTermLower)) return true;
-      if (product.description?.toLowerCase().includes(searchTermLower)) return true;
-      if (product.category?.toLowerCase().includes(searchTermLower)) return true;
+      if (product.description?.toLowerCase().includes(searchTermLower))
+        return true;
+      if (product.category?.toLowerCase().includes(searchTermLower))
+        return true;
       return false;
     });
 
-    this.voiceSearchResults = filtered.map(product => ({
+    this.voiceSearchResults = filtered.map((product) => ({
       id: product.id || '',
       name: product.name,
       producer: product.producerName || 'Producteur',
@@ -751,7 +785,7 @@ sendMessage() {
       certified: product.certifications?.length > 0,
       category: product.category,
       unit: product.unit,
-      stock: product.quantity
+      stock: product.quantity,
     }));
   }
 
@@ -791,19 +825,27 @@ sendMessage() {
 
   getStatusColor(status: string): string {
     switch (status) {
-      case 'delivered': return '#4CAF50';
-      case 'shipping': return '#2196F3';
-      case 'pending': return '#FF9800';
-      default: return '#9E9E9E';
+      case 'delivered':
+        return '#4CAF50';
+      case 'shipping':
+        return '#2196F3';
+      case 'pending':
+        return '#FF9800';
+      default:
+        return '#9E9E9E';
     }
   }
 
   getStatusText(status: string): string {
     switch (status) {
-      case 'delivered': return 'Livré';
-      case 'shipping': return 'En cours';
-      case 'pending': return 'En attente';
-      default: return status;
+      case 'delivered':
+        return 'Livré';
+      case 'shipping':
+        return 'En cours';
+      case 'pending':
+        return 'En attente';
+      default:
+        return status;
     }
   }
 
@@ -828,7 +870,7 @@ sendMessage() {
       productId: purchase.productId ?? '',
       producerId: purchase.producerId ?? '',
       stars,
-      buyerId: ''
+      buyerId: '',
     });
 
     purchase.rated = true;
@@ -850,7 +892,7 @@ sendMessage() {
       productId: purchase.productId!,
       producerId: purchase.producerId!,
       stars,
-      buyerId: user.uid
+      buyerId: user.uid,
     });
 
     purchase.rated = true;
@@ -865,8 +907,9 @@ sendMessage() {
     for (const product of this.allProducts) {
       if (!product.id) continue;
 
-      const avgRating =
-        await this.firebaseService.getAverageRatingForProduct(product.id);
+      const avgRating = await this.firebaseService.getAverageRatingForProduct(
+        product.id,
+      );
 
       product.rating = avgRating ?? 0;
     }
@@ -875,15 +918,17 @@ sendMessage() {
   // ==================== MODALES ====================
   openPriceEstimationModal() {
     this.showPriceEstimationModal = true;
-    
+
     this.availableProductSuggestions = this.allProducts
-      .filter(p => p.status === 'available' && p.quantity > 0)
-      .map(p => p.name)
+      .filter((p) => p.status === 'available' && p.quantity > 0)
+      .map((p) => p.name)
       .filter((value, index, self) => self.indexOf(value) === index)
       .slice(0, 10);
-    
+
     setTimeout(() => {
-      const input = document.querySelector('.modal-product-input') as HTMLInputElement;
+      const input = document.querySelector(
+        '.modal-product-input',
+      ) as HTMLInputElement;
       if (input) input.focus();
     }, 100);
   }
@@ -900,9 +945,9 @@ sendMessage() {
     }
 
     const question = `Estimation prix ${this.priceEstimationProduct}`;
-    
+
     this.closePriceEstimationModal();
-    
+
     setTimeout(() => {
       this.isChatbotOpen = true;
       setTimeout(() => {
@@ -919,15 +964,17 @@ sendMessage() {
 
   openCompareProducersModal() {
     this.showCompareProducersModal = true;
-    
+
     this.availableProductSuggestions = this.allProducts
-      .filter(p => p.status === 'available' && p.quantity > 0)
-      .map(p => p.name)
+      .filter((p) => p.status === 'available' && p.quantity > 0)
+      .map((p) => p.name)
       .filter((value, index, self) => self.indexOf(value) === index)
       .slice(0, 10);
-    
+
     setTimeout(() => {
-      const input = document.querySelector('.compare-product-input') as HTMLInputElement;
+      const input = document.querySelector(
+        '.compare-product-input',
+      ) as HTMLInputElement;
       if (input) input.focus();
     }, 100);
   }
@@ -944,9 +991,9 @@ sendMessage() {
     }
 
     const question = `Comparer producteurs pour ${this.compareProduct}`;
-    
+
     this.closeCompareProducersModal();
-    
+
     setTimeout(() => {
       this.isChatbotOpen = true;
       setTimeout(() => {
