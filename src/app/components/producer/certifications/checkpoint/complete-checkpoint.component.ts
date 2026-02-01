@@ -1,4 +1,4 @@
-// complete-checkpoint.component.ts
+// complete-checkpoint.component.ts - CORRIGÉ
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -157,31 +157,8 @@ export class CompleteCheckpointComponent implements OnInit {
     try {
       console.log('Soumission checkpoint...');
 
-      // 1. Enregistrer la preuve sur la blockchain
-      let blockchainRecord = null;
-
-      if (this.photoFile) {
-        blockchainRecord =
-          await this.blockchainService.registerProofOnBlockchain(
-            await this.blockchainService.createCanonicalObject({
-              productId: this.certification.id,
-              photoFile: this.photoFile,
-              lat: this.certification.location.lat,
-              lng: this.certification.location.lng,
-              step: 'CHECKPOINT',
-              checkpointId: this.checkpoint.id,
-              checkpointOrder: this.checkpoint.order,
-            }),
-          );
-
-        console.log(
-          '✅ Preuve enregistrée sur blockchain:',
-          blockchainRecord.transactionId,
-        );
-      }
-
-      // 2. Compléter le checkpoint
-      await this.certificationService.completeCheckpoint(
+      // 1. Compléter le checkpoint via le service de certification
+      const updatedCertification = await this.certificationService.completeCheckpoint(
         this.certificationId,
         this.checkpointId,
         {
@@ -194,15 +171,36 @@ export class CompleteCheckpointComponent implements OnInit {
                 }
               : undefined,
           note: this.noteText.trim() || undefined,
-        },
+        }
       );
 
-      // 3. Afficher le succès avec l'ID de transaction
-      this.successMessage = `✅ Checkpoint complété ! ${
-        blockchainRecord
-          ? `Transaction blockchain: ${blockchainRecord.transactionId}`
-          : ''
-      }`;
+      // 2. Enregistrer la preuve sur la blockchain (optionnel)
+      let blockchainRecord = null;
+      if (this.photoFile && this.blockchainService) {
+        try {
+          blockchainRecord = await this.blockchainService.registerProofOnBlockchain(
+            await this.blockchainService.createCanonicalObject({
+              productId: this.certification.id,
+              photoFile: this.photoFile,
+              lat: this.certification.location.lat,
+              lng: this.certification.location.lng,
+              step: 'CHECKPOINT',
+              checkpointId: this.checkpoint.id,
+              checkpointOrder: this.checkpoint.order,
+            }),
+          );
+
+          console.log(
+            '✅ Preuve enregistrée sur blockchain:',
+            blockchainRecord?.transactionId,
+          );
+        } catch (blockchainError) {
+          console.warn('Blockchain non disponible:', blockchainError);
+        }
+      }
+
+      // 3. Afficher le succès
+      this.successMessage = `✅ Checkpoint complété ! ${blockchainRecord?.transactionId ? `Transaction blockchain: ${blockchainRecord.transactionId}` : ''}`;
 
       // Retour à la certification
       setTimeout(() => {

@@ -1,25 +1,15 @@
-import {
-  Component,
-  OnInit,
-  inject,
-  ElementRef,
-  ViewChild,
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, ElementRef, ViewChild } from '@angular/core';
+import { CommonModule, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { CertificationService } from 'src/app/services/certification.service';
-import {
-  Certification,
-  CertificationTemplate,
-  CertificationStats,
-} from 'src/app/interfaces/certification.interfaces';
+import { Certification, CertificationStats, CertificationTemplate } from 'src/app/interfaces/certification.interfaces';
 
 @Component({
   selector: 'app-certifications',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, TitleCasePipe],
   templateUrl: './certifications.html',
   styleUrls: ['./certifications.css'],
 })
@@ -28,33 +18,27 @@ export class CertificationsComponent implements OnInit {
   private certificationService = inject(CertificationService);
   private router = inject(Router);
 
-  // Onglets
-  activeTab: 'dashboard' | 'ongoing' | 'completed' | 'templates' = 'dashboard';
-
   // Données
   certifications: Certification[] = [];
-  ongoingCertifications: Certification[] = [];
-  completedCertifications: Certification[] = [];
+  filteredCertifications: Certification[] = [];
   templates: CertificationTemplate[] = [];
   stats: CertificationStats | null = null;
 
   // Filtres
   filterStatus = 'all';
-  filterProductType = 'all';
+  filterProductType = 'all'; // Ajouté
   searchQuery = '';
 
-  // Nouvelle certification
+  // États
+  isLoading = false;
+  showNewCertModal = false;
+  showDeleteModal = false; // Ajouté
   selectedTemplateId = '';
   productName = '';
   initialPhoto: File | null = null;
-  photoPreview: string | null = null;
-  useCurrentLocation = true;
-  customLocation = '';
-
-  // État
-  isLoading = false;
-  isStartingCertification = false;
-  showNewCertModal = false;
+  photoPreview: string | null = null; // Ajouté
+  certificationToDelete: Certification | null = null; // Ajouté
+  activeDropdown: string | null = null;
 
   // Référence au fichier input
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
@@ -68,41 +52,30 @@ export class CertificationsComponent implements OnInit {
 
     try {
       const user = this.authService.getCurrentUser();
-      if (!user) return;
+      if (!user) {
+        this.router.navigate(['/login']);
+        return;
+      }
 
       // Charger les certifications
-      this.certifications =
-        await this.certificationService.getProducerCertifications(user.uid);
-
-      // Débogage : afficher les certifications chargées
-      console.log('=== CERTIFICATIONS CHARGÉES ===');
-      console.log('Total:', this.certifications.length);
-      this.certifications.forEach((cert, index) => {
-        console.log(
-          `${index + 1}. ${cert.productName} - ${cert.status} - Score: ${cert.validationScore}%`,
-        );
-      });
+      this.certifications = await this.certificationService.getProducerCertifications(user.uid);
+      this.filteredCertifications = [...this.certifications];
 
       // Charger les templates
       this.templates = this.certificationService.getTemplates();
-      console.log('Templates disponibles:', this.templates.length);
-
-      // Filtrer les certifications
-      this.filterCertifications();
 
       // Charger les statistiques
-      this.stats = await this.certificationService.getCertificationStats(
-        user.uid,
-      );
-      console.log('Statistiques:', this.stats);
+      this.stats = await this.certificationService.getCertificationStats(user.uid);
+
     } catch (error) {
       console.error('Erreur chargement certifications:', error);
-      this.showErrorMessage('Erreur lors du chargement des certifications');
+      this.showNotification('error', 'Erreur lors du chargement des certifications');
     } finally {
       this.isLoading = false;
     }
   }
 
+  // Filtrer les certifications
   filterCertifications() {
     let filtered = [...this.certifications];
 
@@ -114,7 +87,7 @@ export class CertificationsComponent implements OnInit {
     // Filtre par type de produit
     if (this.filterProductType !== 'all') {
       filtered = filtered.filter(
-        (c) => c.productType === this.filterProductType,
+        (c) => c.productType === this.filterProductType
       );
     }
 
@@ -125,42 +98,131 @@ export class CertificationsComponent implements OnInit {
         (c) =>
           c.productName.toLowerCase().includes(query) ||
           c.productType.toLowerCase().includes(query) ||
-          c.productCategory.toLowerCase().includes(query),
+          c.productCategory.toLowerCase().includes(query) ||
+          c.producerName.toLowerCase().includes(query)
       );
     }
 
-    // Séparation par statut
-    this.ongoingCertifications = filtered.filter((c) =>
-      ['draft', 'active'].includes(c.status),
-    );
-
-    this.completedCertifications = filtered.filter((c) =>
-      ['completed', 'verified', 'cancelled', 'expired'].includes(c.status),
-    );
-
-    console.log('Certifications filtrées:', {
-      total: filtered.length,
-      enCours: this.ongoingCertifications.length,
-      terminées: this.completedCertifications.length,
-    });
+    this.filteredCertifications = filtered;
   }
 
-  // Nouvelle certification
+  // Navigation
+  navigateToCertification(certId: string) {
+    this.router.navigate([`/producer/certification/${certId}`]);
+  }
+
+  // Gestion des menus déroulants
+  toggleActions(event: Event, certId: string) {
+    event.stopPropagation();
+
+    if (this.activeDropdown === certId) {
+      this.activeDropdown = null;
+    } else {
+      this.activeDropdown = certId;
+    }
+  }
+
+  isDropdownOpen(certId: string): boolean {
+    return this.activeDropdown === certId;
+  }
+
+  // Actions sur les certifications
+  duplicateCertification(cert: Certification) {
+    this.showNotification('info', 'Fonctionnalité de duplication à venir');
+  }
+
+  viewPublishedProduct(cert: Certification) {
+    if (cert.finalProduct?.id) {
+      this.router.navigate([`/product/${cert.finalProduct.id}`]);
+    }
+  }
+
+  // Modal suppression
+  openDeleteModal(cert: Certification) {
+    this.certificationToDelete = cert;
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal = false;
+    this.certificationToDelete = null;
+  }
+
+  async confirmDelete() {
+    if (!this.certificationToDelete) return;
+
+    try {
+      await this.certificationService.cancelCertification(this.certificationToDelete.id);
+      this.showNotification('success', `Certification "${this.certificationToDelete.productName}" annulée`);
+      this.closeDeleteModal();
+      await this.loadData();
+    } catch (error: any) {
+      this.showNotification('error', error.message || 'Erreur lors de l\'annulation');
+    }
+  }
+
+  // Bouton pour continuer un checkpoint actif
+  continueCertification(cert: Certification) {
+    if (cert.status === 'active' && cert.currentCheckpointIndex < cert.checkpoints.length) {
+      const nextCheckpoint = cert.checkpoints[cert.currentCheckpointIndex];
+      if (nextCheckpoint) {
+        this.router.navigate([`/producer/certification/${cert.id}/checkpoint/${nextCheckpoint.id}`]);
+      }
+    }
+  }
+
+  // Publier une certification
+  publishCertification(cert: Certification) {
+    this.router.navigate([`/producer/certification/${cert.id}`, { tab: 'product' }]);
+  }
+
+  // Modale nouvelle certification
   openNewCertModal() {
     this.showNewCertModal = true;
     this.selectedTemplateId = '';
     this.productName = '';
     this.initialPhoto = null;
     this.photoPreview = null;
-    this.useCurrentLocation = true;
-    this.customLocation = '';
   }
 
   closeNewCertModal() {
     this.showNewCertModal = false;
   }
 
-  // Méthode pour déclencher le sélecteur de fichiers
+  // Démarrer certification
+  async startCertification() {
+    if (!this.selectedTemplateId || !this.productName || !this.initialPhoto) {
+      this.showNotification('error', 'Veuillez remplir tous les champs requis');
+      return;
+    }
+
+    this.isLoading = true;
+
+    try {
+      const certification = await this.certificationService.startCertification({
+        templateId: this.selectedTemplateId,
+        productName: this.productName,
+        description: '',
+        initialPhoto: this.initialPhoto,
+      });
+
+      this.closeNewCertModal();
+      await this.loadData();
+
+      this.showNotification('success', `Certification "${certification.productName}" démarrée!`);
+
+      // Rediriger vers la nouvelle certification
+      setTimeout(() => {
+        this.navigateToCertification(certification.id);
+      }, 1500);
+    } catch (error: any) {
+      this.showNotification('error', error.message || 'Erreur lors du démarrage');
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  // Gestion des fichiers
   triggerFileInput() {
     this.fileInput.nativeElement.click();
   }
@@ -170,19 +232,17 @@ export class CertificationsComponent implements OnInit {
     if (input.files && input.files[0]) {
       const file = input.files[0];
 
-      // Valider le fichier
       if (!this.validateImageFile(file)) {
         return;
       }
 
       this.initialPhoto = file;
 
-      // Aperçu
       const reader = new FileReader();
       reader.onload = () => {
         this.photoPreview = reader.result as string;
       };
-      reader.readAsDataURL(this.initialPhoto);
+      reader.readAsDataURL(file);
     }
   }
 
@@ -191,86 +251,28 @@ export class CertificationsComponent implements OnInit {
     const maxSize = 5 * 1024 * 1024; // 5MB
 
     if (!validTypes.includes(file.type)) {
-      alert('Format non supporté. Utilisez JPG, PNG ou WebP.');
+      this.showNotification('error', 'Format non supporté. Utilisez JPG, PNG ou WebP.');
       return false;
     }
 
     if (file.size > maxSize) {
-      alert('Fichier trop volumineux (max 5MB).');
+      this.showNotification('error', 'Fichier trop volumineux (max 5MB).');
       return false;
     }
 
     return true;
   }
 
-  async startCertification() {
-    if (!this.selectedTemplateId || !this.productName || !this.initialPhoto) {
-      alert('Veuillez remplir tous les champs requis');
-      return;
-    }
-
-    this.isStartingCertification = true;
-
-    try {
-      console.log('Démarrage certification...', {
-        templateId: this.selectedTemplateId,
-        productName: this.productName,
-        hasPhoto: !!this.initialPhoto,
-      });
-
-      const certification = await this.certificationService.startCertification({
-        templateId: this.selectedTemplateId,
-        productName: this.productName,
-        initialPhoto: this.initialPhoto,
-        location: this.useCurrentLocation
-          ? undefined
-          : { lat: 14.716677, lng: -17.467686 },
-        notes: this.customLocation || undefined,
-      });
-
-      console.log('Certification démarrée avec succès:', certification.id);
-
-      this.closeNewCertModal();
-      await this.loadData();
-      this.activeTab = 'ongoing';
-
-      this.showSuccessMessage(
-        `Certification "${certification.productName}" démarrée avec succès!`,
-      );
-    } catch (error: any) {
-      console.error('Erreur démarrage certification:', error);
-      this.showErrorMessage(
-        error.message || 'Erreur lors du démarrage de la certification',
-      );
-    } finally {
-      this.isStartingCertification = false;
-    }
-  }
-
-  // Méthode utilitaire pour calculer la date d'un checkpoint
-  getCheckpointDate(cert: Certification, checkpointDayOffset: number): Date {
-    return new Date(
-      cert.startDate.getTime() + checkpointDayOffset * 24 * 60 * 60 * 1000,
-    );
-  }
-
-  // Utilitaires d'affichage
+  // Méthodes utilitaires
   getStatusBadgeClass(status: string): string {
     switch (status) {
-      case 'draft':
-        return 'badge-draft';
-      case 'active':
-        return 'badge-active';
-      case 'completed':
-        return 'badge-completed';
-      case 'verified':
-        return 'badge-verified';
-      case 'cancelled':
-        return 'badge-cancelled';
-      case 'expired':
-        return 'badge-expired';
-      default:
-        return 'badge-default';
+      case 'draft': return 'badge-draft';
+      case 'active': return 'badge-active';
+      case 'completed': return 'badge-completed';
+      case 'verified': return 'badge-verified';
+      case 'cancelled': return 'badge-cancelled';
+      case 'expired': return 'badge-expired';
+      default: return 'badge-default';
     }
   }
 
@@ -288,205 +290,45 @@ export class CertificationsComponent implements OnInit {
 
   getProgressPercentage(cert: Certification): number {
     if (cert.totalCheckpoints === 0) return 0;
-    return Math.round(
-      (cert.completedCheckpoints / cert.totalCheckpoints) * 100,
-    );
-  }
-
-  getNextCheckpoint(cert: Certification) {
-    return cert.checkpoints.find((cp) => !cp.completed);
-  }
-
-  getDaysRemaining(cert: Certification): number {
-    const now = new Date();
-    const harvestDate = cert.expectedHarvestDate;
-    const diff = harvestDate.getTime() - now.getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return Math.max(0, days); // Ne pas retourner de jours négatifs
+    return Math.round((cert.completedCheckpoints / cert.totalCheckpoints) * 100);
   }
 
   getProductIcon(productType: string): string {
     return this.certificationService.getProductIcon(productType);
   }
 
-  navigateToCertification(id: string) {
-    this.router.navigate([`/producer/certification/${id}`]);
+  getDaysRemaining(cert: Certification): number {
+    if (!cert.expectedHarvestDate) return 0;
+    const now = new Date();
+    const diffTime = cert.expectedHarvestDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
   }
 
-  async duplicateCertification(cert: Certification) {
-    if (confirm(`Dupliquer la certification "${cert.productName}" ?`)) {
-      try {
-        // Créer une nouvelle certification basée sur l'existante
-        const newCert = await this.certificationService.startCertification({
-          templateId: this.getTemplateIdFromProductType(cert.productType),
-          productName: `${cert.productName} (Copie)`,
-          initialPhoto: await this.getInitialPhotoFromCertification(cert),
-          location: {
-            lat: cert.location.lat,
-            lng: cert.location.lng,
-          },
-        });
-
-        this.showSuccessMessage(`Certification dupliquée avec succès!`);
-        await this.loadData();
-      } catch (error) {
-        console.error('Erreur duplication:', error);
-        this.showErrorMessage('Erreur lors de la duplication');
-      }
-    }
+  getNextCheckpoint(cert: Certification): any {
+    if (!cert || !cert.checkpoints || cert.status !== 'active') return null;
+    return cert.checkpoints.find(cp =>
+      !cp.completed && cp.order === cert.currentCheckpointIndex
+    ) || cert.checkpoints.find(cp => !cp.completed);
   }
 
-  private async getInitialPhotoFromCertification(
-    cert: Certification,
-  ): Promise<File> {
-    // Récupérer l'image initiale depuis le stockage local
-    const imageData = this.certificationService.getImage(`${cert.id}_initial`);
-    if (imageData) {
-      // Convertir base64 en File
-      const blob = this.base64ToBlob(imageData, 'image/jpeg');
-      return new File([blob], 'initial.jpg', { type: 'image/jpeg' });
-    }
-
-    // Fallback : créer une image factice
-    return this.createDummyImage();
-  }
-
-  private base64ToBlob(base64: string, contentType: string): Blob {
-    const byteCharacters = atob(base64.split(',')[1]);
-    const byteNumbers = new Array(byteCharacters.length);
-
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-
-    const byteArray = new Uint8Array(byteNumbers);
-    return new Blob([byteArray], { type: contentType });
-  }
-
-  private createDummyImage(): File {
-    const canvas = document.createElement('canvas');
-    canvas.width = 400;
-    canvas.height = 300;
-    const ctx = canvas.getContext('2d');
-
-    if (ctx) {
-      ctx.fillStyle = '#4CAF50';
-      ctx.fillRect(0, 0, 400, 300);
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 24px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('Image initiale', 200, 100);
-      ctx.font = '16px Arial';
-      ctx.fillText('Certification copiée', 200, 150);
-    }
-
-    return new File([canvas.toDataURL('image/jpeg')], 'dummy.jpg', {
-      type: 'image/jpeg',
-    });
-  }
-
-  private getTemplateIdFromProductType(productType: string): string {
-    const template = this.templates.find((t) => t.productType === productType);
-    return template?.id || 'tomato_60'; // Fallback
-  }
-
-  async cancelCertification(cert: Certification) {
-    if (
-      confirm(
-        `Annuler la certification "${cert.productName}" ? Cette action est irréversible.`,
-      )
-    ) {
-      try {
-        // TODO: Implémenter la logique d'annulation dans le service
-        console.log('Annulation:', cert.id);
-        this.showSuccessMessage(`Certification "${cert.productName}" annulée`);
-        await this.loadData();
-      } catch (error) {
-        console.error('Erreur annulation:', error);
-        this.showErrorMessage("Erreur lors de l'annulation");
-      }
-    }
-  }
-
-  async simulateCheckpointCompletion(
-    cert: Certification,
-    checkpointIndex: number,
-  ) {
-    if (
-      confirm(`Simuler la complétion du checkpoint ${checkpointIndex + 1} ?`)
-    ) {
-      try {
-        await this.certificationService.simulateCheckpointCompletion(
-          cert.id,
-          checkpointIndex,
-        );
-        this.showSuccessMessage(`Checkpoint simulé avec succès!`);
-        await this.loadData();
-      } catch (error) {
-        console.error('Erreur simulation:', error);
-        this.showErrorMessage('Erreur lors de la simulation');
-      }
-    }
-  }
-
-  // Gestion des templates
-  getTemplateById(id: string): CertificationTemplate | undefined {
-    return this.templates.find((t) => t.id === id);
-  }
-
-  viewTemplateDetails(template: CertificationTemplate) {
-    const details = `
-📋 ${template.name}
-${template.description}
-
-📅 Durée: ${template.durationDays} jours
-📊 Points de contrôle: ${template.checkpoints.length}
-🏷️ Badges: ${template.badges.join(', ')}
-
-Points de contrôle:
-${template.checkpoints
-  .map(
-    (cp, i) =>
-      `  ${i + 1}. J+${cp.dayOffset}: ${cp.title}
-     Preuves requises: ${cp.requiredProofs
-       .map((p) =>
-         p === 'photo'
-           ? '📸 Photo'
-           : p === 'gps'
-             ? '📍 GPS'
-             : p === 'measurement'
-               ? '📏 Mesure'
-               : '📝 Note',
-       )
-       .join(', ')}`,
-  )
-  .join('\n')}
-    `;
-
-    alert(details);
-  }
-
-  // Méthodes de notification
-  private showSuccessMessage(message: string) {
-    this.showNotification('success', message);
-  }
-
-  private showErrorMessage(message: string) {
-    this.showNotification('error', message);
-  }
-
-  private showNotification(
-    type: 'success' | 'error' | 'info',
-    message: string,
-  ) {
+  // Notifications
+  private showNotification(type: 'success' | 'error' | 'info', message: string) {
     const notification = document.createElement('div');
-    const backgroundColor =
-      type === 'success' ? '#4CAF50' : type === 'error' ? '#F44336' : '#2196F3';
-    const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+    const colors = {
+      success: '#4CAF50',
+      error: '#F44336',
+      info: '#2196F3'
+    };
+    const icons = {
+      success: '✅',
+      error: '❌',
+      info: 'ℹ️'
+    };
 
     notification.innerHTML = `
       <div style="display: flex; align-items: center; gap: 12px;">
-        <span style="font-size: 20px;">${icon}</span>
+        <span style="font-size: 20px;">${icons[type]}</span>
         <span>${message}</span>
       </div>
     `;
@@ -495,7 +337,7 @@ ${template.checkpoints
       position: fixed;
       top: 20px;
       right: 20px;
-      background: ${backgroundColor};
+      background: ${colors[type]};
       color: white;
       padding: 15px 20px;
       border-radius: 8px;
@@ -506,7 +348,6 @@ ${template.checkpoints
       max-width: 400px;
     `;
 
-    // Ajouter les animations CSS
     const style = document.createElement('style');
     style.textContent = `
       @keyframes slideIn {
@@ -522,7 +363,6 @@ ${template.checkpoints
 
     document.body.appendChild(notification);
 
-    // Auto-remove après 5 secondes
     setTimeout(() => {
       if (document.body.contains(notification)) {
         notification.style.animation = 'slideOut 0.3s ease forwards';
@@ -536,109 +376,5 @@ ${template.checkpoints
         }, 300);
       }
     }, 5000);
-  }
-
-  // Méthode de débogage
-  debugCertifications() {
-    console.group('=== DÉBOGAGE CERTIFICATIONS ===');
-    console.log('Total certifications:', this.certifications.length);
-
-    this.certifications.forEach((cert, index) => {
-      console.group(`Certification ${index + 1}: ${cert.productName}`);
-      console.log('ID:', cert.id);
-      console.log('Statut:', cert.status);
-      console.log('Score:', cert.validationScore);
-      console.log(
-        'Checkpoints:',
-        `${cert.completedCheckpoints}/${cert.totalCheckpoints}`,
-      );
-      console.log('Date création:', cert.createdAt);
-      console.log('Date fin estimée:', cert.expectedHarvestDate);
-
-      // Vérifier les images
-      const initialImage = this.certificationService.getImage(
-        `${cert.id}_initial`,
-      );
-      console.log(
-        'Image initiale:',
-        initialImage ? '✓ Disponible' : '✗ Non disponible',
-      );
-
-      console.groupEnd();
-    });
-
-    console.groupEnd();
-  }
-
-  // Méthode pour rafraîchir les données
-  async refreshData() {
-    this.isLoading = true;
-    try {
-      await this.loadData();
-      this.showSuccessMessage('Données rafraîchies avec succès');
-    } catch (error) {
-      console.error('Erreur rafraîchissement:', error);
-      this.showErrorMessage('Erreur lors du rafraîchissement');
-    } finally {
-      this.isLoading = false;
-    }
-  }
-
-  // Méthode pour exporter les données
-  exportCertifications() {
-    const data = {
-      certifications: this.certifications,
-      stats: this.stats,
-      exportDate: new Date().toISOString(),
-    };
-
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: 'application/json',
-    });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `certifications-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-
-    this.showSuccessMessage('Certifications exportées avec succès');
-  }
-
-  // Méthode pour vérifier si un checkpoint peut être complété
-  canCompleteCheckpoint(checkpoint: any, cert: Certification): boolean {
-    return (
-      !checkpoint.completed && checkpoint.order === cert.currentCheckpointIndex
-    );
-  }
-
-  // Méthode pour obtenir la prochaine date de checkpoint
-  getNextCheckpointDate(cert: Certification): string {
-    const nextCheckpoint = this.getNextCheckpoint(cert);
-    if (nextCheckpoint) {
-      const date = this.getCheckpointDate(cert, nextCheckpoint.dayOffset);
-      return date.toLocaleDateString('fr-FR');
-    }
-    return 'Aucun';
-  }
-
-  // Méthode pour formater les dates
-  formatDate(date: Date): string {
-    return date.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  }
-
-  // Méthode pour formater les dates avec heure
-  formatDateTime(date: Date): string {
-    return date.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   }
 }

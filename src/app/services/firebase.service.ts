@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { initializeApp } from 'firebase/app';
+import { FirebaseApp, initializeApp } from 'firebase/app';
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -9,10 +9,10 @@ import {
   setPersistence,
   browserLocalPersistence,
   User,
+  browserSessionPersistence,
 } from 'firebase/auth';
 import {
   getFirestore,
-  Firestore,
   collection,
   doc,
   setDoc,
@@ -26,52 +26,31 @@ import {
   serverTimestamp,
   deleteDoc,
   increment,
-  writeBatch,
-  limit,
 } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Product } from '../interfaces/data.interfaces';
+import { environment } from '../../environments/environment';
 
-// Define the Order interface if not already defined elsewhere
 export interface Order {
-  // 🔑 Identité
   id: string;
-
-  // 👤 Acheteur
   buyerId: string;
   buyerName?: string;
-
-  // 📦 Produit
   productId: string;
   productName: string;
   productUnit?: string;
   productPrice?: number;
-
-  // 👨‍🌾 Producteur
   producerId: string;
   producerName: string;
-
-  // 💰 Commande
   quantity: number;
-  amount: number; // total payé
+  amount: number;
   status: 'pending' | 'shipping' | 'delivered' | 'cancelled';
-
-  // ✅ Qualité / confiance
   certified: boolean;
-
-  // ⭐ Notation
-  rated?: boolean; // true si déjà noté
-  ratingValue?: number; // 1 à 5 (optionnel)
-
-  // ⏱️ Dates Firestore
-  createdAt: any; // Timestamp Firestore
+  rated?: boolean;
+  ratingValue?: number;
+  createdAt: any;
   deliveredAt?: any;
 }
 
-import { environment } from '../../environments/environment';
-import { authState } from '@angular/fire/auth';
-
-// Interface pour les données utilisateur (garder seulement celle-ci)
 export interface FirebaseUserData {
   uid: string;
   email: string;
@@ -84,10 +63,77 @@ export interface FirebaseUserData {
   reputation?: number;
 }
 
+let firebaseAppInstance: FirebaseApp | null = null;
+
+function getFirebaseApp(): FirebaseApp {
+  if (!firebaseAppInstance) {
+    firebaseAppInstance = initializeApp(environment.firebase);
+  }
+  return firebaseAppInstance;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class FirebaseService {
+  private app: FirebaseApp;
+  private auth;
+  public firestore;
+  private storage;
+
+  currentUser: User | null = null;
+  userData: FirebaseUserData | null = null;
+  isLoading = true;
+  getProducers: any;
+
+  private authListenerInitialized = false;
+
+  constructor() {
+    this.app = getFirebaseApp();
+    this.auth = getAuth(this.app);
+    this.firestore = getFirestore(this.app);
+    this.storage = getStorage(this.app);
+
+    this.configurePersistence();
+
+    if (!this.authListenerInitialized) {
+      this.setupAuthListener();
+      this.authListenerInitialized = true;
+    }
+  }
+
+  private async configurePersistence(): Promise<void> {
+    try {
+      await setPersistence(this.auth, browserLocalPersistence);
+    } catch (error) {
+      try {
+        await setPersistence(this.auth, browserSessionPersistence);
+      } catch (fallbackError) {
+        // Gestion silencieuse de l'erreur
+      }
+    }
+  }
+
+  private setupAuthListener(): void {
+    onAuthStateChanged(this.auth, async (user) => {
+      if (this.currentUser?.uid === user?.uid) {
+        this.isLoading = false;
+        return;
+      }
+
+      this.currentUser = user;
+
+      if (user) {
+        await this.loadUserData(user.uid);
+      } else {
+        this.userData = null;
+        localStorage.removeItem('userData');
+      }
+
+      this.isLoading = false;
+    });
+  }
+
   async submitRating(data: {
     productId: string;
     producerId: string;
@@ -114,85 +160,22 @@ export class FirebaseService {
     if (snap.empty) return 0;
 
     const total = snap.docs.reduce((sum, d) => sum + d.data()['stars'], 0);
-
     return Number((total / snap.size).toFixed(1));
   }
 
-  private app = initializeApp(environment.firebase);
-  private auth = getAuth(this.app);
-  public firestore = getFirestore(this.app);
-  private storage = getStorage(this.app);
-
-  currentUser: User | null = null;
-  userData: FirebaseUserData | null = null;
-  isLoading = true;
-  getProducers: any;
-
-  // Dans le constructeur de firebase.service.ts
-  constructor() {
-    this.setupAuthListener();
-  }
-
-  // firebase.service.ts - CORRIGEZ setupAuthListener
-  private async setupAuthListener() {
+  async login(email: string, password: string): Promise<{ success: boolean; error?: string }> {
     try {
-      // ✅ Configurer la persistance avec Firebase SDK standard
       await setPersistence(this.auth, browserLocalPersistence);
-      console.log('✅ Persistance Firebase configurée');
-    } catch (error) {
-      console.error('❌ Erreur de configuration de persistance:', error);
-    }
-
-    // ✅ Utilisez onAuthStateChanged de Firebase SDK, PAS authState d'AngularFire
-    onAuthStateChanged(this.auth, async (user) => {
-      console.log('🔄 Auth state changé:', user?.email || 'undefined');
-
-      this.isLoading = true;
-      this.currentUser = user;
-
-      if (user) {
-        console.log('✅ Utilisateur Firebase trouvé:', user.email);
-        await this.loadUserData(user.uid);
-      } else {
-        console.log('👤 Aucun utilisateur Firebase (déconnecté)');
-        this.userData = null;
-        localStorage.removeItem('userData');
-      }
-
-      this.isLoading = false;
-    });
-  }
-  getCurrentAuthUser() {
-    return this.auth.currentUser;
-  }
-
-  async login(
-    email: string,
-    password: string,
-  ): Promise<{ success: boolean; error?: string }> {
-    try {
-      console.log('🔐 Tentative de connexion pour:', email);
-      const userCredential = await signInWithEmailAndPassword(
-        this.auth,
-        email,
-        password,
-      );
-
-      console.log(
-        '✅ Connexion réussie, utilisateur:',
-        userCredential.user?.email,
-      );
-      console.log('📊 État auth.currentUser:', this.auth.currentUser?.email);
-
+      await signInWithEmailAndPassword(this.auth, email, password);
       return { success: true };
     } catch (error: any) {
-      console.error('❌ Erreur de connexion:', error);
       return {
         success: false,
         error: this.getFirebaseErrorMessage(error.code),
       };
     }
   }
+
   async register(userData: any): Promise<{ success: boolean; error?: string }> {
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -220,7 +203,6 @@ export class FirebaseService {
         userDataToSave,
       );
 
-      // Stocker localement avec les données de base
       this.userData = {
         uid: userCredential.user.uid,
         email: userData.email,
@@ -234,13 +216,91 @@ export class FirebaseService {
 
       return { success: true };
     } catch (error: any) {
-      console.error("Erreur d'inscription:", error);
       return {
         success: false,
         error: this.getFirebaseErrorMessage(error.code),
       };
     }
   }
+
+  async logout(): Promise<void> {
+    try {
+      await signOut(this.auth);
+      this.clearCache();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async loadUserData(uid: string): Promise<void> {
+    try {
+      const cachedData = localStorage.getItem('userData');
+      if (cachedData) {
+        const cachedUser = JSON.parse(cachedData);
+        if (cachedUser.uid === uid) {
+          this.userData = cachedUser;
+          return;
+        }
+      }
+
+      const userDoc = await getDoc(doc(this.firestore, 'users', uid));
+
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        this.userData = {
+          uid: data['uid'] || uid,
+          email: data['email'] || '',
+          fullName: data['fullName'] || '',
+          phone: data['phone'] || '',
+          role: data['role'] || 'buyer',
+          createdAt: data['createdAt']?.toDate() || new Date(),
+          location: data['location'] || 'Dakar, Sénégal',
+          reputation: data['reputation'],
+        };
+
+        localStorage.setItem('userData', JSON.stringify(this.userData));
+      } else {
+        await this.createMissingUserDocument(uid);
+      }
+    } catch (error) {
+      this.userData = null;
+    }
+  }
+
+  getUserRole(): 'producer' | 'buyer' | null {
+    return this.userData?.role || null;
+  }
+
+  getCurrentAuthUser(): User | null {
+    return this.auth.currentUser;
+  }
+
+  isAuthenticated(): boolean {
+    return !!this.auth.currentUser && !!this.userData;
+  }
+
+  clearCache(): void {
+    localStorage.removeItem('userData');
+    this.userData = null;
+    this.currentUser = null;
+  }
+
+  private getFirebaseErrorMessage(code: string): string {
+    const errorMessages: { [key: string]: string } = {
+      'auth/email-already-in-use': 'Cet email est déjà utilisé',
+      'auth/invalid-email': 'Email invalide',
+      'auth/operation-not-allowed': 'Opération non autorisée',
+      'auth/weak-password': 'Mot de passe trop faible',
+      'auth/user-disabled': 'Compte désactivé',
+      'auth/user-not-found': 'Utilisateur non trouvé',
+      'auth/wrong-password': 'Mot de passe incorrect',
+      'auth/too-many-requests': 'Trop de tentatives',
+      'auth/network-request-failed': 'Erreur réseau',
+    };
+
+    return errorMessages[code] || 'Une erreur est survenue';
+  }
+
   async getMyOrders(buyerId: string): Promise<Order[]> {
     const q = query(
       collection(this.firestore, 'sales'),
@@ -261,13 +321,8 @@ export class FirebaseService {
         totalPrice: data['totalPrice'] || 0,
         status: data['status'] || '',
         amount: data['amount'] || data['totalPrice'] || 0,
-
-        createdAt: data['createdAt']?.toDate
-          ? data['createdAt'].toDate()
-          : new Date(),
-        updatedAt: data['updatedAt']?.toDate
-          ? data['updatedAt'].toDate()
-          : undefined,
+        createdAt: data['createdAt']?.toDate ? data['createdAt'].toDate() : new Date(),
+        updatedAt: data['updatedAt']?.toDate ? data['updatedAt'].toDate() : undefined,
         ...data,
       } as unknown as Order;
     });
@@ -290,9 +345,6 @@ export class FirebaseService {
     for (const docSnap of snapshot.docs) {
       const sale = docSnap.data();
 
-      // =========================
-      // 🔹 Récupération PRODUIT
-      // =========================
       let productData: any = null;
       if (sale['productId']) {
         const productSnap = await getDoc(
@@ -301,9 +353,6 @@ export class FirebaseService {
         productData = productSnap.exists() ? productSnap.data() : null;
       }
 
-      // =========================
-      // 🔹 Récupération PRODUCTEUR
-      // =========================
       let producerData: any = null;
       if (sale['producerId']) {
         const producerSnap = await getDoc(
@@ -312,18 +361,11 @@ export class FirebaseService {
         producerData = producerSnap.exists() ? producerSnap.data() : null;
       }
 
-      // =========================
-      // ⭐ LOGIQUE DE CERTIFICATION (UNIQUE)
-      // EXACTEMENT COMME "Produits recommandés"
-      // =========================
       const isCertified =
         productData?.certifications &&
         Array.isArray(productData.certifications) &&
         productData.certifications.length > 0;
 
-      // =========================
-      // 📦 PUSH FINAL
-      // =========================
       results.push({
         id: docSnap.id,
         product: productData?.name || 'Produit inconnu',
@@ -332,30 +374,14 @@ export class FirebaseService {
           ? sale['createdAt'].toDate().toISOString().split('T')[0]
           : '',
         amount: sale['totalAmount'] || 0,
-
-        // statut réel
         status: sale['status'] || 'pending',
-
-        // ✅ CERTIFICATION CORRECTE
         certified: isCertified,
-
-        // 🔗 pour rating
         productId: sale['productId'],
         producerId: sale['producerId'],
       });
     }
 
     return results;
-  }
-  db(
-    db: any,
-    arg1: string,
-    arg2: any,
-  ): import('@firebase/firestore').DocumentReference<
-    import('@firebase/firestore').DocumentData,
-    import('@firebase/firestore').DocumentData
-  > {
-    throw new Error('Method not implemented.');
   }
 
   async getMyRatings(): Promise<any[]> {
@@ -371,71 +397,6 @@ export class FirebaseService {
       id: doc.id,
       ...doc.data(),
     }));
-  }
-
-  async logout(): Promise<void> {
-    try {
-      await signOut(this.auth);
-    } catch (error) {
-      console.error('Erreur de déconnexion:', error);
-      throw error;
-    }
-  }
-
-  private async loadUserData(uid: string): Promise<void> {
-    try {
-      this.isLoading = true;
-
-      const userDoc = await getDoc(doc(this.firestore, 'users', uid));
-
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-
-        const userData: FirebaseUserData = {
-          uid: data['uid'] || uid,
-          email: data['email'] || '',
-          fullName: data['fullName'] || '',
-          phone: data['phone'] || '',
-          role: data['role'] || 'buyer',
-          createdAt: data['createdAt']?.toDate() || new Date(),
-          location: data['location'] || 'Dakar, Sénégal',
-        };
-
-        if (data['role'] === 'producer' && data['reputation'] !== undefined) {
-          userData.reputation = data['reputation'];
-        }
-
-        this.userData = userData;
-
-        localStorage.setItem('userData', JSON.stringify(this.userData));
-      } else {
-        console.warn(
-          'Document utilisateur non trouvé dans Firestore pour uid:',
-          uid,
-        );
-
-        const currentUser = this.auth.currentUser;
-        if (currentUser && currentUser.uid === uid) {
-          await this.createMissingUserDocument(uid);
-        }
-      }
-    } catch (error) {
-      console.error('Erreur de chargement des données utilisateur:', error);
-
-      const cachedData = localStorage.getItem('userData');
-      if (cachedData) {
-        try {
-          this.userData = JSON.parse(cachedData);
-        } catch (parseError) {
-          console.error(
-            'Erreur de parsing des données localStorage:',
-            parseError,
-          );
-        }
-      }
-    } finally {
-      this.isLoading = false;
-    }
   }
 
   private async createMissingUserDocument(uid: string): Promise<void> {
@@ -454,13 +415,9 @@ export class FirebaseService {
       };
 
       await setDoc(doc(this.firestore, 'users', uid), userDataToSave);
-
       await this.loadUserData(uid);
     } catch (error) {
-      console.error(
-        'Erreur lors de la création du document utilisateur:',
-        error,
-      );
+      // Gestion silencieuse de l'erreur
     }
   }
 
@@ -472,40 +429,10 @@ export class FirebaseService {
         localStorage.setItem('userData', JSON.stringify(this.userData));
       }
     } catch (error) {
-      console.error('Erreur de mise à jour du rôle:', error);
       throw error;
     }
   }
 
-  isAuthenticated(): boolean {
-    return !!this.currentUser;
-  }
-
-  getUserRole(): 'producer' | 'buyer' | null {
-    return this.userData?.role || null;
-  }
-
-  private getFirebaseErrorMessage(code: string): string {
-    const errorMessages: { [key: string]: string } = {
-      'auth/email-already-in-use': 'Cet email est déjà utilisé',
-      'auth/invalid-email': 'Email invalide',
-      'auth/operation-not-allowed': 'Opération non autorisée',
-      'auth/weak-password': 'Mot de passe trop faible (minimum 6 caractères)',
-      'auth/user-disabled': 'Compte désactivé',
-      'auth/user-not-found': 'Utilisateur non trouvé',
-      'auth/wrong-password': 'Mot de passe incorrect',
-      'auth/too-many-requests': 'Trop de tentatives. Réessayez plus tard',
-      'auth/network-request-failed': 'Erreur réseau. Vérifiez votre connexion',
-    };
-
-    return errorMessages[code] || 'Une erreur est survenue';
-  }
-
-  clearCache() {
-    localStorage.removeItem('userData');
-  }
-
-  // Méthode pour uploader des images
   async uploadImage(file: File, path: string): Promise<string> {
     try {
       const storageRef = ref(this.storage, path);
@@ -513,20 +440,16 @@ export class FirebaseService {
       const downloadURL = await getDownloadURL(snapshot.ref);
       return downloadURL;
     } catch (error) {
-      console.error("Erreur lors du téléchargement de l'image:", error);
       throw error;
     }
   }
 
-  // ==================== GESTION DES PRODUITS ====================
-
-  async addProduct(
-    productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>,
-  ): Promise<{ success: boolean; productId?: string; error?: string }> {
+  async addProduct(productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>):
+    Promise<{ success: boolean; productId?: string; error?: string }> {
     try {
       const productWithTimestamp = {
         ...productData,
-        badges: productData.badges || [], // ← AJOUTEZ CETTE LIGNE
+        badges: productData.badges || [],
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         status: 'available' as const,
@@ -547,17 +470,13 @@ export class FirebaseService {
         productId: docRef.id,
       };
     } catch (error: any) {
-      console.error("Erreur lors de l'ajout du produit:", error);
       return {
         success: false,
-        error:
-          this.getFirebaseErrorMessage(error.code) ||
-          "Erreur lors de l'ajout du produit",
+        error: this.getFirebaseErrorMessage(error.code) || "Erreur lors de l'ajout du produit",
       };
     }
   }
 
-  // Dans la méthode getProducerProducts - ligne 244
   async getProducerProducts(producerId: string): Promise<Product[]> {
     try {
       const q = query(
@@ -594,22 +513,19 @@ export class FirebaseService {
           isActive: data['isActive'] !== undefined ? data['isActive'] : true,
           createdAt: data['createdAt']?.toDate() || new Date(),
           updatedAt: data['updatedAt']?.toDate() || new Date(),
-          // NOUVEAUX CHAMPS
-          badges: data['badges'] || [], // ← AJOUTEZ CETTE LIGNE
+          badges: data['badges'] || [],
         });
       });
 
       return products;
     } catch (error) {
-      console.error('Erreur lors de la récupération des produits:', error);
       return [];
     }
   }
+
   async getProductById(productId: string): Promise<Product | null> {
     try {
-      const productDoc = await getDoc(
-        doc(this.firestore, 'products', productId),
-      );
+      const productDoc = await getDoc(doc(this.firestore, 'products', productId));
 
       if (productDoc.exists()) {
         const data = productDoc.data();
@@ -639,22 +555,18 @@ export class FirebaseService {
           isActive: data['isActive'] !== undefined ? data['isActive'] : true,
           createdAt: data['createdAt']?.toDate() || new Date(),
           updatedAt: data['updatedAt']?.toDate() || new Date(),
-          // NOUVEAUX CHAMPS
           certification: data['certification'] || undefined,
-          badges: data['badges'] || [], // ← AJOUTEZ CETTE LIGNE
+          badges: data['badges'] || [],
         } as Product;
       }
       return null;
     } catch (error) {
-      console.error('Erreur lors de la récupération du produit:', error);
       return null;
     }
   }
 
-  async updateProduct(
-    productId: string,
-    productData: Partial<Product>,
-  ): Promise<{ success: boolean; error?: string }> {
+  async updateProduct(productId: string, productData: Partial<Product>):
+    Promise<{ success: boolean; error?: string }> {
     try {
       const updateData = {
         ...productData,
@@ -662,40 +574,29 @@ export class FirebaseService {
       };
 
       await updateDoc(doc(this.firestore, 'products', productId), updateData);
-
       return { success: true };
     } catch (error: any) {
-      console.error('Erreur lors de la mise à jour du produit:', error);
       return {
         success: false,
-        error:
-          this.getFirebaseErrorMessage(error.code) ||
-          'Erreur lors de la mise à jour',
+        error: this.getFirebaseErrorMessage(error.code) || 'Erreur lors de la mise à jour',
       };
     }
   }
 
-  async deleteProduct(
-    productId: string,
-  ): Promise<{ success: boolean; error?: string }> {
+  async deleteProduct(productId: string): Promise<{ success: boolean; error?: string }> {
     try {
       await deleteDoc(doc(this.firestore, 'products', productId));
       return { success: true };
     } catch (error: any) {
-      console.error('Erreur lors de la suppression du produit:', error);
       return {
         success: false,
-        error:
-          this.getFirebaseErrorMessage(error.code) ||
-          'Erreur lors de la suppression',
+        error: this.getFirebaseErrorMessage(error.code) || 'Erreur lors de la suppression',
       };
     }
   }
 
-  async updateProductStatus(
-    productId: string,
-    status: Product['status'],
-  ): Promise<{ success: boolean; error?: string }> {
+  async updateProductStatus(productId: string, status: Product['status']):
+    Promise<{ success: boolean; error?: string }> {
     try {
       await updateDoc(doc(this.firestore, 'products', productId), {
         status,
@@ -703,12 +604,9 @@ export class FirebaseService {
       });
       return { success: true };
     } catch (error: any) {
-      console.error('Erreur lors de la mise à jour du statut:', error);
       return {
         success: false,
-        error:
-          this.getFirebaseErrorMessage(error.code) ||
-          'Erreur lors de la mise à jour',
+        error: this.getFirebaseErrorMessage(error.code) || 'Erreur lors de la mise à jour',
       };
     }
   }
@@ -721,12 +619,10 @@ export class FirebaseService {
         updatedAt: serverTimestamp(),
       });
     } catch (error) {
-      console.error("Erreur lors de l'incrémentation des vues:", error);
+      // Gestion silencieuse de l'erreur
     }
   }
 
-  // Dans firebase.service.ts ou votre service de produits
-  // Dans la méthode getAllAvailableProducts
   async getAllAvailableProducts(): Promise<Product[]> {
     try {
       const q = query(
@@ -770,40 +666,17 @@ export class FirebaseService {
           isActive: data['isActive'] !== undefined ? data['isActive'] : true,
           createdAt: data['createdAt']?.toDate() || new Date(),
           updatedAt: data['updatedAt']?.toDate() || new Date(),
-          // NOUVEAUX CHAMPS
           certification: data['certification'] || undefined,
-          badges: data['badges'] || [], // ← AJOUTEZ CETTE LIGNE
+          badges: data['badges'] || [],
         };
-
-        // Vérification supplémentaire
-        if (!product.producerId) {
-          console.warn(
-            '⚠️ ATTENTION: product.producerId est vide pour:',
-            product.name,
-          );
-          product.producerId =
-            this.extractProducerIdFromEmail(data['producerEmail']) || '';
-        }
 
         products.push(product);
       });
 
       return products;
     } catch (error) {
-      console.error(
-        'Erreur lors de la récupération des produits disponibles:',
-        error,
-      );
       return [];
     }
-  }
-
-  // Méthode utilitaire pour extraire l'ID si nécessaire
-  private extractProducerIdFromEmail(email: string): string {
-    if (!email) return '';
-    // Vous pourriez chercher l'utilisateur par email dans Firestore
-    // Mais c'est une solution temporaire
-    return '';
   }
 
   async searchProducts(searchTerm: string): Promise<Product[]> {
@@ -813,42 +686,20 @@ export class FirebaseService {
       return allProducts.filter(
         (product) =>
           product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.description
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
+          product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           product.producerName.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     } catch (error) {
-      console.error('Erreur lors de la recherche de produits:', error);
       return [];
     }
   }
 
-  // ==================== UTILITAIRES ====================
-
-  // Méthode pour générer un avatar (utilisée par message.service.ts)
   getAvatarForName(name: string): string {
     const avatars = ['👨🏾', '👩🏾', '👨🏾‍🌾', '👩🏾‍🌾', '🧑🏾', '🧑🏾‍🌾'];
-    const hash = name
-      .split('')
-      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return avatars[hash % avatars.length];
   }
 
-  // Getters pour les instances Firebase
-  get storageInstance() {
-    return this.storage;
-  }
-
-  get firestoreInstance() {
-    return this.firestore;
-  }
-
-  get authInstance() {
-    return this.auth;
-  }
-
-  // Dans FirebaseService
   async getCertifiedProducts(): Promise<Product[]> {
     const q = query(
       collection(this.firestore, 'products'),
@@ -888,14 +739,12 @@ export class FirebaseService {
         createdAt: data['createdAt']?.toDate() || new Date(),
         updatedAt: data['updatedAt']?.toDate() || new Date(),
         certification: data['certification'],
-        badges: data['badges'] || [], // ← AJOUTEZ CETTE LIGNE
+        badges: data['badges'] || [],
       } as Product;
     });
   }
 
-  async getProductWithCertification(
-    productId: string,
-  ): Promise<Product | null> {
+  async getProductWithCertification(productId: string): Promise<Product | null> {
     const product = await this.getProductById(productId);
     if (!product) return null;
 
@@ -909,10 +758,38 @@ export class FirebaseService {
           product.certification.details = cert.data();
         }
       } catch (error) {
-        console.error('Erreur récupération certification:', error);
+        // Gestion silencieuse de l'erreur
       }
     }
 
     return product;
+  }
+
+  get storageInstance() {
+    return this.storage;
+  }
+
+  get firestoreInstance() {
+    return this.firestore;
+  }
+
+  get authInstance() {
+    return this.auth;
+  }
+
+  db(
+    db: any,
+    arg1: string,
+    arg2: any,
+  ): import('@firebase/firestore').DocumentReference<
+    import('@firebase/firestore').DocumentData,
+    import('@firebase/firestore').DocumentData
+  > {
+    throw new Error('Method not implemented.');
+  }
+
+  private extractProducerIdFromEmail(email: string): string {
+    if (!email) return '';
+    return '';
   }
 }

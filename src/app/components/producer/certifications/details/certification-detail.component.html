@@ -1,167 +1,694 @@
 <div class="certification-detail-container">
-  <!-- En-tête -->
+  <!-- En-tête amélioré -->
   <div class="detail-header">
-    <button class="back-btn" (click)="goBack()">← Retour aux certifications</button>
-    <div class="header-content">
-      <h1>
-        <span class="product-icon">{{ getProductIcon(certification?.productType) }}</span>
-        {{ certification?.productName || 'Chargement...' }}
-      </h1>
+    <div class="header-top">
+      <button class="back-btn" (click)="goBack()">
+        <span class="back-icon">←</span>
+        Retour aux certifications
+      </button>
       <div class="header-actions">
-        <button class="action-btn" (click)="refresh()">🔄 Actualiser</button>
-        <button class="action-btn danger" (click)="cancelCertification()"
-                *ngIf="certification?.status === 'active'">❌ Annuler</button>
+        <button class="action-btn" (click)="refresh()" [disabled]="isLoading">
+          <span class="action-icon">🔄</span>
+          Actualiser
+        </button>
+        <button
+          class="action-btn success"
+          (click)="showCompletionModalManually()"
+          *ngIf="
+            certification?.status === 'completed' &&
+            !certification?.finalProduct?.published
+          "
+        >
+          <span class="action-icon">🏆</span>
+          Certification complète
+        </button>
+        <button class="action-btn" (click)="exportData()">
+          <span class="action-icon">📤</span>
+          Exporter
+        </button>
+        <button
+          class="action-btn danger"
+          (click)="cancelCertification()"
+          [disabled]="isProcessing"
+          *ngIf="certification?.status === 'active'"
+        >
+          <span class="action-icon">❌</span>
+          Annuler
+        </button>
+      </div>
+    </div>
+
+    <div class="header-main">
+      <div class="product-header">
+        <div class="product-icon-large">
+          {{ getProductIcon(certification?.productType) }}
+        </div>
+        <div class="product-info">
+          <h1>{{ certification?.productName || "Chargement..." }}</h1>
+          <div class="product-meta">
+            <span class="product-type">{{
+              certification?.productType | titlecase
+            }}</span>
+            <span class="product-category">{{
+              certification?.productCategory
+            }}</span>
+            <span class="product-producer"
+              >👨‍🌾 {{ certification?.producerName }}</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="status-display">
+        <span
+          [class]="
+            'status-badge ' + getStatusBadgeClass(certification?.status || '')
+          "
+        >
+          {{ getStatusText(certification?.status || "") }}
+        </span>
+        <div class="score-display">
+          <div class="score-value">
+            {{ certification?.validationScore || 0 }}%
+          </div>
+          <div class="score-label">Score global</div>
+        </div>
       </div>
     </div>
   </div>
 
-  @if (isLoading) {
-    <div class="loading">Chargement...</div>
-  }
+  <!-- Section Vérification et Blockchain -->
+  <div class="verification-section" *ngIf="!isLoading && certification">
+    <h3>🔗 Vérification & Traçabilité</h3>
 
-  @if (!isLoading && certification) {
-    <!-- Informations principales -->
-    <div class="overview-section">
-      <div class="status-card">
-        <div class="status-header">
-          <span [class]="'status-badge ' + getStatusBadgeClass(certification.status)">
-            {{ getStatusText(certification.status) }}
-          </span>
-          <div class="score-display">
-            <div class="score-circle">{{ certification.validationScore }}%</div>
-            <span>Score global</span>
-          </div>
-        </div>
-
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label">🌱 Type</span>
-            <span class="info-value">{{ certification.productType | titlecase }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">🏷️ Catégorie</span>
-            <span class="info-value">{{ certification.productCategory }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">📍 Localisation</span>
-            <span class="info-value">{{ certification.location.address || 'Non spécifié' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">👨‍🌾 Producteur</span>
-            <span class="info-value">{{ certification.producerName }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">📅 Début</span>
-            <span class="info-value">{{ certification.startDate | date:'dd/MM/yyyy' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">📅 Fin estimée</span>
-            <span class="info-value">{{ certification.expectedHarvestDate | date:'dd/MM/yyyy' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">⏱️ Durée</span>
-            <span class="info-value">{{ certification.durationDays }} jours</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">📊 Progression</span>
-            <span class="info-value">
-              {{ certification.completedCheckpoints }}/{{ certification.totalCheckpoints }} points
-              ({{ getProgressPercentage(certification) }}%)
-            </span>
+    <div class="verification-badges-grid">
+      <!-- Badge Blockchain -->
+      <div
+        class="verification-badge blockchain"
+        [class.verified]="hasBlockchainProofs()"
+      >
+        <div class="badge-icon">⛓️</div>
+        <div class="badge-info">
+          <h4>Blockchain</h4>
+          <p>{{ getBlockchainStatusText() }}</p>
+          <div class="blockchain-stats">
+            <span class="stat"
+              >{{ getBlockchainTransactionCount() }} transactions</span
+            >
+            <span class="stat">{{ getBlockchainCoverage() }}% couverture</span>
           </div>
         </div>
       </div>
 
-      <!-- Image initiale -->
-      @if (initialImage) {
-        <div class="initial-photo">
-          <h3>📸 Photo initiale</h3>
-          <img [src]="initialImage" alt="Photo initiale">
-          <p class="photo-info">
-            Prise le {{ certification.initialProof.timestamp | date:'dd/MM/yyyy à HH:mm' }}
-          </p>
+      <!-- Badge de vérification publique -->
+      <div class="verification-badge public" (click)="openVerificationModal()">
+        <div class="badge-icon">🔗</div>
+        <div class="badge-info">
+          <h4>Vérification publique</h4>
+          <p>Partagez cette certification</p>
         </div>
-      }
+      </div>
+
+      <!-- Badge QR Code -->
+      <div class="verification-badge qr-code" (click)="showQRCodeModal()">
+        <div class="badge-icon">📱</div>
+        <div class="badge-info">
+          <h4>QR Code</h4>
+          <p>Scanner pour vérifier</p>
+        </div>
+      </div>
     </div>
 
-    <!-- Onglets -->
+    <!-- Timeline Blockchain (si données disponibles) -->
+    @if (hasBlockchainData()) {
+      <div class="blockchain-timeline-section">
+        <h4>Timeline Blockchain</h4>
+        <div class="blockchain-timeline">
+          @for (checkpoint of certification.checkpoints; track checkpoint.id) {
+            @if (checkpoint.completed) {
+              <div class="timeline-item">
+                <div class="timeline-marker">
+                  @if (checkpoint.blockchainTransactionId) {
+                    <span class="marker-icon verified">⛓️</span>
+                  } @else {
+                    <span class="marker-icon">⏳</span>
+                  }
+                </div>
+                <div class="timeline-content">
+                  <h5>{{ checkpoint.title }}</h5>
+                  <p>{{ checkpoint.description }}</p>
+                  @if (checkpoint.blockchainTransactionId) {
+                    <small class="blockchain-id">
+                      TX:
+                      {{
+                        formatTransactionId(checkpoint.blockchainTransactionId)
+                      }}
+                    </small>
+                    <button
+                      class="btn-small"
+                      (click)="verifyTransaction(checkpoint)"
+                    >
+                      Vérifier
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Indicateur de chargement -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement de la certification...</p>
+    </div>
+  }
+
+  @if (!isLoading && certification) {
+    <!-- Vue d'ensemble avec statistiques -->
+    <div class="overview-cards">
+      <div class="stat-cards-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getRemainingDays() }}</div>
+            <div class="stat-label">Jours restants</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-content">
+            <div class="stat-value">
+              {{ certification.completedCheckpoints }}/{{
+                certification.totalCheckpoints
+              }}
+            </div>
+            <div class="stat-label">Points complétés</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getVerificationRate() }}%</div>
+            <div class="stat-label">Taux vérification</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📎</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getTotalProofs() }}</div>
+            <div class="stat-label">Preuves totales</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barre de progression -->
+      <div class="progress-section">
+        <div class="progress-header">
+          <h3>Progression générale</h3>
+          <span class="progress-percentage"
+            >{{ getProgressPercentage(certification) }}%</span
+          >
+        </div>
+        <div class="progress-bar-large">
+          <div
+            class="progress-fill"
+            [style.width.%]="getProgressPercentage(certification)"
+          ></div>
+        </div>
+        <div class="progress-labels">
+          <span>Début: {{ certification.startDate | date: "dd/MM/yy" }}</span>
+          <span
+            >Fin:
+            {{ certification.expectedHarvestDate | date: "dd/MM/yy" }}</span
+          >
+        </div>
+      </div>
+
+      <!-- Informations rapides -->
+      <div class="quick-info">
+        <div class="info-card">
+          <h4>📍 Localisation</h4>
+          <p>
+            {{ certification.location.address || "Localisation non spécifiée" }}
+          </p>
+          <small
+            >Lat: {{ certification.location.lat | number: "1.6-6" }}, Lng:
+            {{ certification.location.lng | number: "1.6-6" }}</small
+          >
+        </div>
+
+        <div class="info-card">
+          <h4>⏱️ Durée</h4>
+          <p>{{ certification.durationDays }} jours</p>
+          <small
+            >Du {{ certification.startDate | date: "dd/MM/yyyy" }} au
+            {{ certification.expectedHarvestDate | date: "dd/MM/yyyy" }}</small
+          >
+        </div>
+
+        <div class="info-card">
+          <h4>🏷️ Vérification</h4>
+          <p>
+            {{
+              certification.verificationStatus === "auto_verified"
+                ? "✅ Auto-vérifié"
+                : certification.verificationStatus === "manually_verified"
+                  ? "✅ Vérifié manuellement"
+                  : certification.verificationStatus === "rejected"
+                    ? "❌ Rejeté"
+                    : "⏳ En attente"
+            }}
+          </p>
+          @if (certification.verifiedAt) {
+            <small
+              >Le {{ certification.verifiedAt | date: "dd/MM/yyyy" }}</small
+            >
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglets améliorés -->
     <div class="detail-tabs">
-      <button [class.active]="activeTab === 'timeline'"
-              (click)="activeTab = 'timeline'">📅 Timeline</button>
-      <button [class.active]="activeTab === 'checkpoints'"
-              (click)="activeTab = 'checkpoints'">📋 Points de contrôle</button>
-      <button [class.active]="activeTab === 'proofs'"
-              (click)="activeTab = 'proofs'">📎 Preuves</button>
-      <button [class.active]="activeTab === 'product'"
-              (click)="activeTab = 'product'">📦 Produit final</button>
+      <nav class="tabs-nav">
+        <button
+          [class.active]="activeTab === 'timeline'"
+          (click)="activeTab = 'timeline'"
+        >
+          <span class="tab-icon">📅</span>
+          Timeline
+        </button>
+        <button
+          [class.active]="activeTab === 'checkpoints'"
+          (click)="activeTab = 'checkpoints'"
+        >
+          <span class="tab-icon">📋</span>
+          Points de contrôle
+        </button>
+        <button
+          [class.active]="activeTab === 'proofs'"
+          (click)="activeTab = 'proofs'"
+        >
+          <span class="tab-icon">📎</span>
+          Preuves
+          @if (getTotalProofs() > 0) {
+            <span class="tab-badge">{{ getTotalProofs() }}</span>
+          }
+        </button>
+        <button
+          [class.active]="activeTab === 'product'"
+          (click)="activeTab = 'product'"
+        >
+          <span class="tab-icon">📦</span>
+          Produit final
+        </button>
+        <button
+          [class.active]="activeTab === 'analytics'"
+          (click)="activeTab = 'analytics'"
+        >
+          <span class="tab-icon">📊</span>
+          Analytics
+        </button>
+      </nav>
     </div>
 
     <!-- Contenu des onglets -->
     <div class="tab-content">
-      <!-- Timeline -->
-      @if (activeTab === 'timeline') {
+      <!-- Timeline améliorée -->
+      @if (activeTab === "timeline") {
         <div class="timeline-view">
-          <div class="timeline">
-            @for (checkpoint of certification.checkpoints; track checkpoint.id; let i = $index) {
-              <div class="timeline-item"
-                   [class.completed]="checkpoint.completed"
-                   [class.current]="!checkpoint.completed && checkpoint.order === certification.currentCheckpointIndex">
+          <div class="timeline-header">
+            <h3>📅 Timeline de certification</h3>
+            <button
+              class="btn-simulate"
+              (click)="simulateCheckpointCompletion()"
+              [disabled]="isProcessing || !getNextCheckpoint()"
+            >
+              <span class="btn-icon">🎯</span>
+              Simuler le prochain point
+            </button>
+          </div>
 
+          <div class="timeline-container">
+            @for (
+              checkpoint of certification.checkpoints;
+              track checkpoint.id;
+              let i = $index
+            ) {
+              <div
+                class="timeline-item"
+                [class]="getTimelineStatus(checkpoint)"
+              >
                 <div class="timeline-marker">
-                  <div class="marker-dot"></div>
+                  <div class="marker-icon">
+                    {{ getTimelineIcon(getTimelineStatus(checkpoint)) }}
+                  </div>
                   @if (i < certification.checkpoints.length - 1) {
                     <div class="marker-line"></div>
                   }
                 </div>
 
                 <div class="timeline-content">
-                  <div class="checkpoint-header">
-                    <h4>{{ checkpoint.title }}</h4>
-                    <div class="checkpoint-meta">
-                      <span class="day-badge">J+{{ checkpoint.dayOffset }}</span>
-                      <span [class]="'status-badge ' + (checkpoint.completed ? 'completed' : 'pending')">
-                        {{ checkpoint.completed ? '✅ Complété' : '⏳ En attente' }}
-                      </span>
-                    </div>
-                  </div>
+                  <div class="timeline-card">
+                    <div class="timeline-header">
+                      <div class="checkpoint-info">
+                        <h4>{{ checkpoint.title }}</h4>
+                        <div class="checkpoint-meta">
+                          <span class="day-badge"
+                            >J+{{ checkpoint.dayOffset }}</span
+                          >
+                          <span class="date-badge">
+                            {{
+                              getCheckpointDate(checkpoint.dayOffset)
+                                | date: "dd/MM/yyyy"
+                            }}
+                          </span>
+                        </div>
+                      </div>
 
-                  <p class="checkpoint-desc">{{ checkpoint.description }}</p>
+                      @if (checkpoint.completed) {
+                        <div class="checkpoint-score">
+                          <div class="score-badge">
+                            {{ checkpoint.verificationScore }}%
+                          </div>
+                          <span class="score-label">Score</span>
+                        </div>
 
-                  <div class="checkpoint-details">
-                    <div class="required-proofs">
-                      <strong>Preuves requises:</strong>
-                      @for (proof of checkpoint.requiredProofs; track proof) {
-                        <span class="proof-badge">{{
-                          proof === 'photo' ? '📸' :
-                          proof === 'gps' ? '📍' :
-                          proof === 'measurement' ? '📏' : '📝'
-                        }}</span>
+                        <!-- Indicateur Blockchain dans la timeline -->
+                        @if (checkpoint.blockchainTransactionId) {
+                          <div
+                            class="blockchain-indicator"
+                            (click)="viewBlockchainProof(checkpoint)"
+                          >
+                            <span class="blockchain-icon">⛓️</span>
+                            <span class="tooltip">Certifié sur blockchain</span>
+                          </div>
+                        }
                       }
                     </div>
 
-                    @if (checkpoint.completed) {
-                      <div class="completion-info">
-                        <span>Complété le {{ checkpoint.completedAt | date:'dd/MM/yyyy à HH:mm' }}</span>
-                        <span class="score">Score: {{ checkpoint.verificationScore }}%</span>
+                    <p class="checkpoint-description">
+                      {{ checkpoint.description }}
+                    </p>
+
+                    <div class="checkpoint-details">
+                      <div class="requirements">
+                        <strong>Preuves requises:</strong>
+                        <div class="requirements-list">
+                          @for (
+                            proof of checkpoint.requiredProofs;
+                            track proof
+                          ) {
+                            <span class="requirement-badge"
+                              >{{ getProofIcon(proof) }}
+                              {{ proof | titlecase }}</span
+                            >
+                          }
+                        </div>
                       </div>
 
-                      <button class="btn-view-proofs" (click)="viewCheckpointProofs(checkpoint)">
-                        👁️ Voir les preuves
-                      </button>
-                    } @else if (checkpoint.order === certification.currentCheckpointIndex) {
-                      <div class="current-checkpoint">
-                        <p>📍 <strong>Point de contrôle actuel</strong></p>
-                        <button class="btn-complete"
-                                [routerLink]="['/producer/certification', certification.id, 'checkpoint', checkpoint.id]">
-                          📸 Compléter ce point
-                        </button>
+                      @if (checkpoint.completed) {
+                        <div class="completion-info">
+                          <div class="info-item">
+                            <span class="info-label">Complété:</span>
+                            <span class="info-value">{{
+                              checkpoint.completedAt
+                                | date: "dd/MM/yyyy à HH:mm"
+                            }}</span>
+                          </div>
+                          @if (checkpoint.verificationNotes) {
+                            <div class="info-item">
+                              <span class="info-label">Notes:</span>
+                              <span class="info-value">{{
+                                checkpoint.verificationNotes
+                              }}</span>
+                            </div>
+                          }
+                          @if (checkpoint.blockchainTransactionId) {
+                            <div class="info-item">
+                              <span class="info-label">Blockchain:</span>
+                              <span class="info-value blockchain">
+                                {{
+                                  formatTransactionId(
+                                    checkpoint.blockchainTransactionId
+                                  )
+                                }}
+                                <button
+                                  class="btn-verify-tx"
+                                  (click)="verifyTransaction(checkpoint)"
+                                >
+                                  Vérifier
+                                </button>
+                              </span>
+                            </div>
+                          }
+                        </div>
+
+                        <div class="checkpoint-actions">
+                          <button
+                            class="btn-action"
+                            (click)="viewCheckpointProofs(checkpoint)"
+                          >
+                            <span class="btn-icon">👁️</span>
+                            Voir les preuves
+                          </button>
+                          @if (getCheckpointImage(checkpoint.id)) {
+                            <button
+                              class="btn-action"
+                              (click)="viewCheckpointImage(checkpoint.id)"
+                            >
+                              <span class="btn-icon">📸</span>
+                              Voir photo
+                            </button>
+                          }
+                          @if (checkpoint.blockchainTransactionId) {
+                            <button
+                              class="btn-action blockchain"
+                              (click)="verifyTransaction(checkpoint)"
+                            >
+                              <span class="btn-icon">⛓️</span>
+                              Vérifier sur blockchain
+                            </button>
+                          }
+                        </div>
+                      } @else if (
+                        checkpoint.order ===
+                        certification.currentCheckpointIndex
+                      ) {
+                        <div class="current-checkpoint-alert">
+                          <div class="alert-content">
+                            <span class="alert-icon">🎯</span>
+                            <div>
+                              <strong>Point de contrôle actuel</strong>
+                              <p>
+                                À compléter avant le
+                                {{
+                                  getCheckpointDate(checkpoint.dayOffset + 7)
+                                    | date: "dd/MM/yyyy"
+                                }}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            class="btn-primary"
+                            [routerLink]="[
+                              '/producer/certification',
+                              certification.id,
+                              'checkpoint',
+                              checkpoint.id,
+                            ]"
+                          >
+                            <span class="btn-icon">📸</span>
+                            Compléter maintenant
+                          </button>
+                        </div>
+                      } @else {
+                        <div class="upcoming-info">
+                          <span class="info-icon">⏳</span>
+                          <p>
+                            Prévu pour le
+                            {{
+                              getCheckpointDate(checkpoint.dayOffset)
+                                | date: "dd/MM/yyyy"
+                            }}
+                          </p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Photo initiale -->
+          @if (initialImage) {
+            <div class="initial-photo-section">
+              <h4>📸 Photo initiale du champ</h4>
+              <div class="photo-card">
+                <img
+                  [src]="initialImage"
+                  alt="Photo initiale"
+                  class="initial-photo"
+                />
+                <div class="photo-info">
+                  <p>
+                    Prise le
+                    {{
+                      certification.initialProof.timestamp
+                        | date: "dd/MM/yyyy à HH:mm"
+                    }}
+                  </p>
+                  <small
+                    >Hash:
+                    {{
+                      certification.initialProof.photoHash.substring(0, 16)
+                    }}...</small
+                  >
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Points de contrôle en grille -->
+      @if (activeTab === "checkpoints") {
+        <div class="checkpoints-grid-view">
+          <div class="grid-header">
+            <h3>
+              📋 Points de contrôle ({{ certification.completedCheckpoints }}/{{
+                certification.totalCheckpoints
+              }})
+            </h3>
+            <div class="grid-controls">
+              <button class="btn-filter" (click)="toggleFilter('all')">
+                Tous
+              </button>
+              <button class="btn-filter" (click)="toggleFilter('completed')">
+                Complétés
+              </button>
+              <button class="btn-filter" (click)="toggleFilter('pending')">
+                En attente
+              </button>
+            </div>
+          </div>
+
+          <div class="checkpoints-grid">
+            @for (
+              checkpoint of certification.checkpoints;
+              track checkpoint.id
+            ) {
+              <div
+                class="checkpoint-card"
+                [class]="getTimelineStatus(checkpoint)"
+              >
+                <div class="card-header">
+                  <div class="checkpoint-status">
+                    <div class="status-icon">
+                      {{ getTimelineIcon(getTimelineStatus(checkpoint)) }}
+                    </div>
+                    <div class="status-info">
+                      <span class="day">J+{{ checkpoint.dayOffset }}</span>
+                      <span class="date">{{
+                        getCheckpointDate(checkpoint.dayOffset) | date: "dd/MM"
+                      }}</span>
+                    </div>
+                  </div>
+
+                  @if (checkpoint.completed) {
+                    <div class="checkpoint-score">
+                      <div class="score-circle-small">
+                        {{ checkpoint.verificationScore }}%
                       </div>
-                    } @else {
-                      <div class="upcoming-checkpoint">
-                        <p>Prévu pour le {{ getCheckpointDate(checkpoint.dayOffset) | date:'dd/MM/yyyy' }}</p>
-                      </div>
+                    </div>
+                  }
+                </div>
+
+                <div class="card-body">
+                  <h4>{{ checkpoint.title }}</h4>
+                  <p class="card-description">{{ checkpoint.description }}</p>
+
+                  <div class="card-requirements">
+                    @for (proof of checkpoint.requiredProofs; track proof) {
+                      <span class="requirement-icon">{{
+                        getProofIcon(proof)
+                      }}</span>
                     }
                   </div>
+
+                  <div class="card-instructions">
+                    <p>
+                      <strong>Instructions:</strong>
+                      {{ checkpoint.instructions }}
+                    </p>
+                  </div>
+
+                  <!-- Indicateur Blockchain dans les cartes -->
+                  @if (
+                    checkpoint.completed && checkpoint.blockchainTransactionId
+                  ) {
+                    <div class="blockchain-indicator">
+                      <span class="blockchain-icon">⛓️</span>
+                      <span class="blockchain-text"
+                        >Certifié sur blockchain</span
+                      >
+                    </div>
+                  }
+                </div>
+
+                <div class="card-footer">
+                  @if (checkpoint.completed) {
+                    <div class="completed-info">
+                      <span
+                        >✅ Complété le
+                        {{ checkpoint.completedAt | date: "dd/MM" }}</span
+                      >
+                    </div>
+                    <div class="card-actions">
+                      <button
+                        class="btn-action"
+                        (click)="viewCheckpointProofs(checkpoint)"
+                      >
+                        Voir preuves
+                      </button>
+                      @if (checkpoint.blockchainTransactionId) {
+                        <button
+                          class="btn-action blockchain"
+                          (click)="verifyTransaction(checkpoint)"
+                        >
+                          ⛓️ Vérifier
+                        </button>
+                      }
+                    </div>
+                  } @else if (
+                    checkpoint.order === certification.currentCheckpointIndex
+                  ) {
+                    <div class="current-info">
+                      <span>🎯 Point actuel</span>
+                    </div>
+                    <button
+                      class="btn-primary"
+                      [routerLink]="[
+                        '/producer/certification',
+                        certification.id,
+                        'checkpoint',
+                        checkpoint.id,
+                      ]"
+                    >
+                      Compléter
+                    </button>
+                  } @else {
+                    <div class="upcoming-info">
+                      <span>⏳ À venir</span>
+                    </div>
+                    <button class="btn-secondary" disabled>Bientôt</button>
+                  }
                 </div>
               </div>
             }
@@ -169,154 +696,174 @@
         </div>
       }
 
-      <!-- Liste des checkpoints -->
-      @if (activeTab === 'checkpoints') {
-        <div class="checkpoints-grid">
-          @for (checkpoint of certification.checkpoints; track checkpoint.id) {
-            <div class="checkpoint-card"
-                 [class.completed]="checkpoint.completed"
-                 [class.current]="!checkpoint.completed && checkpoint.order === certification.currentCheckpointIndex">
-
-              <div class="checkpoint-header">
-                <div class="checkpoint-icon">
-                  @switch (checkpoint.requiredProofs[0]) {
-                    @case ('photo') { 📸 }
-                    @case ('gps') { 📍 }
-                    @case ('measurement') { 📏 }
-                    @case ('note') { 📝 }
-                    @default { 📋 }
-                  }
+      <!-- Preuves organisées -->
+      @if (activeTab === "proofs") {
+        <div class="proofs-view">
+          <div class="proofs-header">
+            <h3>📎 Preuves collectées</h3>
+            <div class="proofs-stats">
+              <div class="stat">
+                <span class="stat-label">Total:</span>
+                <span class="stat-value">{{ getTotalProofs() }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Vérifiées:</span>
+                <span class="stat-value">{{ getVerifiedProofs() }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Taux:</span>
+                <span class="stat-value">{{ getVerificationRate() }}%</span>
+              </div>
+              @if (hasBlockchainData()) {
+                <div class="stat">
+                  <span class="stat-label">Blockchain:</span>
+                  <span class="stat-value">{{ getBlockchainCoverage() }}%</span>
                 </div>
-                <div class="checkpoint-info">
-                  <h4>{{ checkpoint.title }}</h4>
-                  <p class="checkpoint-description">{{ checkpoint.description }}</p>
-                  <div class="checkpoint-meta">
-                    <span class="day-badge">J+{{ checkpoint.dayOffset }}</span>
-                    <span class="status-badge">
-                      {{ checkpoint.completed ? '✅ Complété' : '⏳ En attente' }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="checkpoint-body">
-                <div class="instructions">
-                  <strong>Instructions:</strong> {{ checkpoint.instructions }}
-                </div>
-
-                <div class="required-proofs">
-                  <strong>Preuves requises:</strong>
-                  <div class="proofs-list">
-                    @for (proof of checkpoint.requiredProofs; track proof) {
-                      <span class="proof-badge">{{
-                        proof === 'photo' ? '📸 Photo' :
-                        proof === 'gps' ? '📍 GPS' :
-                        proof === 'measurement' ? '📏 Mesure' : '📝 Note'
-                      }}</span>
-                    }
-                  </div>
-                </div>
-
-                @if (checkpoint.completed) {
-                  <div class="completion-details">
-                    <p><strong>Complété le:</strong> {{ checkpoint.completedAt | date:'dd/MM/yyyy à HH:mm' }}</p>
-                    <p><strong>Score:</strong> {{ checkpoint.verificationScore }}%</p>
-                    <p><strong>Notes:</strong> {{ checkpoint.verificationNotes || 'Aucune' }}</p>
-                  </div>
-
-                  <button class="btn-view-proofs" (click)="viewCheckpointProofs(checkpoint)">
-                    👁️ Voir les preuves
-                  </button>
-                } @else if (checkpoint.order === certification.currentCheckpointIndex) {
-                  <div class="current-actions">
-                    <p>📍 Ce point de contrôle est actif</p>
-                    <button class="btn-complete"
-                            [routerLink]="['/producer/certification', certification.id, 'checkpoint', checkpoint.id]">
-                      📸 Compléter maintenant
-                    </button>
-                  </div>
-                } @else {
-                  <div class="upcoming-info">
-                    <p>⏳ Prévu pour le {{ getCheckpointDate(checkpoint.dayOffset) | date:'dd/MM/yyyy' }}</p>
-                  </div>
-                }
-              </div>
-            </div>
-          }
-        </div>
-      }
-
-      <!-- Preuves -->
-      @if (activeTab === 'proofs') {
-        <div class="proofs-section">
-          <div class="proofs-summary">
-            <h3>📎 Résumé des preuves</h3>
-            <div class="summary-grid">
-              <div class="summary-item">
-                <span class="summary-label">Total des preuves</span>
-                <span class="summary-value">{{ getTotalProofs() }}</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">Preuves vérifiées</span>
-                <span class="summary-value">{{ getVerifiedProofs() }}</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">Taux de vérification</span>
-                <span class="summary-value">{{ getVerificationRate() }}%</span>
-              </div>
+              }
             </div>
           </div>
 
-          <div class="proofs-list">
-            <h3>📋 Liste des preuves par checkpoint</h3>
-
-            @for (checkpoint of certification.checkpoints; track checkpoint.id) {
+          <div class="proofs-timeline">
+            @for (
+              checkpoint of certification.checkpoints;
+              track checkpoint.id
+            ) {
               @if (checkpoint.proofs && checkpoint.proofs.length > 0) {
-                <div class="checkpoint-proofs">
-                  <h4>{{ checkpoint.title }} (J+{{ checkpoint.dayOffset }})</h4>
+                <div class="checkpoint-proofs-section">
+                  <div class="section-header">
+                    <div class="section-title">
+                      <h4>
+                        {{ checkpoint.title }} (J+{{ checkpoint.dayOffset }})
+                      </h4>
+                      @if (checkpoint.blockchainTransactionId) {
+                        <span class="blockchain-badge">
+                          ⛓️ Certifié blockchain
+                        </span>
+                      }
+                    </div>
+                    <span class="proofs-count"
+                      >{{ checkpoint.proofs.length }} preuve(s)</span
+                    >
+                  </div>
 
                   <div class="proofs-grid">
                     @for (proof of checkpoint.proofs; track proof.timestamp) {
-                      <div class="proof-item">
+                      <div class="proof-card" [class.verified]="proof.verified">
                         <div class="proof-header">
-                          <span class="proof-type">{{
-                            proof.type === 'photo' ? '📸 Photo' :
-                            proof.type === 'gps' ? '📍 GPS' :
-                            proof.type === 'measurement' ? '📏 Mesure' : '📝 Note'
-                          }}</span>
-                          <span [class]="'proof-status ' + (proof.verified ? 'verified' : 'pending')">
-                            {{ proof.verified ? '✅ Vérifié' : '⏳ En attente' }}
-                          </span>
+                          <div class="proof-type">
+                            <span class="type-icon">{{
+                              getProofIcon(proof.type)
+                            }}</span>
+                            <span class="type-label">{{
+                              proof.type | titlecase
+                            }}</span>
+                          </div>
+                          <div
+                            [class]="
+                              'proof-status ' +
+                              (proof.verified ? 'verified' : 'pending')
+                            "
+                          >
+                            {{
+                              proof.verified ? "✅ Vérifié" : "⏳ En attente"
+                            }}
+                          </div>
                         </div>
 
                         <div class="proof-content">
-                          @if (proof.type === 'photo' && proof.photoUrl) {
-                            <img [src]="getImageUrl(proof.photoUrl)"
-                                 alt="Photo du checkpoint"
-                                 class="proof-photo">
+                          @if (proof.type === "photo" && proof.photoUrl) {
+                            <div class="photo-proof">
+                              <img
+                                [src]="getImageUrl(proof.photoUrl)"
+                                alt="Photo preuve"
+                                class="proof-image"
+                              />
+                              @if (proof.photoHash) {
+                                <small class="hash"
+                                  >Hash:
+                                  {{
+                                    proof.photoHash.substring(0, 12)
+                                  }}...</small
+                                >
+                              }
+                            </div>
                           }
 
-                          @if (proof.type === 'gps' && proof.gps) {
-                            <p><strong>Coordonnées:</strong> {{ proof.gps.lat | number:'1.6-6' }}, {{ proof.gps.lng | number:'1.6-6' }}</p>
-                            <p><strong>Précision:</strong> {{ proof.gps.accuracy }}m</p>
+                          @if (proof.type === "gps" && proof.gps) {
+                            <div class="gps-proof">
+                              <p><strong>📍 Coordonnées:</strong></p>
+                              <p>
+                                {{ proof.gps.lat | number: "1.6-6" }},
+                                {{ proof.gps.lng | number: "1.6-6" }}
+                              </p>
+                              <p>
+                                <small
+                                  >Précision: {{ proof.gps.accuracy }}m</small
+                                >
+                              </p>
+                            </div>
                           }
 
-                          @if (proof.type === 'measurement' && proof.measurement) {
-                            <p><strong>Valeur:</strong> {{ proof.measurement.value }} {{ proof.measurement.unit }}</p>
+                          @if (
+                            proof.type === "measurement" && proof.measurement
+                          ) {
+                            <div class="measurement-proof">
+                              <p><strong>📏 Mesure:</strong></p>
+                              <p class="measurement-value">
+                                {{ proof.measurement.value }}
+                                {{ proof.measurement.unit }}
+                              </p>
+                            </div>
                           }
 
-                          @if (proof.type === 'note' && proof.note) {
-                            <p class="proof-note">{{ proof.note }}</p>
+                          @if (proof.type === "note" && proof.note) {
+                            <div class="note-proof">
+                              <p><strong>📝 Note:</strong></p>
+                              <p class="note-text">{{ proof.note }}</p>
+                            </div>
                           }
                         </div>
 
                         <div class="proof-footer">
-                          <span class="proof-date">{{ proof.timestamp | date:'dd/MM/yyyy à HH:mm' }}</span>
-                          <span class="proof-device">{{ proof.deviceInfo }}</span>
+                          <span class="proof-date">{{
+                            proof.timestamp | date: "dd/MM/yyyy à HH:mm"
+                          }}</span>
+                          @if (proof.deviceInfo) {
+                            <span class="proof-device">{{
+                              proof.deviceInfo
+                            }}</span>
+                          }
                         </div>
                       </div>
                     }
                   </div>
+
+                  <!-- Vérification Blockchain pour le checkpoint -->
+                  @if (checkpoint.blockchainTransactionId) {
+                    <div class="blockchain-verification">
+                      <h5>🔗 Vérification Blockchain</h5>
+                      <div class="blockchain-info">
+                        <p>
+                          <strong>ID de transaction:</strong>
+                          {{ checkpoint.blockchainTransactionId }}
+                        </p>
+                        <button
+                          class="btn-verify"
+                          (click)="verifyTransaction(checkpoint)"
+                        >
+                          Vérifier sur l'explorateur
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else if (checkpoint.completed) {
+                <div class="empty-proofs">
+                  <p>
+                    ❌ Aucune preuve pour {{ checkpoint.title }} (J+{{
+                      checkpoint.dayOffset
+                    }})
+                  </p>
                 </div>
               }
             }
@@ -324,94 +871,577 @@
         </div>
       }
 
-      <!-- Produit final -->
-      @if (activeTab === 'product') {
-        <div class="product-section">
-          @if (certification.finalProduct) {
-            <div class="product-card">
-              <div class="product-header">
-                <h3>📦 Produit certifié créé</h3>
-                <span class="product-status">✅ Publié</span>
+      <!-- Produit final amélioré -->
+      @if (activeTab === "product") {
+        <div class="product-tab">
+          <!-- Section publication progress -->
+          <div class="publication-section">
+            <div class="section-header">
+              <h3>📢 État de publication</h3>
+              <span
+                class="publication-status"
+                [class.published]="certification.finalProduct?.published"
+              >
+                {{
+                  certification.finalProduct?.published
+                    ? "🌐 Publié"
+                    : "📝 Non publié"
+                }}
+              </span>
+            </div>
+
+            <div class="progress-steps">
+              <div
+                class="step"
+                [class.completed]="
+                  certification.publicationStatus.productPublished
+                "
+              >
+                <div class="step-icon">📋</div>
+                <div class="step-info">
+                  <h5>Fiche produit</h5>
+                  <p>Informations de base</p>
+                </div>
               </div>
 
-              <div class="product-details">
-                <div class="product-info">
-                  <p><strong>Nom:</strong> {{ certification.finalProduct.name }}</p>
-                  <p><strong>Quantité:</strong> {{ certification.finalProduct.quantity }} {{ certification.finalProduct.unit }}</p>
-                  <p><strong>Prix:</strong> {{ certification.finalProduct.price | currency:'XOF':'symbol':'1.0-0' }}</p>
+              <div
+                class="step"
+                [class.completed]="
+                  certification.publicationStatus.harvestPublished
+                "
+              >
+                <div class="step-icon">🌱</div>
+                <div class="step-info">
+                  <h5>Informations récolte</h5>
+                  <p>Dates et quantités</p>
                 </div>
+              </div>
 
-                <div class="product-actions">
-                  <button class="btn-primary" (click)="viewProduct()">👁️ Voir le produit</button>
-                  <button class="btn-secondary" (click)="editProduct()">✏️ Modifier</button>
+              <div
+                class="step"
+                [class.completed]="
+                  certification.publicationStatus.certificationsPublished
+                "
+              >
+                <div class="step-icon">🏆</div>
+                <div class="step-info">
+                  <h5>Certifications</h5>
+                  <p>Badges et scores</p>
                 </div>
               </div>
             </div>
-          } @else {
-            <div class="no-product">
-              <div class="empty-icon">📦</div>
-              <h4>Aucun produit créé</h4>
-              <p>Un produit certifié sera automatiquement créé à la fin de la certification</p>
 
-              @if (certification.status === 'completed' || certification.status === 'verified') {
-                <button class="btn-primary" (click)="createProduct()">
-                  🚀 Créer un produit certifié
+            <!-- Boutons d'action -->
+            <div class="publication-actions">
+              @if (!certification.finalProduct?.published) {
+                <button class="btn-publish" (click)="openPublishModal()">
+                  🌐 Publier le produit
                 </button>
+              } @else {
+                <div class="published-actions">
+                  <button class="btn-action" (click)="openPublishModal()">
+                    ✏️ Modifier
+                  </button>
+                  <button class="btn-action" (click)="viewProduct()">
+                    👁️ Voir sur le marché
+                  </button>
+                  <button
+                    class="btn-action"
+                    (click)="shareProductVerification()"
+                  >
+                    🔗 Partager la vérification
+                  </button>
+                </div>
               }
             </div>
-          }
+          </div>
 
-          <!-- Informations de certification -->
-          <div class="certification-info">
-            <h4>🏆 Informations de certification</h4>
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">Statut de vérification</span>
-                <span class="info-value">{{
-                  certification.verificationStatus === 'auto_verified' ? '✅ Auto-vérifié' :
-                  certification.verificationStatus === 'manually_verified' ? '✅ Vérifié manuellement' :
-                  certification.verificationStatus === 'rejected' ? '❌ Rejeté' : '⏳ En attente'
-                }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Date de vérification</span>
-                <span class="info-value">{{
-                  certification.verifiedAt ? (certification.verifiedAt | date:'dd/MM/yyyy') : 'Non vérifié'
-                }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Vérificateur</span>
-                <span class="info-value">{{ certification.verifierId || 'Non attribué' }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">QR Code</span>
-                <span class="info-value">
-                  <button class="btn-qr" (click)="viewQRCode()">📱 Voir QR Code</button>
-                </span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Certificat</span>
-                <span class="info-value">
-                  <button class="btn-certificate" (click)="viewCertificate()">📄 Voir certificat</button>
-                </span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Lien de vérification</span>
-                <span class="info-value">
-                  <button class="btn-link" (click)="copyVerificationLink()">🔗 Copier le lien</button>
-                </span>
+          <!-- Section Vérification Produit -->
+          @if (certification.finalProduct?.published) {
+            <div class="product-verification">
+              <h4>🔗 Vérification du produit</h4>
+              <div class="verification-info">
+                <p>
+                  <strong>Lien de vérification:</strong>
+                  {{ getVerificationUrl() }}
+                </p>
+                <div class="verification-actions">
+                  <button class="btn-action" (click)="copyVerificationLink()">
+                    📋 Copier le lien
+                  </button>
+                  <button class="btn-action" (click)="showQRCodeModal()">
+                    📱 Voir QR Code
+                  </button>
+                  <button class="btn-action" (click)="downloadCertificate()">
+                    📄 Télécharger certificat
+                  </button>
+                </div>
               </div>
             </div>
+          }
+        </div>
+      }
+
+      <!-- Analytics -->
+      @if (activeTab === "analytics") {
+        <div class="analytics-view">
+          <h3>📊 Analytics de certification</h3>
+
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <h4>📈 Progression temporelle</h4>
+              <div class="timeline-chart">
+                <div class="chart-placeholder">
+                  <div
+                    class="chart-bar"
+                    [style.width.%]="getProgressPercentage(certification)"
+                  ></div>
+                </div>
+                <div class="chart-labels">
+                  <span>Début</span>
+                  <span>Aujourd'hui</span>
+                  <span>Fin estimée</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <h4>🏆 Scores par checkpoint</h4>
+              <div class="scores-chart">
+                @for (
+                  checkpoint of certification.checkpoints;
+                  track checkpoint.id
+                ) {
+                  @if (checkpoint.completed) {
+                    <div class="score-item">
+                      <span class="score-label">{{ checkpoint.title }}</span>
+                      <div class="score-bar">
+                        <div
+                          class="score-fill"
+                          [style.width.%]="checkpoint.verificationScore"
+                        ></div>
+                      </div>
+                      <span class="score-value"
+                        >{{ checkpoint.verificationScore }}%</span
+                      >
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <h4>📎 Types de preuves</h4>
+              <div class="proof-types-chart">
+                <div class="proof-type-item">
+                  <span class="type-label">📸 Photos</span>
+                  <span class="type-count">{{ getProofCount("photo") }}</span>
+                </div>
+                <div class="proof-type-item">
+                  <span class="type-label">📍 GPS</span>
+                  <span class="type-count">{{ getProofCount("gps") }}</span>
+                </div>
+                <div class="proof-type-item">
+                  <span class="type-label">📏 Mesures</span>
+                  <span class="type-count">{{
+                    getProofCount("measurement")
+                  }}</span>
+                </div>
+                <div class="proof-type-item">
+                  <span class="type-label">📝 Notes</span>
+                  <span class="type-count">{{ getProofCount("note") }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="analytics-table">
+            <h4>📋 Détails des checkpoints</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>Checkpoint</th>
+                  <th>Date</th>
+                  <th>Statut</th>
+                  <th>Score</th>
+                  <th>Preuves</th>
+                  <th>Blockchain</th>
+                  <th>Temps écoulé</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (
+                  checkpoint of certification.checkpoints;
+                  track checkpoint.id
+                ) {
+                  <tr>
+                    <td>{{ checkpoint.title }}</td>
+                    <td>
+                      {{
+                        getCheckpointDate(checkpoint.dayOffset)
+                          | date: "dd/MM/yyyy"
+                      }}
+                    </td>
+                    <td>
+                      <span
+                        [class]="
+                          'status-badge ' +
+                          (checkpoint.completed ? 'completed' : 'pending')
+                        "
+                      >
+                        {{
+                          checkpoint.completed ? "✅ Complété" : "⏳ En attente"
+                        }}
+                      </span>
+                    </td>
+                    <td>{{ checkpoint.verificationScore || 0 }}%</td>
+                    <td>{{ checkpoint.proofs.length || 0 }}</td>
+                    <td>
+                      @if (checkpoint.blockchainTransactionId) {
+                        <span class="blockchain-badge small">⛓️ Certifié</span>
+                      } @else {
+                        <span class="blockchain-badge small inactive"
+                          >⛓️ Non</span
+                        >
+                      }
+                    </td>
+                    <td>{{ calculateTimeElapsed(checkpoint) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           </div>
         </div>
       }
     </div>
   }
 
-  <!-- Message d'erreur -->
+  <!-- ========== MODALS ========== -->
+
+  <!-- Modal de publication -->
+  @if (showPublishModal && certification) {
+    <div class="modal-overlay" (click)="closePublishModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>📢 Publier le produit</h2>
+          <button class="modal-close" (click)="closePublishModal()">×</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="publish-summary">
+            <h4>{{ certification.productName }}</h4>
+            <p>Configurez les informations du produit à publier</p>
+          </div>
+
+          <div class="publish-form">
+            <div class="form-section">
+              <h5>Informations produit</h5>
+              <div class="form-group">
+                <label>Prix (FCFA)</label>
+                <input
+                  type="number"
+                  [(ngModel)]="publishPrice"
+                  placeholder="0"
+                />
+              </div>
+              <div class="form-group">
+                <label>Quantité disponible</label>
+                <div class="quantity-input">
+                  <input
+                    type="number"
+                    [(ngModel)]="publishQuantity"
+                    placeholder="0"
+                  />
+                  <select [(ngModel)]="publishUnit">
+                    <option value="kg">kg</option>
+                    <option value="unit">unité</option>
+                    <option value="l">litre</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Description</label>
+                <textarea
+                  [(ngModel)]="publishDescription"
+                  rows="3"
+                  placeholder="Description du produit..."
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h5>Points de contrôle à inclure</h5>
+              <div class="checkpoints-selection">
+                @for (
+                  checkpoint of certification.checkpoints;
+                  track checkpoint.id
+                ) {
+                  @if (checkpoint.completed) {
+                    <div class="checkpoint-option">
+                      <div class="option-header">
+                        <label class="checkbox-label">
+                          <input
+                            type="checkbox"
+                            [checked]="
+                              selectedCheckpoints[checkpoint.id]?.selected
+                            "
+                            (change)="toggleCheckpointSelection(checkpoint.id)"
+                          />
+                          <span
+                            >{{ checkpoint.title }} (J+{{
+                              checkpoint.dayOffset
+                            }})</span
+                          >
+                        </label>
+                        <span class="checkpoint-score"
+                          >{{ checkpoint.verificationScore }}%</span
+                        >
+                        @if (checkpoint.blockchainTransactionId) {
+                          <span class="blockchain-indicator-small">⛓️</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-secondary" (click)="closePublishModal()">
+            Annuler
+          </button>
+          <button
+            class="btn-primary"
+            [disabled]="!hasSelectedCheckpoints() || isProcessing"
+            (click)="publishProduct()"
+          >
+            @if (isProcessing) {
+              <span class="spinner"></span> Publication...
+            } @else {
+              📢 Publier le produit
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal certification complète -->
+  @if (showCompletionModal && certification) {
+    <div
+      class="modal-overlay completion-overlay"
+      (click)="closeCompletionModal()"
+    >
+      <div
+        class="modal-content completion-modal"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="completion-header">
+          <div class="celebration-icon">🎉</div>
+          <h2>Certification Complète !</h2>
+          <p class="completion-subtitle">
+            Félicitations ! Vous avez terminé tous les points de contrôle
+          </p>
+        </div>
+
+        <div class="completion-body">
+          <div class="completion-stats">
+            <div class="stat-item">
+              <div class="stat-icon">📋</div>
+              <div class="stat-info">
+                <div class="stat-value">
+                  {{ certification.completedCheckpoints }}/{{
+                    certification.totalCheckpoints
+                  }}
+                </div>
+                <div class="stat-label">Points terminés</div>
+              </div>
+            </div>
+
+            <div class="stat-item">
+              <div class="stat-icon">🏆</div>
+              <div class="stat-info">
+                <div class="stat-value">
+                  {{ certification.validationScore }}%
+                </div>
+                <div class="stat-label">Score final</div>
+              </div>
+            </div>
+
+            <div class="stat-item">
+              <div class="stat-icon">✅</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ getVerificationStatusText() }}</div>
+                <div class="stat-label">Vérification</div>
+              </div>
+            </div>
+
+            @if (hasBlockchainData()) {
+              <div class="stat-item">
+                <div class="stat-icon">⛓️</div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ getBlockchainCoverage() }}%</div>
+                  <div class="stat-label">Blockchain</div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="completion-message">
+            <p>
+              Votre certification est maintenant terminée et prête à être
+              publiée sur le marché.
+            </p>
+            @if (hasBlockchainData()) {
+              <p class="blockchain-message">
+                ⛓️ <strong>Félicitations !</strong> Tous vos checkpoints sont
+                certifiés sur blockchain. Vos produits sont maintenant traçables
+                et immuables.
+              </p>
+            }
+            <p class="highlight">
+              📦 Transformez votre certification en produit publié pour
+              commencer à vendre !
+            </p>
+          </div>
+        </div>
+
+        <div class="completion-actions">
+          <button class="btn-secondary" (click)="closeCompletionModal()">
+            <span class="btn-icon">👁️</span>
+            Voir les détails
+          </button>
+          <button class="btn-primary" (click)="openPublishFromCompletion()">
+            <span class="btn-icon">🚀</span>
+            Publier le produit
+          </button>
+          @if (hasBlockchainData()) {
+            <button
+              class="btn-action blockchain"
+              (click)="downloadBlockchainReport()"
+            >
+              <span class="btn-icon">⛓️</span>
+              Rapport blockchain
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal de vérification unifiée -->
+  @if (showVerificationModal) {
+    <div class="verification-modal-overlay" (click)="closeVerificationModal()">
+      <div class="verification-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>🔗 Vérification de certification</h2>
+          <button class="modal-close" (click)="closeVerificationModal()">
+            ×
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <!-- QR Code -->
+          <div class="qr-section">
+            <img [src]="generateQRCodeData()" alt="QR Code de vérification" />
+            <div class="qr-info">
+              <p><strong>ID:</strong> {{ certification?.id }}</p>
+              <p><strong>Produit:</strong> {{ certification?.productName }}</p>
+              <p><strong>URL:</strong> {{ getVerificationUrl() }}</p>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="verification-actions">
+            <button class="btn-action" (click)="copyVerificationLink()">
+              📋 Copier le lien
+            </button>
+            <button class="btn-action" (click)="shareVerification()">
+              📤 Partager
+            </button>
+            <button class="btn-action" (click)="downloadVerificationPackage()">
+              📦 Télécharger package
+            </button>
+            <button class="btn-action" (click)="downloadCertificate()">
+              📄 Certificat
+            </button>
+          </div>
+
+          <!-- Blockchain info -->
+          @if (hasBlockchainData()) {
+            <div class="blockchain-section">
+              <h3>🔗 Traçabilité Blockchain</h3>
+              <div class="blockchain-summary">
+                <p>
+                  <strong
+                    >{{ getBlockchainCoverage() }}% des checkpoints</strong
+                  >
+                  sont certifiés sur blockchain
+                </p>
+                <p>
+                  {{ getBlockchainTransactionCount() }} transactions
+                  enregistrées
+                </p>
+              </div>
+              <div class="blockchain-timeline">
+                @for (
+                  checkpoint of certification?.checkpoints;
+                  track checkpoint.id
+                ) {
+                  @if (checkpoint.completed) {
+                    <div class="blockchain-item">
+                      <div class="blockchain-marker">
+                        @if (checkpoint.blockchainTransactionId) {
+                          <span class="marker-icon verified">⛓️</span>
+                        } @else {
+                          <span class="marker-icon">⏳</span>
+                        }
+                      </div>
+                      <div class="blockchain-content">
+                        <h5>{{ checkpoint.title }}</h5>
+                        <div class="blockchain-details">
+                          @if (checkpoint.blockchainTransactionId) {
+                            <div class="tx-info">
+                              <span class="tx-id">{{
+                                formatTransactionId(
+                                  checkpoint.blockchainTransactionId
+                                )
+                              }}</span>
+                              <button
+                                class="btn-small"
+                                (click)="verifyTransaction(checkpoint)"
+                              >
+                                Vérifier
+                              </button>
+                            </div>
+                          } @else {
+                            <span class="no-blockchain"
+                              >⚠️ Non enregistré sur blockchain</span
+                            >
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Messages d'erreur -->
   @if (errorMessage) {
     <div class="error-message">
-      ❌ {{ errorMessage }}
+      <div class="message-icon">❌</div>
+      <div class="message-content">
+        <strong>Erreur</strong>
+        <p>{{ errorMessage }}</p>
+      </div>
     </div>
   }
 </div>

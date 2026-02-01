@@ -400,9 +400,6 @@ export class ProducerDashboardComponent implements OnInit, OnDestroy {
       const currentUser = this.firebaseService.userData;
       if (!currentUser) return;
 
-      // Notifications réelles (vous devrez implémenter un service de notifications)
-      // Pour l'instant, chargeons des notifications basées sur les ventes récentes
-
       this.notifications = [
         {
           id: 1,

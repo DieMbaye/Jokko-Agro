@@ -77,9 +77,6 @@
   </div>
 </header>
 
-
-
-    <!-- Stats Grid -->
     <!-- Stats Grid -->
 <div *ngIf="!isDashboardLoading; else loadingStats">
   <div class="stats-grid">
@@ -316,7 +313,7 @@
     <!-- Historique des messages -->
     <div *ngFor="let msg of chatHistory" class="message" [class.user]="msg.isUser" [class.bot]="!msg.isUser">
       <div class="message-avatar" *ngIf="!msg.isUser">🤖</div>
-      
+
       <div class="message-content">
         <div class="message-bubble">
           <div class="message-text" [innerHTML]="msg.text"></div>
@@ -331,7 +328,7 @@
           <span *ngIf="msg.isUser" class="message-status">✓</span>
         </div>
       </div>
-      
+
       <div class="message-avatar user-avatar" *ngIf="msg.isUser">
         {{userInitials}}
       </div>
@@ -368,7 +365,7 @@
     </button>
   </div>
 
- 
+
 </div>
 
 
@@ -376,8 +373,8 @@
   <!-- Input -->
  <div class="chatbot-input">
   <div class="input-container">
-    <input 
-      type="text" 
+    <input
+      type="text"
       [(ngModel)]="currentMessage"
       placeholder="Écrivez ou parlez (🎤) en français..."
       (keyup.enter)="sendMessage()"
