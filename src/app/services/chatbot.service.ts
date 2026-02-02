@@ -20,7 +20,7 @@ export class ChatbotService {
     }
 
     /* =============================
-       2️⃣ COMMENT FAIRE UNE COMMANDE
+       2️⃣ COMMENT FAIRE UNE COMMANDEot
     ============================= */
     if (
       q.includes('comment faire une commande') ||

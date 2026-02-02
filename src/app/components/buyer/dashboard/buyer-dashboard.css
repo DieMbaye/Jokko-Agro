@@ -1353,3 +1353,78 @@ body {
 
   box-shadow: 0 0 0 2px #ffffff; /* contour blanc */
 }
+.voice-control {
+  background: #f0f0f0;
+  border: none;
+  border-radius: 50%;
+  padding: 6px;
+  margin-left: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.1s ease;
+}
+
+.voice-control:hover {
+  transform: scale(1.1);
+}
+
+.voice-control.pause {
+  background: #ff9800;
+  color: #fff;
+}
+
+.voice-control.resume {
+  background: #4caf50;
+  color: #fff;
+}
+
+.voice-control.stop {
+  background: #f44336;
+  color: #fff;
+}
+
+.mic-button[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.audio-wave {
+  flex: 1;                /* PREND TOUTE LA LARGEUR */
+  height: 42px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 21px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+.audio-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(
+    90deg,
+    #4caf50,
+    #66bb6a,
+    #81c784
+  );
+  transition: width 0.08s linear;
+}
+/* 🌊 WAVEFORM WHATSAPP */
+.waveform {
+  flex: 1;
+  height: 42px;
+  background: #f0f0f0;
+  border-radius: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0 10px;
+}
+
+/* BARRES */
+
+.wave-bar {
+  width: 3px;
+  background: #4caf50;
+  border-radius: 2px;
+  transition: height 0.08s linear;
+}

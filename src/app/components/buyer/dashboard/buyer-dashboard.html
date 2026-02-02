@@ -53,13 +53,13 @@
           (keyup.enter)="onSearch()"
         />
 
-        <button
+        <!-- <button
           class="voice-btn"
           (click)="toggleVoiceSearch()"
           [class.listening]="isListening"
         >
           🎤
-        </button>
+        </button> -->
 
         <button class="search-btn" (click)="onSearch()">
           🔍
@@ -373,13 +373,26 @@
 
 
 
-  <!-- Input -->
- <div class="chatbot-input">
+<!-- ================= INPUT CHATBOT  ================= -->
+<div class="chatbot-input">
   <div class="input-container">
-    <input 
-      type="text" 
+
+    <!-- 📊 VISUALISATION AUDIO (WHATSAPP STYLE) -->
+<div *ngIf="isListening" class="waveform">
+  <span
+    *ngFor="let h of waveformBars"
+    class="wave-bar"
+    [style.height.%]="h"
+  ></span>
+</div>
+
+
+    <!-- 📝 INPUT TEXTE (masqué quand on parle) -->
+    <input
+      *ngIf="!isListening"
+      type="text"
       [(ngModel)]="currentMessage"
-      placeholder="Écrivez ou parlez (🎤) en français..."
+      placeholder="Écrivez ou parlez (🎤)..."
       (keyup.enter)="sendMessage()"
       [disabled]="isProcessing"
       #chatInput
@@ -396,23 +409,60 @@
       🎤
     </button>
 
+    <!-- ⏸️ PAUSE -->
+    <button
+      *ngIf="isSpeaking && !isSpeechPaused"
+      class="voice-control pause"
+      (click)="pauseSpeech()"
+      title="Pause"
+      type="button"
+    >
+      ⏸
+    </button>
+
+    <!-- ▶️ REPRENDRE -->
+    <button
+      *ngIf="isSpeaking && isSpeechPaused"
+      class="voice-control resume"
+      (click)="resumeSpeech()"
+      title="Reprendre"
+      type="button"
+    >
+      ▶
+    </button>
+
+    <!-- ⏹️ STOP -->
+    <button
+      *ngIf="isSpeaking"
+      class="voice-control stop"
+      (click)="stopSpeech()"
+      title="Arrêter"
+      type="button"
+    >
+      ■
+    </button>
+
     <!-- 📤 ENVOYER -->
     <button
       class="send-button"
       (click)="sendMessage()"
       [disabled]="!currentMessage.trim() || isProcessing"
+      type="button"
     >
       <svg *ngIf="!isProcessing" width="18" height="18" viewBox="0 0 24 24">
         <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z"/>
       </svg>
       <div *ngIf="isProcessing" class="loading-spinner"></div>
     </button>
+
   </div>
 
   <div class="input-hint">
-    🎙️ Vous pouvez parler en français ou écrire votre question
+    🎙️ Parlez pour voir l’onde vocale • écrivez pour envoyer un message
   </div>
 </div>
+
+
 
 </div>
 

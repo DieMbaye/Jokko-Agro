@@ -90,6 +90,8 @@ export class BuyerDashboardComponent
   // Variables pour la recherche vocale
   isListening = false;
   isSpeaking = false;
+  isSpeechPaused = false;
+  currentUtterance: SpeechSynthesisUtterance | null = null;
   isVoiceInput = false;
   isDashboardLoading = true;
   isVoiceSupported = true;
@@ -97,6 +99,14 @@ export class BuyerDashboardComponent
   voiceSearchResults: RecommendedProduct[] = [];
   lastVoiceCommand = '';
   showVoiceHelp = true;
+  audioContext!: AudioContext;
+  analyser!: AnalyserNode;
+  microphoneStream!: MediaStream;
+  dataArray!: Uint8Array;
+  animationFrameId: number | null = null;
+  audioLevel = 0; // 0 → 100
+  waveformBars: number[] = new Array(20).fill(5);
+
 
   // 🔔 Notifications
   notifications: AppNotification[] = [];
@@ -153,6 +163,7 @@ export class BuyerDashboardComponent
   priceEstimationProduct = '';
   compareProduct = '';
   availableProductSuggestions: string[] = [];
+Math: any;
 
   constructor(
     private authService: AuthService,
@@ -162,21 +173,22 @@ export class BuyerDashboardComponent
   ) {}
 
   async ngOnInit() {
-    this.userData = this.authService.getUserData();
-    this.userName = this.userData?.fullName || 'Utilisateur';
-    this.userInitials = this.getInitials(this.userName);
+  // 🎤 TOUJOURS EN PREMIER
+  this.initSpeechRecognition();
 
-    this.notifSub = this.notificationService
-      .listenUserNotifications()
-      .subscribe((notifs) => {
-        this.notifications = notifs;
-        this.unreadCount = notifs.filter((n) => !n.read).length;
-      });
+  this.userData = this.authService.getUserData();
+  this.userName = this.userData?.fullName || 'Utilisateur';
+  this.userInitials = this.getInitials(this.userName);
 
-    await this.loadDashboardData();
-    this.initVoiceRecognition();
-    this.initSpeechRecognition();
-  }
+  this.notifSub = this.notificationService
+    .listenUserNotifications()
+    .subscribe((notifs) => {
+      this.notifications = notifs;
+      this.unreadCount = notifs.filter((n) => !n.read).length;
+    });
+
+  await this.loadDashboardData();
+}
 
   ngAfterViewChecked() {
     if (this.shouldScroll) {
@@ -248,46 +260,132 @@ export class BuyerDashboardComponent
     }
   }
 
-  sendMessage() {
-    if (!this.currentMessage.trim() || this.isProcessing) return;
+ sendMessage() {
+  if (!this.currentMessage.trim() || this.isProcessing) return;
 
-    const userInput = this.currentMessage.trim();
-    this.currentMessage = '';
+  const userInput = this.currentMessage.trim();
+  this.currentMessage = '';
 
-    this.isProcessing = true;
+  this.isProcessing = true;
 
-    // afficher message utilisateur
-    this.addMessage(userInput, true);
+  // ➕ Afficher le message utilisateur
+  this.addMessage(userInput, true);
 
-    let finalQuestion = userInput;
+  let finalQuestion = userInput;
 
-    // 🔥 INTELLIGENCE CONTEXTUELLE
-    if (this.pendingIntent === 'estimate') {
-      finalQuestion = `estimation ${userInput}`;
-      this.pendingIntent = null;
-    }
-
-    if (this.pendingIntent === 'compare') {
-      finalQuestion = `comparer producteurs ${userInput}`;
-      this.pendingIntent = null;
-    }
-
-    this.processQuestion(finalQuestion)
-      .then((response) => {
-        this.addMessage(response, false);
-
-        if (this.isVoiceInput) {
-          this.speak(response);
-        }
-      })
-      .catch(() => {
-        this.addMessage('❌ Une erreur est survenue.', false);
-      })
-      .finally(() => {
-        this.isProcessing = false;
-        this.isVoiceInput = false;
-      });
+  // 🔥 Gestion du contexte multi-étapes
+  if (this.pendingIntent === 'estimate') {
+    finalQuestion = `estimation ${userInput}`;
+    this.pendingIntent = null;
   }
+
+  if (this.pendingIntent === 'compare') {
+    finalQuestion = `comparer producteurs ${userInput}`;
+    this.pendingIntent = null;
+  }
+
+  // 🤖 Traitement IA
+  this.processQuestion(finalQuestion)
+    .then((response) => {
+      // ➕ Afficher la réponse du bot
+      this.addMessage(response, false);
+
+      // 🔊 Lecture vocale UNIQUEMENT si la question vient du micro
+      if (this.isVoiceInput) {
+        // petit délai pour éviter conflit DOM / Speech API
+        setTimeout(() => {
+          this.speak(response);
+        }, 300);
+      }
+    })
+    .catch(() => {
+      this.addMessage('❌ Une erreur est survenue.', false);
+    })
+    .finally(() => {
+      this.isProcessing = false;
+      // ⚠️ NE PAS remettre isVoiceInput à false ici
+      // C’est speak().onend qui s’en charge
+    });
+}
+async startAudioVisualization() {
+  this.audioContext = new AudioContext();
+
+  this.microphoneStream = await navigator.mediaDevices.getUserMedia({
+    audio: true,
+  });
+
+  const source = this.audioContext.createMediaStreamSource(
+    this.microphoneStream,
+  );
+
+  this.analyser = this.audioContext.createAnalyser();
+  this.analyser.fftSize = 256;
+
+  const bufferLength = this.analyser.frequencyBinCount;
+
+  // ✅ Uint8Array NON générique (compatible TS)
+  this.dataArray = new Uint8Array(bufferLength);
+
+  source.connect(this.analyser);
+
+  this.animateAudio();
+}
+
+
+animateAudio() {
+  if (!this.analyser || !this.dataArray) return;
+
+  this.analyser.getByteFrequencyData(this.dataArray);
+
+  const barsCount = this.waveformBars.length;
+  const step = Math.floor(this.dataArray.length / barsCount);
+
+  const newBars: number[] = [];
+
+  for (let i = 0; i < barsCount; i++) {
+    let sum = 0;
+
+    for (let j = 0; j < step; j++) {
+      sum += this.dataArray[i * step + j];
+    }
+
+    const avg = sum / step;
+
+    // 🔥 amplification + clamp
+    const height = Math.min(100, Math.max(5, avg * 1.8));
+
+    newBars.push(height);
+  }
+
+  this.waveformBars = newBars;
+
+  this.animationFrameId = requestAnimationFrame(() =>
+    this.animateAudio(),
+  );
+}
+
+
+
+
+stopAudioVisualization() {
+  if (this.animationFrameId !== null) {
+    cancelAnimationFrame(this.animationFrameId);
+    this.animationFrameId = null;
+  }
+
+  this.audioLevel = 0;
+
+  if (this.microphoneStream) {
+    this.microphoneStream.getTracks().forEach((track) => track.stop());
+  }
+
+  if (this.audioContext) {
+    this.audioContext.close();
+  }
+}
+
+
+
 
   askQuestion(question: string) {
     this.currentMessage = question;
@@ -320,84 +418,136 @@ export class BuyerDashboardComponent
     );
   }
 
-  initSpeechRecognition() {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
+initSpeechRecognition() {
+  const SpeechRecognition =
+    (window as any).SpeechRecognition ||
+    (window as any).webkitSpeechRecognition;
 
-    if (!SpeechRecognition) {
-      console.warn('Reconnaissance vocale non supportée');
-      return;
-    }
-
-    this.recognition = new SpeechRecognition();
-    this.recognition.lang = 'fr-FR';
-    this.recognition.continuous = false;
-    this.recognition.interimResults = false;
-
-    this.recognition.onstart = () => {
-      this.isListening = true;
-    };
-
-    this.recognition.onend = () => {
-      this.isListening = false;
-    };
-
-    this.recognition.onerror = () => {
-      this.isListening = false;
-    };
-
-    this.recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      this.currentMessage = transcript;
-
-      setTimeout(() => {
-        this.sendMessage();
-      }, 300);
-    };
+  if (!SpeechRecognition) {
+    console.error('🎤 SpeechRecognition non supporté par ce navigateur');
+    return;
   }
 
-  startVoiceInput() {
-    if (!this.recognition) {
-      alert("⚠️ La reconnaissance vocale n'est pas supportée.");
-      return;
-    }
+  this.recognition = new SpeechRecognition();
 
-    window.speechSynthesis.cancel();
+  this.recognition.lang = 'fr-FR';
+  this.recognition.continuous = false;
+  this.recognition.interimResults = false;
+
+  // 🎤 MICRO DÉMARRE
+  this.recognition.onstart = () => {
+    console.log('🎤 Micro actif');
+    this.isListening = true;
+  };
+
+  // 🛑 MICRO S’ARRÊTE
+  this.recognition.onend = () => {
+    console.log('🛑 Micro arrêté');
+    this.isListening = false;
+
+    // 🔴 arrêter l’animation audio (WhatsApp style)
+    this.stopAudioVisualization();
+  };
+
+  // ❌ ERREUR MICRO
+  this.recognition.onerror = (event: any) => {
+    console.error('🎤 Erreur reconnaissance vocale:', event.error);
+    this.isListening = false;
+
+    this.stopAudioVisualization();
+  };
+
+  // 🗣️ TEXTE RECONNU
+  this.recognition.onresult = (event: any) => {
+    const transcript = event.results[0][0].transcript;
+    console.log('🗣️ Reconnu :', transcript);
+
+    this.currentMessage = transcript;
+
+    // ⏱️ petit délai UX
+    setTimeout(() => {
+      this.sendMessage();
+    }, 300);
+  };
+}
+
+
+async startVoiceInput() {
+  if (!this.recognition) return;
+  if (this.isListening) return;
+
+  // 🔥 flag micro
+  this.isVoiceInput = true;
+
+  // 🔥 DÉMARRER VISUALISATION AUDIO
+  await this.startAudioVisualization();
+
+  try {
+    this.recognition.start();
+    this.isListening = true;
+  } catch (error) {
+    this.stopAudioVisualization();
+    this.isListening = false;
+    this.isVoiceInput = false;
+  }
+}
+
+
+
+
+ speak(text: string) {
+  if (!('speechSynthesis' in window)) return;
+
+  // Stop toute lecture précédente
+  window.speechSynthesis.cancel();
+
+  const cleanText = this.cleanTextForSpeech(text);
+  if (!cleanText) return;
+
+  const utterance = new SpeechSynthesisUtterance(cleanText);
+  utterance.lang = 'fr-FR';
+  utterance.rate = 0.95;
+  utterance.pitch = 1;
+
+  this.currentUtterance = utterance;
+  this.isSpeaking = true;
+  this.isSpeechPaused = false;
+
+  utterance.onend = () => {
     this.isSpeaking = false;
-    this.isVoiceInput = true;
+    this.isSpeechPaused = false;
+    this.currentUtterance = null;
+  };
 
-    try {
-      this.recognition.start();
-      this.isListening = true;
-    } catch (e) {
-      console.error('Erreur micro', e);
-      this.isListening = false;
-      this.isVoiceInput = false;
-    }
+  utterance.onerror = () => {
+    this.isSpeaking = false;
+    this.isSpeechPaused = false;
+    this.currentUtterance = null;
+  };
+
+  window.speechSynthesis.speak(utterance);
+}
+
+pauseSpeech() {
+  if (this.isSpeaking && !this.isSpeechPaused) {
+    window.speechSynthesis.pause();
+    this.isSpeechPaused = true;
   }
+}
 
-  speak(text: string) {
-    if (!this.isVoiceInput) return;
-    if (!('speechSynthesis' in window)) return;
-
-    window.speechSynthesis.cancel();
-
-    const cleanText = this.cleanTextForSpeech(text);
-    if (!cleanText) return;
-
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = 'fr-FR';
-    utterance.rate = 0.95;
-
-    this.isSpeaking = true;
-
-    utterance.onend = () => {
-      this.isSpeaking = false;
-    };
-
-    window.speechSynthesis.speak(utterance);
+resumeSpeech() {
+  if (this.isSpeaking && this.isSpeechPaused) {
+    window.speechSynthesis.resume();
+    this.isSpeechPaused = false;
   }
+}
+
+stopSpeech() {
+  window.speechSynthesis.cancel();
+  this.isSpeaking = false;
+  this.isSpeechPaused = false;
+  this.currentUtterance = null;
+}
 
   private async processQuestion(question: string): Promise<string> {
     this.addMessage('', false, true);
