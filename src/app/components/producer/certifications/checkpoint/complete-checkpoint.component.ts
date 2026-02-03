@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CertificationService } from 'src/app/services/certification.service';
 import { Certification } from 'src/app/interfaces/certification.interfaces';
-import { BlockchainService } from 'src/app/services/blockchain.service';
+import { BlockchainService } from 'src/app/blockchain/services/blockchain.service';
 
 @Component({
   selector: 'app-complete-checkpoint',
@@ -146,74 +146,71 @@ export class CompleteCheckpointComponent implements OnInit {
     return true;
   }
 
-  async submitCheckpoint() {
-    if (!this.isFormValid() || !this.certification || !this.checkpoint) {
-      return;
-    }
+// complete-checkpoint.component.ts - MISE À JOUR
+async submitCheckpoint() {
+  if (!this.isFormValid() || !this.certification || !this.checkpoint) {
+    return;
+  }
 
-    this.isSubmitting = true;
-    this.errorMessage = '';
+  this.isSubmitting = true;
+  this.errorMessage = '';
 
-    try {
-      console.log('Soumission checkpoint...');
+  try {
+    // 1. Utiliser le service blockchain pour créer une preuve
+    let blockchainProof = null;
 
-      // 1. Compléter le checkpoint via le service de certification
-      const updatedCertification = await this.certificationService.completeCheckpoint(
-        this.certificationId,
-        this.checkpointId,
+    if (this.photoFile) {
+      blockchainProof = await this.blockchainService.createCertificationProof(
+        this.certification.id,
+        this.photoFile,
+        'CHECKPOINT',
+        this.checkpoint.id,
+        this.checkpoint.order,
         {
-          photo: this.photoFile || undefined,
-          measurement:
-            this.measurementValue !== null
-              ? {
-                  value: this.measurementValue,
-                  unit: this.checkpoint.measurementUnit || 'unit',
-                }
-              : undefined,
-          note: this.noteText.trim() || undefined,
+          lat: this.certification.location.lat,
+          lng: this.certification.location.lng
         }
       );
 
-      // 2. Enregistrer la preuve sur la blockchain (optionnel)
-      let blockchainRecord = null;
-      if (this.photoFile && this.blockchainService) {
-        try {
-          blockchainRecord = await this.blockchainService.registerProofOnBlockchain(
-            await this.blockchainService.createCanonicalObject({
-              productId: this.certification.id,
-              photoFile: this.photoFile,
-              lat: this.certification.location.lat,
-              lng: this.certification.location.lng,
-              step: 'CHECKPOINT',
-              checkpointId: this.checkpoint.id,
-              checkpointOrder: this.checkpoint.order,
-            }),
-          );
-
-          console.log(
-            '✅ Preuve enregistrée sur blockchain:',
-            blockchainRecord?.transactionId,
-          );
-        } catch (blockchainError) {
-          console.warn('Blockchain non disponible:', blockchainError);
-        }
+      if (!blockchainProof.success) {
+        console.warn('Blockchain non disponible, sauvegarde locale seulement');
       }
-
-      // 3. Afficher le succès
-      this.successMessage = `✅ Checkpoint complété ! ${blockchainRecord?.transactionId ? `Transaction blockchain: ${blockchainRecord.transactionId}` : ''}`;
-
-      // Retour à la certification
-      setTimeout(() => {
-        this.router.navigate([
-          `/producer/certification/${this.certificationId}`,
-        ]);
-      }, 2000);
-    } catch (error: any) {
-      console.error('Erreur soumission:', error);
-      this.errorMessage = error.message || 'Erreur lors de la soumission';
-      this.isSubmitting = false;
     }
+
+    // 2. Compléter le checkpoint
+    const updatedCertification = await this.certificationService.completeCheckpoint(
+      this.certificationId,
+      this.checkpointId,
+      {
+        photo: this.photoFile || undefined,
+        measurement: this.measurementValue !== null ? {
+          value: this.measurementValue,
+          unit: this.checkpoint.measurementUnit || 'unit'
+        } : undefined,
+        note: this.noteText.trim() || undefined,
+      }
+    );
+
+    // 3. Afficher le résultat
+    if (blockchainProof?.success) {
+      this.successMessage = `✅ Checkpoint complété et certifié sur blockchain!`;
+      console.log('Transaction:', blockchainProof.blockchainProof?.txHash);
+      console.log('IPFS CID:', blockchainProof.ipfsProof?.cid);
+    } else {
+      this.successMessage = '✅ Checkpoint complété (sans blockchain)';
+    }
+
+    // 4. Redirection
+    setTimeout(() => {
+      this.router.navigate([`/producer/certification/${this.certificationId}`]);
+    }, 2000);
+
+  } catch (error: any) {
+    console.error('Erreur:', error);
+    this.errorMessage = error.message || 'Erreur lors de la soumission';
+    this.isSubmitting = false;
   }
+}
 
   goBack() {
     this.router.navigate([`/producer/certification/${this.certificationId}`]);

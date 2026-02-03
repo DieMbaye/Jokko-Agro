@@ -13,6 +13,9 @@ import { appConfig } from './app/app.config';
 
 import { provideStorage, getStorage } from '@angular/fire/storage';
 import { browserLocalPersistence } from '@angular/fire/auth';
+import { IpfsService } from './app/blockchain/services/ipfs.service';
+import { BlockchainService } from './app/blockchain/services/blockchain.service';
+import { EthereumService } from './app/blockchain/services/ethereum.service';
 bootstrapApplication(App, {
   providers: [
     provideRouter(routes),
@@ -38,6 +41,10 @@ bootstrapApplication(App, {
 
     provideFirestore(() => getFirestore()),
     provideStorage(() => getStorage()),
+
+        IpfsService,
+    EthereumService,
+    BlockchainService,
 
     ...appConfig.providers,
   ],

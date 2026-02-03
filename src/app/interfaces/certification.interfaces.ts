@@ -7,7 +7,13 @@ export interface Certification {
   productType: string;
   productName: string;
   productCategory: string;
-  status: 'draft' | 'active' | 'completed' | 'cancelled' | 'verified' | 'expired';
+  status:
+    | 'draft'
+    | 'active'
+    | 'completed'
+    | 'cancelled'
+    | 'verified'
+    | 'expired';
 
   // Cycle de culture
   startDate: Date;
@@ -40,7 +46,11 @@ export interface Certification {
   // Score et validation
   validationScore: number;
   maxScore: number;
-  verificationStatus: 'pending' | 'auto_verified' | 'manually_verified' | 'rejected';
+  verificationStatus:
+    | 'pending'
+    | 'auto_verified'
+    | 'manually_verified'
+    | 'rejected';
   verifierId?: string;
   verifiedAt?: Date;
   rejectionReason?: string;
@@ -125,6 +135,9 @@ export interface CertificationCheckpoint {
   blockchainProofHash?: string;
   blockchainVerified?: boolean;
   blockchainTimestamp?: Date;
+  blockNumber?: number; // AJOUTEZ CETTE LIGNE
+  ipfsCID?: string; // CID IPFS de la photo
+  ipfsURL?: string; // URL d'accès à la photo
 
   // Validation automatique
   autoVerified: boolean;
@@ -140,6 +153,7 @@ export interface CertificationCheckpoint {
   reminderCount: number;
 }
 
+// certification.interfaces.ts - CORRIGÉ
 export interface CheckpointProof {
   type: 'photo' | 'gps' | 'measurement' | 'note';
   photoUrl?: string;
@@ -153,7 +167,7 @@ export interface CheckpointProof {
   measurement?: {
     value: number;
     unit: string;
-    timestamp: Date;
+    timestamp?: Date; // Rendre timestamp optionnel
   };
   note?: string;
   timestamp: Date;

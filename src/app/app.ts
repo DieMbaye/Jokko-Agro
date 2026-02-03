@@ -4,6 +4,7 @@ import {
   ViewEncapsulation,
   Inject,
   PLATFORM_ID,
+  inject, // AJOUTER
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
@@ -19,6 +20,9 @@ import { AuthService } from './services/auth.service';
 import { filter } from 'rxjs/operators';
 import { FirebaseService } from './services/firebase.service';
 import { ThemeService } from './services/theme.service';
+// AJOUTER ces imports
+import { BlockchainSyncService } from './services/blockchain-sync.service';
+import { CertificationService } from './services/certification.service';
 
 @Component({
   selector: 'app-root',
@@ -34,6 +38,10 @@ import { ThemeService } from './services/theme.service';
   encapsulation: ViewEncapsulation.None,
 })
 export class App implements OnInit {
+  // AJOUTER ces injections
+  private blockchainSyncService = inject(BlockchainSyncService);
+  private certificationService = inject(CertificationService);
+
   showSidebar = false;
   showVoiceAssistant = false;
   isCollapsed = false;
@@ -83,6 +91,22 @@ export class App implements OnInit {
       });
   }
 
+  private initializeBlockchainSync(): void {
+    // Démarrer la synchro automatique (toutes les 5 minutes)
+    this.blockchainSyncService.startAutoSync(5);
+
+    // Synchroniser les preuves fallback (toutes les 10 minutes)
+    setInterval(() => {
+      this.certificationService.syncFallbackProofs();
+    }, 10 * 60 * 1000);
+
+    // Synchro immédiate au démarrage
+    setTimeout(() => {
+      this.blockchainSyncService.syncPendingTransactions();
+      this.certificationService.syncFallbackProofs();
+    }, 30000); // 30 secondes après le démarrage
+  } // ⚠️ AJOUTER cette accolade fermante qui manquait
+
   async ngOnInit() {
     this.themeService.initTheme();
 
@@ -97,6 +121,11 @@ export class App implements OnInit {
 
     this.finalizeInitialization();
     await this.updateUIState(this.router.url);
+
+    // AJOUTER: Initialiser la synchronisation blockchain
+    if (this.isBrowser) {
+      this.initializeBlockchainSync();
+    }
   }
 
   private async waitForCompleteFirebaseInitialization(): Promise<void> {
@@ -159,11 +188,13 @@ export class App implements OnInit {
       url === '/login' ||
       url === '/register' ||
       url === '/select-role' ||
+      url === '/test-blockchain' || // ← AJOUT ICI
       url.startsWith('/producer/') ||
       url.startsWith('/buyer/') ||
       url.startsWith('/login/') ||
       url.startsWith('/register/') ||
-      url.startsWith('/verify/')
+      url.startsWith('/verify/') ||
+      url.startsWith('/test-blockchain/') // ← AJOUT ICI
     );
   }
 
@@ -171,6 +202,14 @@ export class App implements OnInit {
     const firebaseUser = this.firebaseService.getCurrentAuthUser();
     const userData = this.firebaseService.userData;
     const role = this.authService.getUserRole();
+
+    // ✅ AJOUT: Si /test-blockchain, laisser passer directement
+    if (targetUrl === '/test-blockchain' || targetUrl.startsWith('/test-blockchain/')) {
+      if (targetUrl !== this.router.url) {
+        await this.router.navigateByUrl(targetUrl, { replaceUrl: true });
+      }
+      return;
+    }
 
     // CAS A: Utilisateur NON connecté
     if (!firebaseUser || !userData) {
@@ -285,15 +324,16 @@ export class App implements OnInit {
     this.loadingMessage = 'Prêt !';
   }
 
-
   private async updateUIState(url: string) {
     this.isLoading = this.firebaseService.isLoading;
 
-    // ✅ AJOUT: La page /access-denied ne doit PAS avoir la sidebar
+    // ✅ AJOUT: La page /test-blockchain ne doit PAS avoir la sidebar
     const shouldShowSidebar =
       !this.noSidebarRoutes.some(
         (route) => url === route || url.startsWith(route + '/'),
-      ) && url !== '/access-denied'; // ← Ajoutez cette condition
+      ) &&
+      url !== '/access-denied' &&
+      url !== '/test-blockchain'; // ← AJOUT ICI
 
     if (this.showSidebar !== shouldShowSidebar) {
       this.showSidebar = shouldShowSidebar;
@@ -313,8 +353,8 @@ export class App implements OnInit {
 
     const currentUrl = this.router.url;
 
-    // ✅ AJOUT: /access-denied est aussi une page publique
-    const publicRoutes = [...this.noSidebarRoutes, '/access-denied'];
+    // ✅ AJOUT: /test-blockchain est aussi une page publique
+    const publicRoutes = [...this.noSidebarRoutes, '/access-denied', '/test-blockchain'];
 
     return publicRoutes.some(
       (route) => currentUrl === route || currentUrl.startsWith(route + '/'),

@@ -119,6 +119,25 @@
       </div>
     </div>
 
+    <!-- Contrôles Blockchain (AJOUTÉ ICI) -->
+    <div class="blockchain-controls" *ngIf="certification && hasBlockchainData()">
+      <button
+        class="btn-action blockchain"
+        (click)="refreshBlockchainStatus()"
+        [disabled]="isProcessing">
+        <span class="btn-icon">🔄</span>
+        Rafraîchir statut blockchain
+      </button>
+
+      <button
+        class="btn-action blockchain"
+        (click)="verifyBlockchainIntegrity()"
+        [disabled]="isProcessing">
+        <span class="btn-icon">🔍</span>
+        Vérifier intégrité
+      </button>
+    </div>
+
     <!-- Timeline Blockchain (si données disponibles) -->
     @if (hasBlockchainData()) {
       <div class="blockchain-timeline-section">
@@ -138,12 +157,41 @@
                   <h5>{{ checkpoint.title }}</h5>
                   <p>{{ checkpoint.description }}</p>
                   @if (checkpoint.blockchainTransactionId) {
+                    <div class="blockchain-status">
+                      <span [class]="'status-badge ' + getTransactionStatusClass(checkpoint)">
+                        {{ getTransactionStatus(checkpoint) }}
+                      </span>
+                      <button
+                        class="btn-small"
+                        (click)="refreshBlockchainStatus(checkpoint)"
+                        [disabled]="isProcessing">
+                        🔄
+                      </button>
+                    </div>
                     <small class="blockchain-id">
                       TX:
                       {{
                         formatTransactionId(checkpoint.blockchainTransactionId)
                       }}
                     </small>
+                    <div class="transaction-details">
+                      <small class="tx-hash">
+                        TX: {{ formatTransactionId(checkpoint.blockchainTransactionId) }}
+                      </small>
+                      <div class="tx-links">
+                        <a
+                          [href]="'https://sepolia.etherscan.io/tx/' + checkpoint.blockchainTransactionId"
+                          target="_blank"
+                          class="tx-link">
+                          🔗 Etherscan
+                        </a>
+                        <button
+                          class="tx-verify"
+                          (click)="verifyTransaction(checkpoint)">
+                          ✅ Vérifier
+                        </button>
+                      </div>
+                    </div>
                     <button
                       class="btn-small"
                       (click)="verifyTransaction(checkpoint)"
@@ -381,12 +429,16 @@
 
                         <!-- Indicateur Blockchain dans la timeline -->
                         @if (checkpoint.blockchainTransactionId) {
-                          <div
-                            class="blockchain-indicator"
-                            (click)="viewBlockchainProof(checkpoint)"
-                          >
-                            <span class="blockchain-icon">⛓️</span>
-                            <span class="tooltip">Certifié sur blockchain</span>
+                          <div class="blockchain-status-indicator">
+                            <span [class]="'status-badge ' + getTransactionStatusClass(checkpoint)">
+                              {{ getTransactionStatus(checkpoint) }}
+                            </span>
+                            <button
+                              class="btn-small"
+                              (click)="refreshBlockchainStatus(checkpoint)"
+                              [disabled]="isProcessing">
+                              🔄
+                            </button>
                           </div>
                         }
                       }
@@ -438,12 +490,19 @@
                                     checkpoint.blockchainTransactionId
                                   )
                                 }}
-                                <button
-                                  class="btn-verify-tx"
-                                  (click)="verifyTransaction(checkpoint)"
-                                >
-                                  Vérifier
-                                </button>
+                                <div class="transaction-details-small">
+                                  <a
+                                    [href]="'https://sepolia.etherscan.io/tx/' + checkpoint.blockchainTransactionId"
+                                    target="_blank"
+                                    class="tx-link">
+                                    🔗 Etherscan
+                                  </a>
+                                  <button
+                                    class="tx-verify"
+                                    (click)="verifyTransaction(checkpoint)">
+                                    ✅ Vérifier
+                                  </button>
+                                </div>
                               </span>
                             </div>
                           }
@@ -633,11 +692,16 @@
                   @if (
                     checkpoint.completed && checkpoint.blockchainTransactionId
                   ) {
-                    <div class="blockchain-indicator">
-                      <span class="blockchain-icon">⛓️</span>
-                      <span class="blockchain-text"
-                        >Certifié sur blockchain</span
-                      >
+                    <div class="blockchain-status-indicator">
+                      <span [class]="'status-badge ' + getTransactionStatusClass(checkpoint)">
+                        {{ getTransactionStatus(checkpoint) }}
+                      </span>
+                      <button
+                        class="btn-small"
+                        (click)="refreshBlockchainStatus(checkpoint)"
+                        [disabled]="isProcessing">
+                        🔄
+                      </button>
                     </div>
                   }
                 </div>
@@ -658,12 +722,20 @@
                         Voir preuves
                       </button>
                       @if (checkpoint.blockchainTransactionId) {
-                        <button
-                          class="btn-action blockchain"
-                          (click)="verifyTransaction(checkpoint)"
-                        >
-                          ⛓️ Vérifier
-                        </button>
+                        <div class="transaction-actions">
+                          <a
+                            [href]="'https://sepolia.etherscan.io/tx/' + checkpoint.blockchainTransactionId"
+                            target="_blank"
+                            class="tx-link-small">
+                            🔗
+                          </a>
+                          <button
+                            class="btn-action blockchain"
+                            (click)="verifyTransaction(checkpoint)"
+                          >
+                            ⛓️ Vérifier
+                          </button>
+                        </div>
                       }
                     </div>
                   } @else if (
@@ -735,11 +807,34 @@
                       <h4>
                         {{ checkpoint.title }} (J+{{ checkpoint.dayOffset }})
                       </h4>
-                      @if (checkpoint.blockchainTransactionId) {
-                        <span class="blockchain-badge">
-                          ⛓️ Certifié blockchain
-                        </span>
-                      }
+                      <div
+                        *ngIf="checkpoint.blockchainTransactionId"
+                        class="blockchain-badge"
+                      >
+                        <span class="badge-icon">⛓️</span>
+                        <span class="badge-text">Certifié Blockchain</span>
+                        <div class="blockchain-status-small">
+                          <span [class]="'status-badge ' + getTransactionStatusClass(checkpoint)">
+                            {{ getTransactionStatus(checkpoint) }}
+                          </span>
+                          <button
+                            class="btn-small"
+                            (click)="refreshBlockchainStatus(checkpoint)"
+                            [disabled]="isProcessing">
+                            🔄
+                          </button>
+                        </div>
+                        <a
+                          [href]="
+                            'https://sepolia.etherscan.io/tx/' +
+                            checkpoint.blockchainTransactionId
+                          "
+                          target="_blank"
+                          class="verify-link"
+                        >
+                          Vérifier
+                        </a>
+                      </div>
                     </div>
                     <span class="proofs-count"
                       >{{ checkpoint.proofs.length }} preuve(s)</span
@@ -847,12 +942,26 @@
                           <strong>ID de transaction:</strong>
                           {{ checkpoint.blockchainTransactionId }}
                         </p>
-                        <button
-                          class="btn-verify"
-                          (click)="verifyTransaction(checkpoint)"
-                        >
-                          Vérifier sur l'explorateur
-                        </button>
+                        <div class="transaction-actions-vertical">
+                          <button
+                            class="btn-verify"
+                            (click)="verifyTransaction(checkpoint)"
+                          >
+                            Vérifier sur l'explorateur
+                          </button>
+                          <button
+                            class="btn-small"
+                            (click)="refreshBlockchainStatus(checkpoint)"
+                            [disabled]="isProcessing">
+                            🔄 Rafraîchir statut
+                          </button>
+                          <a
+                            [href]="'https://sepolia.etherscan.io/tx/' + checkpoint.blockchainTransactionId"
+                            target="_blank"
+                            class="tx-link">
+                            🔗 Voir sur Etherscan
+                          </a>
+                        </div>
                       </div>
                     </div>
                   }
@@ -975,6 +1084,13 @@
                   <button class="btn-action" (click)="downloadCertificate()">
                     📄 Télécharger certificat
                   </button>
+                  @if (hasBlockchainData()) {
+                    <button
+                      class="btn-action blockchain"
+                      (click)="verifyBlockchainIntegrity()">
+                      🔍 Vérifier intégrité blockchain
+                    </button>
+                  }
                 </div>
               </div>
             </div>
@@ -1067,6 +1183,7 @@
                   <th>Preuves</th>
                   <th>Blockchain</th>
                   <th>Temps écoulé</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -1098,7 +1215,12 @@
                     <td>{{ checkpoint.proofs.length || 0 }}</td>
                     <td>
                       @if (checkpoint.blockchainTransactionId) {
-                        <span class="blockchain-badge small">⛓️ Certifié</span>
+                        <div class="blockchain-status-cell">
+                          <span class="blockchain-badge small">⛓️ Certifié</span>
+                          <span [class]="'status-badge ' + getTransactionStatusClass(checkpoint)">
+                            {{ getTransactionStatus(checkpoint) }}
+                          </span>
+                        </div>
                       } @else {
                         <span class="blockchain-badge small inactive"
                           >⛓️ Non</span
@@ -1106,6 +1228,16 @@
                       }
                     </td>
                     <td>{{ calculateTimeElapsed(checkpoint) }}</td>
+                    <td>
+                      @if (checkpoint.blockchainTransactionId) {
+                        <button
+                          class="btn-small"
+                          (click)="refreshBlockchainStatus(checkpoint)"
+                          [disabled]="isProcessing">
+                          🔄
+                        </button>
+                      }
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -1197,7 +1329,12 @@
                           >{{ checkpoint.verificationScore }}%</span
                         >
                         @if (checkpoint.blockchainTransactionId) {
-                          <span class="blockchain-indicator-small">⛓️</span>
+                          <div class="blockchain-status-option">
+                            <span class="blockchain-indicator-small">⛓️</span>
+                            <span [class]="'status-badge ' + getTransactionStatusClass(checkpoint)">
+                              {{ getTransactionStatus(checkpoint) }}
+                            </span>
+                          </div>
                         }
                       </div>
                     </div>
@@ -1325,6 +1462,13 @@
               <span class="btn-icon">⛓️</span>
               Rapport blockchain
             </button>
+            <button
+              class="btn-action blockchain"
+              (click)="verifyBlockchainIntegrity()"
+            >
+              <span class="btn-icon">🔍</span>
+              Vérifier intégrité
+            </button>
           }
         </div>
       </div>
@@ -1367,6 +1511,13 @@
             <button class="btn-action" (click)="downloadCertificate()">
               📄 Certificat
             </button>
+            @if (hasBlockchainData()) {
+              <button
+                class="btn-action blockchain"
+                (click)="verifyBlockchainIntegrity()">
+                🔍 Vérifier intégrité blockchain
+              </button>
+            }
           </div>
 
           <!-- Blockchain info -->
@@ -1409,6 +1560,16 @@
                                   checkpoint.blockchainTransactionId
                                 )
                               }}</span>
+                              <div class="blockchain-status-verification">
+                                <span [class]="'status-badge ' + getTransactionStatusClass(checkpoint)">
+                                  {{ getTransactionStatus(checkpoint) }}
+                                </span>
+                                <button
+                                  class="btn-small"
+                                  (click)="refreshBlockchainStatus(checkpoint)">
+                                  🔄
+                                </button>
+                              </div>
                               <button
                                 class="btn-small"
                                 (click)="verifyTransaction(checkpoint)"

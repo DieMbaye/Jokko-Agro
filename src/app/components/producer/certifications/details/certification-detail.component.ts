@@ -9,6 +9,8 @@ import {
   CertificationCheckpoint,
   CheckpointProof,
 } from 'src/app/interfaces/certification.interfaces';
+import { BlockchainSyncService } from 'src/app/services/blockchain-sync.service';
+import { BlockchainService } from 'src/app/blockchain/services/blockchain.service';
 
 @Component({
   selector: 'app-certification-detail',
@@ -22,6 +24,8 @@ export class CertificationDetailComponent implements OnInit {
   private router = inject(Router);
   private certificationService = inject(CertificationService);
   private authService = inject(AuthService);
+  private blockchainSyncService = inject(BlockchainSyncService);
+  private blockchainService = inject(BlockchainService);
 
   certification: Certification | null = null;
   initialImage: string | null = null;
@@ -91,7 +95,6 @@ export class CertificationDetailComponent implements OnInit {
 
       // Vérifier si la certification est complète
       this.checkCompletionStatus();
-
     } catch (error: any) {
       console.error('Erreur chargement certification:', error);
       this.errorMessage = error.message || 'Erreur lors du chargement';
@@ -102,16 +105,22 @@ export class CertificationDetailComponent implements OnInit {
   }
 
   private checkCompletionStatus() {
-    if (this.certification &&
-        this.certification.status === 'completed' &&
-        !this.certification.finalProduct?.published) {
-
-      const hasSeenModal = localStorage.getItem(`cert_completion_seen_${this.certification.id}`);
+    if (
+      this.certification &&
+      this.certification.status === 'completed' &&
+      !this.certification.finalProduct?.published
+    ) {
+      const hasSeenModal = localStorage.getItem(
+        `cert_completion_seen_${this.certification.id}`,
+      );
 
       if (!hasSeenModal) {
         setTimeout(() => {
           this.showCompletionModal = true;
-          localStorage.setItem(`cert_completion_seen_${this.certification?.id}`, 'true');
+          localStorage.setItem(
+            `cert_completion_seen_${this.certification?.id}`,
+            'true',
+          );
         }, 1500);
       }
     }
@@ -131,13 +140,20 @@ export class CertificationDetailComponent implements OnInit {
 
   getStatusBadgeClass(status: string): string {
     switch (status) {
-      case 'draft': return 'badge-draft';
-      case 'active': return 'badge-active';
-      case 'completed': return 'badge-completed';
-      case 'verified': return 'badge-verified';
-      case 'cancelled': return 'badge-cancelled';
-      case 'expired': return 'badge-expired';
-      default: return 'badge-draft';
+      case 'draft':
+        return 'badge-draft';
+      case 'active':
+        return 'badge-active';
+      case 'completed':
+        return 'badge-completed';
+      case 'verified':
+        return 'badge-verified';
+      case 'cancelled':
+        return 'badge-cancelled';
+      case 'expired':
+        return 'badge-expired';
+      default:
+        return 'badge-draft';
     }
   }
 
@@ -155,7 +171,9 @@ export class CertificationDetailComponent implements OnInit {
 
   getProgressPercentage(cert: Certification): number {
     if (cert.totalCheckpoints === 0) return 0;
-    return Math.round((cert.completedCheckpoints / cert.totalCheckpoints) * 100);
+    return Math.round(
+      (cert.completedCheckpoints / cert.totalCheckpoints) * 100,
+    );
   }
 
   getCheckpointDate(dayOffset: number): Date {
@@ -168,7 +186,8 @@ export class CertificationDetailComponent implements OnInit {
   getRemainingDays(): number {
     if (!this.certification) return 0;
     const now = new Date();
-    const diffTime = this.certification.expectedHarvestDate.getTime() - now.getTime();
+    const diffTime =
+      this.certification.expectedHarvestDate.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return Math.max(0, diffDays);
   }
@@ -212,11 +231,16 @@ export class CertificationDetailComponent implements OnInit {
 
   getProofIcon(type: string): string {
     switch (type) {
-      case 'photo': return '📸';
-      case 'gps': return '📍';
-      case 'measurement': return '📏';
-      case 'note': return '📝';
-      default: return '📋';
+      case 'photo':
+        return '📸';
+      case 'gps':
+        return '📍';
+      case 'measurement':
+        return '📏';
+      case 'note':
+        return '📝';
+      default:
+        return '📋';
     }
   }
 
@@ -247,15 +271,19 @@ export class CertificationDetailComponent implements OnInit {
 
   getTimelineStatus(checkpoint: CertificationCheckpoint): string {
     if (checkpoint.completed) return 'completed';
-    if (checkpoint.order === this.certification?.currentCheckpointIndex) return 'current';
+    if (checkpoint.order === this.certification?.currentCheckpointIndex)
+      return 'current';
     return 'upcoming';
   }
 
   getTimelineIcon(status: string): string {
     switch (status) {
-      case 'completed': return '✅';
-      case 'current': return '🎯';
-      default: return '⏳';
+      case 'completed':
+        return '✅';
+      case 'current':
+        return '🎯';
+      default:
+        return '⏳';
     }
   }
 
@@ -264,7 +292,7 @@ export class CertificationDetailComponent implements OnInit {
   hasBlockchainProofs(): boolean {
     if (!this.certification) return false;
     return this.certification.checkpoints.some(
-      cp => cp.completed && cp.blockchainTransactionId
+      (cp) => cp.completed && cp.blockchainTransactionId,
     );
   }
 
@@ -275,30 +303,35 @@ export class CertificationDetailComponent implements OnInit {
   getBlockchainStatusText(): string {
     if (!this.certification) return 'Non disponible';
 
-    const total = this.certification.checkpoints.filter(cp => cp.completed).length;
-    const withBlockchain = this.certification.checkpoints.filter(cp =>
-      cp.completed && cp.blockchainTransactionId
+    const total = this.certification.checkpoints.filter(
+      (cp) => cp.completed,
+    ).length;
+    const withBlockchain = this.certification.checkpoints.filter(
+      (cp) => cp.completed && cp.blockchainTransactionId,
     ).length;
 
     if (total === 0) return 'Aucun checkpoint';
     if (withBlockchain === total) return '100% Certifié';
-    if (withBlockchain > 0) return `${Math.round((withBlockchain / total) * 100)}% Certifié`;
+    if (withBlockchain > 0)
+      return `${Math.round((withBlockchain / total) * 100)}% Certifié`;
     return 'Non certifié';
   }
 
   getBlockchainTransactionCount(): number {
     if (!this.certification) return 0;
     return this.certification.checkpoints.filter(
-      cp => cp.completed && cp.blockchainTransactionId
+      (cp) => cp.completed && cp.blockchainTransactionId,
     ).length;
   }
 
   getBlockchainCoverage(): number {
     if (!this.certification) return 0;
 
-    const total = this.certification.checkpoints.filter(cp => cp.completed).length;
-    const withBlockchain = this.certification.checkpoints.filter(cp =>
-      cp.completed && cp.blockchainTransactionId
+    const total = this.certification.checkpoints.filter(
+      (cp) => cp.completed,
+    ).length;
+    const withBlockchain = this.certification.checkpoints.filter(
+      (cp) => cp.completed && cp.blockchainTransactionId,
     ).length;
 
     return total > 0 ? Math.round((withBlockchain / total) * 100) : 0;
@@ -307,7 +340,11 @@ export class CertificationDetailComponent implements OnInit {
   formatTransactionId(transactionId: string): string {
     if (!transactionId) return '';
     if (transactionId.length <= 12) return transactionId;
-    return transactionId.substring(0, 8) + '...' + transactionId.substring(transactionId.length - 4);
+    return (
+      transactionId.substring(0, 8) +
+      '...' +
+      transactionId.substring(transactionId.length - 4)
+    );
   }
 
   viewBlockchainProof(checkpoint: CertificationCheckpoint): void {
@@ -315,7 +352,10 @@ export class CertificationDetailComponent implements OnInit {
       const explorerUrl = `https://blockchain-explorer.com/tx/${checkpoint.blockchainTransactionId}`;
       window.open(explorerUrl, '_blank');
     } else {
-      this.showNotification('info', 'Ce checkpoint n\'a pas encore été enregistré sur blockchain');
+      this.showNotification(
+        'info',
+        "Ce checkpoint n'a pas encore été enregistré sur blockchain",
+      );
     }
   }
 
@@ -351,7 +391,7 @@ export class CertificationDetailComponent implements OnInit {
   generateQRCodeData(): string {
     if (!this.certification) return '';
     return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-      this.getVerificationUrl()
+      this.getVerificationUrl(),
     )}`;
   }
 
@@ -372,7 +412,7 @@ export class CertificationDetailComponent implements OnInit {
     const shareData = {
       title: `Certification ${this.certification.productName}`,
       text: `Vérifiez la traçabilité de ${this.certification.productName}`,
-      url: this.getVerificationUrl()
+      url: this.getVerificationUrl(),
     };
 
     if (navigator.share) {
@@ -403,8 +443,11 @@ export class CertificationDetailComponent implements OnInit {
       Couverture blockchain: ${this.getBlockchainCoverage()}%
 
       ${this.certification.checkpoints
-        .filter(cp => cp.completed)
-        .map(cp => `✓ ${cp.title} - ${cp.verificationScore}% ${cp.blockchainTransactionId ? '⛓️' : ''}`)
+        .filter((cp) => cp.completed)
+        .map(
+          (cp) =>
+            `✓ ${cp.title} - ${cp.verificationScore}% ${cp.blockchainTransactionId ? '⛓️' : ''}`,
+        )
         .join('\n')}
 
       Date: ${new Date().toLocaleDateString()}
@@ -421,44 +464,6 @@ export class CertificationDetailComponent implements OnInit {
     window.URL.revokeObjectURL(url);
 
     this.showNotification('success', 'Certificat téléchargé');
-  }
-
-  downloadBlockchainReport(): void {
-    if (!this.certification) return;
-
-    const report = {
-      certificationId: this.certification.id,
-      productName: this.certification.productName,
-      producerName: this.certification.producerName,
-      verificationUrl: this.getVerificationUrl(),
-      blockchainTransactions: this.certification.checkpoints
-        .filter(cp => cp.completed && cp.blockchainTransactionId)
-        .map(cp => ({
-          checkpoint: cp.title,
-          dayOffset: cp.dayOffset,
-          completedAt: cp.completedAt?.toISOString(),
-          transactionId: cp.blockchainTransactionId,
-          score: cp.verificationScore
-        })),
-      summary: {
-        totalCheckpoints: this.certification.totalCheckpoints,
-        completedCheckpoints: this.certification.completedCheckpoints,
-        blockchainCertified: this.getBlockchainTransactionCount(),
-        coveragePercentage: this.getBlockchainCoverage()
-      },
-      generatedAt: new Date().toISOString()
-    };
-
-    const dataStr = JSON.stringify(report, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    const fileName = `blockchain-report-${this.certification.id}.json`;
-
-    const link = document.createElement('a');
-    link.setAttribute('href', dataUri);
-    link.setAttribute('download', fileName);
-    link.click();
-
-    this.showNotification('success', 'Rapport blockchain téléchargé');
   }
 
   downloadVerificationPackage(): void {
@@ -492,7 +497,10 @@ export class CertificationDetailComponent implements OnInit {
     if (this.certification?.status === 'completed') {
       this.showCompletionModal = true;
     } else {
-      this.showNotification('info', 'La certification doit d\'abord être terminée');
+      this.showNotification(
+        'info',
+        "La certification doit d'abord être terminée",
+      );
     }
   }
 
@@ -513,7 +521,10 @@ export class CertificationDetailComponent implements OnInit {
       this.selectedCheckpointForProofs = checkpoint;
       this.showProofsModal = true;
     } else {
-      this.showNotification('info', `Aucune preuve disponible pour ${checkpoint.title}`);
+      this.showNotification(
+        'info',
+        `Aucune preuve disponible pour ${checkpoint.title}`,
+      );
     }
   }
 
@@ -529,7 +540,10 @@ export class CertificationDetailComponent implements OnInit {
       this.selectedImage = image;
       this.showImageModal = true;
     } else {
-      this.showNotification('info', 'Aucune image disponible pour ce checkpoint');
+      this.showNotification(
+        'info',
+        'Aucune image disponible pour ce checkpoint',
+      );
     }
   }
 
@@ -546,7 +560,8 @@ export class CertificationDetailComponent implements OnInit {
     this.publishPrice = this.certification.finalProduct?.price || 0;
     this.publishQuantity = this.certification.finalProduct?.quantity || 0;
     this.publishUnit = this.certification.finalProduct?.unit || 'kg';
-    this.publishDescription = this.certification.finalProduct?.description || '';
+    this.publishDescription =
+      this.certification.finalProduct?.description || '';
 
     this.selectedCheckpoints = {};
     this.certification.checkpoints.forEach((checkpoint) => {
@@ -570,12 +585,15 @@ export class CertificationDetailComponent implements OnInit {
 
   toggleCheckpointSelection(checkpointId: string) {
     if (this.selectedCheckpoints[checkpointId]) {
-      this.selectedCheckpoints[checkpointId].selected = !this.selectedCheckpoints[checkpointId].selected;
+      this.selectedCheckpoints[checkpointId].selected =
+        !this.selectedCheckpoints[checkpointId].selected;
     }
   }
 
   hasSelectedCheckpoints(): boolean {
-    return Object.values(this.selectedCheckpoints).some((cp: any) => cp.selected);
+    return Object.values(this.selectedCheckpoints).some(
+      (cp: any) => cp.selected,
+    );
   }
 
   async publishProduct() {
@@ -586,24 +604,28 @@ export class CertificationDetailComponent implements OnInit {
     this.isProcessing = true;
 
     try {
-      const { certification, product } = await this.certificationService.publishCertificationAsProduct(
-        this.certification.id,
-        {
-          price: this.publishPrice,
-          quantity: this.publishQuantity,
-          unit: this.publishUnit,
-          description: this.publishDescription,
-          minOrderQuantity: 1,
-          storageConditions: 'À température ambiante',
-        }
-      );
+      const { certification, product } =
+        await this.certificationService.publishCertificationAsProduct(
+          this.certification.id,
+          {
+            price: this.publishPrice,
+            quantity: this.publishQuantity,
+            unit: this.publishUnit,
+            description: this.publishDescription,
+            minOrderQuantity: 1,
+            storageConditions: 'À température ambiante',
+          },
+        );
 
       this.showNotification('success', 'Produit publié avec succès !');
       this.closePublishModal();
       await this.loadCertification(this.certification.id);
     } catch (error: any) {
       console.error('Erreur publication:', error);
-      this.showNotification('error', error.message || 'Erreur lors de la publication');
+      this.showNotification(
+        'error',
+        error.message || 'Erreur lors de la publication',
+      );
     } finally {
       this.isProcessing = false;
     }
@@ -612,18 +634,28 @@ export class CertificationDetailComponent implements OnInit {
   // ========== MÉTHODES D'ACTION ==========
 
   async cancelCertification() {
-    if (!this.certification || !confirm('Voulez-vous vraiment annuler cette certification ? Cette action est irréversible.')) {
+    if (
+      !this.certification ||
+      !confirm(
+        'Voulez-vous vraiment annuler cette certification ? Cette action est irréversible.',
+      )
+    ) {
       return;
     }
 
     try {
       this.isProcessing = true;
-      await this.certificationService.cancelCertification(this.certification.id);
+      await this.certificationService.cancelCertification(
+        this.certification.id,
+      );
       this.showNotification('success', 'Certification annulée avec succès');
       this.router.navigate(['/producer/certifications']);
     } catch (error: any) {
       console.error('Erreur annulation:', error);
-      this.showNotification('error', error.message || "Erreur lors de l'annulation");
+      this.showNotification(
+        'error',
+        error.message || "Erreur lors de l'annulation",
+      );
     } finally {
       this.isProcessing = false;
     }
@@ -660,7 +692,10 @@ export class CertificationDetailComponent implements OnInit {
       }
     } catch (error: any) {
       console.error('Erreur simulation:', error);
-      this.showNotification('error', error.message || 'Erreur lors de la simulation');
+      this.showNotification(
+        'error',
+        error.message || 'Erreur lors de la simulation',
+      );
     } finally {
       this.isProcessing = false;
     }
@@ -669,7 +704,9 @@ export class CertificationDetailComponent implements OnInit {
   getNextCheckpoint(): CertificationCheckpoint | undefined {
     if (!this.certification) return undefined;
     return this.certification.checkpoints.find(
-      (cp) => !cp.completed && cp.order === this.certification!.currentCheckpointIndex,
+      (cp) =>
+        !cp.completed &&
+        cp.order === this.certification!.currentCheckpointIndex,
     );
   }
 
@@ -683,7 +720,8 @@ export class CertificationDetailComponent implements OnInit {
     };
 
     const dataStr = JSON.stringify(data, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    const dataUri =
+      'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     const exportFileDefaultName = `certification-${this.certification.id}-${new Date().toISOString().split('T')[0]}.json`;
 
     const linkElement = document.createElement('a');
@@ -707,9 +745,9 @@ export class CertificationDetailComponent implements OnInit {
 
     switch (this.checkpointFilter) {
       case 'completed':
-        return this.certification.checkpoints.filter(cp => cp.completed);
+        return this.certification.checkpoints.filter((cp) => cp.completed);
       case 'pending':
-        return this.certification.checkpoints.filter(cp => !cp.completed);
+        return this.certification.checkpoints.filter((cp) => !cp.completed);
       default:
         return this.certification.checkpoints;
     }
@@ -717,7 +755,10 @@ export class CertificationDetailComponent implements OnInit {
 
   // ========== NOTIFICATIONS ==========
 
-  private showNotification(type: 'success' | 'error' | 'info' | 'warning', message: string) {
+  private showNotification(
+    type: 'success' | 'error' | 'info' | 'warning',
+    message: string,
+  ) {
     const notification = document.createElement('div');
     const icons = {
       success: '✅',
@@ -782,5 +823,252 @@ export class CertificationDetailComponent implements OnInit {
         }, 300);
       }
     }, 5000);
+  }
+
+  // certification-detail.component.ts - AJOUT
+  getBlockchainCheckpointsCount(): number {
+    if (!this.certification) return 0;
+    return this.certification.checkpoints.filter(
+      (cp) => cp.completed && cp.blockchainTransactionId,
+    ).length;
+  }
+
+  getBlockchainCoveragePercentage(): number {
+    if (!this.certification) return 0;
+    const total = this.certification.checkpoints.filter(
+      (cp) => cp.completed,
+    ).length;
+    const blockchain = this.getBlockchainCheckpointsCount();
+    return total > 0 ? Math.round((blockchain / total) * 100) : 0;
+  }
+
+  downloadBlockchainReport(): void {
+    if (!this.certification) return;
+
+    const report = {
+      certificationId: this.certification.id,
+      productName: this.certification.productName,
+      producerName: this.certification.producerName,
+      blockchainTransactions: this.certification.checkpoints
+        .filter((cp) => cp.completed && cp.blockchainTransactionId)
+        .map((cp) => ({
+          checkpoint: cp.title,
+          transactionId: cp.blockchainTransactionId,
+          ipfsCID: cp.ipfsCID,
+          timestamp: cp.blockchainTimestamp,
+        })),
+      summary: {
+        totalCheckpoints: this.certification.totalCheckpoints,
+        completedCheckpoints: this.certification.completedCheckpoints,
+        blockchainCertified: this.getBlockchainCheckpointsCount(),
+        coveragePercentage: this.getBlockchainCoveragePercentage(),
+      },
+    };
+
+    // Télécharger le rapport JSON
+    const dataStr = JSON.stringify(report, null, 2);
+    const dataUri =
+      'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    const link = document.createElement('a');
+    link.href = dataUri;
+    link.download = `blockchain-report-${this.certification.id}.json`;
+    link.click();
+  }
+
+  // Dans certification-detail.component.ts - AJOUTER
+
+  // Méthodes pour la vérification blockchain
+  async refreshBlockchainStatus(
+    checkpoint?: CertificationCheckpoint,
+  ): Promise<void> {
+    if (checkpoint && checkpoint.blockchainTransactionId) {
+      // Rafraîchir un checkpoint spécifique
+      await this.refreshSingleCheckpoint(checkpoint);
+    } else {
+      // Rafraîchir toute la certification
+      await this.refreshAllCheckpoints();
+    }
+  }
+
+  private async refreshSingleCheckpoint(
+    checkpoint: CertificationCheckpoint,
+  ): Promise<void> {
+    try {
+      if (!checkpoint.blockchainTransactionId) return;
+
+      const status = await this.blockchainService.checkTransactionStatus(
+        checkpoint.blockchainTransactionId,
+      );
+
+      // Mettre à jour l'affichage
+      this.showNotification(
+        status.confirmed ? 'success' : 'info',
+        `Transaction ${status.confirmed ? 'confirmée' : 'en attente'} (${status.blockNumber ? `Block ${status.blockNumber}` : 'Pending'})`,
+      );
+    } catch (error: any) {
+      console.error('Erreur rafraîchissement:', error);
+      this.showNotification('error', 'Erreur vérification blockchain');
+    }
+  }
+
+  private async refreshAllCheckpoints(): Promise<void> {
+    if (!this.certification) return;
+
+    this.isProcessing = true;
+
+    try {
+      // Vérifier chaque checkpoint avec transaction
+      for (const checkpoint of this.certification.checkpoints) {
+        if (checkpoint.blockchainTransactionId) {
+          await this.refreshSingleCheckpoint(checkpoint);
+          // Petite pause pour éviter les rate limits
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
+
+      // Recharger la certification
+      await this.loadCertification(this.certification.id);
+
+      this.showNotification('success', 'Statut blockchain mis à jour');
+    } catch (error: any) {
+      this.showNotification('error', 'Erreur lors de la vérification');
+    } finally {
+      this.isProcessing = false;
+    }
+  }
+
+  getTransactionStatus(checkpoint: CertificationCheckpoint): string {
+    if (!checkpoint.blockchainTransactionId) return 'Non enregistré';
+    if (!checkpoint.blockchainVerified) return 'En attente';
+    return 'Confirmé';
+  }
+
+  getTransactionStatusClass(checkpoint: CertificationCheckpoint): string {
+    if (!checkpoint.blockchainTransactionId) return 'status-none';
+    if (!checkpoint.blockchainVerified) return 'status-pending';
+    return 'status-confirmed';
+  }
+
+  // Nouvelle méthode pour vérifier l'intégrité
+  async verifyBlockchainIntegrity(): Promise<void> {
+    if (!this.certification) return;
+
+    this.isProcessing = true;
+
+    try {
+      const integrity =
+        await this.blockchainSyncService.verifyCertificationIntegrity(
+          this.certification.id,
+        );
+
+      // Afficher les résultats dans une modal
+      this.showIntegrityReport(integrity);
+    } catch (error: any) {
+      console.error('Erreur vérification intégrité:', error);
+      this.showNotification(
+        'error',
+        'Erreur vérification intégrité blockchain',
+      );
+    } finally {
+      this.isProcessing = false;
+    }
+  }
+
+  private showIntegrityReport(integrity: any): void {
+    const modal = document.createElement('div');
+    modal.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    ">
+      <div style="
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+      ">
+        <h2 style="margin-top: 0;">🔗 Rapport Intégrité Blockchain</h2>
+
+        <div style="
+          padding: 16px;
+          background: ${integrity.valid ? '#4CAF50' : '#F44336'};
+          color: white;
+          border-radius: 8px;
+          margin-bottom: 20px;
+        ">
+          <h3 style="margin: 0;">
+            ${integrity.valid ? '✅ VALIDE' : '❌ NON VALIDE'}
+          </h3>
+          <p>Taux de vérification: ${integrity.summary.verificationRate.toFixed(1)}%</p>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #f5f5f5;">
+              <th style="padding: 8px; text-align: left;">Checkpoint</th>
+              <th style="padding: 8px; text-align: left;">Sur Blockchain</th>
+              <th style="padding: 8px; text-align: left;">Vérifié</th>
+              <th style="padding: 8px; text-align: left;">Confirmations</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${integrity.details
+              .map(
+                (detail: any, index: number) => `
+              <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 8px;">${this.certification?.checkpoints[index]?.title || 'N/A'}</td>
+                <td style="padding: 8px;">${detail.onChain ? '✅' : '❌'}</td>
+                <td style="padding: 8px;">${detail.verified ? '✅' : '⏳'}</td>
+                <td style="padding: 8px;">${detail.confirmations}</td>
+              </tr>
+            `,
+              )
+              .join('')}
+          </tbody>
+        </table>
+
+        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+          <button id="close-btn" style="
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+          ">Fermer</button>
+          <button id="refresh-btn" style="
+            padding: 10px 20px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+          ">🔄 Rafraîchir</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+    document.body.appendChild(modal);
+
+    // Gestion des boutons
+    modal.querySelector('#close-btn')?.addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+
+    modal.querySelector('#refresh-btn')?.addEventListener('click', () => {
+      document.body.removeChild(modal);
+      this.verifyBlockchainIntegrity();
+    });
   }
 }

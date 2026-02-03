@@ -24,7 +24,9 @@ import {
   Timestamp,
   addDoc,
   deleteDoc,
+  limit,
 } from 'firebase/firestore';
+import { BlockchainService } from 'src/app/blockchain/services/blockchain.service';
 
 @Injectable({
   providedIn: 'root',
@@ -32,6 +34,7 @@ import {
 export class CertificationService {
   private firebaseService = inject(FirebaseService);
   private authService = inject(AuthService);
+  private blockchainService = inject(BlockchainService); // AJOUTÉ
 
   // Stockage local temporaire pour images
   private imageStore = new Map<string, string>();
@@ -305,129 +308,274 @@ export class CertificationService {
   /**
    * Compléter un checkpoint
    */
-async completeCheckpoint(
-  certificationId: string,
-  checkpointId: string,
-  proofData: {
-    photo?: File;
-    measurement?: { value: number; unit: string };
-    note?: string;
-  },
-): Promise<Certification> {
-  try {
+  async completeCheckpoint(
+    certificationId: string,
+    checkpointId: string,
+    proofData: {
+      photo?: File;
+      measurement?: { value: number; unit: string };
+      note?: string;
+    },
+  ): Promise<Certification> {
+    try {
+      // 1. Récupérer la certification
+      const certification = await this.getCertification(certificationId);
+      const checkpoint = certification.checkpoints.find(
+        (cp) => cp.id === checkpointId,
+      );
 
-    // 1. Récupérer la certification AVANT modification
-    const certification = await this.getCertification(certificationId);
-    const checkpoint = certification.checkpoints.find(
-      (cp) => cp.id === checkpointId,
-    );
-
-    if (!checkpoint) {
-      throw new Error('Checkpoint non trouvé');
-    }
-
-    if (checkpoint.completed) {
-      throw new Error('Checkpoint déjà complété');
-    }
-
-    // 2. Préparer les données du checkpoint mis à jour
-    const updatedCheckpoints = [...certification.checkpoints];
-    const checkpointIndex = checkpoint.order;
-
-    // Mettre à jour le checkpoint spécifique
-    updatedCheckpoints[checkpointIndex] = {
-      ...checkpoint,
-      completed: true,
-      completedAt: new Date(),
-      autoVerified: true,
-      verificationScore: 100,
-      verificationNotes: 'Checkpoint complété',
-      proofsCount: (checkpoint.proofsCount || 0) + 1,
-    };
-
-    // 3. Stocker l'image localement
-    if (proofData.photo) {
-      const photoBase64 = await this.fileToBase64(proofData.photo);
-      this.imageStore.set(`${certificationId}_${checkpointId}`, photoBase64);
-    }
-
-    // 4. Calculer les nouvelles valeurs
-    const completedCheckpoints = certification.completedCheckpoints + 1;
-    const currentCheckpointIndex = certification.currentCheckpointIndex + 1;
-    const newValidationScore = this.calculateUpdatedScore(certification, 100);
-
-    // 5. Préparer les updates
-    const updates: any = {
-      checkpoints: updatedCheckpoints,
-      completedCheckpoints: completedCheckpoints,
-      currentCheckpointIndex: currentCheckpointIndex,
-      validationScore: newValidationScore,
-      updatedAt: serverTimestamp(),
-    };
-
-    // 6. Vérifier si la certification est terminée
-    const isCompleted = completedCheckpoints === certification.totalCheckpoints;
-    if (isCompleted) {
-      updates.status = 'completed';
-      updates.actualHarvestDate = serverTimestamp();
-
-      if (newValidationScore >= 70) {
-        updates.verificationStatus = 'auto_verified';
-        updates.verifiedAt = serverTimestamp();
+      if (!checkpoint) {
+        throw new Error('Checkpoint non trouvé');
       }
+
+      // 2. Si photo fournie, upload sur IPFS + Blockchain
+      let blockchainData = null;
+      let ipfsData = null;
+
+      if (proofData.photo) {
+        // ✅ INTÉGRATION IPFS + BLOCKCHAIN
+        const blockchainResult =
+          await this.blockchainService.createCertificationProof(
+            certification.id,
+            proofData.photo,
+            'CHECKPOINT',
+            checkpointId,
+            checkpoint.order,
+            {
+              lat: certification.location.lat,
+              lng: certification.location.lng,
+            },
+          );
+
+        if (blockchainResult.success) {
+          ipfsData = blockchainResult.ipfsProof;
+          blockchainData = blockchainResult.blockchainProof;
+
+          console.log('✅ Données blockchain:', {
+            ipfsCID: ipfsData?.cid,
+            txHash: blockchainData?.txHash,
+            proofHash: blockchainData?.proofHash,
+          });
+        }
+      }
+
+      // 3. Préparer les nouvelles preuves avec le bon typage
+      const newProofs: CheckpointProof[] = [];
+
+      // Preuve photo
+      if (proofData.photo) {
+        const photoProof: CheckpointProof = {
+          type: 'photo',
+          photoUrl:
+            ipfsData?.url || `local://${certificationId}_${checkpointId}`,
+          photoHash:
+            ipfsData?.fileHash ||
+            this.generateSimpleHash(await this.fileToBase64(proofData.photo)),
+          timestamp: new Date(),
+          deviceInfo: navigator.userAgent?.substring(0, 100),
+          verified: true,
+        };
+        newProofs.push(photoProof);
+      }
+
+      // Preuve measurement (CORRECTION ICI)
+      if (proofData.measurement) {
+        const measurementProof: CheckpointProof = {
+          type: 'measurement',
+          measurement: {
+            value: proofData.measurement.value,
+            unit: proofData.measurement.unit,
+            timestamp: new Date(), // Ajouter le timestamp ici
+          },
+          timestamp: new Date(),
+          deviceInfo: navigator.userAgent?.substring(0, 100),
+          verified: true,
+        };
+        newProofs.push(measurementProof);
+      }
+
+      // Preuve note
+      if (proofData.note) {
+        const noteProof: CheckpointProof = {
+          type: 'note',
+          note: proofData.note,
+          timestamp: new Date(),
+          deviceInfo: navigator.userAgent?.substring(0, 100),
+          verified: true,
+        };
+        newProofs.push(noteProof);
+      }
+
+      // 4. Préparer le checkpoint mis à jour
+      const checkpointIndex = certification.checkpoints.findIndex(
+        (cp) => cp.id === checkpointId,
+      );
+
+      const updatedCheckpoint: CertificationCheckpoint = {
+        ...certification.checkpoints[checkpointIndex],
+        completed: true,
+        completedAt: new Date(),
+        autoVerified: true,
+        verificationScore: 100,
+        verificationNotes: 'Checkpoint complété',
+        proofsCount:
+          (certification.checkpoints[checkpointIndex].proofsCount || 0) +
+          newProofs.length,
+        proofs: [
+          ...(certification.checkpoints[checkpointIndex].proofs || []),
+          ...newProofs,
+        ],
+
+        // ✅ AJOUT DES DONNÉES BLOCKCHAIN
+        ...(blockchainData && {
+          blockchainTransactionId: blockchainData.txHash,
+          blockchainProofHash: blockchainData.proofHash,
+          blockchainVerified: blockchainData.verified,
+          blockchainTimestamp: new Date(blockchainData.timestamp * 1000),
+        }),
+
+        ...(ipfsData && {
+          ipfsCID: ipfsData.cid,
+          ipfsURL: ipfsData.url,
+        }),
+      };
+
+      const updatedCheckpoints = [...certification.checkpoints];
+      updatedCheckpoints[checkpointIndex] = updatedCheckpoint;
+
+      // 5. Calculer le nouveau score
+      const completedCheckpoints = certification.completedCheckpoints + 1;
+      const newValidationScore = this.calculateUpdatedScore(certification, 100);
+
+      // 6. Préparer les updates pour Firestore
+      const updates: any = {
+        checkpoints: updatedCheckpoints,
+        completedCheckpoints,
+        currentCheckpointIndex: certification.currentCheckpointIndex + 1,
+        validationScore: newValidationScore,
+        updatedAt: serverTimestamp(),
+      };
+
+      // 7. Vérifier si la certification est terminée
+      if (completedCheckpoints === certification.totalCheckpoints) {
+        updates.status = 'completed';
+        updates.actualHarvestDate = serverTimestamp();
+
+        if (newValidationScore >= 70) {
+          updates.verificationStatus = 'auto_verified';
+          updates.verifiedAt = serverTimestamp();
+        }
+      }
+
+      // 8. Sauvegarder dans Firestore
+      const firestoreData = this.prepareForFirestore(updates);
+      const certRef = doc(
+        this.firebaseService.firestore,
+        'certifications',
+        certificationId,
+      );
+      await updateDoc(certRef, firestoreData);
+
+      // 9. Stocker l'image localement si nécessaire
+      if (proofData.photo && !ipfsData) {
+        const photoBase64 = await this.fileToBase64(proofData.photo);
+        this.imageStore.set(`${certificationId}_${checkpointId}`, photoBase64);
+      }
+
+      // 10. Recharger la certification
+      const updatedCertification = await this.getCertification(certificationId);
+
+      // 11. Notification
+      this.showNotification(
+        'success',
+        `Checkpoint "${checkpoint.title}" complété! ${
+          blockchainData ? '✅ Blockchain' : '⚠️ Local seulement'
+        }`,
+      );
+
+      return updatedCertification;
+    } catch (error: any) {
+      console.error('❌ Erreur complétion checkpoint:', error);
+      throw error;
     }
-
-    // 7. Sauvegarder dans Firestore
-    const certRef = doc(
-      this.firebaseService.firestore,
-      'certifications',
-      certificationId,
-    );
-
-
-
-    // Préparer les données pour Firestore (convertir les dates)
-    const firestoreData = this.prepareForFirestore(updates);
-
-    await updateDoc(certRef, firestoreData);
-
-    // 8. Recharger la certification
-    const updatedCertification = await this.getCertification(certificationId);
-
-    this.showNotification(
-      'success',
-      `Checkpoint "${checkpoint.title}" complété avec succès!`,
-    );
-
-    return updatedCertification;
-  } catch (error: any) {
-    console.error('❌ Erreur complétion checkpoint:', error);
-    console.error('Code erreur:', error.code);
-    console.error('Message détaillé:', error.message);
-
-    let errorMessage = 'Erreur lors de la sauvegarde';
-    if (error.code === 'invalid-argument') {
-      errorMessage = 'Données invalides. Contactez le support.';
-    } else if (error.code === 'permission-denied') {
-      errorMessage = 'Permission refusée. Vérifiez vos droits.';
-    }
-
-    this.showNotification('error', errorMessage);
-    throw new Error(errorMessage);
   }
-}
 
-/**
- * Calculer le score mis à jour
- */
-private calculateUpdatedScore(certification: Certification, newCheckpointScore: number): number {
-  const totalScore = certification.validationScore * certification.completedCheckpoints;
-  const newTotalScore = totalScore + newCheckpointScore;
-  const newCompletedCount = certification.completedCheckpoints + 1;
+  /**
+   * Calculer le score mis à jour
+   */
+  private calculateUpdatedScore(
+    certification: Certification,
+    newCheckpointScore: number,
+  ): number {
+    const totalScore =
+      certification.validationScore * certification.completedCheckpoints;
+    const newTotalScore = totalScore + newCheckpointScore;
+    const newCompletedCount = certification.completedCheckpoints + 1;
 
-  return Math.round(newTotalScore / newCompletedCount);
-}
+    return Math.round(newTotalScore / newCompletedCount);
+  }
 
+  // Dans certification.service.ts - AJOUTEZ cette méthode dans la classe
+
+  /**
+   * Sauvegarder les données blockchain d'un checkpoint
+   */
+  private async saveBlockchainData(
+    certificationId: string,
+    checkpointId: string,
+    blockchainData: {
+      blockchainTransactionId: string;
+      blockchainProofHash: string;
+      ipfsCID?: string;
+      blockchainTimestamp: Date;
+      blockchainVerified: boolean;
+      blockNumber?: number;
+    },
+  ): Promise<void> {
+    try {
+      const certification = await this.getCertification(certificationId);
+      const checkpointIndex = certification.checkpoints.findIndex(
+        (cp) => cp.id === checkpointId,
+      );
+
+      if (checkpointIndex === -1) {
+        throw new Error('Checkpoint non trouvé');
+      }
+
+      // Préparer les mises à jour du checkpoint
+      const updatedCheckpoints = [...certification.checkpoints];
+      updatedCheckpoints[checkpointIndex] = {
+        ...updatedCheckpoints[checkpointIndex],
+        blockchainTransactionId: blockchainData.blockchainTransactionId,
+        blockchainProofHash: blockchainData.blockchainProofHash,
+        blockchainVerified: blockchainData.blockchainVerified,
+        blockchainTimestamp: blockchainData.blockchainTimestamp,
+        blockNumber: blockchainData.blockNumber,
+        ...(blockchainData.ipfsCID && {
+          ipfsCID: blockchainData.ipfsCID,
+          ipfsURL: `https://gateway.pinata.cloud/ipfs/${blockchainData.ipfsCID}`,
+        }),
+      };
+
+      // Mettre à jour dans Firestore
+      await updateDoc(
+        doc(this.firebaseService.firestore, 'certifications', certificationId),
+        {
+          checkpoints: updatedCheckpoints,
+          updatedAt: serverTimestamp(),
+        },
+      );
+
+      console.log('✅ Données blockchain sauvegardées:', {
+        certificationId,
+        checkpointId,
+        transactionId: blockchainData.blockchainTransactionId,
+      });
+    } catch (error) {
+      console.error('❌ Erreur sauvegarde blockchain:', error);
+      throw error;
+    }
+  }
   /**
    * Publier la certification comme produit
    */
@@ -584,7 +732,6 @@ private calculateUpdatedScore(certification: Certification, newCheckpointScore: 
 
   async getCertification(id: string): Promise<Certification> {
     try {
-
       const docRef = doc(this.firebaseService.firestore, 'certifications', id);
       const docSnap = await getDoc(docRef);
 
@@ -593,8 +740,6 @@ private calculateUpdatedScore(certification: Certification, newCheckpointScore: 
       }
 
       const data = docSnap.data();
-
-
 
       const certification = this.convertFromFirestore(data, docSnap.id);
 
@@ -886,7 +1031,6 @@ private calculateUpdatedScore(certification: Certification, newCheckpointScore: 
   }
 
   private convertFromFirestore(data: any, id: string): Certification {
-
     // CORRECTION CRITIQUE : Gérer différents formats de checkpoints
     let checkpointsArray: any[] = [];
 
@@ -898,7 +1042,6 @@ private calculateUpdatedScore(certification: Certification, newCheckpointScore: 
       // Par exemple : { '0': {...}, '1': {...} }
       checkpointsArray = Object.values(data.checkpoints);
     }
-
 
     return {
       id: id,
@@ -1273,7 +1416,6 @@ private calculateUpdatedScore(certification: Certification, newCheckpointScore: 
     type: 'success' | 'error' | 'info' | 'warning',
     message: string,
   ) {
-
     // Créer l'élément de notification
     const notification = document.createElement('div');
     const icons = {
@@ -1411,5 +1553,236 @@ private calculateUpdatedScore(certification: Certification, newCheckpointScore: 
     }
 
     return new File([u8arr], filename, { type: mime });
+  }
+
+  // Dans certification.service.ts - AJOUTER
+
+  /**
+   * Gestionnaire d'erreurs blockchain avec retry
+   */
+  private async handleBlockchainError(
+    error: any,
+    operation: string,
+    data: any,
+    maxRetries: number = 3,
+  ): Promise<any> {
+    let lastError = error;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔄 Tentative ${attempt}/${maxRetries} pour ${operation}`);
+
+        if (operation === 'registerProof') {
+          return await this.blockchainService.registerProofOnEthereum(
+            data.productId,
+            data.proofHash,
+            data.ipfsCID,
+            data.step,
+            data.checkpointId,
+          );
+        }
+
+        // Ajouter d'autres opérations si nécessaire
+      } catch (retryError: any) {
+        lastError = retryError;
+
+        if (attempt < maxRetries) {
+          // Attente exponentielle avant retry
+          const delay = Math.pow(2, attempt) * 1000;
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
+    }
+
+    throw lastError;
+  }
+
+  /**
+   * Enregistrer avec fallback local
+   */
+  private async registerProofWithFallback(
+    productId: string,
+    proofHash: string,
+    ipfsCID: string,
+    step: string,
+    checkpointId?: string,
+  ): Promise<{
+    success: boolean;
+    txHash?: string;
+    localFallback: boolean;
+  }> {
+    try {
+      // Tentative blockchain
+      const result = await this.handleBlockchainError(null, 'registerProof', {
+        productId,
+        proofHash,
+        ipfsCID,
+        step,
+        checkpointId,
+      });
+
+      if (result.success) {
+        return {
+          success: true,
+          txHash: result.txHash,
+          localFallback: false,
+        };
+      }
+
+      throw new Error('Blockchain non disponible');
+    } catch (error) {
+      console.warn('⚠️ Fallback local activé pour', {
+        productId,
+        checkpointId,
+      });
+
+      // Fallback local
+      await this.saveLocalFallbackProof({
+        productId,
+        proofHash,
+        ipfsCID,
+        step,
+        checkpointId,
+        timestamp: Date.now(),
+      });
+
+      return {
+        success: true,
+        localFallback: true,
+      };
+    }
+  }
+
+  /**
+   * Sauvegarder une preuve en local (fallback)
+   */
+  private async saveLocalFallbackProof(proof: any): Promise<void> {
+    try {
+      // Sauvegarder dans une collection Firestore séparée
+      await addDoc(
+        collection(this.firebaseService.firestore, 'blockchain_fallback'),
+        {
+          ...proof,
+          createdAt: serverTimestamp(),
+          status: 'pending_sync',
+          syncAttempts: 0,
+        },
+      );
+
+      console.log('✅ Preuve sauvegardée en local (fallback)');
+    } catch (error) {
+      console.error('❌ Erreur sauvegarde fallback:', error);
+    }
+  }
+
+  /**
+   * Synchroniser les preuves fallback
+   */
+  async syncFallbackProofs(): Promise<void> {
+    try {
+      const q = query(
+        collection(this.firebaseService.firestore, 'blockchain_fallback'),
+        where('status', '==', 'pending_sync'),
+        orderBy('createdAt', 'asc'),
+        limit(10), // Limiter pour éviter les rate limits
+      );
+
+      const snapshot = await getDocs(q);
+
+      for (const docSnap of snapshot.docs) {
+        const proof = docSnap.data();
+
+        try {
+          // Tenter de synchroniser sur blockchain
+          const result = await this.blockchainService.registerProofOnEthereum(
+            proof['productId'],
+            proof['proofHash'],
+            proof['ipfsCID'],
+            proof['step'],
+            proof['checkpointId'],
+          );
+
+          if (result.success && result.txHash) {
+            // Mettre à jour comme synchronisé
+            await updateDoc(docSnap.ref, {
+              status: 'synced',
+              txHash: result.txHash,
+              syncedAt: serverTimestamp(),
+            });
+
+            // Mettre à jour la certification
+            await this.updateCheckpointWithBlockchainData(
+              proof['productId'],
+              proof['checkpointId'],
+              {
+                blockchainTransactionId: result.txHash,
+                blockchainVerified: true,
+              },
+            );
+
+            console.log(`✅ Preuve fallback synchronisée: ${docSnap.id}`);
+          } else {
+            // Incrémenter les tentatives
+            await updateDoc(docSnap.ref, {
+              syncAttempts: (proof['syncAttempts'] || 0) + 1,
+              lastSyncAttempt: serverTimestamp(),
+              ...(proof['syncAttempts'] >= 5 && { status: 'failed' }),
+            });
+          }
+        } catch (error) {
+          console.error(`❌ Erreur synchro fallback ${docSnap.id}:`, error);
+        }
+
+        // Petite pause entre les synchronisations
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    } catch (error) {
+      console.error('❌ Erreur synchronisation fallback:', error);
+    }
+  }
+
+  private async updateCheckpointWithBlockchainData(
+    certificationId: string,
+    checkpointId: string,
+    data: {
+      blockchainTransactionId: string;
+      blockchainVerified: boolean;
+    },
+  ): Promise<void> {
+    try {
+      const certification = await this.getCertification(certificationId);
+      const checkpointIndex = certification.checkpoints.findIndex(
+        (cp) => cp.id === checkpointId,
+      );
+
+      if (checkpointIndex === -1) {
+        throw new Error('Checkpoint non trouvé');
+      }
+
+      const updatedCheckpoints = [...certification.checkpoints];
+      updatedCheckpoints[checkpointIndex] = {
+        ...updatedCheckpoints[checkpointIndex],
+        blockchainTransactionId: data.blockchainTransactionId,
+        blockchainVerified: data.blockchainVerified,
+        blockchainTimestamp: new Date(),
+      };
+
+      await updateDoc(
+        doc(this.firebaseService.firestore, 'certifications', certificationId),
+        {
+          checkpoints: updatedCheckpoints,
+          updatedAt: serverTimestamp(),
+        },
+      );
+
+      console.log('✅ Checkpoint mis à jour avec données blockchain:', {
+        certificationId,
+        checkpointId,
+        transactionId: data.blockchainTransactionId,
+      });
+    } catch (error) {
+      console.error('❌ Erreur mise à jour checkpoint blockchain:', error);
+      throw error;
+    }
   }
 }

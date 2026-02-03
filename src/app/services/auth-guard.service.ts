@@ -2,10 +2,16 @@ import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from './auth.service';
 
+// auth-guard.service.ts
 export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
   const currentUrl = state.url;
+
+  // ✅ AJOUT: Exclure /test-blockchain de la vérification d'authentification
+  if (currentUrl === '/test-blockchain' || currentUrl.startsWith('/test-blockchain/')) {
+    return true; // Laisser passer sans vérification
+  }
 
   // Si Firebase est en cours de chargement, attendre
   if (authService.isInitializing()) {
