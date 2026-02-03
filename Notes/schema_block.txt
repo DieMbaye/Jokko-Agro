@@ -1,0 +1,264 @@
+📊 Schéma de Diagramme d'État - Système de Certification Blockchain
+
+🔄 Diagramme d'État du Processus de Certification
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          DIAGRAMME D'ÉTAT - CERTIFICATION                   │
+│                          Système Agrinova avec Blockchain                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                                    ┌─────────────┐
+                                    │   DRAFT     │
+                                    │  (Brouillon)│
+                                    └──────┬──────┘
+                                           │
+                                    📝 Création certification
+                                           │
+                                           ▼
+                                    ┌─────────────┐
+                           ┌────────┤   ACTIVE    │
+                           │        │ (En cours)  │
+                           │        └──────┬──────┘
+                           │               │
+                    📸 Preuve checkpoint   │
+                           │               │
+                           │               ▼
+                           │        ┌─────────────┐
+                           │        │ CHECKPOINT  │◄───┐
+                           │        │  Complété   │    │
+                           │        └──────┬──────┘    │
+                           │               │           │
+                    ⛓️ Enregistrement      │           │
+                      sur blockchain       │           │
+                           │               │           │
+                           │               ▼           │
+                           │        ┌─────────────┐    │
+                           │        │  VERIFIED   │    │
+                           │        │ (Blockchain)│    │
+                           │        └──────┬──────┘    │
+                           │               │           │
+                           │               │           │
+                           │               ▼           │
+                           └──────► Tous checkpoints   │
+                                      complétés?       │
+                                           │           │
+                                           ▼           │
+                                    ┌─────────────┐    │
+                                    │ COMPLETED   │    │
+                                    │ (Terminé)   │    │
+                                    └──────┬──────┘    │
+                                           │           │
+                                    ✅ Vérification    │
+                                      automatique      │
+                                           │           │
+                                           ▼           │
+                                    ┌─────────────┐    │
+                                    │   VERIFIED  │────┘
+                                    │  (Certifié) │
+                                    └──────┬──────┘
+                                           │
+                                    🌐 Publication produit
+                                           │
+                                           ▼
+                                    ┌─────────────┐
+                                    │ PUBLISHED   │
+                                    │ (Publié)    │
+                                    └──────┬──────┘
+                                           │
+                                    🔍 Vérification publique
+                                           │
+                                           ▼
+                                    ┌─────────────┐
+                                    │  CONSULTED  │
+                                    │ (Consulté)  │
+                                    └─────────────┘
+📋 États Détaillés avec Actions
+1. État : DRAFT (Brouillon)
+┌─────────────────────────────────────────┐
+│              ÉTAT: DRAFT                │
+├─────────────────────────────────────────┤
+│ Description: Certification créée mais   │
+│              non démarrée               │
+├─────────────────────────────────────────┤
+│ Données:                                │
+│  • Template sélectionné                 │
+│  • Nom produit défini                   │
+│  • Photo initiale                       │
+│  • Localisation GPS                     │
+├─────────────────────────────────────────┤
+│ Transitions possibles:                  │
+│  → ACTIVE: Démarrer certification       │
+│  → CANCELLED: Annuler                   │
+└─────────────────────────────────────────┘
+
+2. État : ACTIVE (En cours)
+┌─────────────────────────────────────────┐
+│              ÉTAT: ACTIVE               │
+├─────────────────────────────────────────┤
+│ Description: Certification en cours     │
+│              de suivi                   │
+├─────────────────────────────────────────┤
+│ Données:                                │
+│  • Date de début                        │
+│  • Checkpoints planifiés                │
+│  • Producteur assigné                   │
+│  • Score initial: 100%                  │
+├─────────────────────────────────────────┤
+│ Transitions possibles:                  │
+│  → CHECKPOINT: Preuve ajoutée           │
+│  → CANCELLED: Annulation                │
+│  → COMPLETED: Tous checkpoints terminés │
+└─────────────────────────────────────────┘
+
+3. État : CHECKPOINT (Preuve complétée)
+┌─────────────────────────────────────────┐
+│           ÉTAT: CHECKPOINT              │
+├─────────────────────────────────────────┤
+│ Description: Preuve de checkpoint       │
+│              soumise                    │
+├─────────────────────────────────────────┤
+│ Actions:                                │
+│  1. 📸 Prendre photo                    │
+│  2. 📍 Capturer GPS                     │
+│  3. 📏 Ajouter mesure                   │
+│  4. 📝 Noter observations               │
+├─────────────────────────────────────────┤
+│ Processus blockchain:                   │
+│  → Photo → IPFS → CID                   │
+│  → Hash → Smart Contract → TX           │
+│  → Firestore ← Données TX               │
+├─────────────────────────────────────────┤
+│ Transitions:                            │
+│  → VERIFIED: Transaction confirmée      │
+│  → ACTIVE: Retour au suivi              │
+└─────────────────────────────────────────┘
+
+4. État : VERIFIED (Blockchain)
+┌─────────────────────────────────────────┐
+│           ÉTAT: VERIFIED                │
+├─────────────────────────────────────────┤
+│ Description: Checkpoint certifié        │
+│              sur blockchain             │
+├─────────────────────────────────────────┤
+│ Preuves immuables:                      │
+│  • Hash SHA256: 62df1c21...d6024e1     │
+│  • Transaction: 0x73bfae9...e964529    │
+│  • IPFS CID: bafkreieyo...6bnesu       │
+│  • Timestamp: 1770122110 (Unix)        │
+├─────────────────────────────────────────┤
+│ Vérification:                           │
+│  • Confirmations: 15+ blocs             │
+│  • Statut: Success (0x1)                │
+│  • Explorer: Etherscan                  │
+├─────────────────────────────────────────┤
+│ Transitions:                            │
+│  → ACTIVE: Prochain checkpoint          │
+│  → COMPLETED: Dernier checkpoint        │
+└─────────────────────────────────────────┘
+
+
+5. État : COMPLETED (Terminé)
+
+┌─────────────────────────────────────────┐
+│           ÉTAT: COMPLETED               │
+├─────────────────────────────────────────┤
+│ Description: Tous checkpoints           │
+│              complétés                  │
+├─────────────────────────────────────────┤
+│ Calculs:                                │
+│  • Score final: Moyenne checkpoints     │
+│  • Couverture blockchain: X%            │
+│  • Date récolte: Timestamp              │
+├─────────────────────────────────────────┤
+│ Vérification automatique:               │
+│  • Score ≥ 70% → Auto-verification      │
+│  • Blockchain ≥ 50% → Bonus confiance   │
+│  • Incohérences → Alerte                │
+├─────────────────────────────────────────┤
+│ Transitions:                            │
+│  → VERIFIED: Certification validée      │
+│  → REJECTED: Score insuffisant          │
+└─────────────────────────────────────────┘
+
+6. État : PUBLISHED (Publié)
+┌─────────────────────────────────────────┐
+│           ÉTAT: PUBLISHED               │
+├─────────────────────────────────────────┤
+│ Description: Produit publié sur         │
+│              le marché                  │
+├─────────────────────────────────────────┤
+│ Informations publiques:                 │
+│  • Fiche produit                        │
+│  • QR Code de vérification              │
+│  • Badges certifications                │
+│  • Timeline blockchain                  │
+├─────────────────────────────────────────┤
+│ Vérification publique:                  │
+│  • URL: /verify/{id}                    │
+│  • QR Code → Données blockchain         │
+│  • Etherscan link                       │
+│  • IPFS photos                          │
+├─────────────────────────────────────────┤
+│ Transitions:                            │
+│  → CONSULTED: Acheteur vérifie          │
+└─────────────────────────────────────────┘
+
+🔗 Processus Blockchain Détaillé
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    PROCESSUS BLOCKCHAIN - SÉQUENCE                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+      Producteur                         Frontend                          Backend
+          │                                  │                                  │
+          │  1. Preuve checkpoint            │                                  │
+          │─────────────────────────────────▶│                                  │
+          │                                  │                                  │
+          │                                  │  2. Upload IPFS                  │
+          │                                  │─────────────────────────────────▶│
+          │                                  │                                  │
+          │                                  │                                  │──┐
+          │                                  │                                  │  │ 3. Pinata IPFS
+          │                                  │                                  │◀─┘
+          │                                  │                                  │
+          │                                  │  4. CID + Hash retour           │
+          │                                  │◀─────────────────────────────────│
+          │                                  │                                  │
+          │                                  │  5. Transaction Ethereum        │
+          │                                  │─────────────────────────────────▶│
+          │                                  │                                  │
+          │                                  │                                  │──┐
+          │                                  │                                  │  │ 6. MetaMask Sign
+          │                                  │                                  │◀─┘
+          │                                  │                                  │
+          │                                  │                                  │──┐
+          │                                  │                                  │  │ 7. Alchemy RPC
+          │                                  │                                  │◀─┘
+          │                                  │                                  │
+          │                                  │  8. TX Hash retour              │
+          │                                  │◀─────────────────────────────────│
+          │                                  │                                  │
+          │                                  │  9. Sauvegarde Firestore        │
+          │                                  │─────────────────────────────────▶│
+          │                                  │                                  │
+          │                                  │                                  │──┐
+          │                                  │                                  │  │ 10. Sync service
+          │                                  │                                  │◀─┘
+          │                                  │                                  │
+          │  11. Confirmation UI             │                                  │
+          │◀─────────────────────────────────│                                  │
+          │                                  │                                  │
+
+
+📊 Flux de Données
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  CAPTURE    │     │   IPFS      │     │ BLOCKCHAIN  │     │  FIRESTORE  │
+│   DONNÉES   │────▶│  (Pinata)   │────▶│ (Ethereum)  │────▶│ (Backup)    │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+     │                     │                     │                     │
+     ▼                     ▼                     ▼                     ▼
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Photo     │     │    CID      │     │   TX Hash   │     │   Métadata  │
+│   GPS       │     │    Hash     │     │  Proof Hash │     │   Scores    │
+│  Mesure     │     │  Timestamp  │     │  Timestamp  │     │   Statuts   │
+│   Note      │     │             │     │   Block #   │     │   Synced    │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘

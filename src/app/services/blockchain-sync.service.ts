@@ -1,11 +1,11 @@
 // blockchain-sync.service.ts
 import { Injectable, inject } from '@angular/core';
-import { Firestore } from '@angular/fire/firestore';
+import { collection, doc, Firestore, getDoc, getDocs, limit, orderBy, query, serverTimestamp, updateDoc, where } from '@angular/fire/firestore';
 import { BlockchainService } from '../blockchain/services/blockchain.service';
 import { CertificationService } from './certification.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class BlockchainSyncService {
   private firestore = inject(Firestore);
@@ -23,9 +23,12 @@ export class BlockchainSyncService {
       clearInterval(this.syncInterval);
     }
 
-    this.syncInterval = setInterval(() => {
-      this.syncPendingTransactions();
-    }, intervalMinutes * 60 * 1000);
+    this.syncInterval = setInterval(
+      () => {
+        this.syncPendingTransactions();
+      },
+      intervalMinutes * 60 * 1000,
+    );
 
     // Sync immédiat au démarrage
     setTimeout(() => this.syncPendingTransactions(), 5000);
@@ -41,6 +44,7 @@ export class BlockchainSyncService {
     }
   }
 
+
   /**
    * Synchroniser les transactions en attente
    */
@@ -51,16 +55,55 @@ export class BlockchainSyncService {
     console.log('🔄 Début synchronisation blockchain...');
 
     try {
-      // Récupérer toutes les certifications avec transactions en attente
-      // À implémenter : requête Firestore pour les checkpoints avec txHash mais non vérifiés
+      // 1. Récupérer TOUTES les certifications avec des transactions blockchain
+      const q = query(
+        collection(this.firestore, 'certifications'),
+        where('status', 'in', ['active', 'completed', 'verified']),
+        orderBy('updatedAt', 'desc'),
+        limit(20), // Limiter pour éviter les surcharges
+      );
 
-      const pendingItems: string | any[] = []; // Récupérer depuis Firestore
+      const snapshot = await getDocs(q);
+      const allTransactions: any[] = [];
 
-      for (const item of pendingItems) {
-        await this.syncTransaction(item);
+      // 2. Extraire toutes les transactions blockchain
+      snapshot.docs.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (data['checkpoints'] && Array.isArray(data['checkpoints'])) {
+          data['checkpoints'].forEach((checkpoint: any, index: number) => {
+            if (checkpoint.completed && checkpoint.blockchainTransactionId) {
+              allTransactions.push({
+                certificationId: docSnap.id,
+                checkpointId: checkpoint.id,
+                checkpointIndex: index,
+                txHash: checkpoint.blockchainTransactionId,
+                currentStatus: checkpoint.blockchainVerified
+                  ? 'verified'
+                  : 'pending',
+              });
+            }
+          });
+        }
+      });
+
+      console.log(`📊 Transactions à vérifier: ${allTransactions.length}`);
+
+      // 3. Vérifier chaque transaction
+      let verifiedCount = 0;
+      let updatedCount = 0;
+
+      for (const item of allTransactions) {
+        const result = await this.syncTransaction(item);
+        if (result.updated) updatedCount++;
+        if (result.verified) verifiedCount++;
+
+        // Petite pause pour éviter les rate limits
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
-      console.log(`✅ Synchronisation terminée: ${pendingItems.length} transactions vérifiées`);
+      console.log(
+        `✅ Synchronisation terminée: ${verifiedCount} vérifiées, ${updatedCount} mises à jour`,
+      );
     } catch (error) {
       console.error('❌ Erreur synchronisation:', error);
     } finally {
@@ -71,46 +114,102 @@ export class BlockchainSyncService {
   /**
    * Synchroniser une transaction spécifique
    */
-  private async syncTransaction(item: any): Promise<void> {
+  private async syncTransaction(item: any): Promise<{
+    updated: boolean;
+    verified: boolean;
+  }> {
     try {
-      const details = await this.blockchainService.getTransactionDetails(item.txHash);
+      const details = await this.blockchainService.getTransactionDetails(
+        item.txHash,
+      );
 
-      // Mettre à jour Firestore selon le statut
-      if (details.confirmed) {
-        await this.updateCheckpointStatus(
-          item.certificationId,
-          item.checkpointId,
-          {
-            blockchainVerified: details.status === 'success',
-            blockchainConfirmations: details.confirmations,
-            lastVerificationCheck: new Date()
-          }
-        );
-
-        if (details.status === 'success') {
-          console.log(`✅ Transaction confirmée: ${item.txHash.substring(0, 10)}...`);
-        } else {
-          console.warn(`⚠️ Transaction échouée: ${item.txHash.substring(0, 10)}...`);
+      // Si la transaction est maintenant confirmée mais pas encore marquée comme vérifiée
+      if (details.confirmed && details.status === 'success') {
+        if (item.currentStatus !== 'verified') {
+          // Mettre à jour Firestore
+          await this.updateCheckpointBlockchainStatus(
+            item.certificationId,
+            item.checkpointIndex,
+            {
+              blockchainVerified: true,
+              blockchainConfirmations: details.confirmations,
+              lastBlockchainCheck: new Date(),
+              transactionStatus: 'confirmed',
+            },
+          );
+          return { updated: true, verified: true };
         }
+        return { updated: false, verified: true };
       }
+
+      // Si la transaction a échoué
+      if (details.confirmed && details.status === 'failed') {
+        await this.updateCheckpointBlockchainStatus(
+          item.certificationId,
+          item.checkpointIndex,
+          {
+            blockchainVerified: false,
+            transactionStatus: 'failed',
+            lastBlockchainCheck: new Date(),
+            error: 'Transaction failed on blockchain',
+          },
+        );
+        return { updated: true, verified: false };
+      }
+
+      return { updated: false, verified: false };
     } catch (error) {
       console.error(`❌ Erreur synchro transaction ${item.txHash}:`, error);
+      return { updated: false, verified: false };
     }
   }
 
   /**
-   * Mettre à jour le statut d'un checkpoint
+   * Mettre à jour le statut blockchain d'un checkpoint
    */
-  private async updateCheckpointStatus(
+  private async updateCheckpointBlockchainStatus(
     certificationId: string,
-    checkpointId: string,
-    updates: any
+    checkpointIndex: number,
+    updates: any,
   ): Promise<void> {
     try {
-      // À implémenter : mise à jour Firestore
-      console.log('📝 Mise à jour checkpoint:', { certificationId, checkpointId, updates });
+      const certRef = doc(this.firestore, 'certifications', certificationId);
+      const certSnap = await getDoc(certRef);
+
+      if (!certSnap.exists()) {
+        console.error(`❌ Certification ${certificationId} non trouvée`);
+        return;
+      }
+
+      const certification = certSnap.data();
+      if (
+        !certification['checkpoints'] ||
+        !Array.isArray(certification['checkpoints'])
+      ) {
+        console.error(`❌ Checkpoints non trouvés pour ${certificationId}`);
+        return;
+      }
+
+      // Cloner et mettre à jour les checkpoints
+      const updatedCheckpoints = [...certification['checkpoints']];
+      if (updatedCheckpoints[checkpointIndex]) {
+        updatedCheckpoints[checkpointIndex] = {
+          ...updatedCheckpoints[checkpointIndex],
+          ...updates,
+        };
+      }
+
+      // Mettre à jour Firestore
+      await updateDoc(certRef, {
+        checkpoints: updatedCheckpoints,
+        updatedAt: serverTimestamp(),
+      });
+
+      console.log(
+        `✅ Checkpoint ${checkpointIndex} mis à jour pour ${certificationId}`,
+      );
     } catch (error) {
-      console.error('❌ Erreur mise à jour checkpoint:', error);
+      console.error(`❌ Erreur mise à jour checkpoint:`, error);
     }
   }
 
@@ -121,9 +220,12 @@ export class BlockchainSyncService {
     valid: boolean;
     details: Array<{
       checkpointId: string;
+      title: string;
       onChain: boolean;
       verified: boolean;
       confirmations: number;
+      txHash?: string;
+      lastCheck: Date;
     }>;
     summary: {
       totalCheckpoints: number;
@@ -132,29 +234,95 @@ export class BlockchainSyncService {
       verificationRate: number;
     };
   }> {
-    const results = await this.blockchainService.verifyCertificationProofs(certificationId);
+    try {
+      const certRef = doc(this.firestore, 'certifications', certificationId);
+      const certSnap = await getDoc(certRef);
 
-    const details = results.map(result => ({
-      checkpointId: result.checkpointId,
-      onChain: !!result.txHash,
-      verified: result.verifiedOnChain,
-      confirmations: result.details?.confirmations || 0
-    }));
-
-    const totalCheckpoints = details.length;
-    const onChainCount = details.filter(d => d.onChain).length;
-    const verifiedCount = details.filter(d => d.verified).length;
-    const verificationRate = totalCheckpoints > 0 ? (verifiedCount / totalCheckpoints) * 100 : 0;
-
-    return {
-      valid: verificationRate > 70, // Seuil de 70%
-      details,
-      summary: {
-        totalCheckpoints,
-        onChainCount,
-        verifiedCount,
-        verificationRate
+      if (!certSnap.exists()) {
+        throw new Error('Certification non trouvée');
       }
-    };
+
+      const certification = certSnap.data();
+      const checkpoints = certification['checkpoints'] || [];
+
+      const details = [];
+      let onChainCount = 0;
+      let verifiedCount = 0;
+
+      for (const checkpoint of checkpoints) {
+        if (checkpoint.completed) {
+          const hasBlockchain = !!checkpoint.blockchainTransactionId;
+          const isVerified = checkpoint.blockchainVerified === true;
+
+          let confirmations = 0;
+          if (hasBlockchain && checkpoint.blockchainTransactionId) {
+            // Vérifier la transaction sur la blockchain
+            const txDetails =
+              await this.blockchainService.getTransactionDetails(
+                checkpoint.blockchainTransactionId,
+              );
+            confirmations = txDetails.confirmations || 0;
+          }
+
+          details.push({
+            checkpointId: checkpoint.id,
+            title: checkpoint.title,
+            onChain: hasBlockchain,
+            verified: isVerified,
+            confirmations,
+            txHash: checkpoint.blockchainTransactionId,
+            lastCheck: new Date(),
+          });
+
+          if (hasBlockchain) onChainCount++;
+          if (isVerified) verifiedCount++;
+        }
+      }
+
+      const totalCheckpoints = details.length;
+      const verificationRate =
+        totalCheckpoints > 0
+          ? Math.round((verifiedCount / totalCheckpoints) * 100)
+          : 0;
+
+      const valid = verificationRate >= 70; // Seuil de 70%
+
+      return {
+        valid,
+        details,
+        summary: {
+          totalCheckpoints,
+          onChainCount,
+          verifiedCount,
+          verificationRate,
+        },
+      };
+    } catch (error) {
+      console.error('❌ Erreur vérification intégrité:', error);
+      throw error;
+    }
   }
+
+
+
+  /**
+   * Mettre à jour le statut d'un checkpoint
+   */
+  private async updateCheckpointStatus(
+    certificationId: string,
+    checkpointId: string,
+    updates: any,
+  ): Promise<void> {
+    try {
+      // À implémenter : mise à jour Firestore
+      console.log('📝 Mise à jour checkpoint:', {
+        certificationId,
+        checkpointId,
+        updates,
+      });
+    } catch (error) {
+      console.error('❌ Erreur mise à jour checkpoint:', error);
+    }
+  }
+
 }
