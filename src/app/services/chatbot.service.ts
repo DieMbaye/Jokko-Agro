@@ -11,6 +11,21 @@ export class ChatbotService {
     producers: any[],
   ): Promise<string> {
     const q = question.toLowerCase().trim();
+    /* =============================
+   SALUTATIONS & POLITESSE
+============================= */
+if (this.isGreeting(q)) {
+  return this.getGreetingResponse();
+}
+
+if (this.isThankYouMessage(q)) {
+  return "🙏 De rien ! Je suis là pour vous aider.";
+}
+
+if (this.isGoodbye(q)) {
+  return this.getGoodbyeResponse();
+}
+
 
     /* =============================
        1️⃣ REMERCIEMENTS
@@ -740,4 +755,48 @@ export class ChatbotService {
 
     return response;
   }
+
+  /* =============================
+   SALUTATIONS
+============================= */
+private isGreeting(msg: string): boolean {
+  return [
+    'bonjour',
+    'salut',
+    'hello',
+    'hey',
+    'hi',
+    'bonsoir',
+  ].some(word => msg.includes(word));
+}
+
+private getGreetingResponse(): string {
+  return (
+    `👋 Bonjour ! Je suis votre assistant Jokko-Agro.\n\n` +
+    `Je peux vous aider à :\n` +
+    `• 💰 Estimer le prix d’un produit\n` +
+    `• 🔄 Comparer les producteurs\n` +
+    `• 📦 Voir les produits disponibles\n` +
+    `• 🛒 Expliquer comment commander\n\n` +
+    `💡 Exemple : *"Comparer producteurs tomates"*`
+  );
+}
+
+/* =============================
+   AU REVOIR
+============================= */
+private isGoodbye(msg: string): boolean {
+  return [
+    'au revoir',
+    'bye',
+    'à bientôt',
+    'a bientot',
+    'ciao',
+  ].some(word => msg.includes(word));
+}
+
+private getGoodbyeResponse(): string {
+  return `👋 À bientôt ! N’hésitez pas à revenir si vous avez besoin d’aide.`;
+}
+
 }

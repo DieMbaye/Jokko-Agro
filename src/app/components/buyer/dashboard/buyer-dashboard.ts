@@ -260,39 +260,44 @@ Math: any;
     }
   }
 
- sendMessage() {
+sendMessage() {
   if (!this.currentMessage.trim() || this.isProcessing) return;
 
   const userInput = this.currentMessage.trim();
   this.currentMessage = '';
-
   this.isProcessing = true;
 
-  // ➕ Afficher le message utilisateur
+  // ➕ afficher le message utilisateur
   this.addMessage(userInput, true);
 
   let finalQuestion = userInput;
 
-  // 🔥 Gestion du contexte multi-étapes
-  if (this.pendingIntent === 'estimate') {
-    finalQuestion = `estimation ${userInput}`;
-    this.pendingIntent = null;
-  }
+  /* ==================================================
+     🔥 GESTION DES QUESTIONS MULTI-ÉTAPES
+     (EX: comparer → tomate)
+  ================================================== */
 
   if (this.pendingIntent === 'compare') {
     finalQuestion = `comparer producteurs ${userInput}`;
     this.pendingIntent = null;
   }
 
-  // 🤖 Traitement IA
+  else if (this.pendingIntent === 'estimate') {
+    finalQuestion = `estimation ${userInput}`;
+    this.pendingIntent = null;
+  }
+
+  /* ==================================================
+     🤖 APPEL DU CHATBOT
+  ================================================== */
+
   this.processQuestion(finalQuestion)
     .then((response) => {
-      // ➕ Afficher la réponse du bot
+      // ➕ afficher la réponse du bot
       this.addMessage(response, false);
 
-      // 🔊 Lecture vocale UNIQUEMENT si la question vient du micro
+      // 🔊 lecture vocale uniquement si la question vient du micro
       if (this.isVoiceInput) {
-        // petit délai pour éviter conflit DOM / Speech API
         setTimeout(() => {
           this.speak(response);
         }, 300);
@@ -303,10 +308,10 @@ Math: any;
     })
     .finally(() => {
       this.isProcessing = false;
-      // ⚠️ NE PAS remettre isVoiceInput à false ici
-      // C’est speak().onend qui s’en charge
+      // ⚠️ isVoiceInput est réinitialisé dans speak().onend
     });
 }
+
 async startAudioVisualization() {
   this.audioContext = new AudioContext();
 
@@ -495,7 +500,7 @@ async startVoiceInput() {
 
 
 
- speak(text: string) {
+speak(text: string) {
   if (!('speechSynthesis' in window)) return;
 
   // Stop toute lecture précédente
@@ -504,29 +509,50 @@ async startVoiceInput() {
   const cleanText = this.cleanTextForSpeech(text);
   if (!cleanText) return;
 
-  const utterance = new SpeechSynthesisUtterance(cleanText);
-  utterance.lang = 'fr-FR';
-  utterance.rate = 0.95;
-  utterance.pitch = 1;
+  // 🔹 Découper en phrases naturelles
+  const sentences = cleanText
+    .split(/(?<=[.!?])\s+/)
+    .filter(s => s.length > 0);
 
-  this.currentUtterance = utterance;
+  let index = 0;
   this.isSpeaking = true;
   this.isSpeechPaused = false;
 
-  utterance.onend = () => {
-    this.isSpeaking = false;
-    this.isSpeechPaused = false;
-    this.currentUtterance = null;
+  const speakNext = () => {
+    if (index >= sentences.length) {
+      // ✅ FIN PROPRE
+      this.isSpeaking = false;
+      this.currentUtterance = null;
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(sentences[index]);
+    utterance.lang = 'fr-FR';
+    utterance.rate = 0.95;   // vitesse naturelle
+    utterance.pitch = 1;     // voix normale
+    utterance.volume = 1;
+
+    this.currentUtterance = utterance;
+
+    utterance.onend = () => {
+      index++;
+      // ⏸️ petite pause naturelle entre phrases
+      setTimeout(() => {
+        speakNext();
+      }, 300);
+    };
+
+    utterance.onerror = () => {
+      this.isSpeaking = false;
+      this.currentUtterance = null;
+    };
+
+    window.speechSynthesis.speak(utterance);
   };
 
-  utterance.onerror = () => {
-    this.isSpeaking = false;
-    this.isSpeechPaused = false;
-    this.currentUtterance = null;
-  };
-
-  window.speechSynthesis.speak(utterance);
+  speakNext();
 }
+
 
 pauseSpeech() {
   if (this.isSpeaking && !this.isSpeechPaused) {
