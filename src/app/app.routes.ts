@@ -5,6 +5,7 @@ import {
   producerGuard,
   buyerGuard,
 } from './services/auth-guard.service';
+
 export const routes: Routes = [
   // Routes publiques
   {
@@ -18,6 +19,7 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () =>
       import('./components/auth/login/login').then((m) => m.LoginComponent),
+    canActivate: [authGuard],
   },
   {
     path: 'register',
@@ -25,6 +27,7 @@ export const routes: Routes = [
       import('./components/auth/register/register').then(
         (m) => m.RegisterComponent,
       ),
+    canActivate: [authGuard],
   },
 
   // Routes protégées - Sélection de rôle
@@ -186,6 +189,13 @@ export const routes: Routes = [
         (m) => m.BuyerSettingsComponent,
       ),
     canActivate: [buyerGuard],
+  },
+  {
+    path: 'access-denied',
+    loadComponent: () =>
+      import('./components/access-denied/access-denied.component').then(
+        (m) => m.AccessDeniedComponent,
+      ),
   },
 
   { path: '**', redirectTo: '' },

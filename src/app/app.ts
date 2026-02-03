@@ -1,6 +1,18 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewEncapsulation,
+  Inject,
+  PLATFORM_ID,
+} from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import {
+  RouterOutlet,
+  Router,
+  NavigationEnd,
+  NavigationStart,
+} from '@angular/router';
 import { SidebarComponent, SidebarConfig } from './shared/sidebar/sidebar';
 import { VoiceAssistantComponent } from './components/voice-assistant/voice-assistant';
 import { AuthService } from './services/auth.service';
@@ -27,102 +39,288 @@ export class App implements OnInit {
   isCollapsed = false;
   sidebarConfig: SidebarConfig | null = null;
   isLoading = true;
+  isCheckingAuth = true;
+  loadingMessage = "Chargement de l'application...";
 
+  private hasProcessedInitialNavigation = false;
   private noSidebarRoutes = ['/', '/login', '/register'];
-  private noVoiceAssistantRoutes = ['/login', '/register'];
+  private isBrowser: boolean;
+  private initialBrowserUrl: string = '/';
 
   constructor(
     private router: Router,
     private authService: AuthService,
     private firebaseService: FirebaseService,
-    private themeService: ThemeService, // 👈 AJOUT ICI
+    private themeService: ThemeService,
+    @Inject(PLATFORM_ID) platformId: Object,
   ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+
+    if (this.isBrowser) {
+      const rawUrl = window.location.pathname;
+      this.initialBrowserUrl =
+        rawUrl.endsWith('/') && rawUrl !== '/' ? rawUrl.slice(0, -1) : rawUrl;
+    }
+
     this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(async (event: any) => {
-        await this.updateUIState(event.url);
+      .pipe(
+        filter(
+          (event): event is NavigationStart => event instanceof NavigationStart,
+        ),
+      )
+      .subscribe(() => {});
+
+    this.router.events
+      .pipe(
+        filter(
+          (event): event is NavigationEnd => event instanceof NavigationEnd,
+        ),
+      )
+      .subscribe(async (event: NavigationEnd) => {
+        if (!this.isCheckingAuth) {
+          await this.updateUIState(event.url);
+        }
       });
   }
 
-  // Dans app.ts - ngOnInit
   async ngOnInit() {
     this.themeService.initTheme();
 
-    // ✅ Attendre l'initialisation de Firebase
-    await this.waitForFirebaseInitialization();
+    await this.waitForCompleteFirebaseInitialization();
 
-    // ✅ Maintenant vérifier l'état
-    this.updateUIState(this.router.url);
+    const targetUrl = this.getInitialTargetUrl();
+
+    if (!this.hasProcessedInitialNavigation) {
+      await this.handleInitialNavigation(targetUrl);
+      this.hasProcessedInitialNavigation = true;
+    }
+
+    this.finalizeInitialization();
+    await this.updateUIState(this.router.url);
   }
 
-  // Modifiez waitForFirebaseInitialization :
-  private async waitForFirebaseInitialization(): Promise<void> {
+  private async waitForCompleteFirebaseInitialization(): Promise<void> {
     return new Promise((resolve) => {
-      let attempts = 0;
-      const maxAttempts = 50; // 5 secondes max
+      const maxWaitTime = 10000;
+      const startTime = Date.now();
+      let lastAuthState: string | null = null;
+      let sameStateCount = 0;
 
-      const checkInitialization = () => {
-        attempts++;
+      const checkCompleteInitialization = () => {
+        const elapsedTime = Date.now() - startTime;
 
-        const firebaseUser = this.firebaseService.getCurrentAuthUser();
-        const hasUserData = !!this.firebaseService.userData;
-        const isLoading = this.firebaseService.isLoading;
-
-        console.log(`🔄 Tentative ${attempts}:`, {
-          firebaseUser: firebaseUser?.email,
-          hasUserData,
-          isLoading,
+        const currentAuthUser = this.firebaseService.getCurrentAuthUser();
+        const currentUserData = this.firebaseService.userData;
+        const currentAuthState = JSON.stringify({
+          authUser: currentAuthUser?.email || null,
+          userData: !!currentUserData,
+          isLoading: this.firebaseService.isLoading,
         });
 
-        // ✅ Condition améliorée
-        if (
-          (!isLoading && firebaseUser && hasUserData) ||
-          (!isLoading && !firebaseUser) ||
-          attempts >= maxAttempts
-        ) {
-          console.log('✅ Initialisation Firebase terminée:', {
-            authenticated: !!firebaseUser,
-            userData: hasUserData,
-            attempts,
-          });
+        if (currentAuthState === lastAuthState) {
+          sameStateCount++;
+        } else {
+          sameStateCount = 0;
+          lastAuthState = currentAuthState;
+        }
 
-          this.isLoading = false;
+        const isStable = !this.firebaseService.isLoading && sameStateCount >= 2;
+        const hasAuthData = currentAuthUser && currentUserData;
+        const definitelyNoAuth =
+          !currentAuthUser && !currentUserData && sameStateCount >= 3;
+
+        if (isStable && (hasAuthData || definitelyNoAuth)) {
+          resolve();
+        } else if (elapsedTime >= maxWaitTime) {
           resolve();
         } else {
-          setTimeout(checkInitialization, 100);
+          setTimeout(checkCompleteInitialization, 300);
         }
       };
 
-      checkInitialization();
+      checkCompleteInitialization();
     });
   }
-  private updateUIState(url: string) {
-    // Mettre à jour le chargement
+
+  private getInitialTargetUrl(): string {
+    if (
+      this.initialBrowserUrl !== '/' &&
+      this.isValidAppUrl(this.initialBrowserUrl)
+    ) {
+      return this.initialBrowserUrl;
+    }
+
+    return this.router.url;
+  }
+
+  private isValidAppUrl(url: string): boolean {
+    return (
+      url === '/' ||
+      url === '/login' ||
+      url === '/register' ||
+      url === '/select-role' ||
+      url.startsWith('/producer/') ||
+      url.startsWith('/buyer/') ||
+      url.startsWith('/login/') ||
+      url.startsWith('/register/') ||
+      url.startsWith('/verify/')
+    );
+  }
+
+  private async handleInitialNavigation(targetUrl: string): Promise<void> {
+    const firebaseUser = this.firebaseService.getCurrentAuthUser();
+    const userData = this.firebaseService.userData;
+    const role = this.authService.getUserRole();
+
+    // CAS A: Utilisateur NON connecté
+    if (!firebaseUser || !userData) {
+      const isProtectedRoute =
+        targetUrl.startsWith('/producer/') ||
+        targetUrl.startsWith('/buyer/') ||
+        targetUrl === '/select-role';
+
+      const isPublicRoute =
+        targetUrl === '/' ||
+        targetUrl === '/login' ||
+        targetUrl === '/register' ||
+        targetUrl.startsWith('/login') ||
+        targetUrl.startsWith('/register') ||
+        targetUrl.startsWith('/verify/');
+
+      if (isProtectedRoute) {
+        this.loadingMessage = 'Redirection vers la connexion...';
+        await this.router.navigate(['/login'], { replaceUrl: true });
+        return;
+      }
+
+      if (!isPublicRoute) {
+        await this.router.navigate(['/'], { replaceUrl: true });
+        return;
+      }
+
+      if (targetUrl !== this.router.url) {
+        await this.router.navigateByUrl(targetUrl, { replaceUrl: true });
+      }
+      return;
+    }
+
+    // CAS B: Utilisateur connecté
+    const isPublicRoot =
+      targetUrl === '/' || targetUrl === '/login' || targetUrl === '/register';
+
+    const isProtectedRoute =
+      targetUrl.startsWith('/producer/') ||
+      targetUrl.startsWith('/buyer/') ||
+      targetUrl === '/select-role';
+
+    const isPublicRoute = targetUrl.startsWith('/verify/');
+
+    // 1. Si sur page publique racine, rediriger vers dashboard
+    if (isPublicRoot) {
+      this.loadingMessage = `Bienvenue ${role === 'producer' ? 'Producteur' : 'Acheteur'}...`;
+
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      if (role === 'producer') {
+        await this.router.navigate(['/producer/dashboard'], {
+          replaceUrl: true,
+        });
+      } else if (role === 'buyer') {
+        await this.router.navigate(['/buyer/dashboard'], { replaceUrl: true });
+      } else {
+        await this.router.navigate(['/select-role'], { replaceUrl: true });
+      }
+      return;
+    }
+
+    // 2. Si sur route protégée, vérifier les permissions
+    if (isProtectedRoute) {
+      // Si mauvais rôle, rediriger vers page d'erreur
+      if (
+        (targetUrl.startsWith('/producer/') && role !== 'producer') ||
+        (targetUrl.startsWith('/buyer/') && role !== 'buyer')
+      ) {
+        // Créer une route pour la page d'erreur d'accès non autorisé
+        await this.router.navigate(['/access-denied'], {
+          replaceUrl: true,
+          state: {
+            attemptedUrl: targetUrl,
+            requiredRole: targetUrl.startsWith('/producer/')
+              ? 'producteur'
+              : 'acheteur',
+            currentRole: role,
+          },
+        });
+        return;
+      }
+
+      // Bon rôle, naviguer vers la page protégée
+      if (targetUrl !== this.router.url) {
+        await this.router.navigateByUrl(targetUrl, { replaceUrl: true });
+      }
+      return;
+    }
+
+    // 3. Si sur autre route publique (comme /verify/), laisser passer
+    if (isPublicRoute) {
+      if (targetUrl !== this.router.url) {
+        await this.router.navigateByUrl(targetUrl, { replaceUrl: true });
+      }
+      return;
+    }
+
+    // 4. URL non reconnue, rediriger vers dashboard
+    if (role === 'producer') {
+      await this.router.navigate(['/producer/dashboard'], { replaceUrl: true });
+    } else if (role === 'buyer') {
+      await this.router.navigate(['/buyer/dashboard'], { replaceUrl: true });
+    } else {
+      await this.router.navigate(['/select-role'], { replaceUrl: true });
+    }
+  }
+
+  private finalizeInitialization(): void {
+    this.isCheckingAuth = false;
+    this.isLoading = false;
+    this.loadingMessage = 'Prêt !';
+  }
+
+
+  private async updateUIState(url: string) {
     this.isLoading = this.firebaseService.isLoading;
 
-    // Déterminer si on doit montrer le sidebar
-    this.showSidebar = !this.noSidebarRoutes.some(
-      (route) => url === route || url.startsWith(route + '/'),
-    );
+    // ✅ AJOUT: La page /access-denied ne doit PAS avoir la sidebar
+    const shouldShowSidebar =
+      !this.noSidebarRoutes.some(
+        (route) => url === route || url.startsWith(route + '/'),
+      ) && url !== '/access-denied'; // ← Ajoutez cette condition
 
-    // Déterminer si on doit montrer l'assistant vocal
-    this.showVoiceAssistant = !this.noVoiceAssistantRoutes.some(
-      (route) => url === route || url.startsWith(route + '/'),
-    );
+    if (this.showSidebar !== shouldShowSidebar) {
+      this.showSidebar = shouldShowSidebar;
+    }
 
-    // Configurer le sidebar si nécessaire
+    this.showVoiceAssistant = this.showSidebar;
+
     if (this.showSidebar && !this.isLoading) {
       this.setupSidebarConfig();
     }
   }
 
-  // app.ts - ajoutez cette méthode
-isPublicPage(): boolean {
-  const currentUrl = this.router.url;
-  return this.noSidebarRoutes.some(
-    (route) => currentUrl === route || currentUrl.startsWith(route + '/')
-  );
-}
+  isPublicPage(): boolean {
+    if (this.isCheckingAuth) {
+      return false;
+    }
+
+    const currentUrl = this.router.url;
+
+    // ✅ AJOUT: /access-denied est aussi une page publique
+    const publicRoutes = [...this.noSidebarRoutes, '/access-denied'];
+
+    return publicRoutes.some(
+      (route) => currentUrl === route || currentUrl.startsWith(route + '/'),
+    );
+  }
+
   private setupSidebarConfig() {
     const firebaseUser = this.firebaseService.getCurrentAuthUser();
 
@@ -171,7 +369,6 @@ isPublicPage(): boolean {
           { label: 'Messages', icon: '✉️', route: '/buyer/messages' },
           { label: 'Scanner QR', icon: '📱', route: '/buyer/scan' },
           { label: 'Historique', icon: '📋', route: '/buyer/purchases' },
-          { label: 'Vérifications', icon: '✅', route: '/buyer/verifications' },
           { label: 'Paramètres', icon: '⚙️', route: '/buyer/settings' },
         ],
       };

@@ -1,23 +1,18 @@
-<!-- app.html -->
-<!-- Indicateur de chargement global -->
-@if (isLoading) {
+@if (isLoading || isCheckingAuth) {
   <div class="global-loading-overlay">
     <div class="global-loading-content">
       <div class="spinner-large"></div>
-      <p>Chargement de l'application...</p>
+      <p>{{ loadingMessage }}</p>
     </div>
   </div>
 }
 
-<!-- Pages publiques (login, register, home) -->
-@if (isPublicPage()) {
+@if (isPublicPage() && !isCheckingAuth) {
   <router-outlet />
 }
 
-<!-- Pages avec layout (sidebar) -->
-@if (!isPublicPage() && !isLoading) {
+@if (!isPublicPage() && !isLoading && !isCheckingAuth) {
   <div class="app-layout">
-    <!-- Sidebar conditionnel -->
     @if (showSidebar && sidebarConfig) {
       <app-sidebar
         [config]="sidebarConfig"
@@ -26,14 +21,12 @@
       />
     }
 
-    <!-- Contenu principal -->
     <main class="main-content"
           [class.with-sidebar]="showSidebar && sidebarConfig"
           [class.sidebar-collapsed]="isCollapsed">
       <router-outlet />
     </main>
 
-    <!-- Assistant vocal conditionnel -->
     @if (showVoiceAssistant) {
       <app-voice-assistant />
     }

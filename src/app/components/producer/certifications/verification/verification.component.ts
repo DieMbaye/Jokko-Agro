@@ -1,4 +1,3 @@
-// verification.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -54,23 +53,17 @@ export class VerificationComponent implements OnInit {
 
   getVerificationIcon(): string {
     switch (this.getVerificationClass()) {
-      case 'valid':
-        return '✅';
-      case 'pending':
-        return '⏳';
-      default:
-        return '❌';
+      case 'valid': return '✅';
+      case 'pending': return '⏳';
+      default: return '❌';
     }
   }
 
   getVerificationText(): string {
     switch (this.getVerificationClass()) {
-      case 'valid':
-        return 'Certification validée';
-      case 'pending':
-        return 'Certification en cours';
-      default:
-        return 'Certification non valide';
+      case 'valid': return 'Certification validée';
+      case 'pending': return 'Certification en cours';
+      default: return 'Certification non valide';
     }
   }
 
@@ -87,6 +80,38 @@ export class VerificationComponent implements OnInit {
   }
 
   downloadCertificate() {
-    alert('Téléchargement du certificat à implémenter');
+    if (!this.certification) return;
+
+    // Créer un certificat PDF (simplifié)
+    const certData = `
+      ==================================
+      CERTIFICAT DE TRACABILITÉ
+      ==================================
+
+      Produit: ${this.certification.productName}
+      Type: ${this.certification.productType}
+      Producteur: ${this.certification.producerName}
+
+      Score de certification: ${this.certification.validationScore}%
+      Statut: ${this.getVerificationText()}
+
+      Date de certification: ${this.certification.verifiedAt?.toLocaleDateString() || 'En cours'}
+      ID: ${this.certification.id}
+
+      URL de vérification: ${window.location.origin}/verify/${this.certification.id}
+
+      ==================================
+      Ce produit a été certifié selon
+      les normes de traçabilité Agrinova
+      ==================================
+    `;
+
+    const blob = new Blob([certData], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `certificat-${this.certification.id}.txt`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 }

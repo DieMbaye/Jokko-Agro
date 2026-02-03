@@ -1,22 +1,16 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FirebaseService, FirebaseUserData } from './firebase.service';
-import { UserData } from '../interfaces/data.interfaces';
-import { getAuth } from 'firebase/auth';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  updateUserData(userData: FirebaseUserData) {
-    throw new Error('Method not implemented.');
-  }
   private firebaseService = inject(FirebaseService);
   private router = inject(Router);
 
-  constructor() {
-    // Vérifier l'état de chargement au démarrage
-    this.firebaseService.isLoading = false;
+  updateUserData(userData: FirebaseUserData) {
+    throw new Error('Method not implemented.');
   }
 
   async register(userData: any) {
@@ -33,16 +27,17 @@ export class AuthService {
     const result = await this.firebaseService.login(email, password);
 
     if (result.success) {
-      // Attendre que les données utilisateur soient chargées
       await this.waitForUserData();
 
-      const role = this.firebaseService.getUserRole();
+      const role = this.getUserRole();
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       if (role === 'producer') {
-        this.router.navigate(['/producer/dashboard']);
+        await this.router.navigate(['/producer/dashboard']);
       } else if (role === 'buyer') {
-        this.router.navigate(['/buyer/dashboard']);
+        await this.router.navigate(['/buyer/dashboard']);
       } else {
-        this.router.navigate(['/select-role']);
+        await this.router.navigate(['/select-role']);
       }
     }
 
@@ -51,37 +46,20 @@ export class AuthService {
 
   async logout() {
     try {
-      // Nettoyer le cache avant de déconnecter
       this.firebaseService.clearCache();
-
       await this.firebaseService.logout();
-      this.router.navigate(['/login']);
+      await this.router.navigate(['/login']);
     } catch (error) {
-      // Rediriger quand même vers login en cas d'erreur
-      this.router.navigate(['/login']);
+      await this.router.navigate(['/login']);
     }
   }
 
-  // Dans auth.service.ts
-  // Modifiez la méthode isAuthenticated :
   isAuthenticated(): boolean {
-    // ✅ Attendre que l'initialisation soit complète
-    if (this.firebaseService.isLoading) {
-      return false;
-    }
-
     const firebaseUser = this.firebaseService.getCurrentAuthUser();
     const hasUserData = !!this.firebaseService.userData;
-
-    // ✅ Vérifier la cohérence entre Firebase et userData
-    if (firebaseUser && !hasUserData) {
-      console.warn('⚠️ Firebase user existe mais userData est null');
-      return false;
-    }
-
-    // ✅ L'utilisateur est authentifié s'il existe dans Firebase ET qu'on a ses données
-    return !!firebaseUser && hasUserData;
+    return !!(firebaseUser && hasUserData);
   }
+
   getUserRole(): 'producer' | 'buyer' | null {
     return this.firebaseService.getUserRole();
   }
@@ -97,7 +75,6 @@ export class AuthService {
   async updateUserRole(role: 'producer' | 'buyer') {
     const user = this.firebaseService.currentUser;
     if (!user) throw new Error('Aucun utilisateur connecté');
-
     await this.firebaseService.updateUserRole(user.uid, role);
   }
 
@@ -105,18 +82,49 @@ export class AuthService {
     return this.firebaseService.isLoading;
   }
 
-  // Attendre que les données utilisateur soient chargées
+  checkAuthConsistency(): boolean {
+    const firebaseUser = this.firebaseService.getCurrentAuthUser();
+    const authUser = this.firebaseService.authInstance.currentUser;
+    const hasUserData = !!this.firebaseService.userData;
+
+    const isConsistent =
+      (!firebaseUser && !authUser && !hasUserData) ||
+      (firebaseUser && authUser && firebaseUser.uid === authUser.uid && hasUserData);
+
+    if (!isConsistent) {
+      this.tryRecoverAuthState();
+    }
+
+    return isConsistent || false;
+  }
+
   private async waitForUserData(): Promise<void> {
     return new Promise((resolve) => {
+      let attempts = 0;
+      const maxAttempts = 50;
+
       const checkData = () => {
-        if (this.firebaseService.userData !== null) {
+        attempts++;
+        const hasUserData = !!this.firebaseService.userData;
+
+        if (hasUserData || attempts >= maxAttempts) {
           resolve();
         } else {
           setTimeout(checkData, 100);
         }
       };
+
       checkData();
     });
   }
-  isLoading = true;
+
+  private async tryRecoverAuthState(): Promise<void> {
+    const authUser = this.firebaseService.authInstance.currentUser;
+    if (authUser) {
+      await this.firebaseService.loadUserData(authUser.uid);
+    } else {
+      this.firebaseService.userData = null;
+      localStorage.removeItem('userData');
+    }
+  }
 }

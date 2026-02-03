@@ -1,10 +1,9 @@
-<!-- certifications.html -->
 <div class="certifications-container">
   <!-- En-tête -->
   <header class="cert-header">
     <div class="header-left">
       <h1><span class="header-icon">🏆</span> Certifications Produits</h1>
-      <p class="subtitle">Suivez et certifiez vos cultures</p>
+      <p class="subtitle">Suivez, certifiez et publiez vos cultures</p>
     </div>
     <div class="header-right">
       <button class="btn-primary" (click)="openNewCertModal()">
@@ -13,313 +12,214 @@
     </div>
   </header>
 
-  <!-- Onglets de navigation -->
-  <nav class="cert-tabs">
-    <button
-      [class.active]="activeTab === 'dashboard'"
-      (click)="activeTab = 'dashboard'">
-      📊 Tableau de bord
-    </button>
-    <button
-      [class.active]="activeTab === 'ongoing'"
-      (click)="activeTab = 'ongoing'">
-      📈 En cours
-      @if (ongoingCertifications.length > 0) {
-        <span class="tab-badge">{{ ongoingCertifications.length }}</span>
-      }
-    </button>
-    <button
-      [class.active]="activeTab === 'completed'"
-      (click)="activeTab = 'completed'">
-      ✅ Terminés
-    </button>
-    <button
-      [class.active]="activeTab === 'templates'"
-      (click)="activeTab = 'templates'">
-      📋 Modèles
-    </button>
-  </nav>
-
   <!-- Tableau de bord -->
-  @if (activeTab === 'dashboard') {
-    <div class="dashboard-tab">
-      <!-- Statistiques -->
-      @if (stats) {
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon total">🏆</div>
-            <div class="stat-info">
-              <h3>{{ stats.totalCertifications }}</h3>
-              <p>Certifications totales</p>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon active">🌱</div>
-            <div class="stat-info">
-              <h3>{{ stats.activeCertifications }}</h3>
-              <p>En cours</p>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon verified">✅</div>
-            <div class="stat-info">
-              <h3>{{ stats.completedCertifications }}</h3>
-              <p>Certifiés</p>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon score">⭐</div>
-            <div class="stat-info">
-              <h3>{{ stats.averageScore | number:'1.0-0' }}%</h3>
-              <p>Score moyen</p>
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- Filtres -->
-      <div class="filters-section">
-        <div class="search-box">
-          <input
-            type="text"
-            [(ngModel)]="searchQuery"
-            (ngModelChange)="filterCertifications()"
-            placeholder="Rechercher une certification...">
-        </div>
-
-        <div class="filter-controls">
-          <select [(ngModel)]="filterStatus" (change)="filterCertifications()" title="Filtrer par statut">
-            <option value="all">Tous les statuts</option>
-            <option value="draft">Brouillon</option>
-            <option value="active">En cours</option>
-            <option value="completed">Terminé</option>
-            <option value="verified">Certifié</option>
-            <option value="cancelled">Annulé</option>
-            <option value="expired">Expiré</option>
-          </select>
-
-          <select [(ngModel)]="filterProductType" (change)="filterCertifications()" title="Filtrer par type de produit">
-            <option value="all">Tous les produits</option>
-            <option value="tomato">Tomate</option>
-            <option value="mango">Mangue</option>
-            <option value="onion">Oignon</option>
-            <!-- Ajouter d'autres types -->
-          </select>
+  @if (stats) {
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon total">🏆</div>
+        <div class="stat-info">
+          <h3>{{ stats.totalCertifications }}</h3>
+          <p>Certifications totales</p>
         </div>
       </div>
 
-      <!-- Liste rapide des certifications -->
-      <div class="quick-list">
-        <h3>Certifications récentes</h3>
+      <div class="stat-card">
+        <div class="stat-icon active">🌱</div>
+        <div class="stat-info">
+          <h3>{{ stats.activeCertifications }}</h3>
+          <p>En cours</p>
+        </div>
+      </div>
 
-        @if (isLoading) {
-          <div class="loading">Chargement...</div>
-        }
+      <div class="stat-card">
+        <div class="stat-icon verified">✅</div>
+        <div class="stat-info">
+          <h3>{{ stats.completedCertifications }}</h3>
+          <p>Certifiés</p>
+        </div>
+      </div>
 
-        @if (!isLoading && certifications.length === 0) {
-          <div class="empty-state">
-            <div class="empty-icon">🏆</div>
-            <h4>Aucune certification</h4>
-            <p>Commencez par certifier votre première culture</p>
-            <button class="btn-primary" (click)="openNewCertModal()">
-              🌱 Démarrer une certification
-            </button>
-          </div>
-        }
+      <div class="stat-card">
+        <div class="stat-icon published">🌐</div>
+        <div class="stat-info">
+          <h3>{{ stats.publishedCertifications || 0 }}</h3>
+          <p>Publiés</p>
+        </div>
+      </div>
+    </div>
+  }
 
-        <div class="cert-cards">
-          <div *ngFor="let cert of certifications.slice(0, 6)"
-               class="cert-card"
-               (click)="navigateToCertification(cert.id)">
+  <!-- Filtres -->
+  <div class="filter-section">
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="filterCertifications()"
+        placeholder="Rechercher une certification..."
+        class="search-input">
+    </div>
 
-            <div class="cert-header">
-              <div class="product-icon">{{ getProductIcon(cert.productType) }}</div>
-              <div class="cert-info">
-                <h4>{{ cert.productName }}</h4>
+    <div class="filter-controls">
+      <select [(ngModel)]="filterStatus" (change)="filterCertifications()">
+        <option value="all">Tous les statuts</option>
+        <option value="draft">Brouillon</option>
+        <option value="active">En cours</option>
+        <option value="completed">Terminé</option>
+        <option value="verified">Certifié</option>
+        <option value="cancelled">Annulé</option>
+        <option value="expired">Expiré</option>
+      </select>
+
+      <select [(ngModel)]="filterProductType" (change)="filterCertifications()">
+        <option value="all">Tous les produits</option>
+        <option value="tomato">Tomate</option>
+        <option value="mango">Mangue</option>
+        <option value="onion">Oignon</option>
+        <option value="potato">Pomme de terre</option>
+        <option value="carrot">Carotte</option>
+        <option value="lettuce">Laitue</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Liste des certifications -->
+  <div class="certifications-list">
+    <div class="list-header">
+      <h2>Vos certifications ({{ filteredCertifications.length }})</h2>
+    </div>
+
+    @if (isLoading) {
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Chargement des certifications...</p>
+      </div>
+    }
+
+    @if (!isLoading && filteredCertifications.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">🏆</div>
+        <h4>Aucune certification trouvée</h4>
+        <p>Commencez par certifier votre première culture</p>
+        <button class="btn-primary" (click)="openNewCertModal()">
+          🌱 Démarrer une certification
+        </button>
+      </div>
+    }
+
+    <div class="cert-cards">
+      @for (cert of filteredCertifications; track cert.id) {
+        <div class="cert-card">
+          <!-- En-tête de la carte -->
+          <div class="card-header" (click)="navigateToCertification(cert.id)">
+            <div class="product-icon">{{ getProductIcon(cert.productType) }}</div>
+            <div class="cert-info">
+              <h4>{{ cert.productName }}</h4>
+              <div class="cert-tags">
                 <span [class]="'status-badge ' + getStatusBadgeClass(cert.status)">
                   {{ getStatusText(cert.status) }}
                 </span>
-              </div>
-              <div class="cert-score">
-                <div class="score-circle">
-                  {{ cert.validationScore }}%
-                </div>
+                @if (cert.finalProduct?.published) {
+                  <span class="published-badge">🌐 Publié</span>
+                }
               </div>
             </div>
-
-            <div class="cert-progress">
-              <div class="progress-bar">
-                <div class="progress-fill"
-                     [style.width.%]="getProgressPercentage(cert)">
-                </div>
-              </div>
-              <div class="progress-text">
-                {{ cert.completedCheckpoints }}/{{ cert.totalCheckpoints }} points
+            <div class="cert-score">
+              <div class="score-circle">
+                {{ cert.validationScore }}%
               </div>
             </div>
+          </div>
 
-            <div class="cert-timeline">
-              <div class="timeline-info">
-                <span>Début: {{ cert.startDate | date:'dd/MM/yy' }}</span>
-                <span>Fin estimée: {{ cert.expectedHarvestDate | date:'dd/MM/yy' }}</span>
+          <!-- Progression -->
+          <div class="cert-progress" (click)="navigateToCertification(cert.id)">
+            <div class="progress-bar">
+              <div class="progress-fill"
+                   [style.width.%]="getProgressPercentage(cert)">
               </div>
+            </div>
+            <div class="progress-text">
+              {{ cert.completedCheckpoints }}/{{ cert.totalCheckpoints }} points
+            </div>
+          </div>
 
-              @if (cert.status === 'active') {
-                <div class="next-checkpoint">
-                  <strong>Prochain point:</strong>
-                  {{ getNextCheckpoint(cert)?.title }}
-                  (J+{{ getNextCheckpoint(cert)?.dayOffset }})
+          <!-- Métadonnées -->
+          <div class="cert-meta" (click)="navigateToCertification(cert.id)">
+            <div class="meta-item">
+              <span class="meta-label">Type:</span>
+              <span class="meta-value">{{ cert.productType | titlecase }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Durée:</span>
+              <span class="meta-value">{{ cert.durationDays }} jours</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Jours restants:</span>
+              <span class="meta-value">{{ getDaysRemaining(cert) }}</span>
+            </div>
+          </div>
+
+          <!-- Prochain checkpoint -->
+          @if (cert.status === 'active' && getNextCheckpoint(cert)) {
+            <div class="next-checkpoint" (click)="navigateToCertification(cert.id)">
+              <strong>Prochain point:</strong> {{ getNextCheckpoint(cert)?.title }}
+            </div>
+          }
+
+          <!-- Actions -->
+          <div class="cert-actions">
+            <!-- Bouton principal selon le statut -->
+            @if (cert.status === 'active' && getNextCheckpoint(cert)) {
+              <button class="btn-action primary" (click)="continueCertification(cert)">
+                <span class="btn-icon">📸</span> Continuer
+              </button>
+            } @else {
+              <button class="btn-action primary" (click)="navigateToCertification(cert.id)">
+                <span class="btn-icon">👁️</span> Détails
+              </button>
+            }
+
+            <!-- Menu d'actions secondaires -->
+            <div class="actions-dropdown">
+              <button class="btn-action more" (click)="toggleActions($event, cert.id)">
+                <span class="btn-icon">⋯</span>
+              </button>
+              @if (isDropdownOpen(cert.id)) {
+                <div class="dropdown-menu">
+                  @if (cert.status === 'active') {
+                    <button class="dropdown-item" (click)="continueCertification(cert)">
+                      <span class="item-icon">📸</span> Continuer
+                    </button>
+                  }
+                  <button class="dropdown-item" (click)="navigateToCertification(cert.id)">
+                    <span class="item-icon">👁️</span> Voir détails
+                  </button>
+                  @if (cert.status === 'active' || cert.status === 'completed') {
+                    <button class="dropdown-item" (click)="publishCertification(cert)">
+                      <span class="item-icon">🌐</span> Publier
+                    </button>
+                  }
+                  @if (cert.finalProduct?.published) {
+                    <button class="dropdown-item" (click)="viewPublishedProduct(cert)">
+                      <span class="item-icon">📦</span> Voir produit
+                    </button>
+                  }
+                  <button class="dropdown-item" (click)="duplicateCertification(cert)">
+                    <span class="item-icon">📋</span> Dupliquer
+                  </button>
+                  @if (cert.status === 'active' || cert.status === 'draft') {
+                    <button class="dropdown-item danger" (click)="openDeleteModal(cert)">
+                      <span class="item-icon">❌</span> Annuler
+                    </button>
+                  }
                 </div>
               }
             </div>
           </div>
         </div>
-
-        @if (certifications.length > 6) {
-          <div class="view-all">
-            <button (click)="activeTab = 'ongoing'">
-              Voir toutes les certifications →
-            </button>
-          </div>
-        }
-      </div>
-    </div>
-  }
-
-  <!-- Certifications en cours -->
-  @if (activeTab === 'ongoing') {
-    <div class="ongoing-tab">
-      <h2>📈 Certifications en cours</h2>
-
-      @if (ongoingCertifications.length === 0) {
-        <div class="empty-state">
-          <div class="empty-icon">🌱</div>
-          <h4>Aucune certification en cours</h4>
-          <p>Commencez une nouvelle certification pour suivre vos cultures</p>
-          <button class="btn-primary" (click)="openNewCertModal()">
-            🌱 Démarrer une certification
-          </button>
-        </div>
       }
-
-      <div class="ongoing-grid">
-        <div *ngFor="let cert of ongoingCertifications" class="ongoing-card">
-          <div class="card-header">
-            <div class="product-display">
-              <div class="product-icon-large">{{ getProductIcon(cert.productType) }}</div>
-              <div class="product-details">
-                <h3>{{ cert.productName }}</h3>
-                <p class="product-type">{{ cert.productType | titlecase }}</p>
-                <div class="location">
-                  📍 {{ cert.location.address || 'Localisation certifiée' }}
-                </div>
-              </div>
-            </div>
-
-            <div class="card-actions">
-              <button class="action-btn" (click)="navigateToCertification(cert.id)">
-                👁️ Voir
-              </button>
-              <button class="action-btn" (click)="duplicateCertification(cert)">
-                📋 Dupliquer
-              </button>
-              <button class="action-btn danger" (click)="cancelCertification(cert)">
-                ❌ Annuler
-              </button>
-            </div>
-          </div>
-
-          <div class="card-body">
-            <!-- Timeline des points de contrôle -->
-            <div class="checkpoints-timeline">
-              <h4>Points de contrôle</h4>
-              <div class="timeline">
-                <div *ngFor="let checkpoint of cert.checkpoints"
-                     class="timeline-item"
-                     [class.completed]="checkpoint.completed"
-                     [class.current]="!checkpoint.completed && checkpoint.order === cert.currentCheckpointIndex">
-
-                  <div class="timeline-marker">
-                    <div class="marker-dot"></div>
-                    @if (checkpoint.completed) {
-                      <div class="marker-line"></div>
-                    }
-                  </div>
-
-                  <div class="timeline-content">
-                    <div class="checkpoint-header">
-                      <h5>{{ checkpoint.title }}</h5>
-                      <span class="checkpoint-day">J+{{ checkpoint.dayOffset }}</span>
-                    </div>
-
-                    <p class="checkpoint-desc">{{ checkpoint.description }}</p>
-
-                    @if (checkpoint.completed) {
-                      <div class="checkpoint-completed">
-                        <span class="completed-icon">✅</span>
-                        Complété le {{ checkpoint.completedAt | date:'dd/MM/yyyy' }}
-                        <span class="score">Score: {{ checkpoint.verificationScore }}%</span>
-                      </div>
-                    } @else if (checkpoint.order === cert.currentCheckpointIndex) {
-                      <div class="checkpoint-pending">
-                        <button class="btn-complete" [routerLink]="['/producer/certification', cert.id, 'checkpoint', checkpoint.id]">
-                          📸 Compléter ce point
-                        </button>
-                        <p class="instructions">{{ checkpoint.instructions }}</p>
-                      </div>
-                    } @else {
-                      <div class="checkpoint-upcoming">
-                        <span class="upcoming-icon">⏳</span>
-                        Prévu pour le
-                        {{ getCheckpointDate(cert, checkpoint.dayOffset) | date:'dd/MM/yyyy' }}
-                      </div>
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Informations de progression -->
-            <div class="progress-summary">
-              <div class="progress-stats">
-                <div class="stat">
-                  <div class="stat-label">Progression</div>
-                  <div class="stat-value">{{ getProgressPercentage(cert) }}%</div>
-                </div>
-                <div class="stat">
-                  <div class="stat-label">Score actuel</div>
-                  <div class="stat-value">{{ cert.validationScore }}%</div>
-                </div>
-                <div class="stat">
-                  <div class="stat-label">Jours restants</div>
-                  <div class="stat-value">{{ getDaysRemaining(cert) }}</div>
-                </div>
-                <div class="stat">
-                  <div class="stat-label">Date fin estimée</div>
-                  <div class="stat-value">{{ cert.expectedHarvestDate | date:'dd/MM/yyyy' }}</div>
-                </div>
-              </div>
-
-              <div class="progress-visual">
-                <div class="progress-bar-large">
-                  <div class="progress-fill"
-                       [style.width.%]="getProgressPercentage(cert)">
-                  </div>
-                </div>
-                <div class="progress-labels">
-                  <span>Début: {{ cert.startDate | date:'dd/MM/yy' }}</span>
-                  <span>Fin: {{ cert.expectedHarvestDate | date:'dd/MM/yy' }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
-  }
+  </div>
 
   <!-- Modal nouvelle certification -->
   @if (showNewCertModal) {
@@ -331,130 +231,112 @@
         </div>
 
         <div class="modal-body">
-          <!-- Étape 1: Sélection du modèle -->
-          <div class="modal-step" [class.active]="!selectedTemplateId">
-            <h3>1. Choisissez un modèle</h3>
-            <div class="template-grid">
-              <div *ngFor="let template of templates"
-                   class="template-card"
-                   [class.selected]="selectedTemplateId === template.id"
-                   (click)="selectedTemplateId = template.id">
+          <div class="form-section">
+            <h3>Choix du produit</h3>
 
-                <div class="template-icon">{{ template.icon }}</div>
-                <div class="template-info">
-                  <h4>{{ template.name }}</h4>
-                  <p>{{ template.description }}</p>
-                  <div class="template-meta">
-                    <span>⏱️ {{ template.durationDays }} jours</span>
-                    <span>📋 {{ template.checkpoints.length }} points</span>
-                  </div>
-                </div>
-              </div>
+            <div class="form-group">
+              <label>Nom du produit *</label>
+              <input type="text"
+                     [(ngModel)]="productName"
+                     placeholder="Ex: Tomates cerises bio">
             </div>
-          </div>
 
-          <!-- Étape 2: Détails du produit -->
-          @if (selectedTemplateId) {
-            <div class="modal-step active">
-              <h3>2. Détails de votre culture</h3>
-
-              <div class="form-group">
-                <label>Nom du produit *</label>
-                <input type="text"
-                       [(ngModel)]="productName"
-                       placeholder="Ex: Tomates cerises bio">
-              </div>
-
-              <div class="form-group">
-                <label>Photo initiale du champ *</label>
-                <div class="photo-upload-area"
-                     (click)="triggerFileInput()">
-
-                  <!-- Ajoutez une référence locale -->
-                  <input #fileInput
-                         type="file"
-                         id="initialPhoto"
-                         accept="image/*"
-                         capture="environment"
-                         (change)="onPhotoSelected($event)"
-                         hidden>
-
-                  @if (photoPreview) {
-                    <img [src]="photoPreview" class="photo-preview">
-                    <div class="photo-overlay">
-                      <button type="button" class="btn-change">📸 Changer</button>
-                    </div>
-                  } @else {
-                    <div class="upload-instructions">
-                      <div class="upload-icon">📸</div>
-                      <p>Cliquez pour prendre une photo</p>
-                      <small>Photo du champ/de la plantation</small>
-                    </div>
-                  }
-                </div>
-                <small>Cette photo servira de référence pour la vérification GPS</small>
-              </div>
-
-              <div class="form-group">
-                <label>Localisation</label>
-                <div class="location-options">
-                  <label>
-                    <input type="radio"
-                           [(ngModel)]="useCurrentLocation"
-                           [value]="true">
-                    Utiliser ma position actuelle (GPS)
-                  </label>
-                  <label>
-                    <input type="radio"
-                           [(ngModel)]="useCurrentLocation"
-                           [value]="false">
-                    Saisir manuellement
-                  </label>
-                </div>
-
-                @if (!useCurrentLocation) {
-                  <input type="text"
-                         [(ngModel)]="customLocation"
-                         placeholder="Ex: Champ Sud, Thiès">
-                }
-              </div>
-
-              <!-- Aperçu du plan -->
-              @if (getTemplateById(selectedTemplateId)) {
-                <div class="plan-preview">
-                  <h4>📅 Plan de certification</h4>
-                  <div class="plan-timeline">
-                    <div *ngFor="let cp of getTemplateById(selectedTemplateId)!.checkpoints"
-                         class="plan-checkpoint">
-                      <div class="plan-day">J+{{ cp.dayOffset }}</div>
-                      <div class="plan-title">{{ cp.title }}</div>
-                      <div class="plan-proofs">
-                        @for (proof of cp.requiredProofs; track proof) {
-                          <span class="proof-badge">{{
-                            proof === 'photo' ? '📸' :
-                            proof === 'gps' ? '📍' :
-                            proof === 'measurement' ? '📏' : '📝'
-                          }}</span>
-                        }
+            <div class="form-group">
+              <label>Modèle de certification *</label>
+              <div class="templates-select">
+                @for (template of templates; track template.id) {
+                  <div class="template-option"
+                       [class.selected]="selectedTemplateId === template.id"
+                       (click)="selectedTemplateId = template.id">
+                    <div class="template-icon">{{ template.icon }}</div>
+                    <div class="template-info">
+                      <h4>{{ template.name }}</h4>
+                      <p>{{ template.description }}</p>
+                      <div class="template-meta">
+                        <span>⏱️ {{ template.durationDays }} jours</span>
+                        <span>📋 {{ template.checkpoints.length }} points</span>
                       </div>
                     </div>
                   </div>
-                </div>
-              }
+                }
+              </div>
             </div>
-          }
+
+            <div class="form-group">
+              <label>Photo initiale du champ *</label>
+              <div class="photo-upload-area"
+                   (click)="triggerFileInput()">
+                <input #fileInput
+                       type="file"
+                       accept="image/*"
+                       capture="environment"
+                       (change)="onPhotoSelected($event)"
+                       hidden>
+                @if (photoPreview) {
+                  <img [src]="photoPreview" class="photo-preview">
+                  <div class="photo-overlay">
+                    <button type="button" class="btn-change">📸 Changer</button>
+                  </div>
+                } @else {
+                  <div class="upload-instructions">
+                    <div class="upload-icon">📸</div>
+                    <p>Cliquez pour prendre une photo</p>
+                    <small>Photo du champ/de la plantation</small>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="modal-footer">
           <button class="btn-secondary" (click)="closeNewCertModal()">Annuler</button>
           <button class="btn-primary"
-                  [disabled]="!selectedTemplateId || !productName || !initialPhoto || isStartingCertification"
+                  [disabled]="!selectedTemplateId || !productName || !initialPhoto || isLoading"
                   (click)="startCertification()">
-            @if (isStartingCertification) {
+            @if (isLoading) {
               <span class="spinner"></span> Démarrage...
             } @else {
               🚀 Démarrer la certification
             }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal confirmation suppression -->
+  @if (showDeleteModal && certificationToDelete) {
+    <div class="modal-overlay" (click)="closeDeleteModal()">
+      <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>⚠️ Confirmer l'annulation</h2>
+          <button class="modal-close" (click)="closeDeleteModal()">×</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="delete-warning">
+            <div class="warning-icon">⚠️</div>
+            <h3>Annuler la certification</h3>
+            <p>Êtes-vous sûr de vouloir annuler la certification <strong>"{{ certificationToDelete.productName }}"</strong> ?</p>
+
+            <div class="certification-info">
+              <p><strong>Statut:</strong> {{ getStatusText(certificationToDelete.status) }}</p>
+              <p><strong>Progression:</strong> {{ getProgressPercentage(certificationToDelete) }}%</p>
+              <p><strong>Date de début:</strong> {{ certificationToDelete.startDate | date:'dd/MM/yyyy' }}</p>
+            </div>
+
+            <div class="warning-message">
+              <p><strong>Attention:</strong> Cette action changera le statut de la certification en "annulé".</p>
+              <p>Les données seront conservées mais la certification ne pourra plus être modifiée.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-secondary" (click)="closeDeleteModal()">Retour</button>
+          <button class="btn-danger" (click)="confirmDelete()">
+            ❌ Confirmer l'annulation
           </button>
         </div>
       </div>

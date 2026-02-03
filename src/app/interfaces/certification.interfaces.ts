@@ -1,4 +1,4 @@
-// certification.interfaces.ts
+// certification.interfaces.ts - COMPLET ET AMÉLIORÉ
 export interface Certification {
   id: string;
   productId?: string;
@@ -49,10 +49,47 @@ export interface Certification {
   finalProduct?: {
     id: string;
     name: string;
+    description: string;
+    category: string;
     quantity: number;
     unit: string;
     price: number;
     published: boolean;
+    publishedAt?: Date;
+    images: string[];
+    badges: Array<{
+      id: string;
+      label: string;
+      icon: string;
+      color: string;
+    }>;
+    details: {
+      harvestDate?: string;
+      expirationDate?: string;
+      storageConditions?: string;
+      location: string;
+      contactPhone: string;
+      minOrderQuantity: number;
+      producerPhone: string;
+      isOrganic: boolean;
+      certifications: string[];
+      publishedCheckpoints?: number[];
+      lastPublicationDate?: Date;
+      publicationHistory?: Array<{
+        checkpointId: string;
+        checkpointTitle: string;
+        publishedAt: Date;
+        changes: string[];
+      }>;
+    };
+  };
+
+  // Métadonnées de publication
+  publicationStatus: {
+    productPublished: boolean;
+    harvestPublished: boolean;
+    certificationsPublished: boolean;
+    fullPublication: boolean;
   };
 
   // Métadonnées
@@ -62,10 +99,11 @@ export interface Certification {
   version: number;
 }
 
+// Dans certification.interfaces.ts
 export interface CertificationCheckpoint {
   id: string;
   order: number;
-  dayOffset: number; // J+15, J+30, etc.
+  dayOffset: number;
   title: string;
   description: string;
   instructions: string;
@@ -80,6 +118,13 @@ export interface CertificationCheckpoint {
   completed: boolean;
   completedAt?: Date;
   proofs: CheckpointProof[];
+  proofsCount?: number;
+
+  // Blockchain properties - AJOUTÉES
+  blockchainTransactionId?: string;
+  blockchainProofHash?: string;
+  blockchainVerified?: boolean;
+  blockchainTimestamp?: Date;
 
   // Validation automatique
   autoVerified: boolean;
@@ -145,6 +190,7 @@ export interface CertificationStats {
   totalCertifications: number;
   activeCertifications: number;
   completedCertifications: number;
+  publishedCertifications: number;
   averageScore: number;
   verificationRate: number;
   upcomingCheckpoints: number;
@@ -165,4 +211,24 @@ export interface CertificationStats {
     certifications: number;
     checkpoints: number;
   }>;
+}
+
+export interface PublicationData {
+  checkpointId: string;
+  checkpointTitle: string;
+  dataToPublish: {
+    images?: string[];
+    description?: string;
+    harvestDate?: string;
+    quantity?: number;
+    price?: number;
+    measurements?: Array<{
+      type: string;
+      value: number;
+      unit: string;
+    }>;
+    notes?: string;
+  };
+  timestamp: Date;
+  published: boolean;
 }

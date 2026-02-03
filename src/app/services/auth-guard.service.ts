@@ -1,166 +1,95 @@
-// auth-guard.service.ts
 import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from './auth.service';
-import { FirebaseService } from './firebase.service';
 
-/**
- * 🔐 Guard général avec attente de l'initialisation Firebase
- */
-export const authGuard: CanActivateFn = async (route, state) => {
+export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
-  const firebaseService = inject(FirebaseService);
   const router = inject(Router);
+  const currentUrl = state.url;
 
-  const targetUrl = state.url;
+  // Si Firebase est en cours de chargement, attendre
+  if (authService.isInitializing()) {
+    return false;
+  }
 
+  if (!authService.isAuthenticated()) {
+    // Si sur une page publique, laisser passer
+    const publicRoutes = ['/login', '/register', '/'];
+    if (
+      publicRoutes.some(
+        (route) => currentUrl === route || currentUrl.startsWith(route + '/'),
+      )
+    ) {
+      return true;
+    }
+    // Sinon rediriger vers login
+    router.navigate(['/login']);
+    return false;
+  }
 
-  // ✅ Attendre que Firebase soit COMPLÈTEMENT initialisé
-  await waitForFirebaseInitialization(firebaseService);
+  // Si authentifié sur page publique, rediriger vers dashboard approprié
+  const publicRoutes = ['/login', '/register', '/'];
+  const isOnPublicRoute = publicRoutes.some(
+    (route) => currentUrl === route || currentUrl.startsWith(route + '/'),
+  );
 
-  // 🔥 CRITIQUE : Vérifier l'état actuel
-  const isAuthenticated = authService.isAuthenticated();
-  const userRole = authService.getUserRole();
-
-
-
-  // ✅ Utilisateur connecté MAIS sur page publique
-  if (isAuthenticated && ['/', '/login', '/register', '/select-role'].includes(targetUrl)) {
-
-    if (userRole === 'producer') {
+  if (isOnPublicRoute) {
+    const role = authService.getUserRole();
+    if (role === 'producer') {
       router.navigate(['/producer/dashboard']);
-      return false;
-    } else if (userRole === 'buyer') {
+    } else if (role === 'buyer') {
       router.navigate(['/buyer/dashboard']);
-      return false;
     } else {
       router.navigate(['/select-role']);
-      return false;
     }
-  }
-
-  // ❌ Utilisateur NON connecté mais essaie d'accéder à une page privée
-  if (!isAuthenticated && !['/', '/login', '/register', '/select-role'].includes(targetUrl)) {
-    router.navigate(['/login']);
     return false;
   }
 
   return true;
 };
 
-/**
- * 👨‍🌾 Guard PRODUCTEUR
- */
-export const producerGuard: CanActivateFn = async (route, state) => {
+// auth-guard.service.ts
+export const producerGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
-  const firebaseService = inject(FirebaseService);
   const router = inject(Router);
 
-
-  // ✅ Attendre que Firebase soit COMPLÈTEMENT initialisé
-  await waitForFirebaseInitialization(firebaseService);
-
-  // Vérifier l'authentification
   if (!authService.isAuthenticated()) {
     router.navigate(['/login']);
     return false;
   }
 
-  // Vérifier le rôle
-  const userRole = authService.getUserRole();
-  if (userRole !== 'producer') {
-    router.navigate(['/buyer/dashboard']);
+  if (authService.getUserRole() !== 'producer') {
+    // Rediriger vers la page d'erreur d'accès
+    router.navigate(['/access-denied'], {
+      state: {
+        attemptedUrl: state.url,
+        requiredRole: 'producteur',
+        currentRole: authService.getUserRole(),
+      },
+    });
     return false;
   }
 
   return true;
 };
 
-/**
- * 🛒 Guard ACHETEUR
- */
-export const buyerGuard: CanActivateFn = async (route, state) => {
+export const buyerGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
-  const firebaseService = inject(FirebaseService);
   const router = inject(Router);
 
-
-  // ✅ Attendre que Firebase soit COMPLÈTEMENT initialisé
-  await waitForFirebaseInitialization(firebaseService);
-
-  // Vérifier l'authentification
   if (!authService.isAuthenticated()) {
     router.navigate(['/login']);
     return false;
   }
 
-  // Vérifier le rôle
-  const userRole = authService.getUserRole();
-  if (userRole !== 'buyer') {
-    router.navigate(['/producer/dashboard']);
-    return false;
-  }
-
-  return true;
-};
-
-/**
- * ⏱️ Fonction utilitaire pour attendre l'initialisation Firebase
- */
-function waitForFirebaseInitialization(firebaseService: FirebaseService): Promise<void> {
-  return new Promise((resolve) => {
-    let attempts = 0;
-    const maxAttempts = 150; // 15 secondes max
-
-    const check = () => {
-      attempts++;
-
-      const isLoading = firebaseService.isLoading;
-      const firebaseUser = firebaseService.getCurrentAuthUser();
-      const hasUserData = !!firebaseService.userData;
-
-
-      // ✅ Conditions d'arrêt IMPROVÉES :
-      // 1. Firebase a terminé le chargement ET a un état définitif
-      // 2. OU timeout max atteint
-      const isFullyInitialized = !isLoading && (firebaseUser !== undefined);
-
-      if (isFullyInitialized || attempts >= maxAttempts) {
-        resolve();
-      } else {
-        setTimeout(check, 100);
-      }
-    };
-
-    check();
-  });
-}
-
-/**
- * 🔄 Guard pour la sélection de rôle (utilisateur connecté sans rôle)
- */
-export const roleSelectionGuard: CanActivateFn = async (route, state) => {
-  const authService = inject(AuthService);
-  const firebaseService = inject(FirebaseService);
-  const router = inject(Router);
-
-
-  // ✅ Attendre que Firebase soit initialisé
-  await waitForFirebaseInitialization(firebaseService);
-
-  // Vérifier l'authentification
-  if (!authService.isAuthenticated()) {
-    router.navigate(['/login']);
-    return false;
-  }
-
-  // Vérifier si l'utilisateur a déjà un rôle
-  const userRole = authService.getUserRole();
-  if (userRole === 'producer') {
-    router.navigate(['/producer/dashboard']);
-    return false;
-  } else if (userRole === 'buyer') {
-    router.navigate(['/buyer/dashboard']);
+  if (authService.getUserRole() !== 'buyer') {
+    router.navigate(['/access-denied'], {
+      state: {
+        attemptedUrl: state.url,
+        requiredRole: 'acheteur',
+        currentRole: authService.getUserRole(),
+      },
+    });
     return false;
   }
 
