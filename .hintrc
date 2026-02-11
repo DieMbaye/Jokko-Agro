@@ -34,7 +34,8 @@
       "default",
       {
         "ignore": [
-          "input[capture]"
+          "input[capture]",
+          "textarea[autocapitalize]"
         ]
       }
     ],

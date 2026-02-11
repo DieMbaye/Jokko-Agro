@@ -1,15 +1,15 @@
 <div class="chatbot-voice-wrapper">
-  <!-- Bouton d'ouverture -->
+  <!-- Bouton d'ouverture élégant -->
   <button class="chatbot-toggle-btn" (click)="toggleChat()" [class.open]="isOpen">
     <span class="chatbot-icon" [class.listening]="isListening" [class.speaking]="isSpeaking">
       🤖
     </span>
-    <span class="pulse-dot" *ngIf="!isOpen"></span>
+    <span class="pulse-dot" *ngIf="!isOpen && hasUnreadMessages"></span>
   </button>
 
-  <!-- Interface du chatbot -->
+  <!-- Interface du chatbot - Design premium -->
   <div class="chatbot-container" [class.open]="isOpen">
-    <!-- En-tête -->
+    <!-- En-tête avec gradient -->
     <div class="chatbot-header">
       <div class="header-left">
         <div class="avatar">🤖</div>
@@ -18,41 +18,44 @@
           <p class="status">
             <span class="status-dot" [class.active]="!isProcessing"></span>
             {{
-              isProcessing ? 'Traitement...' :
-              isListening ? 'Écoute...' :
-              isSpeaking ? 'Parle...' : 'En ligne'
+              isProcessing ? 'Traitement en cours...' :
+              isListening ? 'Écoute active...' :
+              isSpeaking ? 'Parle en ce moment...' : 'Connecté et prêt'
             }}
           </p>
         </div>
       </div>
 
       <div class="header-actions">
-        <!-- Bouton pour écouter le message de bienvenue -->
+        <!-- Bouton message de bienvenue -->
         <button class="icon-btn" (click)="playWelcomeMessage()" title="Écouter le message d'accueil">
-          🔊
+          <i class="icon-welcome">👋</i>
         </button>
 
+        <!-- Bouton changement de langue -->
         <button class="icon-btn" (click)="toggleLanguage()"
-                [title]="currentLanguage === 'fr' ? 'Passer en Wolof' : 'Switch to French'">
-          {{ currentLanguage === 'fr' ? '🌍' : '🇫🇷' }}
+                [title]="currentLanguage === 'fr' ? 'Passer en Wolof' : 'Passer en Français'">
+          <span class="icon-language">{{ currentLanguage === 'fr' ? '🌍' : '🇫🇷' }}</span>
         </button>
 
-        <!-- Bouton pour arrêter la parole -->
+        <!-- Bouton arrêter la parole -->
         <button class="icon-btn" (click)="stopSpeaking()" title="Arrêter la parole" *ngIf="isSpeaking">
-          ⏹️
+          <i class="icon-stop">⏹️</i>
         </button>
 
+        <!-- Bouton historique -->
         <button class="icon-btn" (click)="clearHistory()" title="Effacer l'historique">
-          🗑️
+          <i class="icon-clear">🗑️</i>
         </button>
 
-        <button class="icon-btn close-btn" (click)="toggleChat()" title="Fermer">
-          ×
+        <!-- Bouton fermer -->
+        <button class="icon-btn close-btn" (click)="toggleChat()" title="Fermer l'assistant">
+          <i class="icon-close">×</i>
         </button>
       </div>
     </div>
 
-    <!-- Contrôles audio quand le chatbot parle -->
+    <!-- Contrôles audio élégants -->
     <div class="audio-controls" *ngIf="isSpeaking">
       <div class="audio-controls-container">
         <div class="audio-wave">
@@ -62,10 +65,10 @@
         </div>
 
         <div class="audio-controls-buttons">
-          <button class="control-btn" (click)="toggleSpeechPlayback()">
+          <button class="control-btn" (click)="toggleSpeechPlayback()" [title]="isSpeechPaused ? 'Reprendre' : 'Pause'">
             {{ isSpeechPaused ? '▶️' : '⏸️' }}
           </button>
-          <button class="control-btn stop-btn" (click)="stopSpeaking()">
+          <button class="control-btn stop-btn" (click)="stopSpeaking()" title="Arrêter la lecture">
             ⏹️
           </button>
           <span class="audio-status">Assistant en train de parler...</span>
@@ -73,92 +76,156 @@
       </div>
     </div>
 
-    <!-- Messages -->
+    <!-- Zone des messages avec scroll amélioré -->
     <div class="messages-container" #messagesContainer>
+      <!-- Message de bienvenue systématique -->
+      <div class="message welcome-message" *ngIf="showWelcomeMessage">
+        <div class="message-avatar">
+          <div class="avatar-small">🤖</div>
+        </div>
+        <div class="message-content">
+          <div class="message-text">
+            👋 <strong>Bienvenue !</strong> Je suis votre assistant vocal Jokko-Agro.<br><br>
+            🌍 <strong>Je parle Français et Wolof !</strong><br><br>
+            🎤 <strong>Parlez-moi ou écrivez votre question :</strong><br>
+            • Estimation de prix<br>
+            • Produits disponibles<br>
+            • Comparaison producteurs<br>
+            • Procédure de commande<br><br>
+            💡 <strong>Commandes vocales :</strong><br>
+            "Prix tomates" • "Am na ci riz?" • "Comparer les mangues"
+          </div>
+          <div class="message-footer">
+            <span class="message-time">{{ getCurrentTime() }}</span>
+            <div class="message-actions">
+              <button class="action-btn" (click)="playWelcomeMessage()" title="Écouter ce message">
+                🔊
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages de conversation -->
       <div *ngFor="let message of messages"
            class="message"
            [class.user]="message.sender === 'user'"
            [class.bot]="message.sender === 'bot'"
            [class.typing]="message.isTyping">
 
+        <!-- Avatar pour les messages bot -->
         <div class="message-avatar" *ngIf="message.sender === 'bot'">
           <div class="avatar-small">🤖</div>
         </div>
 
+        <!-- Contenu du message -->
         <div class="message-content">
-          <div class="message-text" [innerHTML]="formatMessage(message.text)"></div>
+          <!-- Indicateur de frappe pour les messages bot -->
+          <div class="typing-indicator" *ngIf="message.isTyping">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
 
-          <div class="message-footer">
+          <!-- Texte du message -->
+          <div class="message-text" *ngIf="!message.isTyping" [innerHTML]="formatMessage(message.text)"></div>
+
+          <!-- Pied du message -->
+          <div class="message-footer" *ngIf="!message.isTyping">
             <span class="message-time">{{ formatTime(message.timestamp) }}</span>
 
-            <div class="message-actions" *ngIf="message.sender === 'bot' && !message.isTyping">
-              <button class="action-btn" (click)="speak(message.text)" title="Écouter">
+            <div class="message-actions" *ngIf="message.sender === 'bot'">
+              <button class="action-btn" (click)="speak(message.text)" title="Écouter ce message">
                 🔊
+              </button>
+              <button class="action-btn" (click)="copyToClipboard(message.text)" title="Copier le texte">
+                📋
               </button>
             </div>
           </div>
         </div>
 
+        <!-- Avatar pour les messages utilisateur -->
         <div class="message-avatar user" *ngIf="message.sender === 'user'">
-          <div class="avatar-small">👤</div>
+          <div class="avatar-small">{{ getUserInitial() }}</div>
         </div>
       </div>
     </div>
 
-    <!-- Suggestions -->
-    <div class="suggestions-container" *ngIf="suggestions.length > 0">
+    <!-- Suggestions élégantes -->
+    <div class="suggestions-container" *ngIf="suggestions.length > 0 && !isListening && !isSpeaking">
       <div class="suggestions-title">
-        <small>Suggestions :</small>
+        <small>💡 Suggestions rapides :</small>
       </div>
       <div class="suggestions-list">
         <button *ngFor="let suggestion of suggestions"
                 class="suggestion-chip"
-                (click)="useSuggestion(suggestion)">
+                (click)="useSuggestion(suggestion)"
+                [title]="'Cliquez pour utiliser : ' + suggestion">
           {{ suggestion }}
         </button>
       </div>
     </div>
 
-    <!-- Zone de saisie -->
-    <div class="input-container">
-      <div class="input-wrapper">
-        <textarea #messageInput
-                  [(ngModel)]="userInput"
-                  (keydown.enter)="$event.preventDefault(); sendTextMessage()"
-                  placeholder="Tapez votre message ou cliquez sur 🎤 pour parler..."
-                  rows="1"
-                  [disabled]="isListening || isSpeaking"></textarea>
+<!-- Zone de saisie -->
+<div class="input-container">
+  <div class="input-wrapper">
+    <textarea #messageInput
+              [(ngModel)]="userInput"
+              (keydown.enter)="onTextareaEnter($event)"
+              (input)="onTextareaInput($event)"
+              placeholder="Écrivez votre message ici ou cliquez sur 🎤 pour parler..."
+              rows="1"
+              [disabled]="isListening || isSpeaking"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"></textarea>
 
-        <div class="input-actions">
-          <button class="action-btn voice-btn"
-                  (click)="startListening()"
-                  [class.listening]="isListening"
-                  [disabled]="isSpeaking">
-            {{ isListening ? '🔴' : '🎤' }}
-          </button>
+    <div class="input-actions">
+      <!-- Bouton micro -->
+      <button class="voice-btn"
+              (click)="toggleListening()"
+              [class.listening]="isListening"
+              [disabled]="isSpeaking"
+              [title]="isListening ? 'Arrêter l\'écoute' : 'Démarrer l\'écoute vocale'">
+        {{ isListening ? '🔴' : '🎤' }}
+      </button>
 
-          <button class="action-btn send-btn"
-                  (click)="sendTextMessage()"
-                  [disabled]="!userInput.trim() || isListening">
-            ↗
-          </button>
-        </div>
-      </div>
-
-      <div class="input-hint">
-        <small>Appuyez sur Entrée pour envoyer • 🎤 pour parler • 🌍 pour changer de langue</small>
-      </div>
+      <!-- Bouton envoyer -->
+      <button class="send-btn"
+              (click)="sendTextMessage()"
+              [disabled]="!userInput.trim() || isListening || isSpeaking"
+              title="Envoyer le message">
+        ↗
+      </button>
     </div>
+  </div>
 
-    <!-- Indicateurs d'état -->
+  <div class="input-hint">
+    <small>
+      <span class="hint-icon">↩️</span> Appuyez sur Entrée pour envoyer
+      <span class="hint-separator">•</span>
+      <span class="hint-icon">🎤</span> Cliquez pour parler
+      <span class="hint-separator">•</span>
+      <span class="hint-icon">🌍</span> {{ currentLanguage === 'fr' ? 'Français' : 'Wolof' }}
+    </small>
+  </div>
+</div>
+
+    <!-- Indicateurs d'état modernes -->
     <div class="indicators">
       <div class="indicator" [class.active]="isListening">
         <div class="indicator-dot mic"></div>
-        <span>Micro actif</span>
+        <span>Micro {{ isListening ? 'actif' : 'inactif' }}</span>
       </div>
       <div class="indicator" [class.active]="isSpeaking">
         <div class="indicator-dot speaker"></div>
-        <span>Assistant parle</span>
+        <span>Assistant {{ isSpeaking ? 'parle' : 'silencieux' }}</span>
+      </div>
+      <div class="indicator" [class.active]="isProcessing">
+        <div class="indicator-dot processing"></div>
+        <span>Traitement {{ isProcessing ? 'en cours' : 'inactif' }}</span>
       </div>
     </div>
   </div>
