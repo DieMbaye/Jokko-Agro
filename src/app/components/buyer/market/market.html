@@ -266,6 +266,7 @@
             </button>
           </div>
 
+          <!-- Dans la section product-badges, vers la ligne ~240 -->
           <div class="product-badges">
             <!-- Afficher tous les badges avec leurs couleurs -->
             <ng-container *ngFor="let badge of getProductBadges(product)">
@@ -277,6 +278,15 @@
                 {{ badge.icon }} {{ badge.label }}
               </span>
             </ng-container>
+
+            <!-- AJOUTEZ CE BADGE SPÉCIAL POUR LA CERTIFICATION BLOCKCHAIN -->
+            <span
+              *ngIf="product.certified"
+              class="badge blockchain-badge"
+              title="Certifié sur blockchain"
+            >
+              ⛓️ Blockchain
+            </span>
 
             <!-- Badge de statut (disponible/épuisé) -->
             <span [class]="'badge status ' + getProductStatusClass(product)">
@@ -336,6 +346,7 @@
               </div>
             </div>
 
+            <!-- Dans la vue grille, vers la ligne ~320 -->
             <div class="product-actions">
               <button
                 class="btn-secondary"
@@ -343,6 +354,18 @@
               >
                 Détails
               </button>
+
+              <!-- Dans market.html - Remplacer par : -->
+              <button
+                *ngIf="isProductCertified(product)"
+                class="btn-certificate"
+                (click)="viewCertificate(product)"
+                title="Voir le certificat blockchain"
+              >
+                <span class="btn-icon">📄</span>
+                Certificat
+              </button>
+
               <button
                 class="btn-primary"
                 (click)="addToCart(product)"
@@ -417,7 +440,7 @@
               / {{ product.minOrderQuantity || 1 }} {{ product.unit }}
             </div>
           </div>
-
+          <!-- Dans la vue liste, vers la ligne ~400 -->
           <div class="action-buttons">
             <button
               class="favorite-btn"
@@ -429,6 +452,19 @@
             <button class="btn-secondary" (click)="viewProductDetails(product)">
               Détails
             </button>
+
+            <!-- NOUVEAU BOUTON - Certificat -->
+            <!-- Dans market.html - Remplacer par : -->
+            <button
+              *ngIf="isProductCertified(product)"
+              class="btn-certificate"
+              (click)="viewCertificate(product)"
+              title="Voir le certificat blockchain"
+            >
+              <span class="btn-icon">📄</span>
+              Certificat
+            </button>
+
             <button
               class="btn-primary"
               (click)="addToCart(product)"

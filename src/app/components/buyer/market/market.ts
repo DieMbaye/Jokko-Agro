@@ -707,7 +707,19 @@ export class MarketComponent implements OnInit, OnDestroy {
       description: product.description || 'Produit agricole de qualité',
       stock: product.quantity,
       // CORRECTION : Toujours utiliser productCertifications
-      certifications: productCertifications,
+      certification: product.certification
+        ? {
+            id: product.certification.id,
+            type: product.certification.type,
+            level: product.certification.level,
+            score: product.certification.score,
+            verificationDate: product.certification.verificationDate,
+            validUntil: product.certification.validUntil,
+            qrCodeUrl: product.certification.qrCodeUrl,
+            certificateUrl: product.certification.certificateUrl,
+            verificationUrl: product.certification.verificationUrl,
+          }
+        : undefined,
       isOrganic: isOrganic,
       location: product.location,
       harvestDate: product.harvestDate,
@@ -728,79 +740,78 @@ export class MarketComponent implements OnInit, OnDestroy {
     return marketProduct;
   }
 
-private getDisplayImage(product: Product): string {
-  // Log pour débogage
-  console.log('Catégorie du produit:', product.category);
+  private getDisplayImage(product: Product): string {
+    // Log pour débogage
+    console.log('Catégorie du produit:', product.category);
 
-  // FORCER l'utilisation de l'emoji de catégorie
-  const icon = this.getCategoryIcon(product.category);
-  console.log('Emoji utilisé:', icon);
-  return icon;
-}
-
-// Et améliorer getCategoryIcon pour gérer plus de cas
-private getCategoryIcon(categoryId: string): string {
-  if (!categoryId) return '📦';
-
-  // Convertir en minuscules et nettoyer
-  const cleanId = categoryId.toString().toLowerCase().trim();
-
-  const iconMap: { [key: string]: string } = {
-    // Catégories français
-    'vegetables': '🥦',
-    'légumes': '🥦',
-    'fruits': '🍎',
-    'cereals': '🌾',
-    'céréales': '🌾',
-    'tubers': '🥔',
-    'tubercules': '🥔',
-    'legumes': '🥜', // Attention: 'legumes' en anglais = légumineuses
-    'légumineuses': '🥜',
-    'spices': '🌶️',
-    'épices': '🌶️',
-    'dairy': '🥛',
-    'produits laitiers': '🥛',
-    'laitiers': '🥛',
-    'poultry': '🐔',
-    'volaille': '🐔',
-
-    // Variations possibles
-    'veg': '🥦',
-    'fruit': '🍎',
-    'cereal': '🌾',
-    'tuber': '🥔',
-    'legume': '🥜',
-    'spice': '🌶️',
-    'milk': '🥛',
-    'chicken': '🐔',
-
-    // Autres catégories
-    'céréale': '🌾',
-    'féculent': '🥔',
-    'viande': '🍖',
-    'poisson': '🐟',
-    'œuf': '🥚',
-    'miel': '🍯',
-    'huile': '🫒',
-  };
-
-  // Chercher la correspondance exacte
-  if (iconMap[cleanId]) {
-    return iconMap[cleanId];
+    // FORCER l'utilisation de l'emoji de catégorie
+    const icon = this.getCategoryIcon(product.category);
+    console.log('Emoji utilisé:', icon);
+    return icon;
   }
 
-  // Chercher par correspondance partielle
-  for (const [key, icon] of Object.entries(iconMap)) {
-    if (cleanId.includes(key) || key.includes(cleanId)) {
-      console.log(`Correspondance trouvée: ${cleanId} -> ${key} (${icon})`);
-      return icon;
+  // Et améliorer getCategoryIcon pour gérer plus de cas
+  private getCategoryIcon(categoryId: string): string {
+    if (!categoryId) return '📦';
+
+    // Convertir en minuscules et nettoyer
+    const cleanId = categoryId.toString().toLowerCase().trim();
+
+    const iconMap: { [key: string]: string } = {
+      // Catégories français
+      vegetables: '🥦',
+      légumes: '🥦',
+      fruits: '🍎',
+      cereals: '🌾',
+      céréales: '🌾',
+      tubers: '🥔',
+      tubercules: '🥔',
+      legumes: '🥜', // Attention: 'legumes' en anglais = légumineuses
+      légumineuses: '🥜',
+      spices: '🌶️',
+      épices: '🌶️',
+      dairy: '🥛',
+      'produits laitiers': '🥛',
+      laitiers: '🥛',
+      poultry: '🐔',
+      volaille: '🐔',
+
+      // Variations possibles
+      veg: '🥦',
+      fruit: '🍎',
+      cereal: '🌾',
+      tuber: '🥔',
+      legume: '🥜',
+      spice: '🌶️',
+      milk: '🥛',
+      chicken: '🐔',
+
+      // Autres catégories
+      céréale: '🌾',
+      féculent: '🥔',
+      viande: '🍖',
+      poisson: '🐟',
+      œuf: '🥚',
+      miel: '🍯',
+      huile: '🫒',
+    };
+
+    // Chercher la correspondance exacte
+    if (iconMap[cleanId]) {
+      return iconMap[cleanId];
     }
+
+    // Chercher par correspondance partielle
+    for (const [key, icon] of Object.entries(iconMap)) {
+      if (cleanId.includes(key) || key.includes(cleanId)) {
+        console.log(`Correspondance trouvée: ${cleanId} -> ${key} (${icon})`);
+        return icon;
+      }
+    }
+
+    console.warn(`Aucune icône trouvée pour la catégorie: ${categoryId}`);
+    return '📦';
   }
-
-  console.warn(`Aucune icône trouvée pour la catégorie: ${categoryId}`);
-  return '📦';
-}
-
 
   private loadFallbackData() {
     console.log('Chargement des données de fallback');
@@ -918,7 +929,6 @@ private getCategoryIcon(categoryId: string): string {
     this.applyFilters();
     this.updateCategoryCounts();
   }
-
 
   loadCategories() {
     this.categories = [
@@ -1250,5 +1260,76 @@ private getCategoryIcon(categoryId: string): string {
     }
 
     return badges;
+  }
+
+  /**
+   * Voir le certificat du produit certifié
+   * Redirige vers la page de vérification publique avec l'ID de certification
+   */
+  viewCertificate(product: MarketProduct) {
+    if (!product || !product.id) {
+      console.error('Produit non valide');
+      return;
+    }
+
+    // RÉCUPÉRER L'ID DE CERTIFICATION DEPUIS LE PRODUIT
+    // Priorité : 1. certification.id, 2. product.id (fallback)
+    const certificationId = product.certification?.id;
+
+    if (!certificationId) {
+      console.error('Aucun ID de certification trouvé pour ce produit');
+      this.showNotification(
+        'error',
+        'Certification non trouvée pour ce produit',
+      );
+      return;
+    }
+
+    // Rediriger vers la page de vérification
+    const verificationUrl = `/verify/${certificationId}`;
+    console.log('🔍 Redirection vers:', verificationUrl);
+    window.open(verificationUrl, '_blank');
+
+    this.showNotification('info', 'Redirection vers le certificat...');
+  }
+  // Ajoutez aussi cette méthode utilitaire pour les notifications
+  private showNotification(
+    type: 'success' | 'error' | 'info',
+    message: string,
+  ) {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    Object.assign(notification.style, {
+      position: 'fixed',
+      bottom: '20px',
+      right: '20px',
+      padding: '12px 20px',
+      background:
+        type === 'success'
+          ? '#2d6a4f'
+          : type === 'error'
+            ? '#dc2626'
+            : '#3b82f6',
+      color: 'white',
+      borderRadius: '8px',
+      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+      zIndex: '10001',
+      animation: 'slideIn 0.3s ease-out',
+    });
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease-in';
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
+  }
+  // Dans market.ts - Ajouter cette méthode
+  isProductCertified(product: MarketProduct): boolean {
+    return !!(
+      product.certified ||
+      (product.badges && product.badges.some((b) => b.id === 'certified'))
+    );
   }
 }

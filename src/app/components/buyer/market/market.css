@@ -1553,3 +1553,63 @@
   border: 2px solid white;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
+
+/* À AJOUTER dans market.css */
+
+.btn-certificate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #2d6a4f, #1e4a3d);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(45, 106, 79, 0.2);
+}
+
+.btn-certificate:hover {
+  background: linear-gradient(135deg, #1e4a3d, #0d2f24);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(45, 106, 79, 0.3);
+}
+
+.btn-certificate .btn-icon {
+  font-size: 1rem;
+}
+
+/* Dans la vue liste, ajustement pour le bouton */
+.action-buttons .btn-certificate {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+/* Animation pour le bouton */
+@keyframes certificatePulse {
+  0% { box-shadow: 0 0 0 0 rgba(45, 106, 79, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(45, 106, 79, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(45, 106, 79, 0); }
+}
+
+.btn-certificate {
+  animation: certificatePulse 2s infinite;
+}
+
+.btn-certificate:hover {
+  animation: none;
+}
+/* CSS pour le badge blockchain */
+.blockchain-badge {
+  background: linear-gradient(135deg, #627eea, #434c7c);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.blockchain-badge:hover {
+  background: linear-gradient(135deg, #4c6ad0, #353c63);
+  cursor: pointer;
+}

@@ -99,9 +99,7 @@ export class BlockchainSyncService {
         await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
-      console.log(
-        `✅ Synchronisation terminée: ${verifiedCount} vérifiées, ${updatedCount} mises à jour`,
-      );
+
     } catch (error) {
       console.error('❌ Erreur synchronisation:', error);
     } finally {
@@ -112,7 +110,7 @@ export class BlockchainSyncService {
   /**
    * Synchroniser une transaction spécifique
    */
-  private async syncTransaction(item: any): Promise<{
+  public async syncTransaction(item: any): Promise<{
     updated: boolean;
     verified: boolean;
   }> {
@@ -298,20 +296,5 @@ export class BlockchainSyncService {
   }
 
 
-
-  /**
-   * Mettre à jour le statut d'un checkpoint
-   */
-  private async updateCheckpointStatus(
-    certificationId: string,
-    checkpointId: string,
-    updates: any,
-  ): Promise<void> {
-    try {
-
-    } catch (error) {
-      console.error('❌ Erreur mise à jour checkpoint:', error);
-    }
-  }
 
 }
