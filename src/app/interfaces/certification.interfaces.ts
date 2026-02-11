@@ -1,115 +1,72 @@
-// certification.interfaces.ts - COMPLET ET AMÉLIORÉ
-export interface Certification {
-  id: string;
-  productId?: string;
+
+export interface Product {
+  id?: string;
+  name: string;
+  category: string;
+  description: string;
+  price: number;
+  quantity: number;
+  unit: string;
+  certifications?: string[];
+  isOrganic?: boolean;
+  harvestDate?: string;
+  expirationDate?: string;
+  storageConditions?: string;
+  location: string;
+  contactPhone: string;
+  minOrderQuantity: number;
   producerId: string;
   producerName: string;
-  productType: string;
-  productName: string;
-  productCategory: string;
-  status:
-    | 'draft'
-    | 'active'
-    | 'completed'
-    | 'cancelled'
-    | 'verified'
-    | 'expired';
-
-  // Cycle de culture
-  startDate: Date;
-  expectedHarvestDate: Date;
-  actualHarvestDate?: Date;
-  durationDays: number;
-
-  // Localisation
-  location: {
-    lat: number;
-    lng: number;
-    address?: string;
-    region?: string;
-  };
-
-  // Points de contrôle
-  checkpoints: CertificationCheckpoint[];
-  currentCheckpointIndex: number;
-  completedCheckpoints: number;
-  totalCheckpoints: number;
-
-  // Preuves initiales
-  initialProof: {
-    photoUrl: string;
-    photoHash: string;
-    timestamp: Date;
-    deviceInfo?: string;
-  };
-
-  // Score et validation
-  validationScore: number;
-  maxScore: number;
-  verificationStatus:
-    | 'pending'
-    | 'auto_verified'
-    | 'manually_verified'
-    | 'rejected';
-  verifierId?: string;
-  verifiedAt?: Date;
-  rejectionReason?: string;
-
-  // Produit final
-  finalProduct?: {
-    id: string;
-    name: string;
-    description: string;
-    category: string;
-    quantity: number;
-    unit: string;
-    price: number;
-    published: boolean;
-    publishedAt?: Date;
-    images: string[];
-    badges: Array<{
-      id: string;
-      label: string;
-      icon: string;
-      color: string;
-    }>;
-    details: {
-      harvestDate?: string;
-      expirationDate?: string;
-      storageConditions?: string;
-      location: string;
-      contactPhone: string;
-      minOrderQuantity: number;
-      producerPhone: string;
-      isOrganic: boolean;
-      certifications: string[];
-      publishedCheckpoints?: number[];
-      lastPublicationDate?: Date;
-      publicationHistory?: Array<{
-        checkpointId: string;
-        checkpointTitle: string;
-        publishedAt: Date;
-        changes: string[];
-      }>;
-    };
-  };
-
-  // Métadonnées de publication
-  publicationStatus: {
-    productPublished: boolean;
-    harvestPublished: boolean;
-    certificationsPublished: boolean;
-    fullPublication: boolean;
-  };
-
-  // Métadonnées
+  producerPhone: string;
+  images: string[];
+  status: 'available' | 'sold_out' | 'inactive' | 'certification';
+  views: number;
+  sales: number;
+  rating: number;
+  totalRating?: number;
+  ratingCount?: number;
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-  expiresAt: Date;
-  version: number;
+  featuredImage?: string; // Ajoutez cette ligne
+  certificationInProgress?: boolean; // Ajoutez cette ligne
+  certificationStartDate?: string; // Ajoutez cette ligne
+  certification?: {
+    id?: string;
+    type?: 'standard' | 'certified' | 'in_progress';
+    level?: 'bronze' | 'silver' | 'gold';
+    score?: number;
+    verificationDate?: Date;
+    validUntil?: Date;
+    template?: string;
+    status?: string; // Ajoutez cette ligne
+    startDate?: Date; // Ajoutez cette ligne
+    estimatedEndDate?: Date; // Ajoutez cette ligne
+    traceability?: {
+      startDate: Date;
+      harvestDate: Date;
+      location: string;
+      checkpointsCompleted: number;
+      totalCheckpoints: number;
+      proofs: Array<{
+        type: string;
+        date: Date;
+        verified: boolean;
+      }>;
+    };
+    qrCodeUrl?: string;
+    certificateUrl?: string;
+    verificationUrl?: string;
+    details?: any;
+  };
+  badges?: Array<{
+    id: string;
+    label: string;
+    icon: string;
+    color: string;
+  }>;
 }
 
-// Dans certification.interfaces.ts
 export interface CertificationCheckpoint {
   id: string;
   order: number;
@@ -118,42 +75,32 @@ export interface CertificationCheckpoint {
   description: string;
   instructions: string;
   required: boolean;
-
-  // Types de preuve requis
   requiredProofs: ('photo' | 'gps' | 'measurement' | 'note')[];
   measurementType?: 'weight' | 'height' | 'count' | 'volume';
   measurementUnit?: string;
-
-  // Données remplies
   completed: boolean;
   completedAt?: Date;
   proofs: CheckpointProof[];
   proofsCount?: number;
-
-  // Blockchain properties - AJOUTÉES
   blockchainTransactionId?: string;
   blockchainProofHash?: string;
   blockchainVerified?: boolean;
+  lastBlockchainCheck?: Date;
   blockchainTimestamp?: Date;
-  blockNumber?: number; // AJOUTEZ CETTE LIGNE
-  ipfsCID?: string; // CID IPFS de la photo
-  ipfsURL?: string; // URL d'accès à la photo
-
-  // Validation automatique
+  blockNumber?: number;
+  ipfsCID?: string;
+  ipfsURL?: string;
   autoVerified: boolean;
   verificationScore: number;
   verificationNotes?: string;
   gpsConsistency?: boolean;
   timeConsistency?: boolean;
   photoConsistency?: boolean;
-
-  // Notifications
   notified: boolean;
   notificationSentAt?: Date;
   reminderCount: number;
 }
 
-// certification.interfaces.ts - CORRIGÉ
 export interface CheckpointProof {
   type: 'photo' | 'gps' | 'measurement' | 'note';
   photoUrl?: string;
@@ -167,7 +114,7 @@ export interface CheckpointProof {
   measurement?: {
     value: number;
     unit: string;
-    timestamp?: Date; // Rendre timestamp optionnel
+    timestamp?: Date;
   };
   note?: string;
   timestamp: Date;
@@ -225,24 +172,4 @@ export interface CertificationStats {
     certifications: number;
     checkpoints: number;
   }>;
-}
-
-export interface PublicationData {
-  checkpointId: string;
-  checkpointTitle: string;
-  dataToPublish: {
-    images?: string[];
-    description?: string;
-    harvestDate?: string;
-    quantity?: number;
-    price?: number;
-    measurements?: Array<{
-      type: string;
-      value: number;
-      unit: string;
-    }>;
-    notes?: string;
-  };
-  timestamp: Date;
-  published: boolean;
 }

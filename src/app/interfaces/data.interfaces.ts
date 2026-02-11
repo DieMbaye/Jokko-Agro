@@ -115,87 +115,65 @@ export interface ProfileModalData {
 
 export interface Product {
   id?: string;
-
   name: string;
   category: string;
   description: string;
-
   price: number;
   quantity: number;
   unit: string;
-  minOrderQuantity: number;
-
-  producerId: string;
-  producerName: string;
-  producerPhone: string;
-
-  location: string;
-  contactPhone: string;
-
-  certifications: string[];
-  isOrganic: boolean;
-
-  images: string[];
-  status: 'available' | 'sold_out' | 'inactive';
-
-  views: number;
-  sales: number;
-
-  // ⭐ Rating
-  rating?: number;
-  ratingCount?: number;
-
-  // 📅 Dates (optionnelles)
+  certifications?: string[];
+  isOrganic?: boolean;
   harvestDate?: string;
   expirationDate?: string;
   storageConditions?: string;
-
+  location: string;
+  contactPhone: string;
+  minOrderQuantity: number;
+  producerId: string;
+  producerName: string;
+  producerPhone: string;
+  images: string[];
+  status: 'available' | 'sold_out' | 'inactive' | 'certification'; // Ajouter 'certification'
+  views: number;
+  sales: number;
+  rating: number;
+  totalRating?: number;
+  ratingCount?: number;
   isActive: boolean;
-
-  createdAt?: Date;
-  updatedAt?: Date;
-
-  badges: Array<{
+  createdAt: Date;
+  updatedAt: Date;
+  certification?: {
+    id?: string;
+    type?: 'standard' | 'certified' | 'in_progress';
+    level?: 'bronze' | 'silver' | 'gold';
+    score?: number;
+    verificationDate?: Date;
+    validUntil?: Date;
+    template?: string;
+    status?: string;
+    startDate?: Date;
+    estimatedEndDate?: Date;
+    traceability?: any;
+    qrCodeUrl?: string;
+    certificateUrl?: string;
+    verificationUrl?: string;
+    details?: any;
+  };
+  badges?: Array<{
     id: string;
     label: string;
     icon: string;
     color: string;
   }>;
 
-  // 🏆 Certification (OPTIONNELLE MAIS COHÉRENTE)
-  certification?: {
-    id: string;
-    type: 'standard' | 'certified' | 'in_progress';
-    level: 'bronze' | 'silver' | 'gold';
-    score: number;
-    verificationDate: Date;
-    validUntil: Date;
-
-    traceability?: {
-      startDate: Date;
-      harvestDate: Date;
-      location: string;
-      checkpointsCompleted: number;
-      totalCheckpoints: number;
-      proofs: Array<{
-        type: string;
-        date: Date;
-        verified: boolean;
-      }>;
-    };
-
-    qrCodeUrl?: string;
-    certificateUrl?: string;
-    verificationUrl?: string;
-
-    details?: any;
-  };
+  // NOUVEAUX CHAMPS
+  featuredImage?: string;
+  certificationInProgress?: boolean;
+  certificationStartDate?: string;
+  isPendingCertification?: boolean;
+  
 }
 
-
-
-
-// services/data.interfaces.ts
 export interface Sale {
   id: string;
   orderNumber: string;
@@ -306,7 +284,6 @@ export interface SalesStats {
   peakHour?: string;
 }
 
-// Ajoutez 'all' comme option valable pour les filtres
 export interface SalesFilter {
   period: 'today' | 'week' | 'month' | 'quarter' | 'year' | 'all' | 'custom';
   startDate?: Date;

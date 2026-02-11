@@ -1,0 +1,387 @@
+<div class="certification-track-container">
+  <!-- Header -->
+  <header class="track-header">
+    <div class="header-top">
+      <button class="back-btn" (click)="goBack()">
+        <span class="back-icon">←</span> Retour
+      </button>
+      <div class="header-title">
+        <h1>{{ certification?.productName }}</h1>
+        <div class="certification-badge" [class]="certification?.status">
+          {{ getStatusText(certification?.status || '') }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-section">
+      <div class="progress-info">
+        <div class="progress-stats">
+          <div class="stat">
+            <span class="stat-label">Progression</span>
+            <span class="stat-value">{{ certification?.progress || 0 }}%</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Checkpoints</span>
+            <span class="stat-value"
+              >{{ certification?.completedCheckpoints || 0 }}/{{
+                certification?.totalCheckpoints || 0
+              }}</span
+            >
+          </div>
+          <div class="stat">
+            <span class="stat-label">Score</span>
+            <span class="stat-value"
+              >{{ certification?.verificationScore || 0 }}/100</span
+            >
+          </div>
+        </div>
+        <div class="progress-bar">
+          <div
+            class="progress-fill"
+            [style.width.%]="certification?.progress || 0"
+          ></div>
+        </div>
+      </div>
+
+      <div class="timeline-info">
+        <div class="timeline-item">
+          <span class="timeline-label">Début:</span>
+          <span class="timeline-value">{{
+            certification?.startDate | date: "dd/MM/yyyy"
+          }}</span>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-label">Fin estimée:</span>
+          <span class="timeline-value">{{
+            certification?.estimatedEndDate | date: "dd/MM/yyyy"
+          }}</span>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-label">Durée:</span>
+          <span class="timeline-value">{{ certification?.durationDays }} jours</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="track-main">
+    <!-- Checkpoints -->
+    <section class="checkpoints-section">
+      <h2>Points de contrôle</h2>
+
+      <div class="checkpoints-timeline">
+        <div
+          *ngFor="let checkpoint of certification?.checkpoints; let i = index"
+          class="checkpoint-card"
+          [class.completed]="checkpoint.completed"
+          [class.current]="i === (certification?.currentStep || 1) - 1"
+          [class.upcoming]="i > (certification?.currentStep || 1) - 1"
+        >
+          <div class="checkpoint-header">
+            <div class="checkpoint-number">
+              <div class="number">{{ i + 1 }}</div>
+              <div
+                class="status-indicator"
+                [class]="getCheckpointStatus(checkpoint)"
+              ></div>
+            </div>
+
+            <div class="checkpoint-info">
+              <h3 class="checkpoint-title">{{ checkpoint.title }}</h3>
+              <p class="checkpoint-desc">{{ checkpoint.description }}</p>
+
+              <div class="checkpoint-meta">
+                <span class="meta-item">
+                  <span class="meta-icon">📅</span>
+                  J{{ checkpoint.daysFromStart }}
+                </span>
+                <span class="meta-item" *ngIf="checkpoint.completedAt">
+                  <span class="meta-icon">✓</span>
+                  {{
+                    checkpoint.completedAt
+                      ? (checkpoint.completedAt | date: "dd/MM/yyyy")
+                      : "Date non disponible"
+                  }}
+                </span>
+              </div>
+            </div>
+
+            <div class="checkpoint-actions">
+              <button
+                *ngIf="showCompleteButton(checkpoint)"
+                class="btn-complete"
+                (click)="openCheckpointModal(checkpoint, i)"
+              >
+                {{ getButtonText(checkpoint) }}
+              </button>
+              <button
+                *ngIf="checkpoint.completed"
+                class="btn-view"
+                (click)="viewCheckpointDetails(checkpoint)"
+              >
+                Voir détails
+              </button>
+            </div>
+          </div>
+
+          <!-- Checkpoint details -->
+          <div *ngIf="checkpoint.completed" class="checkpoint-details">
+            <div class="details-grid">
+              <div class="detail-item" *ngIf="checkpoint.photoUrl">
+                <span class="detail-label">Photo:</span>
+                <img
+                  [src]="checkpoint.photoUrl"
+                  alt="Checkpoint photo"
+                  class="checkpoint-photo"
+                  (click)="viewPhoto(checkpoint.photoUrl)"
+                />
+              </div>
+
+              <div class="detail-item" *ngIf="checkpoint.location">
+                <span class="detail-label">Localisation:</span>
+                <span class="detail-value">
+                  {{ checkpoint.location.lat.toFixed(6) }},
+                  {{ checkpoint.location.lng.toFixed(6) }}
+                </span>
+              </div>
+
+              <div
+                class="detail-item"
+                *ngIf="checkpoint.blockchainTransactionId"
+              >
+                <span class="detail-label">Transaction:</span>
+                <a
+                  [href]="getEtherscanUrl(checkpoint.blockchainTransactionId)"
+                  target="_blank"
+                  class="blockchain-link"
+                >
+                  {{ formatTxHash(checkpoint.blockchainTransactionId) }}
+                  <span
+                    class="verification-badge"
+                    [class.verified]="checkpoint.blockchainVerified"
+                  >
+                    {{
+                      checkpoint.blockchainVerified
+                        ? "✓ Vérifié"
+                        : "⏳ En attente"
+                    }}
+                  </span>
+                </a>
+              </div>
+
+              <div class="detail-item" *ngIf="checkpoint.notes">
+                <span class="detail-label">Notes:</span>
+                <span class="detail-value">{{ checkpoint.notes }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Certification Info -->
+    <section class="certification-info">
+      <div class="info-card">
+        <h3>Informations Certification</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Type:</span>
+            <span class="info-value">{{
+              certification?.certificationType | titlecase
+            }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">ID:</span>
+            <span class="info-value">{{ certificationId }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Producteur:</span>
+            <span class="info-value">{{ certification?.producerName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Date création:</span>
+            <span class="info-value">{{
+              certification?.createdAt | date: "dd/MM/yyyy"
+            }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="blockchain-card">
+        <h3>Preuves Blockchain</h3>
+        <div class="blockchain-stats">
+          <div class="stat">
+            <span class="stat-label">Transactions</span>
+            <span class="stat-value">{{
+              certification?.blockchainTransactions?.length || 0
+            }}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Vérifiées</span>
+            <span class="stat-value">
+              {{ getVerifiedCount() }}/{{ certification?.totalCheckpoints }}
+            </span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Intégrité</span>
+            <span class="stat-value"> {{ getIntegrityScore() }}% </span>
+          </div>
+        </div>
+
+        <button class="btn-blockchain" (click)="verifyOnBlockchain()">
+          <span class="btn-icon">⛓️</span>
+          Vérifier sur Blockchain
+        </button>
+      </div>
+
+      <div class="actions-card">
+        <h3>Actions</h3>
+        <div class="action-buttons">
+          <button
+            class="btn-action"
+            (click)="viewCertificate()"
+            [disabled]="certification?.status !== 'completed'"
+          >
+            <span class="btn-icon">📄</span>
+            Voir certificat
+          </button>
+          <button class="btn-action" (click)="generateQRCode()">
+            <span class="btn-icon">🔗</span>
+            Générer QR Code
+          </button>
+          <button class="btn-action" (click)="exportData()">
+            <span class="btn-icon">📥</span>
+            Exporter données
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal pour compléter un checkpoint -->
+  <div class="modal-overlay" *ngIf="showCheckpointModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Compléter le checkpoint</h2>
+        <button class="modal-close" (click)="closeCheckpointModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="current-checkpoint" *ngIf="currentCheckpoint">
+          <h3>{{ currentCheckpoint.title }}</h3>
+          <p>{{ currentCheckpoint.description }}</p>
+
+          <div class="requirements">
+            <div class="requirement" *ngIf="currentCheckpoint.photoRequired">
+              <span class="requirement-icon">📸</span>
+              <span class="requirement-text">Photo requise</span>
+            </div>
+            <div class="requirement" *ngIf="currentCheckpoint.locationRequired">
+              <span class="requirement-icon">📍</span>
+              <span class="requirement-text">Localisation GPS requise</span>
+            </div>
+          </div>
+
+          <!-- Photo upload -->
+          <div class="photo-upload">
+            <h4>Photo du produit</h4>
+            <div
+              class="upload-area"
+              (click)="triggerPhotoUpload()"
+              [class.has-photo]="checkpointPhotoPreview"
+            >
+              <input
+                type="file"
+                #photoInput
+                accept="image/*"
+                capture="environment"
+                (change)="onPhotoSelected($event)"
+                class="hidden-input"
+              />
+
+              <div *ngIf="!checkpointPhotoPreview" class="upload-placeholder">
+                <div class="upload-icon">📸</div>
+                <p>Cliquez pour prendre une photo</p>
+                <small>Utilisez l'appareil photo</small>
+              </div>
+
+              <div *ngIf="checkpointPhotoPreview" class="photo-preview">
+                <img [src]="checkpointPhotoPreview" alt="Photo preview" />
+                <button
+                  type="button"
+                  class="remove-photo"
+                  (click)="removePhoto()"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Location -->
+          <div class="location-section">
+            <h4>Localisation</h4>
+            <div class="location-display">
+              <div *ngIf="currentLocation" class="location-coordinates">
+                <span class="coord">{{ currentLocation.lat.toFixed(6) }}</span>
+                <span class="coord">{{ currentLocation.lng.toFixed(6) }}</span>
+                <span class="accuracy">Précision: {{ locationAccuracy }}m</span>
+              </div>
+              <button class="btn-get-location" (click)="getCurrentLocation()">
+                <span class="btn-icon">📍</span>
+                Obtenir ma position
+              </button>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="notes-section">
+            <h4>Notes (optionnel)</h4>
+            <textarea
+              [(ngModel)]="checkpointNotes"
+              placeholder="Ajoutez des observations sur cet étape..."
+              rows="3"
+            ></textarea>
+          </div>
+
+          <!-- Validation -->
+          <div class="validation-errors" *ngIf="validationErrors.length > 0">
+            <div *ngFor="let error of validationErrors" class="validation-error">
+              ⚠️ {{ error }}
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="modal-actions">
+            <button class="btn-secondary" (click)="closeCheckpointModal()">
+              Annuler
+            </button>
+            <button
+              class="btn-primary"
+              (click)="submitCheckpoint()"
+              [disabled]="!canSubmitCheckpoint() || isSubmitting"
+            >
+              <span *ngIf="!isSubmitting">
+                <span class="btn-icon">✓</span>
+                Enregistrer
+              </span>
+              <span *ngIf="isSubmitting" class="loading">
+                <span class="spinner"></span>
+                Enregistrement...
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="loading-content">
+      <div class="spinner-large"></div>
+      <p>Chargement de la certification...</p>
+    </div>
+  </div>
+</div>

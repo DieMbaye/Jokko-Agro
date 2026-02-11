@@ -76,31 +76,35 @@
             <button class="search-btn" (click)="applyFilters()">
               <i class="fas fa-search"></i>
             </button>
-            <button 
-              class="voice-search-btn-market" 
+            <button
+              class="voice-search-btn-market"
               [ngClass]="{'listening': isListening}"
               (click)="toggleVoiceSearch()"
               [disabled]="!isVoiceSupported || isListening"
               title="Recherche vocale en Wolof"
             >
-              <i class="fas" [ngClass]="isListening ? 'fa-microphone-slash' : 'fa-microphone'"></i>
+              <i
+                class="fas"
+                [ngClass]="isListening ? 'fa-microphone-slash' : 'fa-microphone'"
+              ></i>
             </button>
           </div>
         </div>
-        
-       
-      
-      <!-- Indicateur d'écoute -->
-      <div *ngIf="isListening" class="voice-status-market">
-        <div class="pulse-ring-market"></div>
-        <div class="pulse-ring-market delay"></div>
-        <span class="listening-text-market">
-          <i class="fas fa-microphone"></i> Parlez maintenant...
-        </span>
-      </div>
-    </div>
-  </div>
 
+        <!-- Indicateur d'écoute -->
+        <div *ngIf="isListening" class="voice-status-market">
+          <div class="pulse-ring-market"></div>
+          <div class="pulse-ring-market delay"></div>
+          <span class="listening-text-market">
+            <i class="fas fa-microphone"></i> Parlez maintenant...
+          </span>
+        </div>
+      </div>
+      <!-- Ferme search-box-wrapper -->
+    </div>
+    <!-- Ferme search-container -->
+  </div>
+  <!-- Ferme main-search -->
   <!-- Filtres et catégories -->
   <div class="filters-section">
     <!-- Catégories -->
@@ -138,7 +142,11 @@
 
       <div class="filter-group">
         <label>Tri par :</label>
-        <select [(ngModel)]="selectedSort" (ngModelChange)="applyFilters()" title="tri">
+        <select
+          [(ngModel)]="selectedSort"
+          (ngModelChange)="applyFilters()"
+          title="tri"
+        >
           <option *ngFor="let option of sortOptions" [value]="option.id">
             {{ option.name }}
           </option>
@@ -259,18 +267,18 @@
           </div>
 
           <div class="product-badges">
-            <span *ngIf="product.certified" class="badge certified"
-              >Certifié</span
-            >
-            <span *ngIf="product.organic" class="badge organic">Bio</span>
-
-            <ng-container *ngFor="let cert of product.certifications">
-              <span *ngIf="cert !== 'organic'" [class]="'badge ' + cert">
-                {{ cert === 'local' ? '📍 Local' : cert === 'fairtrade' ? '⚖️
-                Équitable' : cert === 'seasonal' ? '🌞 Saison' : cert }}
+            <!-- Afficher tous les badges avec leurs couleurs -->
+            <ng-container *ngFor="let badge of getProductBadges(product)">
+              <span
+                class="badge"
+                [style.background]="badge.color"
+                [title]="badge.label"
+              >
+                {{ badge.icon }} {{ badge.label }}
               </span>
             </ng-container>
 
+            <!-- Badge de statut (disponible/épuisé) -->
             <span [class]="'badge status ' + getProductStatusClass(product)">
               {{ getProductStatus(product) }}
             </span>
@@ -284,7 +292,9 @@
             <p class="product-description">{{ product.description }}</p>
 
             <div class="producer-info">
-              <div class="producer-name">{{ product.producer }}</div>
+              <div class="producer-name">
+                {{ product.producerName || product.producer }}
+              </div>
               <div class="producer-rating">
                 <span class="stars">
                   <span
@@ -464,7 +474,10 @@
       <h3>🎤 Recherche Vocale en Wolof</h3>
       <p>Idéal pour les utilisateurs analphabètes :</p>
       <ol>
-        <li>Cliquez sur le bouton <strong><i class="fas fa-microphone"></i> Microphone</strong></li>
+        <li>
+          Cliquez sur le bouton
+          <strong><i class="fas fa-microphone"></i> Microphone</strong>
+        </li>
         <li>Dites le nom du produit en wolof</li>
         <li>Le système recherche automatiquement le produit</li>
         <li>Résultats immédiats !</li>

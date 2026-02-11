@@ -208,11 +208,14 @@ export class ProductsComponent implements OnInit {
         return 'Épuisé';
       case 'inactive':
         return 'Inactif';
+      case 'certification':
+        return 'En certification';
       default:
         return status;
     }
   }
 
+  // Modifiez getStatusClass pour inclure 'certification'
   getStatusClass(status: string): string {
     switch (status) {
       case 'available':
@@ -221,6 +224,8 @@ export class ProductsComponent implements OnInit {
         return 'status-sold-out';
       case 'inactive':
         return 'status-inactive';
+      case 'certification':
+        return 'status-certification';
       default:
         return '';
     }
@@ -303,4 +308,26 @@ export class ProductsComponent implements OnInit {
       this.applyFilters();
     }
   }
+
+  getCertificationColor(level: string | undefined): string {
+  if (!level) return '#10b981'; // Couleur par défaut
+
+  switch(level.toLowerCase()) {
+    case 'gold': return '#FFD700';
+    case 'silver': return '#C0C0C0';
+    case 'bronze': return '#CD7F32';
+    default: return '#10b981';
+  }
+}
+
+getCertificationLevelText(level: string | undefined): string {
+  if (!level) return '';
+
+  switch(level.toLowerCase()) {
+    case 'gold': return 'Or';
+    case 'silver': return 'Argent';
+    case 'bronze': return 'Bronze';
+    default: return level;
+  }
+}
 }

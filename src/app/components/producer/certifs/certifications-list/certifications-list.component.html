@@ -1,0 +1,250 @@
+<div class="certifications-list-container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <h1>Mes Certifications</h1>
+      <p>Suivez vos processus de certification en cours</p>
+    </div>
+    <button class="btn-primary" routerLink="/producer/certification/start">
+      <span class="btn-icon">➕</span>
+      Démarrer une certification
+    </button>
+  </header>
+
+  <main class="main-content">
+    <!-- Stats Overview -->
+    <div class="stats-overview">
+      <div class="stat-card">
+        <div class="stat-content">
+          <span class="stat-number">{{ certifications.length }}</span>
+          <span class="stat-label">Total certifications</span>
+        </div>
+        <div class="stat-icon">📋</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-content">
+          <span class="stat-number">{{ getActiveCount() }}</span>
+          <span class="stat-label">En cours</span>
+        </div>
+        <div class="stat-icon">⏳</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-content">
+          <span class="stat-number">{{ getCompletedCount() }}</span>
+          <span class="stat-label">Terminées</span>
+        </div>
+        <div class="stat-icon">✅</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-content">
+          <span class="stat-number">{{ getAverageProgress() }}%</span>
+          <span class="stat-label">Progression moyenne</span>
+        </div>
+        <div class="stat-icon">📈</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+      <div class="filter-group">
+        <label for="statusFilter">
+          <span class="filter-icon">🎯</span>
+          Statut:
+        </label>
+        <select
+          id="statusFilter"
+          [(ngModel)]="selectedStatus"
+          (change)="filterCertifications()"
+          class="filter-select"
+        >
+          <option value="all">Tous les statuts</option>
+          <option value="active">En cours</option>
+          <option value="completed">Terminées</option>
+          <option value="draft">Brouillons</option>
+          <option value="verified">Vérifiées</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="typeFilter">
+          <span class="filter-icon">🏷️</span>
+          Type:
+        </label>
+        <select id="typeFilter" class="filter-select">
+          <option value="all">Tous les types</option>
+          <option value="standard">Standard</option>
+          <option value="premium">Premium</option>
+          <option value="organic">Bio</option>
+        </select>
+      </div>
+
+      <button class="btn-filter" (click)="resetFilters()">
+        <span class="btn-icon">🔄</span>
+        Réinitialiser
+      </button>
+    </div>
+
+    <!-- Certifications Grid -->
+    <div class="certifications-grid">
+      <div
+        *ngFor="let cert of filteredCertifications"
+        class="certification-card"
+        [routerLink]="['/producer/certification', cert.id]"
+        [class.draft]="cert.status === 'draft'"
+        [class.active]="cert.status === 'active'"
+        [class.completed]="cert.status === 'completed'"
+      >
+        <!-- Card Header -->
+        <div class="card-header">
+          <div class="product-info">
+            <div class="product-name-wrapper">
+              <h3 class="product-name">{{ cert.productName }}</h3>
+              <span class="certification-type-tag">
+                {{ getCertificationTypeText(cert.certificationType) }}
+              </span>
+            </div>
+            <p class="product-category">
+              <span class="category-icon">🏭</span>
+              {{ cert.producerName }}
+            </p>
+          </div>
+          <div class="status-section">
+            <div class="status-badge" [class]="cert.status">
+              <span class="badge-icon">
+                <ng-container [ngSwitch]="cert.status">
+                  <span *ngSwitchCase="'draft'">📝</span>
+                  <span *ngSwitchCase="'active'">⚡</span>
+                  <span *ngSwitchCase="'completed'">✅</span>
+                  <span *ngSwitchDefault>📋</span>
+                </ng-container>
+              </span>
+              {{ getStatusText(cert.status) }}
+            </div>
+            <div class="days-remaining" *ngIf="cert.status === 'active'">
+              <span class="days-icon">📅</span>
+              {{ getDaysRemaining(cert) }} jours restants
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-section">
+          <div class="progress-info">
+            <span class="progress-label">Progression</span>
+            <span class="progress-value">{{ cert.progress }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              [style.width.%]="cert.progress"
+              [style.background]="getProgressColor(cert.progress)"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="card-stats">
+          <div class="stat-item">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-content">
+              <span class="stat-label">Checkpoints</span>
+              <span class="stat-value"
+                >{{ cert.completedCheckpoints }}/{{ cert.totalCheckpoints }}</span
+              >
+            </div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-content">
+              <span class="stat-label">Durée</span>
+              <span class="stat-value">{{ cert.durationDays }} jours</span>
+            </div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-content">
+              <span class="stat-label">Score</span>
+              <span class="stat-value">{{ cert.verificationScore || 0 }}/100</span>
+            </div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-icon">⛓️</div>
+            <div class="stat-content">
+              <span class="stat-label">Transactions</span>
+              <span class="stat-value">{{ (cert.blockchainTransactions || []).length }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline-section">
+          <div class="timeline-item">
+            <span class="timeline-label">Début</span>
+            <span class="timeline-value">{{ cert.startDate | date: 'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-label">Fin estimée</span>
+            <span class="timeline-value">{{ cert.estimatedEndDate | date: 'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+
+        <!-- Next Checkpoint -->
+        <div class="next-checkpoint" *ngIf="cert.status === 'active'">
+          <div class="next-checkpoint-info">
+            <span class="next-icon">👉</span>
+            <div class="next-details">
+              <span class="next-label">Prochain checkpoint</span>
+              <span class="next-value">J{{ getNextCheckpointDay(cert) }}</span>
+            </div>
+          </div>
+          <button class="btn-continue" (click)="continueCertification($event, cert.id)">
+            Continuer
+          </button>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card-actions" *ngIf="cert.status === 'draft'">
+          <button class="btn-action btn-start" (click)="startCertification($event, cert.id)">
+            <span class="btn-icon">🚀</span>
+            Démarrer
+          </button>
+          <button class="btn-action btn-edit" (click)="editCertification($event, cert.id)">
+            <span class="btn-icon">✏️</span>
+            Modifier
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="certifications.length === 0 && !isLoading" class="empty-state">
+        <div class="empty-illustration">
+          <div class="empty-icon">📋</div>
+          <div class="empty-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+          </div>
+        </div>
+        <h3 class="empty-title">Aucune certification trouvée</h3>
+        <p class="empty-description">
+          Commencez par démarrer une certification pour vos produits
+          <br />
+          et suivez leur progression en temps réel.
+        </p>
+        <button class="btn-primary" routerLink="/producer/certification/start">
+          <span class="btn-icon">🚀</span>
+          Démarrer votre première certification
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Chargement des certifications...</p>
+      </div>
+    </div>
+  </main>
+</div>

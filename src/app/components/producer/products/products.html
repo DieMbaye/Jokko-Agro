@@ -131,28 +131,73 @@
         <div *ngFor="let product of filteredProducts" class="product-card">
           <!-- En-tête de la carte -->
           <div class="product-header">
-            <div class="product-image">
-              {{ getCategoryIcon(product.category) }}
-              <span
-                *ngIf="product.isOrganic"
-                class="certified-badge"
-                title="Produit bio"
-                >🌱</span
-              >
-              <span
-                *ngIf="product.certifications?.includes('fairtrade')"
-                class="certified-badge"
-                title="Commerce équitable"
-                >⚖️</span
-              >
+            <!-- Première ligne: Image et meta -->
+            <div class="header-top">
+              <div class="product-image">
+                {{ getCategoryIcon(product.category) }}
+                <!-- Badge Bio -->
+                <span
+                  *ngIf="product.isOrganic"
+                  class="certified-badge"
+                  title="Produit bio"
+                  >🌱</span
+                >
+                <!-- Badge Commerce équitable -->
+                <span
+                  *ngIf="product.certifications?.includes('fairtrade')"
+                  class="certified-badge"
+                  title="Commerce équitable"
+                  >⚖️</span
+                >
+                <!-- NOUVEAU: Badge Certifié -->
+                <span
+                  *ngIf="product.certification?.type === 'certified'"
+                  class="certified-badge certified-product"
+                  title="Produit certifié"
+                  >✅</span
+                >
+                <!-- Badge Certification en cours -->
+                <span
+                  *ngIf="product.certification?.type === 'in_progress' || product.status === 'certification'"
+                  class="certified-badge cert-in-progress"
+                  title="Certification en cours"
+                  >⏳</span
+                >
+              </div>
+
+              <div class="product-meta">
+                <span class="category-badge">
+                  {{ getCategoryIcon(product.category) }} {{
+                  getCategoryName(product.category) }}
+                </span>
+                <span
+                  [class]="'status-badge ' + getStatusClass(product.status)"
+                >
+                  {{ getStatusText(product.status) }}
+                </span>
+              </div>
             </div>
-            <div class="product-meta">
-              <span class="category-badge">
-                {{ getCategoryName(product.category) }}
-              </span>
-              <span [class]="'status-badge ' + getStatusClass(product.status)">
-                {{ getStatusText(product.status) }}
-              </span>
+
+            <!-- Deuxième ligne: Nom aligné à droite -->
+            <div class="header-bottom">
+              <h3 class="product-name">{{ product.name }}</h3>
+              <!-- Badges supplémentaires alignés à droite -->
+              <div class="product-badges-right">
+                <span
+                  *ngIf="product.certification?.type === 'certified'"
+                  class="badge-certified-full"
+                  title="Produit certifié"
+                >
+                  ✅ Certifié
+                </span>
+                <span
+                  *ngIf="product.certification?.level"
+                  class="badge-level"
+                  [style.background]="getCertificationColor(product.certification?.level)"
+                >
+                  {{ getCertificationLevelText(product.certification?.level) }}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -201,6 +246,43 @@
                 <span class="stat-value">
                   {{ product.updatedAt | date:'dd/MM/yy' }}
                 </span>
+              </div>
+            </div>
+
+            <!-- Dans product-body, après product-stats -->
+            <div *ngIf="product.certification" class="certification-details">
+              <h4>📋 Détails de certification</h4>
+              <div class="certification-grid">
+                <div
+                  class="cert-info"
+                  *ngIf="product.certification.type === 'certified'"
+                >
+                  <span class="cert-label">Type:</span>
+                  <span class="cert-value">Certifié</span>
+                </div>
+                <div class="cert-info" *ngIf="product.certification.level">
+                  <span class="cert-label">Niveau:</span>
+                  <span class="cert-value"
+                    >{{ getCertificationLevelText(product.certification.level)
+                    }}</span
+                  >
+                </div>
+                <div class="cert-info" *ngIf="product.certification.score">
+                  <span class="cert-label">Score:</span>
+                  <span class="cert-value"
+                    >{{ product.certification.score }}/100</span
+                  >
+                </div>
+                <div
+                  class="cert-info"
+                  *ngIf="product.certification.verificationDate"
+                >
+                  <span class="cert-label">Certifié le:</span>
+                  <span class="cert-value"
+                    >{{ product.certification.verificationDate |
+                    date:'dd/MM/yyyy' }}</span
+                  >
+                </div>
               </div>
             </div>
 

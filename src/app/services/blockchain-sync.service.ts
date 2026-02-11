@@ -52,7 +52,6 @@ export class BlockchainSyncService {
     if (this.isSyncing) return;
 
     this.isSyncing = true;
-    console.log('🔄 Début synchronisation blockchain...');
 
     try {
       // 1. Récupérer TOUTES les certifications avec des transactions blockchain
@@ -86,7 +85,6 @@ export class BlockchainSyncService {
         }
       });
 
-      console.log(`📊 Transactions à vérifier: ${allTransactions.length}`);
 
       // 3. Vérifier chaque transaction
       let verifiedCount = 0;
@@ -204,10 +202,6 @@ export class BlockchainSyncService {
         checkpoints: updatedCheckpoints,
         updatedAt: serverTimestamp(),
       });
-
-      console.log(
-        `✅ Checkpoint ${checkpointIndex} mis à jour pour ${certificationId}`,
-      );
     } catch (error) {
       console.error(`❌ Erreur mise à jour checkpoint:`, error);
     }
@@ -314,12 +308,7 @@ export class BlockchainSyncService {
     updates: any,
   ): Promise<void> {
     try {
-      // À implémenter : mise à jour Firestore
-      console.log('📝 Mise à jour checkpoint:', {
-        certificationId,
-        checkpointId,
-        updates,
-      });
+
     } catch (error) {
       console.error('❌ Erreur mise à jour checkpoint:', error);
     }

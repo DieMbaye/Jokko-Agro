@@ -102,6 +102,17 @@ export class FirebaseService {
     }
   }
 
+  db(
+    db: any,
+    arg1: string,
+    arg2: any,
+  ): import('@firebase/firestore').DocumentReference<
+    import('@firebase/firestore').DocumentData,
+    import('@firebase/firestore').DocumentData
+  > {
+    throw new Error('Method not implemented.');
+  }
+
   private async configurePersistence(): Promise<void> {
     try {
       await setPersistence(this.auth, browserLocalPersistence);
@@ -163,7 +174,10 @@ export class FirebaseService {
     return Number((total / snap.size).toFixed(1));
   }
 
-  async login(email: string, password: string): Promise<{ success: boolean; error?: string }> {
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       await setPersistence(this.auth, browserLocalPersistence);
       await signInWithEmailAndPassword(this.auth, email, password);
@@ -321,8 +335,12 @@ export class FirebaseService {
         totalPrice: data['totalPrice'] || 0,
         status: data['status'] || '',
         amount: data['amount'] || data['totalPrice'] || 0,
-        createdAt: data['createdAt']?.toDate ? data['createdAt'].toDate() : new Date(),
-        updatedAt: data['updatedAt']?.toDate ? data['updatedAt'].toDate() : undefined,
+        createdAt: data['createdAt']?.toDate
+          ? data['createdAt'].toDate()
+          : new Date(),
+        updatedAt: data['updatedAt']?.toDate
+          ? data['updatedAt'].toDate()
+          : undefined,
         ...data,
       } as unknown as Order;
     });
@@ -444,39 +462,172 @@ export class FirebaseService {
     }
   }
 
-  async addProduct(productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>):
-    Promise<{ success: boolean; productId?: string; error?: string }> {
+  async addProduct(
+    productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>,
+  ): Promise<{ success: boolean; productId?: string; error?: string }> {
     try {
       const productWithTimestamp = {
         ...productData,
         badges: productData.badges || [],
+        // TOUJOURS utiliser serverTimestamp() pour les dates
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        status: 'available' as const,
+        status: productData.status || 'available',
         views: 0,
         sales: 0,
         rating: 0,
-        isActive: true,
+        totalRating: 0,
+        ratingCount: 0,
+        isActive:
+          productData.isActive !== undefined ? productData.isActive : true,
         images: productData.images || [],
       };
+
+      console.log('➕ Ajout produit avec données:', productWithTimestamp);
 
       const docRef = await addDoc(
         collection(this.firestore, 'products'),
         productWithTimestamp,
       );
 
+      console.log('✅ Produit ajouté avec ID:', docRef.id);
+
       return {
         success: true,
         productId: docRef.id,
       };
     } catch (error: any) {
+      console.error('❌ Erreur addProduct:', error);
       return {
         success: false,
-        error: this.getFirebaseErrorMessage(error.code) || "Erreur lors de l'ajout du produit",
+        error:
+          this.getFirebaseErrorMessage(error.code) ||
+          "Erreur lors de l'ajout du produit",
+      };
+    }
+  }
+  async createCertificationProduct(productData: {
+    name: string;
+    category: string;
+    description: string;
+    price: number;
+    quantity: number;
+    unit: string;
+    producerId: string;
+    producerName: string;
+    location: string;
+    contactPhone: string;
+  }): Promise<{ success: boolean; productId?: string; error?: string }> {
+    try {
+      const certificationProduct: Omit<
+        Product,
+        'id' | 'createdAt' | 'updatedAt'
+      > = {
+        name: productData.name,
+        category: productData.category,
+        description: productData.description,
+        price: productData.price,
+        quantity: productData.quantity,
+        unit: productData.unit,
+        producerId: productData.producerId,
+        producerName: productData.producerName,
+        producerPhone: productData.contactPhone,
+        location: productData.location,
+        contactPhone: productData.contactPhone,
+        minOrderQuantity: 1,
+        status: 'certification',
+        isActive: false,
+        images: [],
+        certifications: [],
+        isOrganic: false,
+        views: 0,
+        sales: 0,
+        rating: 0,
+        totalRating: 0,
+        ratingCount: 0,
+        badges: [],
+        certificationInProgress: true,
+        certificationStartDate: new Date().toISOString(), // Chaîne ISO
+      };
+
+      return await this.addProduct(certificationProduct);
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Erreur création produit certification',
       };
     }
   }
 
+  // Ajouter cette méthode utilitaire
+  private cleanFirestoreData(data: any): any {
+    const cleaned: any = {};
+
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined && value !== null) {
+        if (typeof value === 'object' && !(value instanceof Date)) {
+          if (Array.isArray(value)) {
+            cleaned[key] = value.map((item) =>
+              typeof item === 'object' ? this.cleanFirestoreData(item) : item,
+            );
+          } else {
+            cleaned[key] = this.cleanFirestoreData(value);
+          }
+        } else {
+          cleaned[key] = value;
+        }
+      }
+    }
+
+    return cleaned;
+  }
+
+  async createProductForCertification(productData: {
+    name: string;
+    category: string;
+    description: string;
+    price: number;
+    quantity: number;
+    unit: string;
+    producerId: string;
+    producerName: string;
+    location: string;
+    contactPhone: string;
+  }): Promise<{ success: boolean; productId?: string; error?: string }> {
+    try {
+      console.log('🛠️ Création produit pour certification:', productData);
+
+      const result = await this.createCertificationProduct(productData);
+
+      if (result.success && result.productId) {
+        // Attendre un peu pour la synchronisation
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Vérifier que le produit existe
+        const product = await this.getProductById(result.productId);
+
+        if (!product) {
+          console.warn('⚠️ Produit créé mais non trouvé immédiatement');
+          // Retourner quand même le succès avec l'ID
+          return {
+            success: true,
+            productId: result.productId,
+            error: 'Produit créé mais récupération différée',
+          };
+        }
+      }
+
+      return result;
+    } catch (error: any) {
+      console.error('❌ Erreur création produit pour certification:', error);
+      return {
+        success: false,
+        error: error.message || 'Erreur création produit certification',
+      };
+    }
+  }
+
+  // Dans firebase.service.ts, méthode getProducerProducts()
   async getProducerProducts(producerId: string): Promise<Product[]> {
     try {
       const q = query(
@@ -490,7 +641,43 @@ export class FirebaseService {
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        products.push({
+
+        // Fonction de conversion robuste
+        const convertFirestoreTimestamp = (timestamp: any): Date => {
+          if (!timestamp) return new Date();
+
+          // Si c'est un timestamp Firestore {seconds, nanoseconds}
+          if (timestamp && typeof timestamp.seconds === 'number') {
+            return new Date(
+              timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000,
+            );
+          }
+
+          // Si c'est un objet Firestore avec toDate()
+          if (timestamp && typeof timestamp.toDate === 'function') {
+            return timestamp.toDate();
+          }
+
+          // Si c'est déjà une Date
+          if (timestamp instanceof Date) {
+            return timestamp;
+          }
+
+          // Si c'est une chaîne ISO
+          if (typeof timestamp === 'string') {
+            const date = new Date(timestamp);
+            return isNaN(date.getTime()) ? new Date() : date;
+          }
+
+          // Si c'est un nombre
+          if (typeof timestamp === 'number') {
+            return new Date(timestamp);
+          }
+
+          return new Date();
+        };
+
+        const product: Product = {
           id: doc.id,
           name: data['name'] || '',
           category: data['category'] || '',
@@ -510,63 +697,198 @@ export class FirebaseService {
           status: data['status'] || 'available',
           views: data['views'] || 0,
           sales: data['sales'] || 0,
+          rating: data['rating'] || 0,
+          totalRating: data['totalRating'] || 0,
+          ratingCount: data['ratingCount'] || 0,
           isActive: data['isActive'] !== undefined ? data['isActive'] : true,
-          createdAt: data['createdAt']?.toDate() || new Date(),
-          updatedAt: data['updatedAt']?.toDate() || new Date(),
+          // CONVERSION CORRECTE ICI
+          createdAt: convertFirestoreTimestamp(data['createdAt']),
+          updatedAt: convertFirestoreTimestamp(data['updatedAt']),
           badges: data['badges'] || [],
-        });
+          certification: data['certification'] || undefined,
+        };
+
+        // Conversion pour les dates de certification
+        if (data['certification']) {
+          const cert = data['certification'];
+          if (cert.verificationDate) {
+            product.certification!.verificationDate = convertFirestoreTimestamp(
+              cert.verificationDate,
+            );
+          }
+          if (cert.validUntil) {
+            product.certification!.validUntil = convertFirestoreTimestamp(
+              cert.validUntil,
+            );
+          }
+          if (cert.startDate) {
+            product.certification!.startDate = convertFirestoreTimestamp(
+              cert.startDate,
+            );
+          }
+          if (cert.estimatedEndDate) {
+            product.certification!.estimatedEndDate = convertFirestoreTimestamp(
+              cert.estimatedEndDate,
+            );
+          }
+        }
+
+        // Conversion pour harvestDate (garder comme string si c'est déjà une chaîne)
+        if (data['harvestDate']) {
+          if (typeof data['harvestDate'] === 'string') {
+            (product as any).harvestDate = data['harvestDate'];
+          } else {
+            (product as any).harvestDate = convertFirestoreTimestamp(
+              data['harvestDate'],
+            )
+              .toISOString()
+              .split('T')[0];
+          }
+        }
+
+        // Conversion pour expirationDate
+        if (data['expirationDate']) {
+          if (typeof data['expirationDate'] === 'string') {
+            (product as any).expirationDate = data['expirationDate'];
+          } else {
+            (product as any).expirationDate = convertFirestoreTimestamp(
+              data['expirationDate'],
+            )
+              .toISOString()
+              .split('T')[0];
+          }
+        }
+
+        // Autres champs
+        if (data['storageConditions'] !== undefined) {
+          (product as any).storageConditions = data['storageConditions'];
+        }
+        if (data['certificationInProgress'] !== undefined) {
+          (product as any).certificationInProgress =
+            data['certificationInProgress'];
+        }
+        if (data['certificationStartDate'] !== undefined) {
+          if (typeof data['certificationStartDate'] === 'string') {
+            (product as any).certificationStartDate =
+              data['certificationStartDate'];
+          } else {
+            (product as any).certificationStartDate = convertFirestoreTimestamp(
+              data['certificationStartDate'],
+            ).toISOString();
+          }
+        }
+        if (data['isPendingCertification'] !== undefined) {
+          (product as any).isPendingCertification =
+            data['isPendingCertification'];
+        }
+        if (data['featuredImage'] !== undefined) {
+          (product as any).featuredImage = data['featuredImage'];
+        }
+
+        products.push(product);
       });
 
       return products;
     } catch (error) {
+      console.error('Erreur getProducerProducts:', error);
       return [];
     }
   }
 
+  // firebase.service.ts - méthode getProductById
   async getProductById(productId: string): Promise<Product | null> {
     try {
-      const productDoc = await getDoc(doc(this.firestore, 'products', productId));
+      console.log('🔍 Tentative de récupération du produit:', productId);
 
-      if (productDoc.exists()) {
-        const data = productDoc.data();
-        return {
-          id: productDoc.id,
-          name: data['name'] || '',
-          category: data['category'] || '',
-          description: data['description'] || '',
-          price: data['price'] || 0,
-          quantity: data['quantity'] || 0,
-          unit: data['unit'] || 'unit',
-          certifications: data['certifications'] || [],
-          isOrganic: data['isOrganic'] || false,
-          harvestDate: data['harvestDate'],
-          storageConditions: data['storageConditions'],
-          location: data['location'] || '',
-          contactPhone: data['contactPhone'] || '',
-          minOrderQuantity: data['minOrderQuantity'] || 1,
-          producerId: data['producerId'] || '',
-          producerName: data['producerName'] || '',
-          producerPhone: data['producerPhone'] || '',
-          images: data['images'] || [],
-          status: data['status'] || 'available',
-          views: data['views'] || 0,
-          sales: data['sales'] || 0,
-          rating: data['rating'] || 0,
-          isActive: data['isActive'] !== undefined ? data['isActive'] : true,
-          createdAt: data['createdAt']?.toDate() || new Date(),
-          updatedAt: data['updatedAt']?.toDate() || new Date(),
-          certification: data['certification'] || undefined,
-          badges: data['badges'] || [],
-        } as Product;
+      const productDoc = await getDoc(
+        doc(this.firestore, 'products', productId),
+      );
+
+      if (!productDoc.exists()) {
+        console.log('❌ Produit non trouvé dans Firestore:', productId);
+        return null;
       }
-      return null;
-    } catch (error) {
+
+      console.log('✅ Produit trouvé dans Firestore:', productDoc.id);
+
+      const data = productDoc.data();
+
+      // Fonction utilitaire pour convertir les timestamps
+      const convertTimestamp = (timestamp: any): Date => {
+        if (!timestamp) return new Date();
+        if (typeof timestamp.toDate === 'function') {
+          return timestamp.toDate();
+        }
+        if (timestamp instanceof Date) {
+          return timestamp;
+        }
+        if (typeof timestamp === 'string') {
+          return new Date(timestamp);
+        }
+        return new Date();
+      };
+
+      // Créer l'objet produit avec TOUTES les propriétés requises
+      const product: Product = {
+        id: productDoc.id,
+        name: data['name'] || '',
+        category: data['category'] || '',
+        description: data['description'] || '',
+        price: data['price'] || 0,
+        quantity: data['quantity'] || 0,
+        unit: data['unit'] || 'unit',
+        certifications: data['certifications'] || [],
+        isOrganic: data['isOrganic'] || false,
+        harvestDate: data['harvestDate'],
+        storageConditions: data['storageConditions'],
+        location: data['location'] || '',
+        contactPhone: data['contactPhone'] || '',
+        minOrderQuantity: data['minOrderQuantity'] || 1,
+        producerId: data['producerId'] || '',
+        producerName: data['producerName'] || '',
+        producerPhone: data['producerPhone'] || '',
+        images: data['images'] || [],
+        status: data['status'] || 'available',
+        views: data['views'] || 0,
+        sales: data['sales'] || 0,
+        rating: data['rating'] || 0,
+        totalRating: data['totalRating'] || 0,
+        ratingCount: data['ratingCount'] || 0,
+        isActive: data['isActive'] !== undefined ? data['isActive'] : true,
+        // CORRECTION ICI : Utiliser la fonction de conversion
+        createdAt: convertTimestamp(data['createdAt']),
+        updatedAt: convertTimestamp(data['updatedAt']),
+        certification: data['certification'] || undefined,
+        badges: data['badges'] || [],
+      };
+
+      // Ajouter les propriétés étendues
+      const productExtended = product as any;
+      if (data['featuredImage'] !== undefined) {
+        productExtended.featuredImage = data['featuredImage'];
+      }
+      if (data['certificationInProgress'] !== undefined) {
+        productExtended.certificationInProgress =
+          data['certificationInProgress'];
+      }
+      if (data['certificationStartDate'] !== undefined) {
+        productExtended.certificationStartDate = data['certificationStartDate'];
+      }
+      if (data['isPendingCertification'] !== undefined) {
+        productExtended.isPendingCertification = data['isPendingCertification'];
+      }
+
+      console.log('✅ Produit construit:', productExtended);
+      return productExtended as Product;
+    } catch (error: any) {
+      console.error('❌ Erreur détaillée récupération produit:', error);
       return null;
     }
   }
-
-  async updateProduct(productId: string, productData: Partial<Product>):
-    Promise<{ success: boolean; error?: string }> {
+  async updateProduct(
+    productId: string,
+    productData: Partial<Product>,
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       const updateData = {
         ...productData,
@@ -578,25 +900,33 @@ export class FirebaseService {
     } catch (error: any) {
       return {
         success: false,
-        error: this.getFirebaseErrorMessage(error.code) || 'Erreur lors de la mise à jour',
+        error:
+          this.getFirebaseErrorMessage(error.code) ||
+          'Erreur lors de la mise à jour',
       };
     }
   }
 
-  async deleteProduct(productId: string): Promise<{ success: boolean; error?: string }> {
+  async deleteProduct(
+    productId: string,
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       await deleteDoc(doc(this.firestore, 'products', productId));
       return { success: true };
     } catch (error: any) {
       return {
         success: false,
-        error: this.getFirebaseErrorMessage(error.code) || 'Erreur lors de la suppression',
+        error:
+          this.getFirebaseErrorMessage(error.code) ||
+          'Erreur lors de la suppression',
       };
     }
   }
 
-  async updateProductStatus(productId: string, status: Product['status']):
-    Promise<{ success: boolean; error?: string }> {
+  async updateProductStatus(
+    productId: string,
+    status: Product['status'],
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       await updateDoc(doc(this.firestore, 'products', productId), {
         status,
@@ -606,7 +936,9 @@ export class FirebaseService {
     } catch (error: any) {
       return {
         success: false,
-        error: this.getFirebaseErrorMessage(error.code) || 'Erreur lors de la mise à jour',
+        error:
+          this.getFirebaseErrorMessage(error.code) ||
+          'Erreur lors de la mise à jour',
       };
     }
   }
@@ -686,7 +1018,9 @@ export class FirebaseService {
       return allProducts.filter(
         (product) =>
           product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.description
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
           product.producerName.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     } catch (error) {
@@ -696,7 +1030,9 @@ export class FirebaseService {
 
   getAvatarForName(name: string): string {
     const avatars = ['👨🏾', '👩🏾', '👨🏾‍🌾', '👩🏾‍🌾', '🧑🏾', '🧑🏾‍🌾'];
-    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const hash = name
+      .split('')
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return avatars[hash % avatars.length];
   }
 
@@ -744,7 +1080,9 @@ export class FirebaseService {
     });
   }
 
-  async getProductWithCertification(productId: string): Promise<Product | null> {
+  async getProductWithCertification(
+    productId: string,
+  ): Promise<Product | null> {
     const product = await this.getProductById(productId);
     if (!product) return null;
 
@@ -775,21 +1113,5 @@ export class FirebaseService {
 
   get authInstance() {
     return this.auth;
-  }
-
-  db(
-    db: any,
-    arg1: string,
-    arg2: any,
-  ): import('@firebase/firestore').DocumentReference<
-    import('@firebase/firestore').DocumentData,
-    import('@firebase/firestore').DocumentData
-  > {
-    throw new Error('Method not implemented.');
-  }
-
-  private extractProducerIdFromEmail(email: string): string {
-    if (!email) return '';
-    return '';
   }
 }

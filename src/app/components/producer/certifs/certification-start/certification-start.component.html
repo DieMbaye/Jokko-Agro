@@ -1,0 +1,501 @@
+<div class="certification-start-container">
+  <header class="header">
+    <button class="back-btn" (click)="goBack()">
+      <span class="back-icon">←</span> Retour
+    </button>
+    <div class="header-content">
+      <h1 class="title">Démarrer une Certification</h1>
+      <p class="subtitle">
+        Créez et certifiez un nouveau produit étape par étape
+      </p>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Étape 1: Informations de base du produit -->
+    <section *ngIf="currentStep === 1" class="step-section">
+      <div class="step-header">
+        <div class="step-number">1</div>
+        <div class="step-info">
+          <h2>Informations du produit</h2>
+          <p>Définissez les caractéristiques de base de votre produit</p>
+        </div>
+      </div>
+
+      <div class="product-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name" class="form-label">Nom du produit *</label>
+            <input
+              type="text"
+              id="name"
+              [(ngModel)]="productForm.name"
+              placeholder="Ex: Tomates bio"
+              class="form-control"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="category" class="form-label">Catégorie *</label>
+            <select
+              id="category"
+              [(ngModel)]="productForm.category"
+              class="form-control"
+              required
+            >
+              <option value="" disabled selected>
+                Sélectionnez une catégorie
+              </option>
+              <option value="vegetables">🥦 Légumes</option>
+              <option value="fruits">🍎 Fruits</option>
+              <option value="cereals">🌾 Céréales</option>
+              <option value="tubers">🥔 Tubercules</option>
+              <option value="legumes">🥜 Légumineuses</option>
+              <option value="spices">🌶️ Épices</option>
+              <option value="dairy">🥛 Produits laitiers</option>
+              <option value="poultry">🐔 Volaille</option>
+            </select>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="description" class="form-label">Description *</label>
+            <textarea
+              id="description"
+              [(ngModel)]="productForm.description"
+              rows="4"
+              placeholder="Décrivez votre produit..."
+              class="form-control"
+              required
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="location" class="form-label">Lieu de production *</label>
+            <input
+              type="text"
+              id="location"
+              [(ngModel)]="productForm.location"
+              placeholder="Ex: Région de Thiès"
+              class="form-control"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="quantity" class="form-label">Quantité estimée *</label>
+            <div class="quantity-input">
+              <input
+                type="number"
+                id="quantity"
+                [(ngModel)]="productForm.quantity"
+                min="1"
+                placeholder="100"
+                class="form-control"
+                required
+              />
+              <select [(ngModel)]="productForm.unit" class="unit-select">
+                <option value="kg">kg</option>
+                <option value="g">g</option>
+                <option value="l">L</option>
+                <option value="piece">pce</option>
+                <option value="bunch">bt</option>
+                <option value="bag">sac</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="price" class="form-label">Prix estimé *</label>
+            <div class="price-input">
+              <input
+                type="number"
+                id="price"
+                [(ngModel)]="productForm.price"
+                min="100"
+                placeholder="1500"
+                class="form-control"
+                required
+              />
+              <span class="currency">FCFA</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="harvestDate" class="form-label">Date de récolte prévue</label>
+            <input
+              type="date"
+              id="harvestDate"
+              [(ngModel)]="productForm.harvestDate"
+              class="form-control"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="minOrderQuantity" class="form-label">Quantité minimale de vente</label>
+            <input
+              type="number"
+              id="minOrderQuantity"
+              [(ngModel)]="productForm.minOrderQuantity"
+              min="1"
+              [value]="productForm.minOrderQuantity"
+              class="form-control"
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="storageConditions" class="form-label">Conditions de stockage</label>
+            <input
+              type="text"
+              id="storageConditions"
+              [(ngModel)]="productForm.storageConditions"
+              placeholder="Ex: Conserver au frais"
+              class="form-control"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="productForm.isOrganic" />
+              <span class="checkmark"></span>
+              Produit biologique
+            </label>
+          </div>
+
+          <div class="form-group full-width">
+            <label class="form-label">Certifications initiales</label>
+            <div class="certifications-grid">
+              <label
+                class="certification-option"
+                *ngFor="let cert of availableCertifications"
+              >
+                <input
+                  type="checkbox"
+                  [value]="cert.id"
+                  (change)="toggleCertification(cert.id)"
+                  [checked]="productForm.certifications.includes(cert.id)"
+                />
+                <span class="cert-icon">{{ cert.icon }}</span>
+                <span class="cert-name">{{ cert.name }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Étape 2: Choix du template de certification -->
+    <section *ngIf="currentStep === 2" class="step-section">
+      <div class="step-header">
+        <div class="step-number">2</div>
+        <div class="step-info">
+          <h2>Type de certification</h2>
+          <p>Sélectionnez la durée et l'intensité du suivi</p>
+        </div>
+      </div>
+
+      <div class="templates-grid">
+        <div
+          *ngFor="let template of certificationTemplates"
+          class="template-card"
+          [class.selected]="selectedTemplateId === template.id"
+          (click)="selectTemplate(template)"
+        >
+          <div class="template-header">
+            <div class="template-icon">
+              {{ getTemplateIcon(template.certificationType) }}
+            </div>
+            <div class="template-title">
+              <h3>{{ template.name }}</h3>
+              <div class="duration-badge">
+                {{ template.durationDays }} jours
+              </div>
+            </div>
+            <div class="template-price">
+              {{ template.price | number }} FCFA
+            </div>
+          </div>
+
+          <div class="template-description">
+            <p>{{ template.description }}</p>
+          </div>
+
+          <div class="template-features">
+            <div class="feature">
+              <span class="feature-icon">📸</span>
+              <span>{{ template.checkpoints.length || 0 }} photos requises</span>
+            </div>
+            <div class="feature">
+              <span class="feature-icon">📍</span>
+              <span>Localisation GPS</span>
+            </div>
+            <div class="feature">
+              <span class="feature-icon">⛓️</span>
+              <span>Preuves blockchain</span>
+            </div>
+          </div>
+
+          <div class="template-checkpoints" *ngIf="template.checkpoints.length">
+            <h4>Points de contrôle:</h4>
+            <ul>
+              <li *ngFor="let cp of template.checkpoints">
+                <span class="checkpoint-day">J{{ cp.daysFromStart }}</span>
+                <span class="checkpoint-title">{{ cp.title }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="template-badges">
+            <div
+              *ngFor="let badge of template.badges"
+              class="badge"
+              [style.background]="badge.color"
+            >
+              <span class="badge-icon">{{ badge.icon }}</span>
+              <span class="badge-label">{{ badge.label }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Étape 3: Récapitulatif -->
+    <section *ngIf="currentStep === 3" class="step-section">
+      <div class="step-header">
+        <div class="step-number">3</div>
+        <div class="step-info">
+          <h2>Récapitulatif</h2>
+          <p>
+            Vérifiez les informations avant de démarrer la certification
+          </p>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <!-- Produit à certifier -->
+        <div class="summary-section">
+          <h3>Produit à créer et certifier</h3>
+          <div class="product-summary">
+            <div class="product-info-grid">
+              <div class="info-item">
+                <span class="info-label">Nom:</span>
+                <span class="info-value">{{ productForm.name }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Catégorie:</span>
+                <span class="info-value">{{ getCategoryName(productForm.category) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Description:</span>
+                <span class="info-value">{{ productForm.description }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Lieu:</span>
+                <span class="info-value">{{ productForm.location }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Quantité:</span>
+                <span class="info-value">{{ productForm.quantity }} {{ productForm.unit }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Prix estimé:</span>
+                <span class="info-value">{{ productForm.price | number }} FCFA</span>
+              </div>
+              <div *ngIf="productForm.harvestDate" class="info-item">
+                <span class="info-label">Récolte prévue:</span>
+                <span class="info-value">{{ formatDate(productForm.harvestDate) }}</span>
+              </div>
+              <div *ngIf="productForm.certifications.length > 0" class="info-item">
+                <span class="info-label">Certifications:</span>
+                <span class="info-value">
+                  {{ getCertificationsNames(productForm.certifications) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Certification choisie -->
+        <div class="summary-section">
+          <h3>Certification choisie</h3>
+          <div class="selected-template" *ngIf="selectedTemplate">
+            <div class="template-icon">
+              {{ getTemplateIcon(selectedTemplate.certificationType) }}
+            </div>
+            <div class="template-details">
+              <h4>{{ selectedTemplate.name }}</h4>
+              <p>
+                {{ selectedTemplate.durationDays }} jours •
+                {{ selectedTemplate.checkpoints.length || 0 }} checkpoints
+              </p>
+              <div class="price-display">
+                {{ selectedTemplate.price | number }} FCFA
+              </div>
+            </div>
+          </div>
+          <div *ngIf="!selectedTemplate" class="no-template-selected">
+            <p>Aucun template sélectionné</p>
+          </div>
+        </div>
+
+        <!-- Calendrier estimé -->
+        <div class="summary-section" *ngIf="selectedTemplate?.checkpoints?.length">
+          <h3>Calendrier estimé</h3>
+          <div class="timeline">
+            <div
+              class="timeline-item"
+              *ngFor="let cp of selectedTemplate?.checkpoints"
+            >
+              <div class="timeline-marker">J{{ cp.daysFromStart }}</div>
+              <div class="timeline-content">
+                <h5>{{ cp.title }}</h5>
+                <p>{{ cp.description }}</p>
+                <div class="requirements">
+                  <span *ngIf="cp.photoRequired" class="requirement">📸 Photo</span>
+                  <span *ngIf="cp.locationRequired" class="requirement">📍 Localisation</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Processus -->
+        <div class="summary-section">
+          <h3>Processus de certification</h3>
+          <div class="process-flow">
+            <div class="process-step">
+              <div class="step-number">1</div>
+              <div class="step-content">
+                <h5>Création du produit</h5>
+                <p>Le produit sera créé avec statut "en certification"</p>
+              </div>
+            </div>
+            <div class="process-step">
+              <div class="step-number">2</div>
+              <div class="step-content">
+                <h5>Suivi des checkpoints</h5>
+                <p>Vous compléterez les checkpoints selon le calendrier</p>
+              </div>
+            </div>
+            <div class="process-step">
+              <div class="step-number">3</div>
+              <div class="step-content">
+                <h5>Vérification blockchain</h5>
+                <p>Chaque preuve sera enregistrée sur la blockchain</p>
+              </div>
+            </div>
+            <div class="process-step">
+              <div class="step-number">4</div>
+              <div class="step-content">
+                <h5>Publication automatique</h5>
+                <p>
+                  Le produit sera publié une fois la certification terminée
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Engagements -->
+        <div class="summary-section">
+          <h3>Engagements</h3>
+          <ul class="commitments">
+            <li>
+              <input
+                type="checkbox"
+                [(ngModel)]="agreements.photoConsent"
+                id="photoConsent"
+              />
+              <label for="photoConsent">
+                J'accepte de prendre des photos authentiques à chaque checkpoint
+              </label>
+            </li>
+            <li>
+              <input
+                type="checkbox"
+                [(ngModel)]="agreements.locationConsent"
+                id="locationConsent"
+              />
+              <label for="locationConsent">
+                J'accepte de partager ma localisation GPS pour chaque checkpoint
+              </label>
+            </li>
+            <li>
+              <input
+                type="checkbox"
+                [(ngModel)]="agreements.timeCommitment"
+                id="timeCommitment"
+              />
+              <label for="timeCommitment">
+                Je m'engage à respecter le calendrier des checkpoints
+              </label>
+            </li>
+            <li>
+              <input
+                type="checkbox"
+                [(ngModel)]="agreements.blockchainConsent"
+                id="blockchainConsent"
+              />
+              <label for="blockchainConsent">
+                J'accepte l'enregistrement des preuves sur la blockchain Ethereum
+              </label>
+            </li>
+            <li>
+              <input
+                type="checkbox"
+                [(ngModel)]="agreements.publishConsent"
+                id="publishConsent"
+              />
+              <label for="publishConsent">
+                J'accepte que le produit soit publié automatiquement après certification
+              </label>
+            </li>
+          </ul>
+        </div>
+
+        <div class="summary-actions">
+          <button class="btn-secondary" (click)="goToPreviousStep()">
+            <span class="btn-icon">←</span> Retour
+          </button>
+          <button
+            class="btn-primary"
+            (click)="startCertificationProcess()"
+            [disabled]="!canStartCertification() || isLoading"
+          >
+            <span *ngIf="!isLoading">Démarrer la certification</span>
+            <span *ngIf="isLoading" class="loading">
+              <span class="spinner"></span> Initialisation...
+            </span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Navigation des étapes -->
+  <nav class="step-navigation" *ngIf="currentStep < 3">
+    <div class="step-indicator">
+      <div class="step" [class.active]="currentStep === 1">1</div>
+      <div class="step" [class.active]="currentStep === 2">2</div>
+      <div class="step" [class.active]="currentStep === 3">3</div>
+    </div>
+
+    <div class="nav-buttons">
+      <button
+        class="btn-secondary"
+        *ngIf="currentStep > 1"
+        (click)="goToPreviousStep()"
+      >
+        Précédent
+      </button>
+      <button
+        class="btn-primary"
+        *ngIf="currentStep < 3"
+        (click)="goToNextStep()"
+        [disabled]="!canProceedToNextStep()"
+      >
+        Suivant
+      </button>
+    </div>
+  </nav>
+</div>

@@ -472,31 +472,34 @@ export class AddProductComponent implements OnInit, AfterViewInit {
       const userData = this.authService.getUserData();
 
       // Prepare product data - PAS D'IMAGES
-      const productData: any = {
-        ...this.productForm.value,
-        producerId: user.uid,
-        producerName: userData?.fullName || 'Producteur',
-        producerPhone:
-          this.productForm.value.contactPhone || userData?.phone || '',
-        producerEmail: user.email || '',
-        status: 'available',
-        views: 0,
-        sales: 0,
-        rating: 0,
-        totalRating: 0,
-        ratingCount: 0,
-        isActive: true,
-        images: [], // Tableau vide - pas d'images
-        featuredImage: '', // Image principale vide
-        tags: this.productForm.value.certifications || [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        harvestDate: this.formatDate(this.productForm.value.harvestDate),
-        expirationDate: this.formatDate(this.productForm.value.expirationDate),
-      };
+// Dans add-product.ts, méthode submitForm()
+const productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> = {
+  name: this.productForm.value.name,
+  category: this.productForm.value.category,
+  description: this.productForm.value.description,
+  price: this.productForm.value.price,
+  quantity: this.productForm.value.quantity,
+  unit: this.productForm.value.unit,
+  producerId: user.uid,
+  producerName: userData?.fullName || 'Producteur',
+  producerPhone: this.productForm.value.contactPhone || userData?.phone || '',
+  location: this.productForm.value.location,
+  contactPhone: this.productForm.value.contactPhone || '',
+  minOrderQuantity: this.productForm.value.minOrderQuantity || 1,
+  certifications: this.productForm.value.certifications || [],
+  isOrganic: this.productForm.value.isOrganic || false,
+  images: [],
+  status: 'available',
+  views: 0,
+  sales: 0,
+  rating: 0,
+  isActive: true,
+  badges: [],
+  // Champs optionnels
+  ...(this.productForm.value.harvestDate && { harvestDate: this.productForm.value.harvestDate }),
+  ...(this.productForm.value.storageConditions && { storageConditions: this.productForm.value.storageConditions }),
+};
 
-      // NE PAS appeler uploadImages() du tout
-      // OU gardez-le mais il retournera un tableau vide
 
       // Option: Appeler quand même pour la logique
       const imageUrls = await this.uploadImages();

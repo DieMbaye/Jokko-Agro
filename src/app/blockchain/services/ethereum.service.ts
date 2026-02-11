@@ -299,13 +299,10 @@ export class EthereumService {
   /**
    * Utiliser Alchemy pour interagir avec la blockchain
    */
-  // services/ethereum.service.ts - CORRIGÉ (partiel, juste la méthode Alchemy)
   async callAlchemy(method: string, params: any[] = []): Promise<any> {
     try {
       // ✅ CORRECTION : Construire l'URL correctement
       const alchemyUrl = `https://eth-${this.network}.g.alchemy.com/v2/${this.alchemyApiKey}`;
-
-      console.log('📡 Appel Alchemy:', { method, url: alchemyUrl });
 
       const response = await fetch(alchemyUrl, {
         method: 'POST',

@@ -95,15 +95,10 @@ export class App implements OnInit {
     // Démarrer la synchro automatique (toutes les 5 minutes)
     this.blockchainSyncService.startAutoSync(5);
 
-    // Synchroniser les preuves fallback (toutes les 10 minutes)
-    setInterval(() => {
-      this.certificationService.syncFallbackProofs();
-    }, 10 * 60 * 1000);
 
     // Synchro immédiate au démarrage
     setTimeout(() => {
       this.blockchainSyncService.syncPendingTransactions();
-      this.certificationService.syncFallbackProofs();
     }, 30000); // 30 secondes après le démarrage
   } // ⚠️ AJOUTER cette accolade fermante qui manquait
 

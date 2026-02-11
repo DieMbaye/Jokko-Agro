@@ -1,109 +1,97 @@
+<!-- buyer-dashboard.html -->
 <div class="dashboard-container">
   <!-- Main Content -->
   <main class="main-content">
-  <header class="main-header">
-  <div class="header-left">
-    <h1>Bienvenue sur le marché</h1>
-    <p class="welcome-text">
-      Découvrez des produits frais et certifiés près de chez vous
-    </p>
-  </div>
+    <header class="main-header">
+      <div class="header-left">
+        <h1>Bienvenue sur le marché</h1>
+        <p class="welcome-text">
+          Découvrez des produits frais et certifiés près de chez vous
+        </p>
+      </div>
 
-  <div class="header-right">
+      <div class="header-right">
+        <!-- 🔔 + 🔍 SUR LA MÊME LIGNE -->
+        <div class="search-notification-row">
+          <!-- 🔔 NOTIFICATIONS -->
+          <div class="notifications-wrapper">
+            <button class="notif-btn" (click)="toggleNotifications()">
+              🔔
+              <span *ngIf="unreadCount > 0" class="notif-badge">
+                {{ unreadCount }}
+              </span>
+            </button>
 
-    <!-- 🔔 + 🔍 SUR LA MÊME LIGNE -->
-    <div class="search-notification-row">
+            <!-- 📋 DROPDOWN -->
+            <div class="notif-dropdown" *ngIf="showNotifications">
+              <h4>Notifications</h4>
 
-      <!-- 🔔 NOTIFICATIONS -->
-      <div class="notifications-wrapper">
-        <button class="notif-btn" (click)="toggleNotifications()">
-          🔔
-          <span *ngIf="unreadCount > 0" class="notif-badge">
-            {{ unreadCount }}
-          </span>
-        </button>
+              <div *ngIf="notifications.length === 0" class="notif-empty">
+                Aucune notification
+              </div>
 
-        <!-- 📋 DROPDOWN -->
-        <div class="notif-dropdown" *ngIf="showNotifications">
-          <h4>Notifications</h4>
-
-          <div *ngIf="notifications.length === 0" class="notif-empty">
-            Aucune notification
+              <div
+                *ngFor="let n of notifications"
+                class="notif-item"
+                [class.unread]="!n.read"
+                (click)="openNotification(n)"
+              >
+                <strong>{{ n.title }}</strong>
+                <p>{{ n.message }}</p>
+                <small>{{ n.createdAt?.toDate() | date:'short' }}</small>
+              </div>
+            </div>
           </div>
 
-          <div
-            *ngFor="let n of notifications"
-            class="notif-item"
-            [class.unread]="!n.read"
-            (click)="openNotification(n)"
-          >
-            <strong>{{ n.title }}</strong>
-            <p>{{ n.message }}</p>
-            <small>{{ n.createdAt?.toDate() | date:'short' }}</small>
+          <!-- 🔍 BARRE DE RECHERCHE -->
+          <div class="search-box">
+            <input
+              type="text"
+              placeholder="Rechercher un produit..."
+              [(ngModel)]="searchTerm"
+              (keyup.enter)="onSearch()"
+            />
+            <button class="search-btn" (click)="onSearch()">
+              🔍
+            </button>
+          </div>
+
+          <!-- ⚡ ACTION RAPIDE -->
+          <div class="quick-actions">
+            <button routerLink="/buyer/scan" class="quick-btn">
+              📱 Scanner QR
+            </button>
           </div>
         </div>
       </div>
-
-      <!-- 🔍 BARRE DE RECHERCHE -->
-      <div class="search-box">
-        <input
-          type="text"
-          placeholder="Rechercher un produit..."
-          [(ngModel)]="searchTerm"
-          (keyup.enter)="onSearch()"
-        />
-
-        <!-- <button
-          class="voice-btn"
-          (click)="toggleVoiceSearch()"
-          [class.listening]="isListening"
-        >
-          🎤
-        </button> -->
-
-        <button class="search-btn" (click)="onSearch()">
-          🔍
-        </button>
-      </div>
-
-      <!-- ⚡ ACTION RAPIDE -->
-      <div class="quick-actions">
-        <button routerLink="/buyer/scan" class="quick-btn">
-          📱 Scanner QR
-        </button>
-      </div>
-
-    </div>
-  </div>
-</header>
+    </header>
 
     <!-- Stats Grid -->
-<div *ngIf="!isDashboardLoading; else loadingStats">
-  <div class="stats-grid">
-    <div
-      *ngFor="let stat of stats"
-      class="stat-card"
-      [routerLink]="stat.link"
-      [ngStyle]="{ borderLeftColor: stat.color }"
-    >
-      <div class="stat-icon" [ngStyle]="{ backgroundColor: stat.color + '20' }">
-        {{ stat.icon }}
-      </div>
-      <div class="stat-info">
-        <h3>{{ stat.value }}</h3>
-        <p>{{ stat.label }}</p>
+    <div *ngIf="!isDashboardLoading; else loadingStats">
+      <div class="stats-grid">
+        <div
+          *ngFor="let stat of stats"
+          class="stat-card"
+          [routerLink]="stat.link"
+          [ngStyle]="{ borderLeftColor: stat.color }"
+        >
+          <div class="stat-icon" [ngStyle]="{ backgroundColor: stat.color + '20' }">
+            {{ stat.icon }}
+          </div>
+          <div class="stat-info">
+            <h3>{{ stat.value }}</h3>
+            <p>{{ stat.label }}</p>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- ⏳ SKELETON LOADER -->
-<ng-template #loadingStats>
-  <div class="stats-grid">
-    <div class="stat-card skeleton" *ngFor="let i of [1,2,3,4]"></div>
-  </div>
-</ng-template>
-
+    <!-- ⏳ SKELETON LOADER -->
+    <ng-template #loadingStats>
+      <div class="stats-grid">
+        <div class="stat-card skeleton" *ngFor="let i of [1,2,3,4]"></div>
+      </div>
+    </ng-template>
 
     <!-- Categories -->
     <div class="dashboard-section">
@@ -138,69 +126,45 @@
               <th>Date</th>
               <th>Montant</th>
               <th>Note</th>
-
               <th>Certifié</th>
             </tr>
           </thead>
           <tbody>
- <tr *ngFor="let purchase of recentPurchases | slice:0:5">
-
-  <!-- COMMANDE -->
-  <td>#{{ purchase.id }}</td>
-
-  <!-- PRODUIT -->
-  <td class="product-cell">{{ purchase.product }}</td>
-
-  <!-- PRODUCTEUR -->
-  <td>{{ purchase.producer }}</td>
-
-  <!-- DATE -->
-  <td>{{ purchase.date }}</td>
-
-  <!-- MONTANT -->
-  <td class="amount">{{ formatPrice(purchase.amount) }}</td>
-
-  <!-- ⭐ NOTE / RATING -->
-  <td>
-
-    <!-- ⭐ DÉJÀ NOTÉ -->
-    <div *ngIf="purchase.rated" class="stars readonly">
-      <span *ngFor="let s of starsArray()">
-        {{ s <= purchase.ratingValue ? '★' : '☆' }}
-      </span>
-    </div>
-
-    <!-- ⭐ PAS ENCORE NOTÉ -->
-    <div
-      *ngIf="!purchase.rated"
-      class="stars clickable"
-      [class.disabled]="purchase.status !== 'delivered'"
-    >
-      <span
-        *ngFor="let s of starsArray()"
-        (click)="purchase.status === 'delivered' && rate(purchase, s)"
-      >
-        ★
-      </span>
-    </div>
-
-  </td>
-
-  <!-- CERTIFIÉ -->
-  <td>
-    <span *ngIf="purchase.certified" class="certified-badge">
-      ✅ Certifié
-    </span>
-
-    <span *ngIf="!purchase.certified" class="not-certified-badge">
-      ❌ Non certifié
-    </span>
-  </td>
-
-</tr>
-
-</tbody>
-
+            <tr *ngFor="let purchase of recentPurchases | slice:0:5">
+              <td>#{{ purchase.id }}</td>
+              <td class="product-cell">{{ purchase.product }}</td>
+              <td>{{ purchase.producer }}</td>
+              <td>{{ purchase.date }}</td>
+              <td class="amount">{{ formatPrice(purchase.amount) }}</td>
+              <td>
+                <div *ngIf="purchase.rated" class="stars readonly">
+                  <span *ngFor="let s of starsArray()">
+                    {{ s <= purchase.ratingValue ? '★' : '☆' }}
+                  </span>
+                </div>
+                <div
+                  *ngIf="!purchase.rated"
+                  class="stars clickable"
+                  [class.disabled]="purchase.status !== 'delivered'"
+                >
+                  <span
+                    *ngFor="let s of starsArray()"
+                    (click)="purchase.status === 'delivered' && rate(purchase, s)"
+                  >
+                    ★
+                  </span>
+                </div>
+              </td>
+              <td>
+                <span *ngIf="purchase.certified" class="certified-badge">
+                  ✅ Certifié
+                </span>
+                <span *ngIf="!purchase.certified" class="not-certified-badge">
+                  ❌ Non certifié
+                </span>
+              </td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </div>
@@ -259,204 +223,6 @@
 </div>
 
 <!-- ============================================
-   CHATBOT INTELLIGENT
+   NOUVEAU CHATBOT VOCAL AMÉLIORÉ
    ============================================ -->
-<button class="chatbot-button" (click)="toggleChatbot()">
-  <span class="chatbot-icon">💬</span>
-  <span class="chatbot-notification" *ngIf="hasUnreadMessages">●</span>
-</button>
-
-<div class="chatbot-container" [class.open]="isChatbotOpen">
-  <!-- Header -->
-  <div class="chatbot-header">
-    <div class="chatbot-title">
-      <div class="chatbot-avatar">🤖</div>
-      <div class="chatbot-info">
-        <h3>Assistant AgroConnect</h3>
-        <p class="chatbot-status">En ligne • Données réelles</p>
-      </div>
-    </div>
-    <div class="chatbot-controls">
-      <button class="chatbot-action" (click)="newChat()" title="Nouvelle conversation">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19 13H5V11H19V13Z"/>
-          <path d="M13 5L11 5L11 19H13V5Z"/>
-        </svg>
-      </button>
-      <button class="chatbot-action" (click)="toggleChatbot()" title="Fermer">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </button>
-    </div>
-  </div>
-
-  <!-- Messages -->
-  <div class="chatbot-messages" #chatMessages>
-    <!-- Message de bienvenue -->
-    <div class="message welcome" *ngIf="chatHistory.length === 0">
-      <div class="message-avatar">🤖</div>
-      <div class="message-content">
-        <div class="message-bubble">
-          <strong>👋 Bonjour {{userName}} !</strong><br><br>
-          Je suis votre assistant AgroConnect. Je peux vous donner des informations <strong>réelles</strong> sur :<br><br>
-          • 📦 <strong>Les produits disponibles</strong> (prix, stock, producteurs)<br>
-          • 👨‍🌾 <strong>Les producteurs actifs</strong> (liste réelle des vendeurs)<br>
-          • 💰 <strong>Les prix et promotions</strong><br>
-          • 🛒 <strong>Comment commander</strong> (procédure réelle)<br><br>
-          <em>Posez-moi vos questions en français simple !</em>
-        </div>
-        <div class="message-time">Maintenant</div>
-      </div>
-    </div>
-
-    <!-- Historique des messages -->
-    <div *ngFor="let msg of chatHistory" class="message" [class.user]="msg.isUser" [class.bot]="!msg.isUser">
-      <div class="message-avatar" *ngIf="!msg.isUser">🤖</div>
-
-      <div class="message-content">
-        <div class="message-bubble">
-          <div class="message-text" [innerHTML]="msg.text"></div>
-          <div *ngIf="msg.isLoading" class="typing-indicator">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-        <div class="message-time">
-          {{msg.timestamp | date:'HH:mm'}}
-          <span *ngIf="msg.isUser" class="message-status">✓</span>
-        </div>
-      </div>
-
-      <div class="message-avatar user-avatar" *ngIf="msg.isUser">
-        {{userInitials}}
-      </div>
-    </div>
-  </div>
-
-  <!-- Suggestions -->
- <div class="chatbot-suggestions" *ngIf="!isProcessing && chatHistory.length === 0">
-  <p>💡 <strong>Exemples de questions réelles :</strong></p>
-
-  <div class="suggestions-grid">
-    <button class="suggestion-btn" (click)="askQuestion('Producteurs actifs')">
-      👨‍🌾 Producteurs actifs
-    </button>
-
-    <button class="suggestion-btn" (click)="askQuestion('Produits disponibles')">
-      📦 Produits disponibles
-    </button>
-
-    <button class="suggestion-btn" (click)="askQuestion('Commander un produit')">
-      🍅 Commander un produit
-    </button>
-
-    <button class="suggestion-btn" (click)="askQuestion('Comment faire une commande')">
-      🛒 Comment commander
-    </button>
-
-     <button class="suggestion-btn" (click)="askEstimateProduct()">
-      📊 Estimation produit
-    </button>
-
-    <button class="suggestion-btn" (click)="askCompareProducers()">
-      🏆 Comparer producteurs
-    </button>
-  </div>
-
-
-</div>
-
-
-
-<!-- ================= INPUT CHATBOT  ================= -->
-<div class="chatbot-input">
-  <div class="input-container">
-
-    <!-- 📊 VISUALISATION AUDIO (WHATSAPP STYLE) -->
-    <div *ngIf="isListening" class="waveform">
-      <span
-        *ngFor="let h of waveformBars"
-        class="wave-bar"
-        [style.height.%]="h"
-      ></span>
-    </div>
-
-    <!-- 📝 INPUT TEXTE (masqué quand on parle) -->
-    <input
-      *ngIf="!isListening"
-      type="text"
-      [(ngModel)]="currentMessage"
-      placeholder="Écrivez ou parlez (🎤)..."
-      (keyup.enter)="sendMessage()"
-      [disabled]="isProcessing"
-      #chatInput
-    />
-
-    <!-- 🎤 MICRO -->
-    <button
-      class="mic-button"
-      (click)="startVoiceInput()"
-      [class.listening]="isListening"
-      title="Parler"
-      type="button"
-    >
-      🎤
-    </button>
-
-    <!-- ⏸️ PAUSE -->
-    <button
-      *ngIf="isSpeaking && !isSpeechPaused"
-      class="voice-control pause"
-      (click)="pauseSpeech()"
-      title="Pause"
-      type="button"
-    >
-      ⏸
-    </button>
-
-    <!-- ▶️ REPRENDRE -->
-    <button
-      *ngIf="isSpeaking && isSpeechPaused"
-      class="voice-control resume"
-      (click)="resumeSpeech()"
-      title="Reprendre"
-      type="button"
-    >
-      ▶
-    </button>
-
-    <!-- ⏹️ STOP -->
-    <button
-      *ngIf="isSpeaking"
-      class="voice-control stop"
-      (click)="stopSpeech()"
-      title="Arrêter"
-      type="button"
-    >
-      ■
-    </button>
-
-    <!-- 📤 ENVOYER -->
-    <button
-      class="send-button"
-      (click)="sendMessage()"
-      [disabled]="!currentMessage.trim() || isProcessing"
-      type="button"
-    >
-      <svg *ngIf="!isProcessing" width="18" height="18" viewBox="0 0 24 24">
-        <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z"/>
-      </svg>
-      <div *ngIf="isProcessing" class="loading-spinner"></div>
-    </button>
-
-  </div>
-</div>
-
-
-
-
-</div>
-
-<div class="chatbot-overlay" [class.active]="isChatbotOpen" (click)="toggleChatbot()"></div>
+<app-chatbot-voice></app-chatbot-voice>

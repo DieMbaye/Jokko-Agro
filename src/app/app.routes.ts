@@ -93,37 +93,7 @@ export const routes: Routes = [
       ),
     canActivate: [producerGuard],
   },
-  {
-    path: 'producer/certifications',
-    loadComponent: () =>
-      import('./components/producer/certifications/certifications').then(
-        (m) => m.CertificationsComponent,
-      ),
-    canActivate: [producerGuard],
-  },
-  {
-    path: 'producer/certification/:id',
-    loadComponent: () =>
-      import('./components/producer/certifications/details/certification-detail.component').then(
-        (m) => m.CertificationDetailComponent,
-      ),
-    canActivate: [producerGuard],
-  },
-  {
-    path: 'producer/certification/:id/checkpoint/:checkpointId',
-    loadComponent: () =>
-      import('./components/producer/certifications/checkpoint/complete-checkpoint.component').then(
-        (m) => m.CompleteCheckpointComponent,
-      ),
-    canActivate: [producerGuard],
-  },
-  {
-    path: 'verify/:id',
-    loadComponent: () =>
-      import('./components/producer/certifications/verification/verification.component').then(
-        (m) => m.VerificationComponent,
-      ),
-  },
+
   {
     path: 'producer/settings',
     loadComponent: () =>
@@ -131,6 +101,39 @@ export const routes: Routes = [
         (m) => m.ProducerSettingsComponent,
       ),
     canActivate: [producerGuard],
+  },
+  {
+    path: 'producer/certification/start',
+    loadComponent: () =>
+      import('./components/producer/certifs/certification-start/certification-start.component').then(
+        (m) => m.CertificationStartComponent,
+      ),
+    canActivate: [producerGuard],
+  },
+  {
+    path: 'producer/certification/:id',
+    loadComponent: () =>
+      import('./components/producer/certifs/certification-track/certification-track.component').then(
+        (m) => m.CertificationTrackComponent,
+      ),
+    canActivate: [producerGuard],
+  },
+  {
+    path: 'producer/certifications',
+    loadComponent: () =>
+      import('./components/producer/certifs/certifications-list/certifications-list.component').then(
+        (m) => m.CertificationsListComponent,
+      ),
+    canActivate: [producerGuard],
+  },
+
+  // ==================== ROUTES PUBLIQUES ====================
+  {
+    path: 'verify/:id',
+    loadComponent: () =>
+      import('./components/verif/certification-verify/certification-verify.component').then(
+        (m) => m.CertificationVerifyComponent,
+      ),
   },
 
   // ==================== ROUTES ACHETEUR ====================

@@ -650,18 +650,46 @@ export class MarketComponent implements OnInit, OnDestroy {
     const randomReviews = Math.floor(Math.random() * 100);
     const producerRating = 3.5 + Math.random() * 1.5;
 
+    // Vérifier si le produit a une CERTIFICATION BLOCKCHAIN
+    const hasBlockchainCertification =
+      product.certification?.type === 'certified' ||
+      (product.badges &&
+        product.badges.some((badge) => badge.id === 'certified'));
+
+    // CORRECTION: Convertir explicitement en boolean
+    const isCertified = !!hasBlockchainCertification; // ← Double !! pour conversion
     const hasCertifications =
-      (product.certifications && product.certifications.length > 0) || false;
-    const isOrganic = product.isOrganic || false;
-    const isLocal =
-      (product.certifications && product.certifications.includes('local')) ||
-      false;
+      Array.isArray(product.certifications) &&
+      product.certifications.length > 0;
+
+    const productCertifications = Array.isArray(product.certifications)
+      ? product.certifications
+      : [];
+
+    const isOrganic =
+      product.isOrganic || productCertifications.includes('organic') || false;
+
+    const isLocal = productCertifications.includes('local') || false;
 
     const displayImage = this.getDisplayImage(product);
+
+    // Récupérer les badges de certification
+    const certificationBadges = product.badges || [];
+
+    // Si le produit a une certification blockchain mais pas de badge, en créer un
+    if (isCertified && !certificationBadges.some((b) => b.id === 'certified')) {
+      certificationBadges.push({
+        id: 'certified',
+        label: 'Certifié',
+        icon: '✅',
+        color: '#10b981',
+      });
+    }
 
     const marketProduct: MarketProduct = {
       id: product.id || '',
       name: product.name,
+      // CORRECTION : Prioriser producerName, puis producer
       producer: product.producerName || 'Producteur',
       producerId: product.producerId || '',
       producerRating: producerRating,
@@ -670,7 +698,7 @@ export class MarketComponent implements OnInit, OnDestroy {
       quantity: product.quantity,
       category: product.category,
       displayImage: displayImage,
-      certified: hasCertifications,
+      certified: isCertified,
       organic: isOrganic,
       local: isLocal,
       distance: randomDistance,
@@ -678,7 +706,8 @@ export class MarketComponent implements OnInit, OnDestroy {
       reviews: randomReviews,
       description: product.description || 'Produit agricole de qualité',
       stock: product.quantity,
-      certifications: product.certifications || [],
+      // CORRECTION : Toujours utiliser productCertifications
+      certifications: productCertifications,
       isOrganic: isOrganic,
       location: product.location,
       harvestDate: product.harvestDate,
@@ -688,29 +717,90 @@ export class MarketComponent implements OnInit, OnDestroy {
       status: product.status,
       views: product.views,
       sales: product.sales,
-      producerName: product.producerName,
+      // AJOUTER ce champ manquant :
+      producerName: product.producerName || 'Producteur',
       minOrderQuantity: product.minOrderQuantity || 1,
       images: product.images || [],
       storageConditions: product.storageConditions,
       contactPhone: product.contactPhone,
-      // Ajout des badges si disponibles
-      badges: product.badges || [],
+      badges: certificationBadges,
     };
-
     return marketProduct;
   }
 
-  private getDisplayImage(product: Product): string {
-    if (product.images && product.images.length > 0) {
-      if (
-        product.images[0].startsWith('http') ||
-        product.images[0].startsWith('data:')
-      ) {
-        return product.images[0];
-      }
-    }
-    return this.getCategoryIcon(product.category);
+private getDisplayImage(product: Product): string {
+  // Log pour débogage
+  console.log('Catégorie du produit:', product.category);
+
+  // FORCER l'utilisation de l'emoji de catégorie
+  const icon = this.getCategoryIcon(product.category);
+  console.log('Emoji utilisé:', icon);
+  return icon;
+}
+
+// Et améliorer getCategoryIcon pour gérer plus de cas
+private getCategoryIcon(categoryId: string): string {
+  if (!categoryId) return '📦';
+
+  // Convertir en minuscules et nettoyer
+  const cleanId = categoryId.toString().toLowerCase().trim();
+
+  const iconMap: { [key: string]: string } = {
+    // Catégories français
+    'vegetables': '🥦',
+    'légumes': '🥦',
+    'fruits': '🍎',
+    'cereals': '🌾',
+    'céréales': '🌾',
+    'tubers': '🥔',
+    'tubercules': '🥔',
+    'legumes': '🥜', // Attention: 'legumes' en anglais = légumineuses
+    'légumineuses': '🥜',
+    'spices': '🌶️',
+    'épices': '🌶️',
+    'dairy': '🥛',
+    'produits laitiers': '🥛',
+    'laitiers': '🥛',
+    'poultry': '🐔',
+    'volaille': '🐔',
+
+    // Variations possibles
+    'veg': '🥦',
+    'fruit': '🍎',
+    'cereal': '🌾',
+    'tuber': '🥔',
+    'legume': '🥜',
+    'spice': '🌶️',
+    'milk': '🥛',
+    'chicken': '🐔',
+
+    // Autres catégories
+    'céréale': '🌾',
+    'féculent': '🥔',
+    'viande': '🍖',
+    'poisson': '🐟',
+    'œuf': '🥚',
+    'miel': '🍯',
+    'huile': '🫒',
+  };
+
+  // Chercher la correspondance exacte
+  if (iconMap[cleanId]) {
+    return iconMap[cleanId];
   }
+
+  // Chercher par correspondance partielle
+  for (const [key, icon] of Object.entries(iconMap)) {
+    if (cleanId.includes(key) || key.includes(cleanId)) {
+      console.log(`Correspondance trouvée: ${cleanId} -> ${key} (${icon})`);
+      return icon;
+    }
+  }
+
+  console.warn(`Aucune icône trouvée pour la catégorie: ${categoryId}`);
+  return '📦';
+}
+
 
   private loadFallbackData() {
     console.log('Chargement des données de fallback');
@@ -829,19 +919,6 @@ export class MarketComponent implements OnInit, OnDestroy {
     this.updateCategoryCounts();
   }
 
-  private getCategoryIcon(categoryId: string): string {
-    const icons: { [key: string]: string } = {
-      vegetables: '🥦',
-      fruits: '🍎',
-      cereals: '🌾',
-      tubers: '🥔',
-      legumes: '🥜',
-      spices: '🌶️',
-      dairy: '🥛',
-      poultry: '🐔',
-    };
-    return icons[categoryId] || '📦';
-  }
 
   loadCategories() {
     this.categories = [
@@ -894,7 +971,13 @@ export class MarketComponent implements OnInit, OnDestroy {
     if (this.selectedCertification !== 'all') {
       switch (this.selectedCertification) {
         case 'certified':
-          filtered = filtered.filter((product) => product.certified);
+          // Filtrer uniquement les produits certifiés blockchain
+          filtered = filtered.filter(
+            (product) =>
+              product.certified ||
+              (product.badges &&
+                product.badges.some((b) => b.id === 'certified')),
+          );
           break;
         case 'organic':
           filtered = filtered.filter((product) => product.organic);
@@ -1089,9 +1172,11 @@ export class MarketComponent implements OnInit, OnDestroy {
   }
 
   getCertifiedProductsCount(): number {
-    return this.allProducts.filter((p) => p.certified).length;
+    return this.allProducts.filter(
+      (p) =>
+        p.certified || (p.badges && p.badges.some((b) => b.id === 'certified')),
+    ).length;
   }
-
   getUniqueProducersCount(): number {
     const uniqueProducers = new Set(
       this.filteredProducts.map((p) => p.producer),
@@ -1109,6 +1194,7 @@ export class MarketComponent implements OnInit, OnDestroy {
   }
 
   // Nouvelle méthode pour afficher les badges
+  // Nouvelle méthode pour afficher les badges
   getProductBadges(
     product: MarketProduct,
   ): Array<{ id: string; label: string; icon: string; color: string }> {
@@ -1116,14 +1202,17 @@ export class MarketComponent implements OnInit, OnDestroy {
 
     // Si pas de badges dans les données, créer des badges basés sur les certifications
     if (badges.length === 0) {
+      // Vérifier d'abord si le produit est certifié blockchain
       if (product.certified) {
         badges.push({
           id: 'certified',
           label: 'Certifié',
-          icon: '🏆',
-          color: '#FFD700',
+          icon: '✅',
+          color: '#10b981',
         });
       }
+
+      // Ajouter les autres badges de certification
       if (product.organic) {
         badges.push({
           id: 'organic',
@@ -1138,6 +1227,24 @@ export class MarketComponent implements OnInit, OnDestroy {
           label: 'Local',
           icon: '📍',
           color: '#2196F3',
+        });
+      }
+
+      // Ajouter les badges du tableau certifications
+      if (product.certifications?.includes('fairtrade')) {
+        badges.push({
+          id: 'fairtrade',
+          label: 'Équitable',
+          icon: '⚖️',
+          color: '#FF9800',
+        });
+      }
+      if (product.certifications?.includes('seasonal')) {
+        badges.push({
+          id: 'seasonal',
+          label: 'Saison',
+          icon: '🌞',
+          color: '#FF5722',
         });
       }
     }

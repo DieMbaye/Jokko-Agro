@@ -1,527 +1,524 @@
+// chatbot.service.ts (version corrigée)
 import { Injectable } from '@angular/core';
 import { Product } from '../interfaces/data.interfaces';
+import { WolofVoiceService, WolofIntent } from './wolof-voice.service';
+
+interface ChatbotContext {
+  lastQuestion?: string;
+  pendingIntent?: 'estimate' | 'compare' | 'order' | null;
+  pendingProduct?: string | null; // CHANGÉ: null autorisé
+  conversationHistory: string[];
+  userPreferences?: {
+    preferredLanguage: 'fr' | 'wolof';
+    favoriteProducts: string[];
+    favoriteProducers: string[];
+  };
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class ChatbotService {
+  private contexts = new Map<string, ChatbotContext>();
+
+  constructor(private wolofVoiceService: WolofVoiceService) {
+    this.initializeContexts();
+  }
+
+  private initializeContexts() {
+    this.contexts.set('default', {
+      conversationHistory: [],
+      userPreferences: {
+        preferredLanguage: 'fr',
+        favoriteProducts: [],
+        favoriteProducers: []
+      }
+    });
+  }
+
+  private getContext(userId: string = 'default'): ChatbotContext {
+    if (!this.contexts.has(userId)) {
+      this.contexts.set(userId, {
+        conversationHistory: [],
+        userPreferences: {
+          preferredLanguage: 'fr',
+          favoriteProducts: [],
+          favoriteProducers: []
+        }
+      });
+    }
+    return this.contexts.get(userId)!;
+  }
+
+  private updateContext(userId: string, updates: Partial<ChatbotContext>) {
+    const context = this.getContext(userId);
+    Object.assign(context, updates);
+
+    if (context.conversationHistory.length > 10) {
+      context.conversationHistory = context.conversationHistory.slice(-10);
+    }
+  }
+
   async getIntelligentResponse(
     question: string,
     products: Product[],
     producers: any[],
+    userId: string = 'default'
   ): Promise<string> {
     const q = question.toLowerCase().trim();
-    /* =============================
-   SALUTATIONS & POLITESSE
-============================= */
-if (this.isGreeting(q)) {
-  return this.getGreetingResponse();
-}
+    const context = this.getContext(userId);
 
-if (this.isThankYouMessage(q)) {
-  return "🙏 De rien ! Je suis là pour vous aider.";
-}
+    context.conversationHistory.push(q);
+    this.updateContext(userId, context);
 
-if (this.isGoodbye(q)) {
-  return this.getGoodbyeResponse();
-}
-
+    // Détecter si c'est du Wolof
+    if (this.wolofVoiceService.isWolofText(q)) {
+      return this.handleWolofQuestion(q, products, producers, context);
+    }
 
     /* =============================
-       1️⃣ REMERCIEMENTS
+       SALUTATIONS & POLITESSE
     ============================= */
+    if (this.isGreeting(q)) {
+      return this.getGreetingResponse(context);
+    }
+
     if (this.isThankYouMessage(q)) {
-      return "🙏 De rien ! N'hésitez pas si vous avez d'autres questions.";
+      return this.getThankYouResponse();
+    }
+
+    if (this.isGoodbye(q)) {
+      return this.getGoodbyeResponse();
     }
 
     /* =============================
-       2️⃣ COMMENT FAIRE UNE COMMANDEot
+       GESTION DU CONTEXTE MULTI-ÉTAPES
     ============================= */
-    if (
-      q.includes('comment faire une commande') ||
-      q.includes('comment commander') ||
-      q.includes('faire une commande') ||
-      q.includes('commander')
-    ) {
-      return this.getOrderProcedure();
+    if (context.pendingIntent && !context.pendingProduct && this.extractProductName(q)) {
+      return this.handlePendingIntent(context, q, products, producers, userId);
     }
 
     /* =============================
-       3️⃣ ESTIMATION DU PRIX
+       CATÉGORIES DE QUESTIONS
     ============================= */
-    if (
-      q.includes('estimation') ||
-      q.includes('estimer') ||
-      q.includes('prix du marché') ||
-      q.includes('prix moyen') ||
-      q.includes('estimation prix') ||
-      q.startsWith('estimation')
-    ) {
-      const productName = this.extractProductNameFromQuestion(q);
+
+    // 1️⃣ ESTIMATION DE PRIX
+    if (this.isPriceEstimationQuestion(q)) {
+      const productName = this.extractProductName(q);
       if (productName) {
+        this.updateContext(userId, {
+          pendingIntent: null as any,
+          pendingProduct: null
+        });
         return this.getMarketPriceEstimate(productName, products);
       } else {
+        this.updateContext(userId, {
+          pendingIntent: 'estimate',
+          pendingProduct: null
+        });
         return '🤔 Pour quel produit souhaitez-vous une estimation de prix ? (ex: tomates, riz, mangues)';
       }
     }
 
-    /* =============================
-       4️⃣ COMPARAISON PRODUCTEURS
-    ============================= */
-    if (
-      q.includes('compare') ||
-      q.includes('comparer') ||
-      q.includes('comparaison') ||
-      q.includes('meilleur producteur') ||
-      q.includes('qui est le meilleur') ||
-      q.includes('producteurs pour')
-    ) {
-      const productName = this.extractProductNameFromQuestion(q);
+    // 2️⃣ COMPARAISON PRODUCTEURS
+    if (this.isComparisonQuestion(q)) {
+      const productName = this.extractProductName(q);
       if (productName) {
+        this.updateContext(userId, {
+          pendingIntent: null as any,
+          pendingProduct: null
+        });
         return this.compareProducersForProduct(productName, products);
       } else {
-        return '🤔 Pour quel produit souhaitez-vous comparer les producteurs ? (ex: tomates, riz, mangues)';
+        this.updateContext(userId, {
+          pendingIntent: 'compare',
+          pendingProduct: null
+        });
+        return '🏆 Pour quel produit souhaitez-vous comparer les producteurs ? (ex: tomates, riz, mangues)';
       }
     }
 
-    /* =============================
-       5️⃣ PRIX EXACT D'UN PRODUIT
-    ============================= */
-    if (q.startsWith('prix') || q.includes('combien coûte')) {
-      const productName = this.extractProductNameFromQuestion(q);
+    // 3️⃣ COMMANDER UN PRODUIT
+    if (this.isOrderQuestion(q)) {
+      const productName = this.extractProductName(q);
+      if (productName) {
+        this.updateContext(userId, {
+          pendingIntent: null as any,
+          pendingProduct: null
+        });
+        return this.getProductOrderInfo(productName, products);
+      } else {
+        this.updateContext(userId, {
+          pendingIntent: 'order',
+          pendingProduct: null
+        });
+        return '🛒 Quel produit souhaitez-vous commander ?';
+      }
+    }
+
+    // 4️⃣ PRIX EXACT
+    if (this.isExactPriceQuestion(q)) {
+      const productName = this.extractProductName(q);
       if (productName) {
         return this.getExactProductPrice(productName, products);
       } else {
-        return '🤔 De quel produit souhaitez-vous connaître le prix ?';
+        return '💰 De quel produit souhaitez-vous connaître le prix ?';
       }
     }
 
-    /* =============================
-       6️⃣ COMMANDER / QUI VEND
-    ============================= */
-    if (
-      q.includes('commander') ||
-      q.includes('acheter') ||
-      q.includes('qui vend')
-    ) {
-      const productName = this.extractProductNameFromQuestion(q);
+    // 5️⃣ DISPONIBILITÉ
+    if (this.isAvailabilityQuestion(q)) {
+      const productName = this.extractProductName(q);
       if (productName) {
-        return this.getProductInfo(productName, products);
+        return this.checkProductAvailability(productName, products);
       } else {
-        return '🤔 Quel produit souhaitez-vous commander ?';
+        return this.getAvailableProducts(products);
       }
     }
 
-    /* =============================
-       7️⃣ PRODUITS DISPONIBLES
-    ============================= */
-    if (
-      q.includes('produits disponible') ||
-      q.includes('quels produits') ||
-      q.includes('produits disponibles')
-    ) {
-      return this.getAvailableProducts(products);
+    // 6️⃣ PROCEDURES
+    if (this.isProcedureQuestion(q)) {
+      return this.getProcedureInfo(q);
     }
 
-    /* =============================
-       8️⃣ PRODUCTEURS ACTIFS
-    ============================= */
-    if (q.includes('producteur actif') || q.includes('producteurs actifs')) {
-      return this.getActiveProducers(producers, products);
+    // 7️⃣ CONSEILS & ASTUCES
+    if (this.isTipQuestion(q)) {
+      return this.getTipResponse(q);
     }
 
-    /* =============================
-       9️⃣ DEMANDE GÉNÉRIQUE D'AIDE
-    ============================= */
-    if (q.includes('aide') || q.includes('help') || q === '?' || q === 'help') {
-      return this.getHelpMessage();
+    // 8️⃣ RECOMMANDATIONS
+    if (this.isRecommendationQuestion(q)) {
+      return this.getRecommendationResponse(context);
     }
 
-    return this.getDefaultResponse();
+    // 9️⃣ PRODUCTEURS
+    if (this.isProducerQuestion(q)) {
+      return this.getProducerInfo(q, producers, products);
+    }
+
+    // 🔟 SAISONNALITÉ
+    if (this.isSeasonalityQuestion(q)) {
+      return this.getSeasonalityInfo();
+    }
+
+    // 💡 AIDE GÉNÉRALE
+    if (this.isHelpRequest(q)) {
+      return this.getHelpMessage(context);
+    }
+
+    return this.getContextualResponse(q, context, products);
   }
 
-  /* =====================================================
-     OUTILS LINGUISTIQUES
-  ===================================================== */
-  private isThankYouMessage(msg: string): boolean {
-    return ['merci', 'thanks', 'thank you', 'cimer'].some((w) =>
-      msg.includes(w),
-    );
-  }
-
-  private extractProductNameFromQuestion(question: string): string {
-    const stopWords = [
-      'compare',
-      'comparer',
-      'comparaison',
-      'meilleur',
-      'meilleure',
-      'producteur',
-      'producteurs',
-      'vendeur',
-      'vendeurs',
-      'qui',
-      'est',
-      'prix',
-      'marche',
-      'marché',
-      'moyen',
-      'estimation',
-      'combien',
-      'coûte',
-      'je',
-      'veux',
-      'de',
-      'du',
-      'des',
-      'la',
-      'le',
-      'les',
-      'un',
-      'une',
-      'faire',
-      'commander',
-      'acheter',
-      'vend',
-      'vendre',
-      'pour',
-      'avec',
-      'sur',
-    ];
-
-    // Extraire le nom du produit après certains mots-clés
-    const patterns = [
-      /estimation\s+(.+)/i,
-      /prix\s+(.+)/i,
-      /combien coûte\s+(.+)/i,
-      /commander\s+(.+)/i,
-      /acheter\s+(.+)/i,
-      /qui vend\s+(.+)/i,
-      /compare[r]?\s+(.+)/i,
-      /comparer\s+(.+)/i,
-      /producteurs?\s+pour\s+(.+)/i,
-    ];
-
-    for (const pattern of patterns) {
-      const match = question.match(pattern);
-      if (match && match[1]) {
-        const extracted = match[1]
-          .replace(/[^\w\s]/g, '')
-          .split(' ')
-          .filter(
-            (word) =>
-              word.length > 2 && !stopWords.includes(word.toLowerCase()),
-          )
-          .join(' ')
-          .trim();
-
-        if (extracted) return extracted;
-      }
-    }
-
-    // Si pas de pattern, utiliser l'extraction simple
-    return question
-      .toLowerCase()
-      .replace(/[^\w\s]/g, '')
-      .split(' ')
-      .filter((word) => word.length > 2 && !stopWords.includes(word))
-      .join(' ')
-      .trim();
-  }
-
-  /* =====================================================
-     ESTIMATION DU PRIX DU MARCHÉ
-  ===================================================== */
-  private getMarketPriceEstimate(
-    productName: string,
+  private async handleWolofQuestion(
+    q: string,
     products: Product[],
-  ): string {
-    const key = productName.toLowerCase().trim();
+    producers: any[],
+    context: ChatbotContext
+  ): Promise<string> {
+    const intent = this.wolofVoiceService.detectIntent(q);
+    const product = this.wolofVoiceService.extractProduct(q);
 
-    const matches = products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(key) &&
-        p.status === 'available' &&
-        p.quantity > 0,
+    let response = '';
+    let wolofResponse = '';
+
+    switch (intent) {
+      case 'GREETING':
+        wolofResponse = this.wolofVoiceService.getGreetingResponse();
+        response = `🌍 **${wolofResponse}**\n\nJe suis votre assistant bilingue. Comment puis-je vous aider aujourd'hui ?`;
+        break;
+
+      case 'AVAILABILITY':
+        if (product) {
+          const available = products.some(p =>
+            p.name.toLowerCase().includes(product.french) &&
+            p.status === 'available' &&
+            p.quantity > 0
+          );
+
+          wolofResponse = this.wolofVoiceService.getAvailabilityResponse({
+            product: product.wolof,
+            isAvailable: available
+          });
+
+          if (available) {
+            const availableProducts = products.filter(p =>
+              p.name.toLowerCase().includes(product.french) &&
+              p.status === 'available'
+            );
+            const count = availableProducts.length;
+            const totalStock = availableProducts.reduce((sum, p) => sum + p.quantity, 0);
+
+            response = `🌍 **${wolofResponse}**\n\n✅ **${product.french.toUpperCase()} DISPONIBLE**\n` +
+                      `📦 **Stock :** ${totalStock} unités\n` +
+                      `👨‍🌾 **Producteurs :** ${count} producteur(s)\n` +
+                      `💰 **Prix moyen :** ${this.getAveragePrice(availableProducts).toLocaleString()} FCFA`;
+          } else {
+            response = `🌍 **${wolofResponse}**\n\n❌ **${product.french.toUpperCase()} NON DISPONIBLE**\n` +
+                      `Ce produit n'est pas disponible actuellement.`;
+          }
+        } else {
+          wolofResponse = this.wolofVoiceService.getFallbackResponse();
+          response = `🌍 **${wolofResponse}**\n\nDe quel produit parlez-vous ?`;
+        }
+        break;
+
+      case 'PRICE':
+        if (product) {
+          const productProducts = products.filter(p =>
+            p.name.toLowerCase().includes(product.french) &&
+            p.status === 'available'
+          );
+
+          if (productProducts.length > 0) {
+            const avgPrice = this.getAveragePrice(productProducts);
+            wolofResponse = this.wolofVoiceService.getPriceResponse({
+              product: product.wolof,
+              price: avgPrice
+            });
+
+            response = `🌍 **${wolofResponse}**\n\n💰 **PRIX ${product.french.toUpperCase()}**\n` +
+                      `📊 **Prix moyen :** ${avgPrice.toLocaleString()} FCFA\n` +
+                      `📦 **Disponible chez :** ${productProducts.length} producteur(s)`;
+          } else {
+            response = `🌍 Dédét, xamuma prix bi ci ${product.wolof} bi. Amul tey.\n\n` +
+                      `❌ Ce produit n'est pas disponible.`;
+          }
+        } else {
+          wolofResponse = this.wolofVoiceService.getFallbackResponse();
+          response = `🌍 **${wolofResponse}**\n\nDe quel produit voulez-vous connaître le prix ?`;
+        }
+        break;
+
+      case 'ORDER':
+        if (product) {
+          wolofResponse = this.wolofVoiceService.getOrderResponse({
+            product: product.wolof
+          });
+
+          const productInfo = this.getProductOrderInfo(product.french, products);
+          response = `🌍 **${wolofResponse}**\n\n${productInfo}`;
+        } else {
+          wolofResponse = this.wolofVoiceService.getFallbackResponse();
+          response = `🌍 **${wolofResponse}**\n\nQuel produit souhaitez-vous commander ?`;
+        }
+        break;
+
+      case 'COMPARE':
+        wolofResponse = this.wolofVoiceService.getCompareResponse();
+        if (product) {
+          const comparison = this.compareProducersForProduct(product.french, products);
+          response = `🌍 **${wolofResponse}**\n\n${comparison}`;
+        } else {
+          response = `🌍 **${wolofResponse}**\n\nPour quel produit voulez-vous comparer ?`;
+        }
+        break;
+
+      case 'THANKS':
+        wolofResponse = this.wolofVoiceService.getThanksResponse();
+        response = `🌍 **${wolofResponse}**\n\nJe suis là pour vous aider !`;
+        break;
+
+      case 'GOODBYE':
+        wolofResponse = this.wolofVoiceService.getGoodbyeResponse();
+        response = `🌍 **${wolofResponse}**\n\nÀ bientôt !`;
+        break;
+
+      default:
+        const translated = this.wolofVoiceService.translateToFrench(q);
+        return this.getIntelligentResponse(translated, products, producers);
+    }
+
+    return response;
+  }
+
+  private handlePendingIntent(
+    context: ChatbotContext,
+    q: string,
+    products: Product[],
+    producers: any[],
+    userId: string
+  ): string {
+    const productName = this.extractProductName(q);
+    if (!productName) {
+      return '🤔 Je n\'ai pas compris le nom du produit.';
+    }
+
+    this.updateContext(userId, { pendingProduct: productName });
+
+    switch (context.pendingIntent) {
+      case 'estimate':
+        return this.getMarketPriceEstimate(productName, products);
+      case 'compare':
+        return this.compareProducersForProduct(productName, products);
+      case 'order':
+        return this.getProductOrderInfo(productName, products);
+      default:
+        return this.getDefaultResponse();
+    }
+  }
+
+  private getGreetingResponse(context: ChatbotContext): string {
+    const userPreferences = context.userPreferences;
+    const name = userPreferences?.favoriteProducts && userPreferences.favoriteProducts.length > 0 ?
+      `, amateur de ${userPreferences.favoriteProducts[0]}` : '';
+
+    return `👋 **Bonjour${name} !** Je suis votre assistant Jokko-Agro.\n\n` +
+           `🌍 **Je parle Français et Wolof !**\n\n` +
+           `Voici ce que je peux faire :\n\n` +
+           `💰 **Estimation de prix** – "Estimation tomates"\n` +
+           `🏆 **Comparaison producteurs** – "Comparer les mangues"\n` +
+           `🛒 **Procédure de commande** – "Comment commander"\n` +
+           `📦 **Produits disponibles** – "Quels produits"\n` +
+           `👨‍🌾 **Producteurs actifs** – "Meilleurs producteurs"\n\n` +
+           `💡 **En Wolof :** "Nani prix tomates?" ou "Am na ci riz?"`;
+  }
+
+  private getThankYouResponse(): string {
+    const responses = [
+      "🙏 **De rien !** C'est un plaisir de vous aider.",
+      "🌍 **Jërejëf !** Je suis là pour vous servir.",
+      "😊 **Avec plaisir !** N'hésitez pas à revenir.",
+    ];
+    return responses[Math.floor(Math.random() * responses.length)];
+  }
+
+  private getGoodbyeResponse(): string {
+    return `👋 **À bientôt !**\n\n` +
+           `N'oubliez pas :\n` +
+           `• Vérifiez vos notifications\n` +
+           `• Consultez les produits de saison\n` +
+           `• Donnez votre avis sur vos achats\n\n` +
+           `🌍 **En Wolof :** Ba beneen yoon !`;
+  }
+
+  // [Garder les autres méthodes existantes avec corrections...]
+
+  private getMarketPriceEstimate(productName: string, products: Product[]): string {
+    const matches = products.filter(p =>
+      p.name.toLowerCase().includes(productName.toLowerCase()) &&
+      p.status === 'available' &&
+      p.quantity > 0
     );
 
     if (matches.length === 0) {
-      return `❌ Aucune donnée de marché disponible pour "${productName}". Ce produit n'est pas disponible actuellement.`;
+      return `❌ **${productName.toUpperCase()} NON DISPONIBLE**\n\n` +
+             `Aucune donnée de marché pour ce produit.\n` +
+             `💡 **Suggestions :**\n` +
+             `• Vérifiez l'orthographe\n` +
+             `• Essayez un produit similaire\n\n` +
+             `🌍 **En Wolof :** Déedéet, amul ci ${productName} bi tey.`;
     }
 
-    const prices = matches.map((p) => p.price);
+    const prices = matches.map(p => p.price);
     const unit = matches[0].unit;
-
     const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
     const min = Math.min(...prices);
     const max = Math.max(...prices);
+    const producerNames = Array.from(new Set(matches.map(p => p.producerName)));
 
-    const producers = Array.from(new Set(matches.map((p) => p.producerName)));
-
-    let res =
-      `📊 **ESTIMATION DE PRIX – ${productName.toUpperCase()}**\n\n` +
-      `💰 **Prix moyen du marché :** ${avg.toLocaleString()} FCFA / ${unit}\n` +
-      `📉 **Prix minimum :** ${min.toLocaleString()} FCFA / ${unit}\n` +
-      `📈 **Prix maximum :** ${max.toLocaleString()} FCFA / ${unit}\n\n`;
+    let res = `📊 **ESTIMATION DE PRIX – ${productName.toUpperCase()}**\n\n` +
+              `💰 **Prix moyen :** ${avg.toLocaleString()} FCFA/${unit}\n` +
+              `📉 **Prix minimum :** ${min.toLocaleString()} FCFA/${unit}\n` +
+              `📈 **Prix maximum :** ${max.toLocaleString()} FCFA/${unit}\n\n`;
 
     if (matches.length > 0) {
-      res += `👨‍🌾 **Producteurs disponibles (${producers.length}) :**\n`;
-      producers.forEach((name, index) => {
-        const producerProducts = matches.filter((p) => p.producerName === name);
-        const producerMinPrice = Math.min(
-          ...producerProducts.map((p) => p.price),
-        );
-        const producerStock = producerProducts.reduce(
-          (sum, p) => sum + p.quantity,
-          0,
-        );
+      res += `👨‍🌾 **Producteurs (${producerNames.length}) :**\n`;
+      producerNames.forEach((name, index) => {
+        const producerProducts = matches.filter(p => p.producerName === name);
+        const producerMinPrice = Math.min(...producerProducts.map(p => p.price));
+        const producerStock = producerProducts.reduce((sum, p) => sum + p.quantity, 0);
 
-        res += `${index + 1}. **${name}** - ${producerMinPrice.toLocaleString()} FCFA/${unit} (Stock: ${producerStock})\n`;
+        res += `${index + 1}. **${name}** – ${producerMinPrice.toLocaleString()} FCFA/${unit} (Stock: ${producerStock})\n`;
       });
     }
 
-    res += `\n💡 **Conseil :** Les prix peuvent varier selon la qualité, la certification et la disponibilité.`;
+    res += `\n💡 **Conseil :** Les prix varient selon la qualité.`;
+    res += `\n\n🌍 **En Wolof :** Prix bi ci ${productName} bi mooy ${avg.toLocaleString()} FCFA/${unit}`;
 
     return res;
   }
 
-  /* =====================================================
-     COMPARAISON DES PRODUCTEURS POUR UN PRODUIT
-  ===================================================== */
-  compareProducersForProduct(productName: string, products: Product[]): string {
-    if (!productName || productName.trim() === '') {
-      return '❌ Veuillez spécifier un produit à comparer. (ex : tomates, riz, mangues)';
-    }
-
-    const matches = products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(productName.toLowerCase()) &&
-        p.status === 'available',
+  private compareProducersForProduct(productName: string, products: Product[]): string {
+    const matches = products.filter(p =>
+      p.name.toLowerCase().includes(productName.toLowerCase()) &&
+      p.status === 'available'
     );
 
     if (matches.length === 0) {
-      return `❌ Aucun producteur trouvé pour **${productName}**. Ce produit n'est pas disponible actuellement.`;
+      return `❌ Aucun producteur trouvé pour **${productName}**.`;
     }
 
-    if (matches.length === 1) {
-      const p = matches[0];
-      return (
-        `⚠️ Seul **${p.producerName}** propose **${p.name}** actuellement.\n\n` +
-        `💰 Prix : ${p.price.toLocaleString()} FCFA / ${p.unit}\n` +
-        `📦 Stock : ${p.quantity} ${p.unit}\n` +
-        (p.certifications?.length > 0 ? `🏅 Certifié : Oui\n` : '') +
-        (p.rating ? `⭐ Note : ${p.rating}/5\n` : '')
-      );
-    }
+    // Implémentation simplifiée
+    const producerMap = new Map<string, number>();
 
-    // Regrouper par producteur
-    const grouped: Record<string, Product[]> = {};
-
-    matches.forEach((p) => {
-      if (!grouped[p.producerName]) {
-        grouped[p.producerName] = [];
-      }
-      grouped[p.producerName].push(p);
+    matches.forEach(p => {
+      const current = producerMap.get(p.producerName) || 0;
+      producerMap.set(p.producerName, current + 1);
     });
 
-    // Analyser chaque producteur
-    const analysis = Object.entries(grouped).map(([producer, prods]) => {
-      const avgPrice = Math.round(
-        prods.reduce((s, p) => s + p.price, 0) / prods.length,
-      );
-      const totalStock = prods.reduce((s, p) => s + (p.quantity || 0), 0);
-      const avgRating =
-        Math.round(
-          (prods.reduce((s, p) => s + (p.rating || 0), 0) / prods.length) * 10,
-        ) / 10;
-      const certifications = prods.reduce(
-        (s, p) => s + (p.certifications?.length || 0),
-        0,
-      );
-      const hasCertification = certifications > 0;
+    const sortedProducers = Array.from(producerMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
 
-      return {
-        producer,
-        avgPrice,
-        totalStock,
-        avgRating: avgRating || 0,
-        hasCertification,
-        productCount: prods.length,
-      };
+    let res = `🏆 **COMPARAISON – ${productName.toUpperCase()}**\n\n`;
+
+    sortedProducers.forEach(([name, count], index) => {
+      const producerProducts = matches.filter(p => p.producerName === name);
+      const avgPrice = this.getAveragePrice(producerProducts);
+      const minPrice = Math.min(...producerProducts.map(p => p.price));
+      const certified = producerProducts.some(p => p.certifications && p.certifications.length > 0);
+
+      res += `${index + 1}. **${name}**\n`;
+      res += `   💰 Prix: ${minPrice.toLocaleString()} FCFA (moy: ${avgPrice.toLocaleString()})\n`;
+      res += `   📦 Produits: ${count}\n`;
+      res += `   🏅 ${certified ? '✅ Certifié' : '❌ Non certifié'}\n\n`;
     });
-
-    // Calculer un score pour chaque producteur
-    const minPrice = Math.min(...analysis.map((a) => a.avgPrice));
-    const maxStock = Math.max(...analysis.map((a) => a.totalStock));
-
-    const scoredAnalysis = analysis.map((a) => {
-      let score = 0;
-
-      // Score prix (plus bas = meilleur)
-      if (minPrice > 0) {
-        score += (minPrice / a.avgPrice) * 40;
-      }
-
-      // Score stock (plus élevé = meilleur)
-      if (maxStock > 0) {
-        score += (a.totalStock / maxStock) * 25;
-      }
-
-      // Score certification
-      if (a.hasCertification) {
-        score += 20;
-      }
-
-      // Score note
-      if (a.avgRating > 0) {
-        score += (a.avgRating / 5) * 15;
-      }
-
-      return { ...a, score: Math.round(score) };
-    });
-
-    // Trier par score décroissant
-    scoredAnalysis.sort((a, b) => b.score - a.score);
-
-    // Construction de la réponse
-    let res = `📊 **COMPARAISON DES PRODUCTEURS – ${productName.toUpperCase()}**\n\n`;
-    res += `*Basée sur ${matches.length} produit(s) de ${scoredAnalysis.length} producteur(s)*\n\n`;
-
-    scoredAnalysis.forEach((a, i) => {
-      const badge = i === 0 ? '🏆 **MEILLEUR CHOIX**' : `${i + 1}.`;
-
-      res += `${badge} **${a.producer}**\n`;
-      res += `   💰 Prix moyen : ${a.avgPrice.toLocaleString()} FCFA\n`;
-      res += `   📦 Stock total : ${a.totalStock} ${matches[0].unit}\n`;
-      res += `   ⭐ Note : ${a.avgRating > 0 ? a.avgRating + '/5' : 'Pas encore noté'}\n`;
-      res += `   🏅 Certifié : ${a.hasCertification ? 'Oui ✅' : 'Non ❌'}\n`;
-      res += `   📊 Score : ${a.score}/100\n\n`;
-    });
-
-    // Recommandation
-    const best = scoredAnalysis[0];
-    res += `👉 **RECOMMANDATION :**\n`;
-    res += `**${best.producer}** est recommandé pour **${productName}** car :\n`;
-
-    const reasons: string[] = [];
-    if (best.avgPrice === minPrice) {
-      reasons.push('offre le meilleur prix');
-    }
-    if (best.totalStock === maxStock) {
-      reasons.push('dispose du plus grand stock');
-    }
-    if (best.hasCertification) {
-      reasons.push('produit certifié');
-    }
-    if (best.avgRating >= 4) {
-      reasons.push('excellente note des clients');
-    }
-
-    if (reasons.length > 0) {
-      res += `• ${reasons.join('\n• ')}\n`;
-    }
 
     return res;
   }
 
-  /* =====================================================
-     PRIX EXACT D'UN PRODUIT
-  ===================================================== */
-  private getExactProductPrice(
-    productName: string,
-    products: Product[],
-  ): string {
-    const key = productName.toLowerCase().trim();
-
-    const matches = products.filter(
-      (p) => p.name.toLowerCase().includes(key) && p.status === 'available',
+  private getProductOrderInfo(productName: string, products: Product[]): string {
+    const availableProducts = products.filter(p =>
+      p.name.toLowerCase().includes(productName.toLowerCase()) &&
+      p.status === 'available' &&
+      p.quantity > 0
     );
 
-    if (matches.length === 0) {
-      return `❌ Aucun produit trouvé pour "${productName}".`;
+    if (availableProducts.length === 0) {
+      return `❌ **${productName.toUpperCase()} INDISPONIBLE**\n\n` +
+             `Aucun stock disponible.`;
     }
 
-    let res = `💰 **PRIX POUR ${productName.toUpperCase()}**\n\n`;
+    const producers = Array.from(new Set(availableProducts.map(p => p.producerName)));
+    const bestPrice = Math.min(...availableProducts.map(p => p.price));
 
-    matches.forEach((p) => {
-      res += `• **${p.name}**\n`;
-      res += `  👨‍🌾 Producteur : ${p.producerName}\n`;
-      res += `  💰 Prix : ${p.price.toLocaleString()} FCFA / ${p.unit}\n`;
-      res += `  📦 Stock : ${p.quantity} ${p.unit}\n`;
-      if (p.certifications && p.certifications.length > 0) {
-        res += `  🏅 Certifications : ${p.certifications.join(', ')}\n`;
-      }
-      if (p.rating) {
-        res += `  ⭐ Note : ${p.rating}/5\n`;
-      }
-      res += '\n';
-    });
-
-    if (matches.length > 1) {
-      const prices = matches.map((p) => p.price);
-      const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
-      res += `📊 **Prix moyen :** ${avg.toLocaleString()} FCFA/${matches[0].unit}\n`;
-    }
-
-    return res;
+    return `🛒 **COMMANDER ${productName.toUpperCase()}**\n\n` +
+           `✅ **Disponible chez ${producers.length} producteur(s)**\n` +
+           `💰 **Meilleur prix :** ${bestPrice.toLocaleString()} FCFA\n\n` +
+           `👨‍🌾 **Producteurs :**\n` +
+           producers.slice(0, 3).map((name, i) =>
+             `${i + 1}. **${name}**`
+           ).join('\n') + '\n\n' +
+           `📋 **Pour commander :**\n` +
+           `1. Visitez la page du produit\n` +
+           `2. Sélectionnez un producteur\n` +
+           `3. Choisissez la quantité\n` +
+           `4. Validez votre panier`;
   }
 
-  /* =====================================================
-     INFORMATIONS SUR UN PRODUIT
-  ===================================================== */
-  private getProductInfo(productName: string, products: Product[]): string {
-    const key = productName.toLowerCase().trim();
-
-    const matches = products.filter(
-      (p) => p.name.toLowerCase().includes(key) && p.status === 'available',
-    );
-
-    if (matches.length === 0) {
-      return `❌ Aucun produit trouvé pour "${productName}".`;
-    }
-
-    let res = `📦 **${matches.length} PRODUIT(S) DISPONIBLE(S) POUR "${productName.toUpperCase()}"**\n\n`;
-
-    matches.forEach((p) => {
-      res += `• **${p.name}**\n`;
-      res += `  💰 ${p.price.toLocaleString()} FCFA/${p.unit}\n`;
-      res += `  👨‍🌾 ${p.producerName}\n`;
-      res += `  📦 Stock : ${p.quantity} ${p.unit}\n`;
-      if (p.certifications && p.certifications.length > 0) {
-        res += `  🏅 Certifié\n`;
-      }
-      res += '\n';
-    });
-
-    res += `💡 **Pour commander :**\n`;
-    res += `1. Rendez-vous sur le marché\n`;
-    res += `2. Recherchez "${productName}"\n`;
-    res += `3. Ajoutez au panier\n`;
-    res += `4. Validez votre commande`;
-
-    return res;
-  }
-
-  /* =====================================================
-     PRODUITS DISPONIBLES
-  ===================================================== */
   private getAvailableProducts(products: Product[]): string {
-    const available = products.filter(
-      (p) => p.status === 'available' && p.quantity > 0,
-    );
+    const available = products.filter(p => p.status === 'available' && p.quantity > 0);
 
     if (available.length === 0) {
-      return '❌ Aucun produit disponible pour le moment.';
+      return '❌ **AUCUN PRODUIT DISPONIBLE**\n\n' +
+             'Le marché est actuellement vide.';
     }
 
     // Grouper par catégorie
     const categories: { [key: string]: Product[] } = {};
-
-    available.forEach((p) => {
+    available.forEach(p => {
       const category = p.category?.toLowerCase() || 'autres';
-      if (!categories[category]) {
-        categories[category] = [];
-      }
+      if (!categories[category]) categories[category] = [];
       categories[category].push(p);
     });
 
@@ -531,272 +528,329 @@ if (this.isGoodbye(q)) {
       const categoryName = this.formatCategoryName(category);
       res += `**${categoryName}** (${prods.length})\n`;
 
-      // Limiter à 5 produits par catégorie pour éviter une réponse trop longue
-      prods.slice(0, 5).forEach((p) => {
-        res += `• ${p.name} - ${p.price.toLocaleString()} FCFA/${p.unit}\n`;
+      const uniqueProducts = Array.from(new Set(prods.map(p => p.name)));
+      uniqueProducts.slice(0, 5).forEach(productName => {
+        const productProds = prods.filter(p => p.name === productName);
+        const minPrice = Math.min(...productProds.map(p => p.price));
+        res += `• ${productName} – ${minPrice.toLocaleString()} FCFA\n`;
       });
 
-      if (prods.length > 5) {
-        res += `  ... et ${prods.length - 5} autres\n`;
+      if (uniqueProducts.length > 5) {
+        res += `  ... et ${uniqueProducts.length - 5} autres\n`;
       }
       res += '\n';
     });
 
-    res += `💡 **Astuce :** Utilisez "prix [produit]" pour connaître le prix exact ou "comparer [produit]" pour comparer les producteurs.`;
-
     return res;
   }
 
-  /* =====================================================
-     PRODUCTEURS ACTIFS
-  ===================================================== */
   private getActiveProducers(producers: any[], products: Product[]): string {
-    if (!products || products.length === 0) {
-      return '❌ Aucun producteur actif pour le moment.';
-    }
-
     const producerMap = new Map<string, number>();
 
     products
-      .filter((p) => p.status === 'available' && p.quantity > 0)
-      .forEach((p) => {
+      .filter(p => p.status === 'available' && p.quantity > 0)
+      .forEach(p => {
         const name = p.producerName;
         producerMap.set(name, (producerMap.get(name) || 0) + 1);
       });
 
     if (producerMap.size === 0) {
-      return '❌ Aucun producteur actif pour le moment.';
+      return '❌ **AUCUN PRODUCTEUR ACTIF**';
     }
 
     const sortedProducers = Array.from(producerMap.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 10); // Limiter à 10 producteurs
+      .slice(0, 5);
 
     let res = `👨‍🌾 **PRODUCTEURS ACTIFS (${producerMap.size})**\n\n`;
 
     sortedProducers.forEach(([name, count], index) => {
-      const producerProducts = products.filter(
-        (p) => p.producerName === name && p.status === 'available',
-      );
-
-      const certifications = producerProducts.filter(
-        (p) => p.certifications && p.certifications.length > 0,
-      ).length;
-
-      const badge = index < 3 ? ['🥇', '🥈', '🥉'][index] : `${index + 1}.`;
-      res += `${badge} **${name}**\n`;
-      res += `   📦 ${count} produit(s) disponible(s)\n`;
-      if (certifications > 0) {
-        res += `   🏅 ${certifications} produit(s) certifié(s)\n`;
-      }
-      res += '\n';
+      res += `${index + 1}. **${name}** – ${count} produit(s)\n`;
     });
 
     return res;
   }
 
-  /* =====================================================
-     PROCÉDURE DE COMMANDE
-  ===================================================== */
-  private getOrderProcedure(): string {
-    return (
-      `🛒 **COMMENT FAIRE UNE COMMANDE SUR JOKKO-AGRO**\n\n` +
-      `1️⃣ **Parcourez le marché** – Trouvez les produits qui vous intéressent\n` +
-      `2️⃣ **Ajoutez au panier** – Sélectionnez la quantité souhaitée\n` +
-      `3️⃣ **Validez la commande** – Révisez votre panier et confirmez\n` +
-      `4️⃣ **Suivez la livraison** – Consultez le statut dans "Mes commandes"\n\n` +
-      `💡 **Astuces :**\n` +
-      `• Vérifiez les certifications des produits\n` +
-      `• Comparez les prix entre producteurs\n` +
-      `• Consultez les avis des autres acheteurs`
+  private getExactProductPrice(productName: string, products: Product[]): string {
+    const matches = products.filter(p =>
+      p.name.toLowerCase().includes(productName.toLowerCase()) &&
+      p.status === 'available'
     );
-  }
 
-  /* =====================================================
-     MESSAGE D'AIDE
-  ===================================================== */
-  private getHelpMessage(): string {
-    return (
-      `🤖 **COMMENT PUIS-JE VOUS AIDER ?**\n\n` +
-      `Je peux vous aider avec :\n\n` +
-      `💰 **Estimation de prix**\n` +
-      `   • "Estimation tomates"\n` +
-      `   • "Prix du marché pour le riz"\n\n` +
-      `🔄 **Comparaison de producteurs**\n` +
-      `   • "Comparer les producteurs de mangues"\n` +
-      `   • "Qui est le meilleur pour les carottes?"\n\n` +
-      `📦 **Produits disponibles**\n` +
-      `   • "Quels produits sont disponibles?"\n` +
-      `   • "Montre-moi les légumes"\n\n` +
-      `🛒 **Commande**\n` +
-      `   • "Comment faire une commande?"\n` +
-      `   • "Qui vend des oignons?"\n\n` +
-      `👨‍🌾 **Producteurs**\n` +
-      `   • "Producteurs actifs"\n` +
-      `   • "Meilleurs vendeurs"\n\n` +
-      `💡 **Utilisez les boutons ci-dessous pour des questions rapides !**`
-    );
-  }
+    if (matches.length === 0) {
+      return `❌ **${productName.toUpperCase()} NON DISPONIBLE**`;
+    }
 
-  /* =====================================================
-     RÉPONSE PAR DÉFAUT
-  ===================================================== */
-  private getDefaultResponse(): string {
-    return (
-      `🤔 Je ne suis pas sûr de comprendre votre demande.\n\n` +
-      `Je peux vous aider avec :\n` +
-      `• 💰 **Estimation de prix** d'un produit\n` +
-      `• 🔄 **Comparaison** des producteurs\n` +
-      `• 📦 **Produits disponibles** sur le marché\n` +
-      `• 🛒 **Procédure de commande**\n` +
-      `• 👨‍🌾 **Producteurs actifs**\n\n` +
-      `💡 **Essayez de formuler votre question différemment ou utilisez les boutons ci-dessous.**`
-    );
-  }
+    let res = `💰 **PRIX ${productName.toUpperCase()}**\n\n`;
 
-  /* =====================================================
-     UTILITAIRES
-  ===================================================== */
-  private formatCategoryName(category: string): string {
-    const categoryMap: { [key: string]: string } = {
-      fruit: '🍎 Fruits',
-      fruits: '🍎 Fruits',
-      légume: '🥦 Légumes',
-      légumes: '🥦 Légumes',
-      vegetable: '🥦 Légumes',
-      vegetables: '🥦 Légumes',
-      céréale: '🌾 Céréales',
-      céréales: '🌾 Céréales',
-      cereal: '🌾 Céréales',
-      cereals: '🌾 Céréales',
-      epicerie: '🛒 Épicerie',
-      épicerie: '🛒 Épicerie',
-      grocery: '🛒 Épicerie',
-    };
-
-    return (
-      categoryMap[category] ||
-      `📦 ${category.charAt(0).toUpperCase() + category.slice(1)}`
-    );
-  }
-
-  private calculateProducerScore(
-    product: Product,
-    context: { minPrice: number; maxStock: number },
-  ): number {
-    const priceScore = (context.minPrice / product.price) * 100;
-    const certScore =
-      product.certifications && product.certifications.length > 0 ? 100 : 0;
-    const ratingScore = product.rating ? (product.rating / 5) * 100 : 0;
-    const stockScore =
-      context.maxStock > 0
-        ? Math.min((product.quantity / context.maxStock) * 100, 100)
-        : 0;
-
-    return (
-      priceScore * 0.35 +
-      certScore * 0.3 +
-      ratingScore * 0.2 +
-      stockScore * 0.15
-    );
-  }
-
-  private explainScore(scored: any[]): string {
-    let response = `📊 **COMPARAISON DES PRODUCTEURS**\n\n`;
-
-    scored.forEach((s) => {
-      const p = s.product;
-
-      response += `👨‍🌾 **${p.producerName}**\n`;
-      response += `• 💰 Prix : ${p.price.toLocaleString()} FCFA/${p.unit}\n`;
-      response += `• 🏅 Certifié : ${p.certifications?.length > 0 ? 'Oui ✅' : 'Non ❌'}\n`;
-      response += `• ⭐ Avis clients : ${p.rating || 'Pas encore noté'}\n`;
-      response += `• 📦 Stock : ${p.quantity} ${p.unit}\n`;
-      response += `• 📊 Score : ${Math.round(s.score)}/100\n\n`;
+    matches.forEach(p => {
+      res += `• ${p.name} – ${p.price.toLocaleString()} FCFA/${p.unit}\n`;
+      if (p.certifications && p.certifications.length > 0) {
+        res += `  🏅 Certifié\n`;
+      }
     });
 
-    const best = scored[0].product;
+    const avgPrice = this.getAveragePrice(matches);
+    res += `\n📊 **Prix moyen :** ${avgPrice.toLocaleString()} FCFA`;
 
-    response += `🏆 **RECOMMANDATION**\n`;
-    response += `👉 **${best.producerName}** est recommandé pour :\n`;
+    return res;
+  }
 
-    const reasons: string[] = [];
+  private checkProductAvailability(productName: string, products: Product[]): string {
+    const availableProducts = products.filter(p =>
+      p.name.toLowerCase().includes(productName.toLowerCase()) &&
+      p.status === 'available' &&
+      p.quantity > 0
+    );
 
-    // Vérifier le prix
-    const minPrice = Math.min(...scored.map((s) => s.product.price));
-    if (best.price === minPrice) {
-      reasons.push('offre le meilleur prix');
+    if (availableProducts.length === 0) {
+      return `❌ **${productName.toUpperCase()} INDISPONIBLE**`;
     }
 
-    // Vérifier les certifications
-    if (best.certifications?.length > 0) {
-      reasons.push('produit certifié de qualité');
+    const producers = Array.from(new Set(availableProducts.map(p => p.producerName)));
+    const totalStock = availableProducts.reduce((sum, p) => sum + p.quantity, 0);
+
+    return `✅ **${productName.toUpperCase()} DISPONIBLE**\n\n` +
+           `📊 **Statistiques :**\n` +
+           `• **Producteurs :** ${producers.length}\n` +
+           `• **Stock total :** ${totalStock} unités\n` +
+           `• **Prix :** ${this.getPriceRange(availableProducts)}`;
+  }
+
+  private getProcedureInfo(q: string): string {
+    if (q.includes('commande') || q.includes('commander')) {
+      return `🛒 **PROCÉDURE DE COMMANDE**\n\n` +
+             `1. Parcourez le marché\n` +
+             `2. Ajoutez au panier\n` +
+             `3. Validez la commande\n` +
+             `4. Suivez la livraison`;
     }
 
-    // Vérifier la note
-    if (best.rating && best.rating >= 4) {
-      reasons.push('excellente note des clients');
+    return `📋 **AIDE**\n\nJe peux vous aider avec :\n` +
+           `• Comment commander\n` +
+           `• Modes de paiement\n` +
+           `• Délais de livraison`;
+  }
+
+  private getTipResponse(q: string): string {
+    return `💡 **CONSEILS**\n\n` +
+           `• Commandez le matin pour plus de fraîcheur\n` +
+           `• Comparez les prix entre producteurs\n` +
+           `• Vérifiez les certifications\n` +
+           `• Lisez les avis des autres acheteurs`;
+  }
+
+  private getRecommendationResponse(context: ChatbotContext): string {
+    const userPreferences = context.userPreferences;
+    const favoriteCount = userPreferences?.favoriteProducts?.length || 0;
+    const level = favoriteCount > 3 ? 'avancé' : 'débutant';
+
+    return `🎯 **RECOMMANDATIONS (${level})**\n\n` +
+           `Commencez par les produits certifiés\n` +
+           `Choisissez des producteurs bien notés\n` +
+           `Utilisez le chatbot pour toutes vos questions`;
+  }
+
+  private getProducerInfo(q: string, producers: any[], products: Product[]): string {
+    if (q.includes('actif') || q.includes('actifs')) {
+      return this.getActiveProducers(producers, products);
     }
 
-    // Vérifier le stock
-    const maxStock = Math.max(...scored.map((s) => s.product.quantity));
-    if (best.quantity === maxStock) {
-      reasons.push('stock important disponible');
+    return this.getActiveProducers(producers, products);
+  }
+
+  private getSeasonalityInfo(): string {
+    const month = new Date().toLocaleString('fr-FR', { month: 'long' });
+    return `📅 **SAISONNALITÉ (${month.toUpperCase()})**\n\n` +
+           `Les produits de saison sont plus frais et moins chers.\n` +
+           `Consultez régulièrement le marché pour les nouveautés.`;
+  }
+
+  private getHelpMessage(context: ChatbotContext): string {
+    const isWolofUser = context.userPreferences?.preferredLanguage === 'wolof';
+
+    let response = `🤖 **COMMENT PUIS-JE VOUS AIDER ?**\n\n`;
+
+    if (isWolofUser) {
+      response += `🌍 **EN WOLOF :**\n` +
+                 `• "Nani prix tomates?" – Prix des tomates\n` +
+                 `• "Am na ci riz?" – Riz disponible?\n` +
+                 `• "Dama bëgg jënd mango" – Acheter des mangues\n\n`;
     }
 
-    if (reasons.length > 0) {
-      reasons.forEach((reason) => {
-        response += `• ${reason}\n`;
-      });
-    } else {
-      response += `• bon équilibre qualité/prix\n`;
-      response += `• disponibilité garantie\n`;
-    }
+    response += `🇫🇷 **EN FRANÇAIS :**\n\n` +
+               `💰 **PRIX & ESTIMATIONS**\n` +
+               `• "Estimation tomates"\n` +
+               `• "Prix du marché pour le riz"\n\n` +
+               `🔄 **COMPARAISONS**\n` +
+               `• "Comparer les producteurs de mangues"\n\n` +
+               `📦 **PRODUITS & DISPONIBILITÉ**\n` +
+               `• "Quels produits sont disponibles?"\n\n` +
+               `🛒 **COMMANDES & LIVRAISON**\n` +
+               `• "Comment faire une commande?"\n\n` +
+               `💡 **Cliquez sur ${isWolofUser ? '🇫🇷' : '🌍'} pour changer de langue !**`;
 
     return response;
   }
 
-  /* =============================
-   SALUTATIONS
-============================= */
-private isGreeting(msg: string): boolean {
-  return [
-    'bonjour',
-    'salut',
-    'hello',
-    'hey',
-    'hi',
-    'bonsoir',
-  ].some(word => msg.includes(word));
-}
+  private getContextualResponse(
+    q: string,
+    context: ChatbotContext,
+    products: Product[]
+  ): string {
+    return this.getDefaultResponse();
+  }
 
-private getGreetingResponse(): string {
-  return (
-    `👋 Bonjour ! Je suis votre assistant Jokko-Agro.\n\n` +
-    `Je peux vous aider à :\n` +
-    `• 💰 Estimer le prix d’un produit\n` +
-    `• 🔄 Comparer les producteurs\n` +
-    `• 📦 Voir les produits disponibles\n` +
-    `• 🛒 Expliquer comment commander\n\n` +
-    `💡 Exemple : *"Comparer producteurs tomates"*`
-  );
-}
+  private getDefaultResponse(): string {
+    return `🤔 Je ne suis pas sûr de comprendre.\n\n` +
+           `Je peux vous aider avec :\n` +
+           `• 💰 **Estimation de prix** d'un produit\n` +
+           `• 🔄 **Comparaison** des producteurs\n` +
+           `• 📦 **Produits disponibles**\n` +
+           `• 🛒 **Procédure de commande**\n\n` +
+           `🌍 **Je comprends aussi le Wolof !**`;
+  }
 
-/* =============================
-   AU REVOIR
-============================= */
-private isGoodbye(msg: string): boolean {
-  return [
-    'au revoir',
-    'bye',
-    'à bientôt',
-    'a bientot',
-    'ciao',
-  ].some(word => msg.includes(word));
-}
+  // Méthodes utilitaires
+  private isGreeting(q: string): boolean {
+    return ['bonjour', 'salut', 'hello', 'hey', 'hi'].some(word => q.includes(word));
+  }
 
-private getGoodbyeResponse(): string {
-  return `👋 À bientôt ! N’hésitez pas à revenir si vous avez besoin d’aide.`;
-}
+  private isThankYouMessage(q: string): boolean {
+    return ['merci', 'thanks', 'thank you', 'cimer', 'jërejëf'].some(word => q.includes(word));
+  }
 
+  private isGoodbye(q: string): boolean {
+    return ['au revoir', 'bye', 'à bientôt', 'ciao', 'ba beneen'].some(word => q.includes(word));
+  }
+
+  private isPriceEstimationQuestion(q: string): boolean {
+    return ['estimation', 'estimer', 'prix du marché', 'prix moyen'].some(word => q.includes(word));
+  }
+
+  private isComparisonQuestion(q: string): boolean {
+    return ['compare', 'comparer', 'comparaison', 'meilleur producteur'].some(word => q.includes(word));
+  }
+
+  private isOrderQuestion(q: string): boolean {
+    return ['commander', 'acheter', 'qui vend', 'je veux acheter', 'dama bëgg jënd'].some(word => q.includes(word));
+  }
+
+  private isExactPriceQuestion(q: string): boolean {
+    return q.startsWith('prix ') || q.includes('combien coûte');
+  }
+
+  private isAvailabilityQuestion(q: string): boolean {
+    return ['disponible', 'disponibilité', 'en stock', 'am na ci'].some(word => q.includes(word));
+  }
+
+  private isProcedureQuestion(q: string): boolean {
+    return q.includes('comment') && (q.includes('commande') || q.includes('payer') || q.includes('livraison'));
+  }
+
+  private isTipQuestion(q: string): boolean {
+    return ['conseil', 'astuce', 'tip', 'recommandation'].some(word => q.includes(word));
+  }
+
+  private isRecommendationQuestion(q: string): boolean {
+    return ['recommande', 'suggère', 'propose', 'idée'].some(word => q.includes(word));
+  }
+
+  private isProducerQuestion(q: string): boolean {
+    return ['producteur', 'vendeur', 'fermier', 'agriculteur'].some(word => q.includes(word));
+  }
+
+  private isSeasonalityQuestion(q: string): boolean {
+    return ['saison', 'meilleure saison', 'quand acheter'].some(word => q.includes(word));
+  }
+
+  private isHelpRequest(q: string): boolean {
+    return q.includes('aide') || q.includes('help') || q === '?' || q === 'menu';
+  }
+
+  private extractProductName(q: string): string {
+    const stopWords = [
+      'estimation', 'estimer', 'compare', 'comparer', 'comparaison',
+      'meilleur', 'meilleure', 'producteur', 'producteurs', 'vendeur',
+      'vendeurs', 'qui', 'est', 'prix', 'marche', 'marché', 'moyen',
+      'combien', 'coûte', 'je', 'veux', 'de', 'du', 'des', 'la', 'le',
+      'les', 'un', 'une', 'faire', 'commander', 'acheter', 'vend', 'vendre',
+      'pour', 'avec', 'sur', 'dama', 'bëgg', 'jënd', 'may', 'am', 'na',
+      'ci', 'nan', 'la', 'nani', 'disponible', 'disponibilité', 'stock'
+    ];
+
+    const patterns = [
+      /estimation\s+(.+?)(?:\?|$)/i,
+      /compare[rz]?\s+(.+?)(?:\?|$)/i,
+      /prix\s+(.+?)(?:\?|$)/i,
+      /combien coûte\s+(.+?)(?:\?|$)/i,
+      /commander\s+(.+?)(?:\?|$)/i,
+      /acheter\s+(.+?)(?:\?|$)/i,
+      /am na ci\s+(.+?)(?:\?|$)/i,
+      /nani prix\s+(.+?)(?:\?|$)/i
+    ];
+
+    for (const pattern of patterns) {
+      const match = q.match(pattern);
+      if (match && match[1]) {
+        const extracted = match[1]
+          .toLowerCase()
+          .replace(/[^\w\s]/g, '')
+          .split(' ')
+          .filter(word =>
+            word.length > 2 &&
+            !stopWords.includes(word.toLowerCase())
+          )
+          .join(' ')
+          .trim();
+
+        if (extracted) return extracted;
+      }
+    }
+
+    const words = q.toLowerCase().split(' ');
+    const filteredWords = words.filter(word =>
+      word.length > 2 &&
+      !stopWords.includes(word)
+    );
+
+    return filteredWords.join(' ') || '';
+  }
+
+  private getAveragePrice(products: Product[]): number {
+    if (products.length === 0) return 0;
+    const total = products.reduce((sum, p) => sum + p.price, 0);
+    return Math.round(total / products.length);
+  }
+
+  private getPriceRange(products: Product[]): string {
+    if (products.length === 0) return 'Non disponible';
+    const prices = products.map(p => p.price);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const unit = products[0].unit;
+
+    if (min === max) {
+      return `${min.toLocaleString()} FCFA/${unit}`;
+    }
+    return `${min.toLocaleString()} - ${max.toLocaleString()} FCFA/${unit}`;
+  }
+
+  private formatCategoryName(category: string): string {
+    const categoryMap: { [key: string]: string } = {
+      'fruit': '🍎 Fruits',
+      'fruits': '🍎 Fruits',
+      'légume': '🥦 Légumes',
+      'légumes': '🥦 Légumes',
+      'vegetable': '🥦 Légumes',
+      'vegetables': '🥦 Légumes',
+      'céréale': '🌾 Céréales',
+      'céréales': '🌾 Céréales',
+      'epicerie': '🛒 Épicerie',
+      'épicerie': '🛒 Épicerie'
+    };
+
+    return categoryMap[category] ||
+           `📦 ${category.charAt(0).toUpperCase() + category.slice(1)}`;
+  }
 }

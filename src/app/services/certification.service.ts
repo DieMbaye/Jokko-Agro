@@ -1,1788 +1,1751 @@
+// certification.service.ts - NOUVEAU FICHIER
 import { Injectable, inject } from '@angular/core';
-import { FirebaseService } from './firebase.service';
-import { AuthService } from './auth.service';
 import {
-  Certification,
-  CertificationCheckpoint,
-  CheckpointProof,
-  CertificationTemplate,
-  CertificationStats,
-  PublicationData,
-} from '../interfaces/certification.interfaces';
-import { Product } from '../interfaces/data.interfaces';
-import {
-  collection,
+  Firestore,
   doc,
-  setDoc,
   getDoc,
+  setDoc,
   updateDoc,
+  deleteDoc,
+  collection,
   query,
   where,
   orderBy,
   getDocs,
   serverTimestamp,
   Timestamp,
-  addDoc,
-  deleteDoc,
+  DocumentReference,
   limit,
-} from 'firebase/firestore';
-import { BlockchainService } from 'src/app/blockchain/services/blockchain.service';
+} from '@angular/fire/firestore';
+import { AuthService } from './auth.service';
+import { FirebaseService } from './firebase.service';
+import { BlockchainService } from '../blockchain/services/blockchain.service';
+import { Product } from '../interfaces/data.interfaces';
+
+// Interfaces de certification
+export interface CertificationCheckpoint {
+  id: string;
+  title: string;
+  description: string;
+  step: 'INIT' | 'FOLLOW_UP' | 'HARVEST' | 'CHECKPOINT';
+  order: number;
+  daysFromStart: number;
+  photoRequired: boolean;
+  locationRequired: boolean;
+  completed: boolean;
+  completedAt?: Date;
+  photoUrl?: string;
+  location?: {
+    lat: number;
+    lng: number;
+    address?: string;
+    accuracy?: number;
+  };
+  blockchainTransactionId?: string;
+  blockchainVerified?: boolean;
+  ipfsCID?: string;
+  ipfsUrl?: string;
+  proofHash?: string;
+  notes?: string;
+  metadata?: any;
+}
+
+export interface Certification {
+  id?: string;
+  productId: string;
+  productName: string;
+  producerId: string;
+  producerName: string;
+
+  // Configuration
+  durationDays: 30 | 45 | 60 | 90;
+  certificationType: 'standard' | 'premium' | 'organic';
+  startDate: Date;
+  estimatedEndDate: Date;
+
+  isPendingCertification?: boolean;
+
+  // État
+  status:
+    | 'draft'
+    | 'active'
+    | 'completed'
+    | 'verified'
+    | 'expired'
+    | 'cancelled';
+  currentStep: number;
+  progress: number;
+
+  // Checkpoints
+  checkpoints: CertificationCheckpoint[];
+  totalCheckpoints: number;
+  completedCheckpoints: number;
+  verificationScore: number;
+
+  // Blockchain
+  rootHash?: string;
+  blockchainVerified: boolean;
+  blockchainTransactions: string[];
+  lastBlockchainSync?: Date;
+
+  // IPFS
+  ipfsMetadataCID?: string;
+  ipfsMetadataUrl?: string;
+
+  // Produit associé
+  productData?: any;
+
+  // Dates
+  createdAt: Date;
+  updatedAt: Date;
+  completedAt?: Date;
+  verifiedAt?: Date;
+
+  // Certificat final
+  certificateUrl?: string;
+  qrCodeUrl?: string;
+  verificationUrl?: string;
+
+  // Audit
+  auditLogs: Array<{
+    action: string;
+    timestamp: Date;
+    userId: string;
+    details: any;
+  }>;
+}
+
+export interface CertificationTemplate {
+  id: string;
+  name: string;
+  description: string;
+  durationDays: number;
+  certificationType: 'standard' | 'premium' | 'organic';
+  price: number;
+  checkpoints: Array<{
+    title: string;
+    description: string;
+    step: 'INIT' | 'FOLLOW_UP' | 'HARVEST' | 'CHECKPOINT';
+    daysFromStart: number;
+    photoRequired: boolean;
+    locationRequired: boolean;
+    validationRules?: any;
+  }>;
+  requirements: {
+    minPhotos: number;
+    gpsRequired: boolean;
+    locationConsistency: boolean;
+    timeIntervalConsistency: boolean;
+  };
+  badges: Array<{
+    id: string;
+    label: string;
+    icon: string;
+    color: string;
+  }>;
+}
+
+interface ProductFormData {
+  name: string;
+  category: string;
+  description: string;
+  price: number;
+  quantity: number;
+  unit: string;
+  location: string;
+  harvestDate?: string;
+  storageConditions?: string;
+  contactPhone: string;
+  minOrderQuantity: number;
+  isOrganic: boolean;
+  certifications: string[];
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class CertificationService {
-  private firebaseService = inject(FirebaseService);
+  private firestore = inject(Firestore);
   private authService = inject(AuthService);
-  private blockchainService = inject(BlockchainService); // AJOUTÉ
+  private blockchainService = inject(BlockchainService);
+  private firebaseService = inject(FirebaseService);
 
-  // Stockage local temporaire pour images
-  private imageStore = new Map<string, string>();
-
-  // Templates prédéfinis - AUGMENTÉ
-  private readonly templates: CertificationTemplate[] = [
+  // Templates de certification prédéfinis
+  private certificationTemplates: CertificationTemplate[] = [
     {
-      id: 'tomato_60',
-      name: 'Tomate Bio',
-      productType: 'tomato',
-      category: 'vegetables',
-      icon: '🍅',
-      description: 'Certification complète pour tomates biologiques',
-      durationDays: 60,
+      id: 'standard_30',
+      name: 'Certification Standard 30 jours',
+      description: 'Suivi de culture sur 30 jours avec vérification régulière',
+      durationDays: 30,
+      certificationType: 'standard',
+      price: 5000,
       checkpoints: [
         {
-          dayOffset: 0,
-          title: 'Semis/Plantation',
-          description: 'Photo initiale du champ',
-          requiredProofs: ['photo', 'gps'],
+          title: 'Semence initiale',
+          description: 'Photo du champ au moment de la semence',
+          step: 'INIT',
+          daysFromStart: 0,
+          photoRequired: true,
+          locationRequired: true,
+          validationRules: {
+            maxDistanceFromPrevious: 50, // mètres
+            timeWindow: 24, // heures
+          },
         },
         {
-          dayOffset: 15,
-          title: 'Croissance',
-          description: 'Suivi de la croissance',
-          requiredProofs: ['photo', 'gps'],
+          title: 'Suivi croissance - Semaine 1',
+          description: 'Photo après 7 jours de croissance',
+          step: 'FOLLOW_UP',
+          daysFromStart: 7,
+          photoRequired: true,
+          locationRequired: true,
         },
         {
-          dayOffset: 30,
-          title: 'Floraison',
-          description: 'Photo des fleurs',
-          requiredProofs: ['photo', 'gps'],
+          title: 'Suivi croissance - Semaine 2',
+          description: 'Photo après 14 jours de croissance',
+          step: 'FOLLOW_UP',
+          daysFromStart: 14,
+          photoRequired: true,
+          locationRequired: true,
         },
         {
-          dayOffset: 45,
-          title: 'Fructification',
-          description: 'Photo des premiers fruits',
-          requiredProofs: ['photo', 'gps', 'measurement'],
-          measurementType: 'count',
+          title: 'Suivi croissance - Semaine 3',
+          description: 'Photo après 21 jours de croissance',
+          step: 'FOLLOW_UP',
+          daysFromStart: 21,
+          photoRequired: true,
+          locationRequired: true,
         },
         {
-          dayOffset: 60,
           title: 'Récolte',
           description: 'Photo de la récolte',
-          requiredProofs: ['photo', 'gps', 'measurement', 'note'],
-          measurementType: 'weight',
+          step: 'HARVEST',
+          daysFromStart: 30,
+          photoRequired: true,
+          locationRequired: true,
         },
       ],
-      scoringRules: {
-        gpsWeight: 0.3,
-        timeWeight: 0.2,
-        photoWeight: 0.3,
-        measurementWeight: 0.2,
-        minScore: 70,
+      requirements: {
+        minPhotos: 5,
+        gpsRequired: true,
+        locationConsistency: true,
+        timeIntervalConsistency: true,
       },
-      badges: ['certified', 'organic', 'traceable', 'local'],
-    },
-    {
-      id: 'mango_90',
-      name: 'Mangue',
-      productType: 'mango',
-      category: 'fruits',
-      icon: '🥭',
-      description: 'Certification pour mangues',
-      durationDays: 90,
-      checkpoints: [
+      badges: [
         {
-          dayOffset: 0,
-          title: 'Arbre en fleurs',
-          description: "Photo de l'arbre en fleurs",
-          requiredProofs: ['photo', 'gps'],
-        },
-        {
-          dayOffset: 30,
-          title: 'Fruits naissants',
-          description: 'Photo des jeunes fruits',
-          requiredProofs: ['photo', 'gps'],
-        },
-        {
-          dayOffset: 60,
-          title: 'Maturation',
-          description: 'Suivi de la maturation',
-          requiredProofs: ['photo', 'gps', 'measurement'],
-          measurementType: 'count',
-        },
-        {
-          dayOffset: 90,
-          title: 'Récolte',
-          description: 'Photo de la récolte',
-          requiredProofs: ['photo', 'gps', 'measurement', 'note'],
-          measurementType: 'weight',
+          id: 'verified_30d',
+          label: 'Certifié 30 jours',
+          icon: '✓',
+          color: 'green',
         },
       ],
-      scoringRules: {
-        gpsWeight: 0.4,
-        timeWeight: 0.2,
-        photoWeight: 0.3,
-        measurementWeight: 0.1,
-        minScore: 75,
-      },
-      badges: ['certified', 'seasonal', 'traceable'],
     },
     {
-      id: 'onion_45',
-      name: 'Oignon',
-      productType: 'onion',
-      category: 'vegetables',
-      icon: '🧅',
-      description: 'Certification pour oignons',
+      id: 'premium_45',
+      name: 'Certification Premium 45 jours',
+      description: 'Suivi approfondi sur 45 jours avec validation renforcée',
       durationDays: 45,
+      certificationType: 'premium',
+      price: 8000,
       checkpoints: [
         {
-          dayOffset: 0,
-          title: 'Plantation',
-          description: 'Photo initiale du champ',
-          requiredProofs: ['photo', 'gps'],
+          title: 'Semence initiale',
+          description: 'Photo du champ au moment de la semence',
+          step: 'INIT',
+          daysFromStart: 0,
+          photoRequired: true,
+          locationRequired: true,
         },
         {
-          dayOffset: 15,
-          title: 'Croissance',
-          description: 'Photo de la croissance',
-          requiredProofs: ['photo', 'gps'],
+          title: 'Suivi - Jour 10',
+          description: 'Photo après 10 jours',
+          step: 'FOLLOW_UP',
+          daysFromStart: 10,
+          photoRequired: true,
+          locationRequired: true,
         },
         {
-          dayOffset: 30,
-          title: 'Bulbes formés',
-          description: 'Photo des bulbes formés',
-          requiredProofs: ['photo', 'gps', 'measurement'],
-          measurementType: 'count',
+          title: 'Suivi - Jour 20',
+          description: 'Photo après 20 jours',
+          step: 'FOLLOW_UP',
+          daysFromStart: 20,
+          photoRequired: true,
+          locationRequired: true,
         },
         {
-          dayOffset: 45,
+          title: 'Suivi - Jour 30',
+          description: 'Photo après 30 jours',
+          step: 'FOLLOW_UP',
+          daysFromStart: 30,
+          photoRequired: true,
+          locationRequired: true,
+        },
+        {
+          title: 'Pré-récolte',
+          description: 'Photo avant récolte',
+          step: 'CHECKPOINT',
+          daysFromStart: 40,
+          photoRequired: true,
+          locationRequired: true,
+        },
+        {
           title: 'Récolte',
           description: 'Photo de la récolte',
-          requiredProofs: ['photo', 'gps', 'measurement', 'note'],
-          measurementType: 'weight',
+          step: 'HARVEST',
+          daysFromStart: 45,
+          photoRequired: true,
+          locationRequired: true,
         },
       ],
-      scoringRules: {
-        gpsWeight: 0.3,
-        timeWeight: 0.3,
-        photoWeight: 0.3,
-        measurementWeight: 0.1,
-        minScore: 65,
+      requirements: {
+        minPhotos: 6,
+        gpsRequired: true,
+        locationConsistency: true,
+        timeIntervalConsistency: true,
       },
-      badges: ['certified', 'local'],
+      badges: [
+        {
+          id: 'premium_45d',
+          label: 'Premium 45 jours',
+          icon: '⭐',
+          color: 'gold',
+        },
+      ],
     },
   ];
 
-  // ========== MÉTHODES PRINCIPALES ==========
+  constructor() {}
 
   /**
-   * Démarrer une nouvelle certification
+   * Démarrer une nouvelle certification avec un produit existant
    */
-  async startCertification(data: {
-    templateId: string;
-    productName: string;
-    description?: string;
-    initialPhoto: File;
-    location?: { lat: number; lng: number };
-    quantity?: number;
-    price?: number;
-  }): Promise<Certification> {
+  async startCertification(
+    productId: string,
+    templateId: string,
+    productData?: any,
+  ): Promise<{ success: boolean; certificationId?: string; error?: string }> {
     try {
       const user = this.authService.getCurrentUser();
-      const userData = this.authService.getUserData();
-
-      if (!user || !userData) {
-        throw new Error('Utilisateur non connecté');
+      if (!user) {
+        return { success: false, error: 'Utilisateur non connecté' };
       }
 
-      const template = this.templates.find((t) => t.id === data.templateId);
-      if (!template) throw new Error('Template non trouvé');
+      // Récupérer le produit
+      const product = await this.firebaseService.getProductById(productId);
+      if (!product) {
+        return { success: false, error: 'Produit non trouvé' };
+      }
 
-      // 1. Préparer les données
-      const location = data.location || (await this.getCurrentLocation());
-      const now = new Date();
-      const photoBase64 = await this.fileToBase64(data.initialPhoto);
-      const photoHash = this.generateSimpleHash(photoBase64);
-
-      // 2. Générer les checkpoints
-      const checkpoints = this.generateCheckpoints(template, photoHash, now);
-
-      // 3. Créer la certification
-      const certificationId = `cert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const expectedHarvestDate = new Date(
-        now.getTime() + template.durationDays * 24 * 60 * 60 * 1000,
+      // Trouver le template
+      const template = this.certificationTemplates.find(
+        (t) => t.id === templateId,
       );
-      const expiresAt = new Date(
-        now.getTime() + (template.durationDays + 30) * 24 * 60 * 60 * 1000,
+      if (!template) {
+        return {
+          success: false,
+          error: 'Template de certification non trouvé',
+        };
+      }
+
+      // Vérifier si une certification existe déjà pour ce produit
+      const existingCert = await this.getProductCertification(productId);
+      if (existingCert) {
+        return {
+          success: false,
+          error: 'Ce produit a déjà une certification en cours',
+        };
+      }
+
+      // Créer les checkpoints
+      const checkpoints: CertificationCheckpoint[] = template.checkpoints.map(
+        (cp, index) => ({
+          id: `cp_${Date.now()}_${index}`,
+          title: cp.title,
+          description: cp.description,
+          step: cp.step,
+          order: index + 1,
+          daysFromStart: cp.daysFromStart,
+          photoRequired: cp.photoRequired,
+          locationRequired: cp.locationRequired,
+          completed: false,
+          metadata: cp.validationRules || {},
+        }),
       );
 
-      // Créer l'objet Certification
+      // Calculer les dates
+      const startDate = new Date();
+      const estimatedEndDate = new Date(startDate);
+      estimatedEndDate.setDate(startDate.getDate() + template.durationDays);
+
+      // Créer l'objet certification
       const certification: Certification = {
-        id: certificationId,
+        productId,
+        productName: product.name,
         producerId: user.uid,
-        producerName: userData.fullName || 'Producteur',
-        productType: template.productType,
-        productName: data.productName,
-        productCategory: template.category,
+        producerName: this.authService.getUserData()?.fullName || 'Producteur',
+        durationDays: template.durationDays as 30 | 45 | 60 | 90,
+        certificationType: template.certificationType,
+        startDate,
+        estimatedEndDate,
         status: 'active',
+        currentStep: 0,
+        progress: 0,
+        checkpoints,
+        totalCheckpoints: checkpoints.length,
+        completedCheckpoints: 0,
+        verificationScore: 0,
+        blockchainVerified: false,
+        blockchainTransactions: [],
+        productData: productData || product,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        auditLogs: [
+          {
+            action: 'CERTIFICATION_STARTED',
+            timestamp: new Date(),
+            userId: user.uid,
+            details: { templateId, productId },
+          },
+        ],
+      };
 
-        // Dates
-        startDate: now,
-        expectedHarvestDate: expectedHarvestDate,
-        durationDays: template.durationDays,
+      // Sauvegarder dans Firestore
+      const certRef = doc(collection(this.firestore, 'certifications'));
+      await setDoc(certRef, {
+        ...certification,
+        startDate: Timestamp.fromDate(startDate),
+        estimatedEndDate: Timestamp.fromDate(estimatedEndDate),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
-        // Localisation
+      // Mettre à jour le produit avec l'ID de certification
+      await this.firebaseService.updateProduct(productId, {
+        certification: {
+          id: certRef.id,
+          type: 'in_progress',
+          level: 'bronze',
+          score: 0,
+          verificationDate: new Date(),
+          validUntil: estimatedEndDate,
+        },
+      });
+
+      // Ajouter au log d'audit
+      await this.addAuditLog(certRef.id, 'CERTIFICATION_CREATED', {
+        template: template.name,
+        product: product.name,
+      });
+
+      return {
+        success: true,
+        certificationId: certRef.id,
+      };
+    } catch (error: any) {
+      console.error('Erreur démarrage certification:', error);
+      return {
+        success: false,
+        error: error.message || 'Erreur lors du démarrage de la certification',
+      };
+    }
+  }
+
+  /**
+   * Démarrer une certification avec création de produit
+   */
+  async startCertificationWithProduct(
+    productId: string,
+    templateId: string,
+    productFormData: ProductFormData,
+  ): Promise<{ success: boolean; certificationId?: string; error?: string }> {
+    try {
+      const user = this.authService.getCurrentUser();
+      if (!user) {
+        return { success: false, error: 'Utilisateur non connecté' };
+      }
+
+      // Récupérer le produit en certification
+      const product = await this.firebaseService.getProductById(productId);
+      if (!product) {
+        return { success: false, error: 'Produit non trouvé' };
+      }
+
+      // Vérifier que le produit est bien en mode certification
+      const productAny = product as any;
+      const isInCertification =
+        productAny.status === 'certification' ||
+        productAny.certificationInProgress === true;
+      if (!isInCertification) {
+        return {
+          success: false,
+          error: "Ce produit n'est pas en mode certification",
+        };
+      }
+
+      // Trouver le template
+      const template = this.certificationTemplates.find(
+        (t) => t.id === templateId,
+      );
+      if (!template) {
+        return {
+          success: false,
+          error: 'Template de certification non trouvé',
+        };
+      }
+
+      // Créer les checkpoints
+      const checkpoints: CertificationCheckpoint[] = template.checkpoints.map(
+        (cp, index) => ({
+          id: `cp_${Date.now()}_${index}`,
+          title: cp.title,
+          description: cp.description,
+          step: cp.step,
+          order: index + 1,
+          daysFromStart: cp.daysFromStart,
+          photoRequired: cp.photoRequired,
+          locationRequired: cp.locationRequired,
+          completed: false,
+          metadata: cp.validationRules || {},
+        }),
+      );
+
+      // Calculer les dates
+      const startDate = new Date();
+      const estimatedEndDate = new Date(startDate);
+      estimatedEndDate.setDate(startDate.getDate() + template.durationDays);
+
+      // Nettoyer les données du formulaire pour éviter les undefined
+      const cleanedFormData = {
+        ...productFormData,
+        harvestDate: productFormData.harvestDate || null,
+        storageConditions: productFormData.storageConditions || '',
+        certifications: productFormData.certifications || [],
+        contactPhone: productFormData.contactPhone || '',
+      };
+
+      // Créer l'objet certification
+      const certification: Certification = {
+        productId,
+        productName: product.name,
+        producerId: user.uid,
+        producerName: this.authService.getUserData()?.fullName || 'Producteur',
+        durationDays: template.durationDays as 30 | 45 | 60 | 90,
+        certificationType: template.certificationType,
+        startDate,
+        estimatedEndDate,
+        status: 'active',
+        currentStep: 0,
+        progress: 0,
+        checkpoints,
+        totalCheckpoints: checkpoints.length,
+        completedCheckpoints: 0,
+        verificationScore: 0,
+        blockchainVerified: false,
+        blockchainTransactions: [],
+        // Nettoyer les données du produit pour éviter les undefined
+        productData: {
+          ...product,
+          formData: cleanedFormData,
+          // Assurer que toutes les propriétés ont une valeur
+          harvestDate: product.harvestDate || null,
+          storageConditions: product.storageConditions || '',
+          certifications: product.certifications || [],
+          images: product.images || [],
+          badges: product.badges || [],
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        auditLogs: [
+          {
+            action: 'CERTIFICATION_WITH_PRODUCT_STARTED',
+            timestamp: new Date(),
+            userId: user.uid,
+            details: {
+              templateId,
+              productId,
+              productFormData: Object.keys(cleanedFormData),
+            },
+          },
+        ],
+      };
+
+      // Nettoyer l'objet certification avant de l'enregistrer
+      const cleanedCertification = this.cleanObjectForFirestore(certification);
+
+      // Sauvegarder dans Firestore
+      const certRef = doc(collection(this.firestore, 'certifications'));
+      await setDoc(certRef, {
+        ...cleanedCertification,
+        startDate: Timestamp.fromDate(startDate),
+        estimatedEndDate: Timestamp.fromDate(estimatedEndDate),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      // Mettre à jour le produit avec l'ID de certification
+      const productUpdate: any = {
+        certification: {
+          id: certRef.id,
+          type: 'in_progress',
+          level: 'bronze',
+          score: 0,
+          verificationDate: new Date(),
+          validUntil: estimatedEndDate,
+          template: template.name,
+          startDate: startDate,
+          estimatedEndDate: estimatedEndDate,
+          status: 'active',
+        },
+        certificationInProgress: true,
+        status: 'certification' as const,
+      };
+
+      await this.firebaseService.updateProduct(productId, productUpdate);
+
+      // Ajouter au log d'audit
+      await this.addAuditLog(certRef.id, 'CERTIFICATION_WITH_PRODUCT_CREATED', {
+        template: template.name,
+        product: product.name,
+        productStatus: 'certification',
+      });
+
+      return {
+        success: true,
+        certificationId: certRef.id,
+      };
+    } catch (error: any) {
+      console.error('Erreur démarrage certification avec produit:', error);
+      return {
+        success: false,
+        error: error.message || 'Erreur lors du démarrage de la certification',
+      };
+    }
+  }
+  // certification.service.ts - méthode pour auto-activer
+  async autoActivateCertification(
+    certificationId: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const certRef = doc(this.firestore, 'certifications', certificationId);
+
+      await updateDoc(certRef, {
+        status: 'active',
+        currentStep: 1,
+        updatedAt: serverTimestamp(),
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Erreur auto-activation:', error);
+      return { success: false, error: error.message };
+    }
+  }
+  // Ajouter cette méthode utilitaire pour nettoyer les objets
+  private cleanObjectForFirestore(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return null;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map((item) => this.cleanObjectForFirestore(item));
+    }
+
+    if (typeof obj === 'object' && !(obj instanceof Date)) {
+      const cleaned: any = {};
+      for (const [key, value] of Object.entries(obj)) {
+        // Supprimer les propriétés undefined
+        if (value !== undefined) {
+          cleaned[key] = this.cleanObjectForFirestore(value);
+        }
+      }
+      return cleaned;
+    }
+
+    return obj;
+  }
+
+  // Ajouter cette méthode pour récupérer un produit avec les nouvelles propriétés
+  async getProductWithExtendedProperties(
+    productId: string,
+  ): Promise<Product | null> {
+    try {
+      const product = await this.firebaseService.getProductById(productId);
+      if (!product) return null;
+
+      // Type assertion pour permettre l'accès aux propriétés étendues
+      return product as Product;
+    } catch (error) {
+      console.error('Erreur récupération produit étendu:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Uploader une preuve pour un checkpoint
+   */
+  async uploadCheckpointProof(
+    certificationId: string,
+    checkpointIndex: number,
+    photoFile: File,
+    location: { lat: number; lng: number },
+    notes?: string,
+  ): Promise<{
+    success: boolean;
+    checkpoint?: CertificationCheckpoint;
+    error?: string;
+  }> {
+    try {
+      const certRef = doc(this.firestore, 'certifications', certificationId);
+      const certSnap = await getDoc(certRef);
+
+      if (!certSnap.exists()) {
+        return { success: false, error: 'Certification non trouvée' };
+      }
+
+      const certification = certSnap.data() as Certification;
+      const checkpoint = certification.checkpoints[checkpointIndex];
+
+      if (!checkpoint) {
+        return { success: false, error: 'Checkpoint non trouvé' };
+      }
+
+      if (checkpoint.completed) {
+        return { success: false, error: 'Checkpoint déjà complété' };
+      }
+
+      // Valider l'intervalle de temps
+      const now = new Date();
+      const expectedDate = new Date(certification.startDate);
+      expectedDate.setDate(expectedDate.getDate() + checkpoint.daysFromStart);
+
+      const daysDiff = Math.abs(
+        (now.getTime() - expectedDate.getTime()) / (1000 * 60 * 60 * 24),
+      );
+      if (daysDiff > 3) {
+        // Tolérance de 3 jours
+        return {
+          success: false,
+          error: `Checkpoint hors délai. Attendu autour du ${expectedDate.toLocaleDateString()}`,
+        };
+      }
+
+      // Valider la cohérence de localisation
+      if (checkpointIndex > 0) {
+        const prevCheckpoint = certification.checkpoints[checkpointIndex - 1];
+        if (prevCheckpoint.location && prevCheckpoint.locationRequired) {
+          const distance = this.calculateDistance(
+            location.lat,
+            location.lng,
+            prevCheckpoint.location.lat,
+            prevCheckpoint.location.lng,
+          );
+
+          if (distance > 100) {
+            // 100 mètres de tolérance
+            return {
+              success: false,
+              error: `Localisation incohérente. Distance depuis dernier checkpoint: ${distance.toFixed(1)}m`,
+            };
+          }
+        }
+      }
+
+      // Créer la preuve blockchain
+      const proofResult = await this.blockchainService.createCertificationProof(
+        certification.productId,
+        photoFile,
+        checkpoint.step,
+        checkpoint.id,
+        checkpoint.order,
+        location,
+      );
+
+      if (!proofResult.success) {
+        throw new Error(`Erreur blockchain: ${proofResult.error}`);
+      }
+
+      // Mettre à jour le checkpoint
+      const updatedCheckpoint: CertificationCheckpoint = {
+        ...checkpoint,
+        completed: true,
+        completedAt: new Date(),
+        photoUrl: proofResult.ipfsProof?.url,
         location: {
           lat: location.lat,
           lng: location.lng,
-          address: this.formatCoordinates(location.lat, location.lng),
-          region: this.getRegionFromCoordinates(location.lat, location.lng),
+          accuracy: 10, // À récupérer du GPS
         },
-
-        // Points de contrôle
-        checkpoints: checkpoints,
-        currentCheckpointIndex: 1, // Commencer après le premier checkpoint (déjà complété)
-        completedCheckpoints: 1, // Le premier checkpoint est automatiquement complété
-        totalCheckpoints: checkpoints.length,
-
-        // Preuve initiale
-        initialProof: {
-          photoUrl: `local://${certificationId}_initial`,
-          photoHash: photoHash,
-          timestamp: now,
-          deviceInfo: navigator.userAgent?.substring(0, 100) || 'Device',
-        },
-
-        // Score et validation
-        validationScore: 100, // Score initial pour le premier checkpoint
-        maxScore: 100 * checkpoints.length,
-        verificationStatus: 'pending',
-
-        // Métadonnées de publication
-        publicationStatus: {
-          productPublished: false,
-          harvestPublished: false,
-          certificationsPublished: false,
-          fullPublication: false,
-        },
-
-        // Dates de métadonnées
-        createdAt: now,
-        updatedAt: now,
-        expiresAt: expiresAt,
-        version: 1,
+        blockchainTransactionId: proofResult.blockchainProof?.txHash,
+        blockchainVerified: proofResult.blockchainProof?.verified || false,
+        ipfsCID: proofResult.ipfsProof?.cid,
+        ipfsUrl: proofResult.ipfsProof?.url,
+        proofHash: proofResult.blockchainProof?.proofHash,
+        notes,
       };
 
-      // 4. Préparer pour Firestore
-      const firestoreData = this.prepareForFirestore(certification);
-
-      // 5. Sauvegarder dans Firestore
-      await setDoc(
-        doc(this.firebaseService.firestore, 'certifications', certification.id),
-        firestoreData,
-      );
-
-      // 6. Stocker l'image localement
-      this.imageStore.set(`${certification.id}_initial`, photoBase64);
-
-      this.showNotification('success', 'Certification démarrée avec succès!');
-      return certification;
-    } catch (error: any) {
-      console.error('Erreur démarrage certification:', error);
-      this.showNotification('error', error.message);
-      throw error;
-    }
-  }
-
-  /**
-   * Compléter un checkpoint
-   */
-  async completeCheckpoint(
-    certificationId: string,
-    checkpointId: string,
-    proofData: {
-      photo?: File;
-      measurement?: { value: number; unit: string };
-      note?: string;
-    },
-  ): Promise<Certification> {
-    try {
-      // 1. Récupérer la certification
-      const certification = await this.getCertification(certificationId);
-      const checkpoint = certification.checkpoints.find(
-        (cp) => cp.id === checkpointId,
-      );
-
-      if (!checkpoint) {
-        throw new Error('Checkpoint non trouvé');
-      }
-
-      // 2. Si photo fournie, upload sur IPFS + Blockchain
-      let blockchainData = null;
-      let ipfsData = null;
-
-      if (proofData.photo) {
-        // ✅ INTÉGRATION IPFS + BLOCKCHAIN
-        const blockchainResult =
-          await this.blockchainService.createCertificationProof(
-            certification.id,
-            proofData.photo,
-            'CHECKPOINT',
-            checkpointId,
-            checkpoint.order,
-            {
-              lat: certification.location.lat,
-              lng: certification.location.lng,
-            },
-          );
-
-        if (blockchainResult.success) {
-          ipfsData = blockchainResult.ipfsProof;
-          blockchainData = blockchainResult.blockchainProof;
-
-          console.log('✅ Données blockchain:', {
-            ipfsCID: ipfsData?.cid,
-            txHash: blockchainData?.txHash,
-            proofHash: blockchainData?.proofHash,
-          });
-        }
-      }
-
-      // 3. Préparer les nouvelles preuves avec le bon typage
-      const newProofs: CheckpointProof[] = [];
-
-      // Preuve photo
-      if (proofData.photo) {
-        const photoProof: CheckpointProof = {
-          type: 'photo',
-          photoUrl:
-            ipfsData?.url || `local://${certificationId}_${checkpointId}`,
-          photoHash:
-            ipfsData?.fileHash ||
-            this.generateSimpleHash(await this.fileToBase64(proofData.photo)),
-          timestamp: new Date(),
-          deviceInfo: navigator.userAgent?.substring(0, 100),
-          verified: true,
-        };
-        newProofs.push(photoProof);
-      }
-
-      // Preuve measurement (CORRECTION ICI)
-      if (proofData.measurement) {
-        const measurementProof: CheckpointProof = {
-          type: 'measurement',
-          measurement: {
-            value: proofData.measurement.value,
-            unit: proofData.measurement.unit,
-            timestamp: new Date(), // Ajouter le timestamp ici
-          },
-          timestamp: new Date(),
-          deviceInfo: navigator.userAgent?.substring(0, 100),
-          verified: true,
-        };
-        newProofs.push(measurementProof);
-      }
-
-      // Preuve note
-      if (proofData.note) {
-        const noteProof: CheckpointProof = {
-          type: 'note',
-          note: proofData.note,
-          timestamp: new Date(),
-          deviceInfo: navigator.userAgent?.substring(0, 100),
-          verified: true,
-        };
-        newProofs.push(noteProof);
-      }
-
-      // 4. Préparer le checkpoint mis à jour
-      const checkpointIndex = certification.checkpoints.findIndex(
-        (cp) => cp.id === checkpointId,
-      );
-
-      const updatedCheckpoint: CertificationCheckpoint = {
-        ...certification.checkpoints[checkpointIndex],
-        completed: true,
-        completedAt: new Date(),
-        autoVerified: true,
-        verificationScore: 100,
-        verificationNotes: 'Checkpoint complété',
-        proofsCount:
-          (certification.checkpoints[checkpointIndex].proofsCount || 0) +
-          newProofs.length,
-        proofs: [
-          ...(certification.checkpoints[checkpointIndex].proofs || []),
-          ...newProofs,
-        ],
-
-        // ✅ AJOUT DES DONNÉES BLOCKCHAIN
-        ...(blockchainData && {
-          blockchainTransactionId: blockchainData.txHash,
-          blockchainProofHash: blockchainData.proofHash,
-          blockchainVerified: blockchainData.verified,
-          blockchainTimestamp: new Date(blockchainData.timestamp * 1000),
-        }),
-
-        ...(ipfsData && {
-          ipfsCID: ipfsData.cid,
-          ipfsURL: ipfsData.url,
-        }),
-      };
-
+      // Mettre à jour Firestore
       const updatedCheckpoints = [...certification.checkpoints];
       updatedCheckpoints[checkpointIndex] = updatedCheckpoint;
 
-      // 5. Calculer le nouveau score
-      const completedCheckpoints = certification.completedCheckpoints + 1;
-      const newValidationScore = this.calculateUpdatedScore(certification, 100);
-
-      // 6. Préparer les updates pour Firestore
-      const updates: any = {
+      await updateDoc(certRef, {
         checkpoints: updatedCheckpoints,
-        completedCheckpoints,
-        currentCheckpointIndex: certification.currentCheckpointIndex + 1,
-        validationScore: newValidationScore,
+        currentStep: checkpointIndex + 2,
         updatedAt: serverTimestamp(),
+        ...(proofResult.blockchainProof?.txHash && {
+          blockchainTransactions: [
+            ...certification.blockchainTransactions,
+            proofResult.blockchainProof.txHash,
+          ],
+        }),
+      });
+
+      // Mettre à jour le progrès
+      await this.updateProgress(certificationId);
+
+      // Si c'est le dernier checkpoint, marquer comme complété
+      if (checkpointIndex === certification.checkpoints.length - 1) {
+        await this.completeCertification(certificationId);
+      }
+
+      await this.addAuditLog(certificationId, 'CHECKPOINT_COMPLETED', {
+        checkpoint: checkpoint.title,
+        step: checkpoint.step,
+        txHash: proofResult.blockchainProof?.txHash,
+      });
+
+      return {
+        success: true,
+        checkpoint: updatedCheckpoint,
       };
-
-      // 7. Vérifier si la certification est terminée
-      if (completedCheckpoints === certification.totalCheckpoints) {
-        updates.status = 'completed';
-        updates.actualHarvestDate = serverTimestamp();
-
-        if (newValidationScore >= 70) {
-          updates.verificationStatus = 'auto_verified';
-          updates.verifiedAt = serverTimestamp();
-        }
-      }
-
-      // 8. Sauvegarder dans Firestore
-      const firestoreData = this.prepareForFirestore(updates);
-      const certRef = doc(
-        this.firebaseService.firestore,
-        'certifications',
-        certificationId,
-      );
-      await updateDoc(certRef, firestoreData);
-
-      // 9. Stocker l'image localement si nécessaire
-      if (proofData.photo && !ipfsData) {
-        const photoBase64 = await this.fileToBase64(proofData.photo);
-        this.imageStore.set(`${certificationId}_${checkpointId}`, photoBase64);
-      }
-
-      // 10. Recharger la certification
-      const updatedCertification = await this.getCertification(certificationId);
-
-      // 11. Notification
-      this.showNotification(
-        'success',
-        `Checkpoint "${checkpoint.title}" complété! ${
-          blockchainData ? '✅ Blockchain' : '⚠️ Local seulement'
-        }`,
-      );
-
-      return updatedCertification;
     } catch (error: any) {
-      console.error('❌ Erreur complétion checkpoint:', error);
-      throw error;
+      console.error('Erreur upload preuve:', error);
+      return { success: false, error: error.message };
     }
   }
 
   /**
-   * Calculer le score mis à jour
+   * Compléter une certification et publier le produit
    */
-  private calculateUpdatedScore(
-    certification: Certification,
-    newCheckpointScore: number,
-  ): number {
-    const totalScore =
-      certification.validationScore * certification.completedCheckpoints;
-    const newTotalScore = totalScore + newCheckpointScore;
-    const newCompletedCount = certification.completedCheckpoints + 1;
-
-    return Math.round(newTotalScore / newCompletedCount);
-  }
-
-  // Dans certification.service.ts - AJOUTEZ cette méthode dans la classe
-
-  /**
-   * Sauvegarder les données blockchain d'un checkpoint
-   */
-  private async saveBlockchainData(
-    certificationId: string,
-    checkpointId: string,
-    blockchainData: {
-      blockchainTransactionId: string;
-      blockchainProofHash: string;
-      ipfsCID?: string;
-      blockchainTimestamp: Date;
-      blockchainVerified: boolean;
-      blockNumber?: number;
-    },
-  ): Promise<void> {
+  // certification.service.ts - méthode completeCertificationAndPublish
+  async completeCertificationAndPublish(certificationId: string): Promise<{
+    success: boolean;
+    productId?: string;
+    error?: string;
+  }> {
     try {
-      const certification = await this.getCertification(certificationId);
-      const checkpointIndex = certification.checkpoints.findIndex(
-        (cp) => cp.id === checkpointId,
-      );
+      const certRef = doc(this.firestore, 'certifications', certificationId);
+      const certSnap = await getDoc(certRef);
 
-      if (checkpointIndex === -1) {
-        throw new Error('Checkpoint non trouvé');
+      if (!certSnap.exists()) {
+        return { success: false, error: 'Certification non trouvée' };
       }
 
-      // Préparer les mises à jour du checkpoint
-      const updatedCheckpoints = [...certification.checkpoints];
-      updatedCheckpoints[checkpointIndex] = {
-        ...updatedCheckpoints[checkpointIndex],
-        blockchainTransactionId: blockchainData.blockchainTransactionId,
-        blockchainProofHash: blockchainData.blockchainProofHash,
-        blockchainVerified: blockchainData.blockchainVerified,
-        blockchainTimestamp: blockchainData.blockchainTimestamp,
-        blockNumber: blockchainData.blockNumber,
-        ...(blockchainData.ipfsCID && {
-          ipfsCID: blockchainData.ipfsCID,
-          ipfsURL: `https://gateway.pinata.cloud/ipfs/${blockchainData.ipfsCID}`,
-        }),
+      const data = certSnap.data();
+
+      // Fonction de conversion pour les timestamps
+      const convertTimestamp = (timestamp: any): Date | undefined => {
+        if (!timestamp) return undefined;
+        if (typeof timestamp.toDate === 'function') return timestamp.toDate();
+        if (timestamp instanceof Date) return timestamp;
+        if (timestamp.seconds) return new Date(timestamp.seconds * 1000);
+        return undefined;
       };
 
-      // Mettre à jour dans Firestore
-      await updateDoc(
-        doc(this.firebaseService.firestore, 'certifications', certificationId),
+      const certification: Certification = {
+        id: certSnap.id,
+        ...data,
+        startDate: convertTimestamp(data['startDate']) || new Date(),
+        estimatedEndDate:
+          convertTimestamp(data['estimatedEndDate']) || new Date(),
+        checkpoints: (data['checkpoints'] || []).map((cp: any) => ({
+          ...cp,
+          completedAt: convertTimestamp(cp.completedAt),
+        })),
+      } as Certification;
+
+      // Vérifier que tous les checkpoints sont complétés
+      const allCompleted = certification.checkpoints.every(
+        (cp) => cp.completed,
+      );
+      if (!allCompleted) {
+        return {
+          success: false,
+          error: 'Tous les checkpoints doivent être complétés',
+        };
+      }
+
+      // Calculer le score de vérification
+      const verificationScore =
+        await this.calculateVerificationScore(certificationId);
+
+      // Générer le certificat final
+      const certificateResult = await this.generateCertificate(certificationId);
+
+      // Mettre à jour la certification
+      await updateDoc(certRef, {
+        status: 'completed',
+        progress: 100,
+        verificationScore,
+        completedAt: new Date(),
+        updatedAt: serverTimestamp(),
+        certificateUrl: certificateResult.certificateUrl,
+        qrCodeUrl: certificateResult.qrCodeUrl,
+        verificationUrl: certificateResult.verificationUrl,
+      });
+
+      // PUBLIER LE PRODUIT
+      const productUpdate = await this.firebaseService.updateProduct(
+        certification.productId,
         {
-          checkpoints: updatedCheckpoints,
-          updatedAt: serverTimestamp(),
+          // Changer le statut pour publication
+          status: 'available',
+          isActive: true,
+          // Mettre à jour la certification
+          certification: {
+            id: certificationId,
+            type: 'certified',
+            level:
+              verificationScore >= 90
+                ? 'gold'
+                : verificationScore >= 70
+                  ? 'silver'
+                  : 'bronze',
+            score: verificationScore,
+            verificationDate: new Date(),
+            validUntil: certification.estimatedEndDate,
+            // Ajouter les détails de traçabilité
+            traceability: {
+              startDate: certification.startDate,
+              harvestDate: new Date(),
+              location: certification.productData?.location || '',
+              checkpointsCompleted: certification.completedCheckpoints,
+              totalCheckpoints: certification.totalCheckpoints,
+              proofs: certification.checkpoints.map((cp) => ({
+                type: cp.step,
+                date: cp.completedAt || new Date(),
+                verified: cp.blockchainVerified || false,
+              })),
+            },
+            // URLs du certificat
+            qrCodeUrl: certificateResult.qrCodeUrl,
+            certificateUrl: certificateResult.certificateUrl,
+            verificationUrl: certificateResult.verificationUrl,
+          },
+          // Mettre à jour les badges avec le nouveau badge de certification
+          badges: [
+            ...(certification.productData?.badges || []),
+            {
+              id: 'certified',
+              label: 'Certifié',
+              icon: '✓',
+              color: '#10b981',
+            },
+          ],
+          updatedAt: new Date(),
         },
       );
 
-      console.log('✅ Données blockchain sauvegardées:', {
-        certificationId,
-        checkpointId,
-        transactionId: blockchainData.blockchainTransactionId,
-      });
-    } catch (error) {
-      console.error('❌ Erreur sauvegarde blockchain:', error);
-      throw error;
-    }
-  }
-  /**
-   * Publier la certification comme produit
-   */
-  async publishCertificationAsProduct(
-    certificationId: string,
-    productData: {
-      price: number;
-      quantity: number;
-      unit: string;
-      description: string;
-      minOrderQuantity?: number;
-      storageConditions?: string;
-    },
-  ): Promise<{ certification: Certification; product: Product }> {
-    try {
-      const certification = await this.getCertification(certificationId);
-
-      if (
-        certification.status !== 'completed' &&
-        certification.verificationStatus !== 'auto_verified' &&
-        certification.verificationStatus !== 'manually_verified'
-      ) {
+      if (!productUpdate.success) {
         throw new Error(
-          'La certification doit être terminée et vérifiée pour être publiée',
+          productUpdate.error || 'Erreur lors de la publication du produit',
         );
       }
 
-      if (certification.validationScore < 70) {
-        throw new Error('Score de validation insuffisant (minimum 70%)');
-      }
+      // Ajouter les images des checkpoints au produit
+      await this.addCheckpointImagesToProduct(
+        certificationId,
+        certification.productId,
+      );
 
-      // 1. Créer le produit
-      const product: Product = {
-        id: '',
-        name: certification.productName,
-        category: certification.productCategory,
-        description: productData.description || certification.productName,
-        price: productData.price,
-        quantity: productData.quantity,
-        unit: productData.unit || 'kg',
-        minOrderQuantity: productData.minOrderQuantity || 1,
-        producerId: certification.producerId,
-        producerName: certification.producerName,
-        producerPhone: this.authService.getUserData()?.phone || '',
-        location:
-          certification.location.address || 'Localisation non spécifiée',
-        contactPhone: this.authService.getUserData()?.phone || '',
-        certifications: this.generateBadgeLabels(certification),
-        isOrganic: certification.productCategory.includes('bio'),
-        images: this.extractCertificationImages(certification),
-        status: 'available',
-        views: 0,
-        sales: 0,
-        isActive: true,
-        badges: this.generateBadgesForProduct(certification),
-        certification: {
-          id: certification.id,
-          type: 'certified',
-          level: this.getCertificationLevel(certification.validationScore),
-          score: certification.validationScore,
-          verificationDate: certification.verifiedAt || new Date(),
-          validUntil: certification.expiresAt,
-          traceability: {
-            startDate: certification.startDate,
-            harvestDate:
-              certification.actualHarvestDate ||
-              certification.expectedHarvestDate,
-            location: certification.location.address || '',
-            checkpointsCompleted: certification.completedCheckpoints,
-            totalCheckpoints: certification.totalCheckpoints,
-            proofs: this.extractAllProofs(certification),
-          },
-          qrCodeUrl: this.generateQRCodeUrl(certification.id),
-          verificationUrl: `${window.location.origin}/verify/${certification.id}`,
-        },
-      };
-
-      // 2. Sauvegarder le produit dans Firestore
-      const productRef = await addDoc(
-        collection(this.firebaseService.firestore, 'products'),
+      await this.addAuditLog(
+        certificationId,
+        'CERTIFICATION_COMPLETED_AND_PRODUCT_PUBLISHED',
         {
-          ...product,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
+          score: verificationScore,
+          productId: certification.productId,
+          productStatus: 'published',
         },
       );
 
-      product.id = productRef.id;
-
-      // 3. Mettre à jour la certification
-      const finalProduct = {
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        category: product.category,
-        quantity: product.quantity,
-        unit: product.unit,
-        price: product.price,
-        published: true,
-        publishedAt: new Date(),
-        images: product.images,
-        badges: product.badges,
-        details: {
-          location: product.location,
-          contactPhone: product.contactPhone,
-          minOrderQuantity: product.minOrderQuantity,
-          producerPhone: product.producerPhone,
-          isOrganic: product.isOrganic,
-          certifications: product.certifications,
-          publishedCheckpoints: certification.checkpoints
-            .filter((cp) => cp.completed)
-            .map((cp) => cp.order),
-          lastPublicationDate: new Date(),
-          publicationHistory: [
-            {
-              checkpointId: 'full_publication',
-              checkpointTitle: 'Publication complète',
-              publishedAt: new Date(),
-              changes: ['Produit créé', 'Tous les checkpoints publiés'],
-            },
-          ],
-        },
+      return {
+        success: true,
+        productId: certification.productId,
       };
+    } catch (error: any) {
+      console.error('Erreur complétion certification et publication:', error);
+      return { success: false, error: error.message };
+    }
+  }
 
-      await this.saveCertificationUpdates(certificationId, {
-        productId: product.id,
-        finalProduct: finalProduct,
-        publicationStatus: {
-          productPublished: true,
-          harvestPublished: true,
-          certificationsPublished: true,
-          fullPublication: true,
-        },
+  // certification-track.component.ts - ajouter cette méthode
+  private safeDateConversion(date: any): Date | undefined {
+    if (!date) return undefined;
+    if (date instanceof Date) return date;
+    if (typeof date.toDate === 'function') return date.toDate();
+    if (date.seconds) return new Date(date.seconds * 1000);
+    if (typeof date === 'string') return new Date(date);
+    if (typeof date === 'number') return new Date(date);
+    return undefined;
+  }
+
+  // Et utiliser dans getCheckpointStatus ou autres méthodes
+  getCheckpointStatus(checkpoint: CertificationCheckpoint): string {
+    if (checkpoint.completed) {
+      // S'assurer que completedAt est une Date valide
+      const completedDate = this.safeDateConversion(checkpoint.completedAt);
+      return checkpoint.blockchainVerified && completedDate
+        ? 'verified'
+        : 'pending';
+    }
+    return 'upcoming';
+  }
+  /**
+   * Compléter une certification (sans publication)
+   */
+  async completeCertification(
+    certificationId: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const certRef = doc(this.firestore, 'certifications', certificationId);
+      const certSnap = await getDoc(certRef);
+
+      if (!certSnap.exists()) {
+        return { success: false, error: 'Certification non trouvée' };
+      }
+
+      const certification = certSnap.data() as Certification;
+
+      // Vérifier que tous les checkpoints sont complétés
+      const allCompleted = certification.checkpoints.every(
+        (cp) => cp.completed,
+      );
+      if (!allCompleted) {
+        return {
+          success: false,
+          error: 'Tous les checkpoints doivent être complétés',
+        };
+      }
+
+      // Calculer le score de vérification
+      const verificationScore =
+        await this.calculateVerificationScore(certificationId);
+
+      // Générer le certificat final
+      const certificateResult = await this.generateCertificate(certificationId);
+
+      // Mettre à jour le statut
+      await updateDoc(certRef, {
+        status: 'completed',
+        progress: 100,
+        verificationScore,
+        completedAt: new Date(),
         updatedAt: serverTimestamp(),
+        ...certificateResult,
       });
 
-      // 4. Recharger la certification
-      const updatedCertification = await this.getCertification(certificationId);
+      // Mettre à jour le produit
+      await this.firebaseService.updateProduct(certification.productId, {
+        certification: {
+          id: certificationId,
+          type: 'certified',
+          level:
+            verificationScore >= 90
+              ? 'gold'
+              : verificationScore >= 70
+                ? 'silver'
+                : 'bronze',
+          score: verificationScore,
+          verificationDate: new Date(),
+          validUntil: certification.estimatedEndDate,
+          traceability: {
+            startDate: certification.startDate,
+            harvestDate: new Date(),
+            location: certification.productData?.location || '',
+            checkpointsCompleted: certification.completedCheckpoints,
+            totalCheckpoints: certification.totalCheckpoints,
+            proofs: certification.checkpoints.map((cp) => ({
+              type: cp.step,
+              date: cp.completedAt || new Date(),
+              verified: cp.blockchainVerified || false,
+            })),
+          },
+          qrCodeUrl: certificateResult.qrCodeUrl,
+          certificateUrl: certificateResult.certificateUrl,
+          verificationUrl: certificateResult.verificationUrl,
+        },
+      });
 
-      this.showNotification(
-        'success',
-        'Produit publié avec succès sur le marché!',
+      await this.addAuditLog(certificationId, 'CERTIFICATION_COMPLETED', {
+        score: verificationScore,
+        completedCheckpoints: certification.completedCheckpoints,
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Erreur complétion certification:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Ajouter les images des checkpoints au produit
+   */
+  private async addCheckpointImagesToProduct(
+    certificationId: string,
+    productId: string,
+  ): Promise<void> {
+    try {
+      const certRef = doc(this.firestore, 'certifications', certificationId);
+      const certSnap = await getDoc(certRef);
+
+      if (!certSnap.exists()) return;
+
+      const certification = certSnap.data() as Certification;
+
+      // Collecter toutes les URLs d'images des checkpoints
+      const checkpointImages = certification.checkpoints
+        .filter((cp) => cp.photoUrl)
+        .map((cp) => cp.photoUrl)
+        .filter((url): url is string => !!url);
+
+      if (checkpointImages.length > 0) {
+        // Mettre à jour le produit avec ces images
+        await this.firebaseService.updateProduct(productId, {
+          images: checkpointImages,
+        });
+      }
+    } catch (error) {
+      console.error('Erreur ajout images checkpoint au produit:', error);
+    }
+  }
+
+  /**
+   * Récupérer une certification par son ID
+   */
+  // certification.service.ts - méthode getCertificationById corrigée
+  async getCertificationById(
+    certificationId: string,
+  ): Promise<Certification | null> {
+    try {
+      const certRef = doc(this.firestore, 'certifications', certificationId);
+      const certSnap = await getDoc(certRef);
+
+      if (!certSnap.exists()) return null;
+
+      const data = certSnap.data();
+
+      // Fonction utilitaire pour convertir les timestamps Firestore
+      const convertFirestoreTimestamp = (timestamp: any): Date | undefined => {
+        if (!timestamp) return undefined;
+        if (typeof timestamp.toDate === 'function') {
+          return timestamp.toDate();
+        }
+        if (timestamp instanceof Date) {
+          return timestamp;
+        }
+        if (timestamp && timestamp.seconds) {
+          // Format Firestore timestamp {seconds, nanoseconds}
+          return new Date(
+            timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000,
+          );
+        }
+        if (typeof timestamp === 'string') {
+          return new Date(timestamp);
+        }
+        if (typeof timestamp === 'number') {
+          return new Date(timestamp);
+        }
+        return undefined;
+      };
+
+      // Convertir les checkpoints
+      const checkpoints = (data['checkpoints'] || []).map((cp: any) => ({
+        ...cp,
+        completedAt: convertFirestoreTimestamp(cp.completedAt),
+        location: cp.location || undefined,
+      }));
+
+      return {
+        id: certSnap.id,
+        productId: data['productId'],
+        productName: data['productName'],
+        producerId: data['producerId'],
+        producerName: data['producerName'],
+        durationDays: data['durationDays'],
+        certificationType: data['certificationType'],
+        startDate: convertFirestoreTimestamp(data['startDate']) || new Date(),
+        estimatedEndDate:
+          convertFirestoreTimestamp(data['estimatedEndDate']) || new Date(),
+        status: data['status'] || 'draft',
+        currentStep: data['currentStep'] || 0,
+        progress: data['progress'] || 0,
+        checkpoints: checkpoints,
+        totalCheckpoints: data['totalCheckpoints'] || 0,
+        completedCheckpoints: data['completedCheckpoints'] || 0,
+        verificationScore: data['verificationScore'] || 0,
+        blockchainVerified: data['blockchainVerified'] || false,
+        blockchainTransactions: data['blockchainTransactions'] || [],
+        productData: data['productData'],
+        createdAt: convertFirestoreTimestamp(data['createdAt']) || new Date(),
+        updatedAt: convertFirestoreTimestamp(data['updatedAt']) || new Date(),
+        completedAt: convertFirestoreTimestamp(data['completedAt']),
+        verifiedAt: convertFirestoreTimestamp(data['verifiedAt']),
+        certificateUrl: data['certificateUrl'],
+        qrCodeUrl: data['qrCodeUrl'],
+        verificationUrl: data['verificationUrl'],
+        auditLogs: (data['auditLogs'] || []).map((log: any) => ({
+          ...log,
+          timestamp: convertFirestoreTimestamp(log.timestamp) || new Date(),
+        })),
+        isPendingCertification: data['isPendingCertification'] || false,
+      } as Certification;
+    } catch (error) {
+      console.error('Erreur récupération certification:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Générer un certificat final
+   */
+  private async generateCertificate(certificationId: string): Promise<{
+    certificateUrl: string;
+    qrCodeUrl: string;
+    verificationUrl: string;
+  }> {
+    // Pour l'instant, retourner des URLs factices
+    const baseUrl = `https://jokko-agro.com/certification/${certificationId}`;
+
+    return {
+      certificateUrl: `${baseUrl}/certificate.pdf`,
+      qrCodeUrl: `${baseUrl}/qrcode.png`,
+      verificationUrl: `${baseUrl}/verify`,
+    };
+  }
+
+  /**
+   * Calculer le score de vérification
+   */
+  private async calculateVerificationScore(
+    certificationId: string,
+  ): Promise<number> {
+    const certRef = doc(this.firestore, 'certifications', certificationId);
+    const certSnap = await getDoc(certRef);
+
+    if (!certSnap.exists()) return 0;
+
+    const certification = certSnap.data() as Certification;
+    let score = 0;
+    const maxScore = 100;
+
+    // Points pour chaque checkpoint complété (60%)
+    const checkpointScore =
+      (certification.completedCheckpoints / certification.totalCheckpoints) *
+      60;
+    score += checkpointScore;
+
+    // Points pour vérification blockchain (30%)
+    const verifiedCheckpoints = certification.checkpoints.filter(
+      (cp) => cp.blockchainVerified,
+    ).length;
+    const blockchainScore =
+      (verifiedCheckpoints / certification.totalCheckpoints) * 30;
+    score += blockchainScore;
+
+    // Points pour cohérence temporelle (5%)
+    const timeConsistency = this.checkTimeConsistency(certification);
+    score += timeConsistency ? 5 : 0;
+
+    // Points pour cohérence spatiale (5%)
+    const locationConsistency = this.checkLocationConsistency(certification);
+    score += locationConsistency ? 5 : 0;
+
+    return Math.round(score);
+  }
+
+  /**
+   * Vérifier la cohérence temporelle
+   */
+  private checkTimeConsistency(certification: Certification): boolean {
+    if (!certification.checkpoints || certification.checkpoints.length < 2)
+      return true;
+
+    let consistent = true;
+
+    // Filtrer les checkpoints complétés
+    const completedCheckpoints = certification.checkpoints.filter(
+      (cp) => cp.completed && cp.completedAt,
+    );
+
+    if (completedCheckpoints.length < 2) return true;
+
+    for (let i = 1; i < completedCheckpoints.length; i++) {
+      const current = completedCheckpoints[i];
+      const previous = completedCheckpoints[i - 1];
+
+      if (!current.completedAt || !previous.completedAt) continue;
+
+      // S'assurer que completedAt est un objet Date
+      const currentDate =
+        current.completedAt instanceof Date
+          ? current.completedAt
+          : new Date(current.completedAt);
+      const previousDate =
+        previous.completedAt instanceof Date
+          ? previous.completedAt
+          : new Date(previous.completedAt);
+
+      // Calculer la différence attendue en jours
+      const currentExpectedDays = current.daysFromStart || 0;
+      const previousExpectedDays = previous.daysFromStart || 0;
+      const expectedDaysDiff = currentExpectedDays - previousExpectedDays;
+
+      // Calculer la différence réelle en jours
+      const actualDaysDiff = Math.abs(
+        (currentDate.getTime() - previousDate.getTime()) /
+          (1000 * 60 * 60 * 24),
       );
 
-      return { certification: updatedCertification, product };
-    } catch (error: any) {
-      console.error('Erreur publication produit:', error);
-      this.showNotification('error', error.message);
-      throw error;
-    }
-  }
-
-  // ========== MÉTHODES D'ACCÈS AUX DONNÉES ==========
-
-  async getCertification(id: string): Promise<Certification> {
-    try {
-      const docRef = doc(this.firebaseService.firestore, 'certifications', id);
-      const docSnap = await getDoc(docRef);
-
-      if (!docSnap.exists()) {
-        throw new Error('Certification non trouvée');
+      // Tolérance de 3 jours
+      if (Math.abs(actualDaysDiff - expectedDaysDiff) > 3) {
+        consistent = false;
+        break;
       }
+    }
 
-      const data = docSnap.data();
+    return consistent;
+  }
 
-      const certification = this.convertFromFirestore(data, docSnap.id);
+  /**
+   * Vérifier la cohérence spatiale
+   */
+  private checkLocationConsistency(certification: Certification): boolean {
+    const checkpointsWithLocation = certification.checkpoints.filter(
+      (cp) => cp.locationRequired && cp.location,
+    );
 
-      return certification;
-    } catch (error: any) {
-      console.error('❌ Erreur récupération certification:', error);
-      console.error('Stack:', error.stack);
-      throw error;
+    if (checkpointsWithLocation.length < 2) return true;
+
+    let consistent = true;
+    for (let i = 1; i < checkpointsWithLocation.length; i++) {
+      const current = checkpointsWithLocation[i];
+      const previous = checkpointsWithLocation[i - 1];
+
+      if (!current.location || !previous.location) continue;
+
+      const distance = this.calculateDistance(
+        current.location.lat,
+        current.location.lng,
+        previous.location.lat,
+        previous.location.lng,
+      );
+
+      // Si la distance dépasse 100m, incohérent
+      if (distance > 100) {
+        consistent = false;
+        break;
+      }
+    }
+
+    return consistent;
+  }
+
+  /**
+   * Calculer la distance entre deux points GPS (en mètres)
+   */
+  private calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
+    const R = 6371000; // Rayon de la Terre en mètres
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+  }
+
+  /**
+   * Mettre à jour le progrès
+   */
+  private async updateProgress(certificationId: string): Promise<void> {
+    const certRef = doc(this.firestore, 'certifications', certificationId);
+    const certSnap = await getDoc(certRef);
+
+    if (!certSnap.exists()) return;
+
+    const certification = certSnap.data() as Certification;
+    const completedCheckpoints = certification.checkpoints.filter(
+      (cp) => cp.completed,
+    ).length;
+    const progress = Math.round(
+      (completedCheckpoints / certification.totalCheckpoints) * 100,
+    );
+
+    await updateDoc(certRef, {
+      completedCheckpoints,
+      progress,
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  /**
+   * Ajouter un log d'audit
+   */
+  private async addAuditLog(
+    certificationId: string,
+    action: string,
+    details: any,
+  ): Promise<void> {
+    const user = this.authService.getCurrentUser();
+    if (!user) return;
+
+    const certRef = doc(this.firestore, 'certifications', certificationId);
+    const certSnap = await getDoc(certRef);
+
+    if (!certSnap.exists()) return;
+
+    const certification = certSnap.data() as Certification;
+    const newLog = {
+      action,
+      timestamp: new Date(),
+      userId: user.uid,
+      details,
+    };
+
+    await updateDoc(certRef, {
+      auditLogs: [...certification.auditLogs, newLog],
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  /**
+   * Récupérer la certification d'un produit
+   */
+  async getProductCertification(
+    productId: string,
+  ): Promise<Certification | null> {
+    try {
+      const q = query(
+        collection(this.firestore, 'certifications'),
+        where('productId', '==', productId),
+        where('status', 'in', ['draft', 'active', 'completed', 'verified']),
+        orderBy('createdAt', 'desc'),
+        limit(1),
+      );
+
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) return null;
+
+      const docSnap = snapshot.docs[0];
+      return {
+        id: docSnap.id,
+        ...docSnap.data(),
+        startDate: docSnap.data()['startDate']?.toDate(),
+        estimatedEndDate: docSnap.data()['estimatedEndDate']?.toDate(),
+        createdAt: docSnap.data()['createdAt']?.toDate(),
+        updatedAt: docSnap.data()['updatedAt']?.toDate(),
+        completedAt: docSnap.data()['completedAt']?.toDate(),
+        verifiedAt: docSnap.data()['verifiedAt']?.toDate(),
+      } as Certification;
+    } catch (error) {
+      console.error('Erreur récupération certification:', error);
+      return null;
     }
   }
 
+  /**
+   * Récupérer toutes les certifications d'un producteur
+   */
   async getProducerCertifications(
     producerId: string,
   ): Promise<Certification[]> {
     try {
       const q = query(
-        collection(this.firebaseService.firestore, 'certifications'),
+        collection(this.firestore, 'certifications'),
         where('producerId', '==', producerId),
         orderBy('createdAt', 'desc'),
       );
 
       const snapshot = await getDocs(q);
-      const certifications: Certification[] = [];
 
-      snapshot.docs.forEach((docSnap) => {
-        const data = docSnap.data();
-        certifications.push(this.convertFromFirestore(data, docSnap.id));
-      });
-
-      return certifications;
+      return snapshot.docs.map(
+        (docSnap) =>
+          ({
+            id: docSnap.id,
+            ...docSnap.data(),
+            startDate: docSnap.data()['startDate']?.toDate(),
+            estimatedEndDate: docSnap.data()['estimatedEndDate']?.toDate(),
+            createdAt: docSnap.data()['createdAt']?.toDate(),
+            updatedAt: docSnap.data()['updatedAt']?.toDate(),
+            completedAt: docSnap.data()['completedAt']?.toDate(),
+            verifiedAt: docSnap.data()['verifiedAt']?.toDate(),
+          }) as Certification,
+      );
     } catch (error) {
       console.error('Erreur récupération certifications:', error);
       return [];
     }
   }
 
-  async cancelCertification(certificationId: string): Promise<void> {
-    try {
-      await updateDoc(
-        doc(this.firebaseService.firestore, 'certifications', certificationId),
-        {
-          status: 'cancelled',
-          updatedAt: serverTimestamp(),
-        },
-      );
-      this.showNotification('success', 'Certification annulée');
-    } catch (error) {
-      console.error('Erreur annulation certification:', error);
-      throw error;
-    }
-  }
-
-  async deleteCertification(certificationId: string): Promise<void> {
-    try {
-      await deleteDoc(
-        doc(this.firebaseService.firestore, 'certifications', certificationId),
-      );
-      this.showNotification('success', 'Certification supprimée');
-    } catch (error) {
-      console.error('Erreur suppression certification:', error);
-      throw error;
-    }
-  }
-
-  // ========== MÉTHODES UTILITAIRES ==========
-
-  private generateCheckpoints(
-    template: CertificationTemplate,
-    photoHash: string,
-    startDate: Date,
-  ): CertificationCheckpoint[] {
-    return template.checkpoints.map((cp, index) => {
-      const checkpoint: CertificationCheckpoint = {
-        id: `cp_${Date.now()}_${index}`,
-        order: index,
-        dayOffset: cp.dayOffset,
-        title: cp.title,
-        description: cp.description,
-        instructions: this.generateInstructions(cp),
-        required: true,
-        requiredProofs: cp.requiredProofs,
-        measurementType: cp.measurementType,
-        measurementUnit: this.getMeasurementUnit(cp.measurementType),
-        completed: index === 0, // Premier checkpoint complété automatiquement
-        proofs: [],
-        autoVerified: index === 0,
-        verificationScore: index === 0 ? 100 : 0,
-        notified: false,
-        reminderCount: 0,
-        completedAt: index === 0 ? startDate : undefined,
-        notificationSentAt: undefined,
-        verificationNotes: index === 0 ? 'Photo initiale' : undefined,
-      };
-
-      // Ajouter la preuve initiale pour le premier checkpoint
-      if (index === 0) {
-        checkpoint.proofs = [
-          {
-            type: 'photo',
-            photoUrl: 'data:image/jpeg;base64,' + photoHash,
-            photoHash: photoHash,
-            timestamp: startDate,
-            deviceInfo: navigator.userAgent?.substring(0, 100) || 'Device',
-            verified: true,
-          },
-        ];
-      }
-
-      return checkpoint;
-    });
-  }
-
-  private generateInstructions(checkpoint: any): string {
-    const instructions = [];
-    if (checkpoint.requiredProofs.includes('photo')) {
-      instructions.push('📸 Prenez une photo claire');
-    }
-    if (checkpoint.requiredProofs.includes('gps')) {
-      instructions.push('📍 Activez votre GPS');
-    }
-    if (checkpoint.requiredProofs.includes('measurement')) {
-      instructions.push(
-        `📏 Mesurez (${checkpoint.measurementType || 'mesure'})`,
-      );
-    }
-    if (checkpoint.requiredProofs.includes('note')) {
-      instructions.push('📝 Ajoutez une note');
-    }
-    return instructions.join(' • ') || 'Suivez les instructions';
-  }
-
-  private getMeasurementUnit(type?: string): string {
-    switch (type) {
-      case 'weight':
-        return 'kg';
-      case 'height':
-        return 'cm';
-      case 'count':
-        return 'unités';
-      case 'volume':
-        return 'L';
-      default:
-        return 'unité';
-    }
-  }
-
-  private generateBadgesForProduct(
-    certification: Certification,
-  ): Array<{ id: string; label: string; icon: string; color: string }> {
-    const badgeMap: {
-      [key: string]: { label: string; icon: string; color: string };
-    } = {
-      certified: { label: 'Certifié', icon: '🏆', color: '#FFD700' },
-      organic: { label: 'Bio', icon: '🌱', color: '#4CAF50' },
-      traceable: { label: 'Traçable', icon: '📊', color: '#2196F3' },
-      local: { label: 'Local', icon: '📍', color: '#9C27B0' },
-      seasonal: { label: 'De saison', icon: '🌞', color: '#FF9800' },
-    };
-
-    const template = this.templates.find(
-      (t) => t.productType === certification.productType,
-    );
-    const badges = template?.badges || [];
-
-    return badges
-      .filter((badge) => badgeMap[badge])
-      .map((badge) => ({
-        id: badge,
-        ...badgeMap[badge],
-      }));
-  }
-
-  private generateBadgeLabels(certification: Certification): string[] {
-    const template = this.templates.find(
-      (t) => t.productType === certification.productType,
-    );
-    const badgeLabels: { [key: string]: string } = {
-      certified: 'Certifié',
-      organic: 'Bio',
-      traceable: 'Traçable',
-      local: 'Local',
-      seasonal: 'De saison',
-    };
-
-    return (template?.badges || [])
-      .filter((badge) => badgeLabels[badge])
-      .map((badge) => badgeLabels[badge]);
-  }
-
-  private extractCertificationImages(certification: Certification): string[] {
-    const images: string[] = [];
-
-    // Image initiale
-    if (certification.initialProof.photoUrl) {
-      images.push(certification.initialProof.photoUrl);
-    }
-
-    // Images des checkpoints
-    certification.checkpoints.forEach((checkpoint) => {
-      if (checkpoint.completed && checkpoint.proofs) {
-        checkpoint.proofs.forEach((proof) => {
-          if (proof.type === 'photo' && proof.photoUrl) {
-            images.push(proof.photoUrl);
-          }
-        });
-      }
-    });
-
-    return images.slice(0, 5);
-  }
-
-  private extractAllProofs(
-    certification: Certification,
-  ): Array<{ type: string; date: Date; verified: boolean }> {
-    const proofs: Array<{ type: string; date: Date; verified: boolean }> = [];
-
-    // Preuve initiale
-    proofs.push({
-      type: 'photo_initial',
-      date: certification.initialProof.timestamp,
-      verified: true,
-    });
-
-    // Preuves des checkpoints
-    certification.checkpoints.forEach((checkpoint) => {
-      if (checkpoint.completed && checkpoint.proofs) {
-        checkpoint.proofs.forEach((proof) => {
-          proofs.push({
-            type: proof.type,
-            date: proof.timestamp,
-            verified: proof.verified || false,
-          });
-        });
-      }
-    });
-
-    return proofs;
-  }
-
-  private getCertificationLevel(score: number): 'bronze' | 'silver' | 'gold' {
-    if (score >= 90) return 'gold';
-    if (score >= 75) return 'silver';
-    return 'bronze';
-  }
-
-  private generateQRCodeUrl(certificationId: string): string {
-    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-      `${window.location.origin}/verify/${certificationId}`,
-    )}`;
-  }
-
-  // ========== CONVERSION DE DONNÉES ==========
-
-  private convertTimestamp(timestamp: any): Date {
-    if (!timestamp) return new Date();
-
-    // 1. Si c'est déjà un objet Date
-    if (timestamp instanceof Date) {
-      return timestamp;
-    }
-
-    // 2. Si c'est un Timestamp Firestore
-    if (
-      timestamp &&
-      typeof timestamp === 'object' &&
-      'seconds' in timestamp &&
-      'nanoseconds' in timestamp
-    ) {
-      return new Date(
-        timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000,
-      );
-    }
-
-    // 3. Si c'est une string (format ISO ou autre)
-    if (typeof timestamp === 'string') {
-      const date = new Date(timestamp);
-      if (!isNaN(date.getTime())) {
-        return date;
-      }
-    }
-
-    // 4. Si c'est un nombre (timestamp en millisecondes)
-    if (typeof timestamp === 'number') {
-      return new Date(timestamp);
-    }
-
-    // 5. Par défaut
-    return new Date();
-  }
-
-  private convertFromFirestore(data: any, id: string): Certification {
-    // CORRECTION CRITIQUE : Gérer différents formats de checkpoints
-    let checkpointsArray: any[] = [];
-
-    if (Array.isArray(data.checkpoints)) {
-      // Cas normal : checkpoints est un tableau
-      checkpointsArray = data.checkpoints;
-    } else if (data.checkpoints && typeof data.checkpoints === 'object') {
-      // Cas après updateDoc : checkpoints peut être un objet avec des indices
-      // Par exemple : { '0': {...}, '1': {...} }
-      checkpointsArray = Object.values(data.checkpoints);
-    }
-
-    return {
-      id: id,
-      producerId: data.producerId || '',
-      producerName: data.producerName || '',
-      productType: data.productType || '',
-      productName: data.productName || '',
-      productCategory: data.productCategory || '',
-      status: data.status || 'cancelled',
-      durationDays: data.durationDays || 0,
-
-      // Conversion des dates
-      startDate: this.convertTimestamp(data.startDate),
-      expectedHarvestDate: this.convertTimestamp(data.expectedHarvestDate),
-      actualHarvestDate: this.convertTimestamp(data.actualHarvestDate),
-      createdAt: this.convertTimestamp(data.createdAt),
-      updatedAt: this.convertTimestamp(data.updatedAt),
-      expiresAt: this.convertTimestamp(data.expiresAt),
-      verifiedAt: this.convertTimestamp(data.verifiedAt),
-
-      // Localisation
-      location: data.location || {
-        lat: 0,
-        lng: 0,
-        address: undefined,
-        region: undefined,
-      },
-
-      // Points de contrôle avec conversion
-      checkpoints: checkpointsArray.map((cp: any) => ({
-        id: cp.id || `cp_${Date.now()}_${Math.random()}`,
-        order: cp.order || 0,
-        dayOffset: cp.dayOffset || 0,
-        title: cp.title || 'Checkpoint',
-        description: cp.description || '',
-        instructions: cp.instructions || '',
-        required: cp.required !== undefined ? cp.required : true,
-        requiredProofs: cp.requiredProofs || [],
-        measurementType: cp.measurementType,
-        measurementUnit: cp.measurementUnit,
-        completed: cp.completed || false,
-        completedAt: this.convertTimestamp(cp.completedAt),
-        proofs: Array.isArray(cp.proofs)
-          ? cp.proofs.map((p: any) => ({
-              type: p.type || 'photo',
-              photoUrl: p.photoUrl,
-              photoHash: p.photoHash,
-              gps: p.gps,
-              measurement: p.measurement,
-              note: p.note,
-              timestamp: this.convertTimestamp(p.timestamp),
-              deviceInfo: p.deviceInfo,
-              verified: p.verified || false,
-            }))
-          : [],
-        autoVerified: cp.autoVerified || false,
-        verificationScore: cp.verificationScore || 0,
-        verificationNotes: cp.verificationNotes,
-        gpsConsistency: cp.gpsConsistency,
-        timeConsistency: cp.timeConsistency,
-        photoConsistency: cp.photoConsistency,
-        notified: cp.notified || false,
-        notificationSentAt: this.convertTimestamp(cp.notificationSentAt),
-        reminderCount: cp.reminderCount || 0,
-      })),
-      currentCheckpointIndex: data.currentCheckpointIndex || 0,
-      completedCheckpoints: data.completedCheckpoints || 0,
-      totalCheckpoints: data.totalCheckpoints || 0,
-
-      // Preuve initiale
-      initialProof: data.initialProof
-        ? {
-            photoUrl: data.initialProof.photoUrl || '',
-            photoHash: data.initialProof.photoHash || '',
-            timestamp: this.convertTimestamp(data.initialProof.timestamp),
-            deviceInfo: data.initialProof.deviceInfo,
-          }
-        : {
-            photoUrl: '',
-            photoHash: '',
-            timestamp: new Date(),
-            deviceInfo: '',
-          },
-
-      // Score et validation
-      validationScore: data.validationScore || 0,
-      maxScore: data.maxScore || 0,
-      verificationStatus: data.verificationStatus || 'pending',
-      verifierId: data.verifierId,
-      rejectionReason: data.rejectionReason,
-
-      // Produit final
-      productId: data.productId,
-      finalProduct: data.finalProduct
-        ? {
-            id: data.finalProduct.id,
-            name: data.finalProduct.name || '',
-            description: data.finalProduct.description || '',
-            category: data.finalProduct.category || '',
-            quantity: data.finalProduct.quantity || 0,
-            unit: data.finalProduct.unit || '',
-            price: data.finalProduct.price || 0,
-            published: data.finalProduct.published || false,
-            publishedAt: this.convertTimestamp(data.finalProduct.publishedAt),
-            images: data.finalProduct.images || [],
-            badges: data.finalProduct.badges || [],
-            details: data.finalProduct.details
-              ? {
-                  ...data.finalProduct.details,
-                  lastPublicationDate: this.convertTimestamp(
-                    data.finalProduct.details.lastPublicationDate,
-                  ),
-                  publicationHistory: data[
-                    'finalProduct'
-                  ].details.publicationHistory?.map((ph: any) => ({
-                    ...ph,
-                    publishedAt: this.convertTimestamp(ph.publishedAt),
-                  })),
-                }
-              : undefined,
-          }
-        : undefined,
-
-      // Métadonnées de publication
-      publicationStatus: data.publicationStatus || {
-        productPublished: false,
-        harvestPublished: false,
-        certificationsPublished: false,
-        fullPublication: false,
-      },
-
-      // Version
-      version: data.version || 0,
-    };
-  }
-
-  private prepareForFirestore(data: any): any {
-    const convert = (obj: any): any => {
-      if (obj instanceof Date) {
-        return Timestamp.fromDate(obj);
-      }
-
-      if (Array.isArray(obj)) {
-        return obj.map((item) => convert(item));
-      }
-
-      if (obj && typeof obj === 'object' && obj.constructor === Object) {
-        const result: any = {};
-        for (const [key, value] of Object.entries(obj)) {
-          if (value !== undefined) {
-            result[key] = convert(value);
-          }
-        }
-        return result;
-      }
-
-      return obj;
-    };
-
-    return convert(data);
-  }
-
-  private async saveCertificationUpdates(
-    certificationId: string,
-    updates: any,
-  ): Promise<void> {
-    const firestoreUpdates = this.prepareForFirestore(updates);
-    await updateDoc(
-      doc(this.firebaseService.firestore, 'certifications', certificationId),
-      firestoreUpdates,
-    );
-  }
-
-  // ========== MÉTHODES UTILITAIRES GÉNÉRALES ==========
-
-  private async getCurrentLocation(): Promise<{
-    lat: number;
-    lng: number;
-    accuracy?: number;
-  }> {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        resolve({ lat: 14.716677, lng: -17.467686, accuracy: 10000 });
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (pos) =>
-          resolve({
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-            accuracy: pos.coords.accuracy,
-          }),
-        () => resolve({ lat: 14.716677, lng: -17.467686, accuracy: 10000 }),
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
-      );
-    });
-  }
-
-  private async fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
-
-  private generateSimpleHash(data: string): string {
-    let hash = 0;
-    for (let i = 0; i < Math.min(data.length, 1000); i++) {
-      hash = (hash << 5) - hash + data.charCodeAt(i);
-      hash = hash & hash;
-    }
-    return Math.abs(hash).toString(16).padStart(8, '0');
-  }
-
-  private formatCoordinates(lat: number, lng: number): string {
-    return `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
-  }
-
-  private getRegionFromCoordinates(lat: number, lng: number): string {
-    if (lat > 14.5 && lat < 15.0 && lng > -17.5 && lng < -17.0) return 'Dakar';
-    if (lat > 14.0 && lat < 15.0 && lng > -16.5 && lng < -15.5) return 'Thiès';
-    return 'Sénégal';
-  }
-
-  // ========== GETTERS ==========
-
-  getTemplates(): CertificationTemplate[] {
-    return [...this.templates];
-  }
-
-  getTemplateById(id: string): CertificationTemplate | undefined {
-    return this.templates.find((t) => t.id === id);
-  }
-
-  getProductIcon(productType: string): string {
-    const icons: Record<string, string> = {
-      tomato: '🍅',
-      mango: '🥭',
-      onion: '🧅',
-      potato: '🥔',
-      carrot: '🥕',
-      lettuce: '🥬',
-      pepper: '🌶️',
-      eggplant: '🍆',
-      cucumber: '🥒',
-      watermelon: '🍉',
-      pineapple: '🍍',
-      banana: '🍌',
-      orange: '🍊',
-      lemon: '🍋',
-      avocado: '🥑',
-      broccoli: '🥦',
-    };
-    return icons[productType] || '🌱';
-  }
-
-  storeImage(key: string, base64Data: string): void {
-    this.imageStore.set(key, base64Data);
-  }
-
-  getImage(key: string): string | null {
-    return this.imageStore.get(key) || null;
-  }
-
-  // ========== STATISTIQUES ==========
-
-  async getCertificationStats(producerId: string): Promise<CertificationStats> {
-    const certifications = await this.getProducerCertifications(producerId);
-
-    const stats: CertificationStats = {
-      totalCertifications: certifications.length,
-      activeCertifications: certifications.filter((c) => c.status === 'active')
-        .length,
-      completedCertifications: certifications.filter(
-        (c) => c.status === 'completed' || c.status === 'verified',
-      ).length,
-      publishedCertifications: certifications.filter(
-        (c) => c.publicationStatus.productPublished,
-      ).length,
-      averageScore:
-        certifications.length > 0
-          ? Math.round(
-              certifications.reduce((sum, c) => sum + c.validationScore, 0) /
-                certifications.length,
-            )
-          : 0,
-      verificationRate:
-        certifications.length > 0
-          ? Math.round(
-              (certifications.filter(
-                (c) =>
-                  c.verificationStatus === 'auto_verified' ||
-                  c.verificationStatus === 'manually_verified',
-              ).length /
-                certifications.length) *
-                100,
-            )
-          : 0,
-      upcomingCheckpoints: certifications
-        .filter((c) => c.status === 'active')
-        .reduce(
-          (sum, c) => sum + (c.totalCheckpoints - c.completedCheckpoints),
-          0,
-        ),
-      expiredCertifications: certifications.filter(
-        (c) => c.status === 'expired',
-      ).length,
-      byStatus: {
-        draft: certifications.filter((c) => c.status === 'draft').length,
-        active: certifications.filter((c) => c.status === 'active').length,
-        completed: certifications.filter((c) => c.status === 'completed')
-          .length,
-        verified: certifications.filter((c) => c.status === 'verified').length,
-        cancelled: certifications.filter((c) => c.status === 'cancelled')
-          .length,
-        expired: certifications.filter((c) => c.status === 'expired').length,
-      },
-      byProductType: certifications.reduce(
-        (acc, c) => {
-          acc[c.productType] = (acc[c.productType] || 0) + 1;
-          return acc;
-        },
-        {} as { [key: string]: number },
-      ),
-      recentActivity: this.calculateRecentActivity(certifications),
-    };
-
-    return stats;
-  }
-
-  private calculateRecentActivity(certifications: Certification[]): Array<{
-    date: string;
-    certifications: number;
-    checkpoints: number;
-  }> {
-    const last7Days = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      return date.toISOString().split('T')[0];
-    }).reverse();
-
-    return last7Days.map((date) => {
-      const dayCerts = certifications.filter(
-        (c) => c.createdAt.toISOString().split('T')[0] === date,
-      );
-
-      const dayCheckpoints = certifications.reduce(
-        (sum, cert) =>
-          sum +
-          cert.checkpoints.filter(
-            (cp) =>
-              cp.completedAt &&
-              cp.completedAt.toISOString().split('T')[0] === date,
-          ).length,
-        0,
-      );
-
-      return {
-        date: date.substring(5),
-        certifications: dayCerts.length,
-        checkpoints: dayCheckpoints,
-      };
-    });
-  }
-
-  // ========== NOTIFICATIONS ==========
-
-  private showNotification(
-    type: 'success' | 'error' | 'info' | 'warning',
-    message: string,
-  ) {
-    // Créer l'élément de notification
-    const notification = document.createElement('div');
-    const icons = {
-      success: '✅',
-      error: '❌',
-      info: 'ℹ️',
-      warning: '⚠️',
-    };
-    const colors = {
-      success: '#4CAF50',
-      error: '#F44336',
-      info: '#2196F3',
-      warning: '#FF9800',
-    };
-
-    notification.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <span style="font-size: 20px;">${icons[type]}</span>
-        <span>${message}</span>
-      </div>
-    `;
-
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: ${colors[type]};
-      color: white;
-      padding: 15px 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 9999;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      animation: slideIn 0.3s ease forwards;
-      max-width: 400px;
-    `;
-
-    // Ajouter les animations
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
-      @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-      }
-    `;
-
-    document.head.appendChild(style);
-    document.body.appendChild(notification);
-
-    // Supprimer après 5 secondes
-    setTimeout(() => {
-      if (document.body.contains(notification)) {
-        notification.style.animation = 'slideOut 0.3s ease forwards';
-        setTimeout(() => {
-          if (document.body.contains(notification)) {
-            document.body.removeChild(notification);
-          }
-          if (document.head.contains(style)) {
-            document.head.removeChild(style);
-          }
-        }, 300);
-      }
-    }, 5000);
-  }
-
-  // ========== SIMULATION POUR DÉVELOPPEMENT ==========
-
-  async simulateCheckpointCompletion(
-    certificationId: string,
-    checkpointIndex: number,
-  ): Promise<void> {
-    try {
-      const certification = await this.getCertification(certificationId);
-      const checkpoint = certification.checkpoints[checkpointIndex];
-
-      if (!checkpoint || checkpoint.completed) {
-        throw new Error('Checkpoint non valide ou déjà complété');
-      }
-
-      // Créer une image factice
-      const fakeImage = this.createFakeImage(checkpoint.title);
-      const fakeFile = this.base64ToFile(fakeImage, 'checkpoint.jpg');
-
-      await this.completeCheckpoint(certificationId, checkpoint.id, {
-        photo: fakeFile,
-        measurement: checkpoint.measurementType
-          ? {
-              value: Math.floor(Math.random() * 100) + 1,
-              unit: checkpoint.measurementUnit || 'unit',
-            }
-          : undefined,
-        note: `Checkpoint simulé: ${checkpoint.title}`,
-      });
-
-      this.showNotification('info', `Checkpoint "${checkpoint.title}" simulé`);
-    } catch (error: any) {
-      console.error('Erreur simulation:', error);
-      throw error;
-    }
-  }
-
-  private createFakeImage(text: string): string {
-    const canvas = document.createElement('canvas');
-    canvas.width = 400;
-    canvas.height = 300;
-    const ctx = canvas.getContext('2d');
-
-    if (ctx) {
-      ctx.fillStyle = '#4CAF50';
-      ctx.fillRect(0, 0, 400, 300);
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 20px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(text, 200, 100);
-      ctx.font = '16px Arial';
-      ctx.fillText('Image simulée', 200, 150);
-      ctx.fillText(new Date().toLocaleDateString(), 200, 200);
-    }
-
-    return canvas.toDataURL('image/jpeg');
-  }
-
-  private base64ToFile(base64: string, filename: string): File {
-    const arr = base64.split(',');
-    const mime = arr[0].match(/:(.*?);/)![1];
-    const bstr = atob(arr[1]);
-    const u8arr = new Uint8Array(bstr.length);
-
-    for (let i = 0; i < bstr.length; i++) {
-      u8arr[i] = bstr.charCodeAt(i);
-    }
-
-    return new File([u8arr], filename, { type: mime });
-  }
-
-  // Dans certification.service.ts - AJOUTER
-
   /**
-   * Gestionnaire d'erreurs blockchain avec retry
+   * Récupérer les templates disponibles
    */
-  private async handleBlockchainError(
-    error: any,
-    operation: string,
-    data: any,
-    maxRetries: number = 3,
-  ): Promise<any> {
-    let lastError = error;
-
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`🔄 Tentative ${attempt}/${maxRetries} pour ${operation}`);
-
-        if (operation === 'registerProof') {
-          return await this.blockchainService.registerProofOnEthereum(
-            data.productId,
-            data.proofHash,
-            data.ipfsCID,
-            data.step,
-            data.checkpointId,
-          );
-        }
-
-        // Ajouter d'autres opérations si nécessaire
-      } catch (retryError: any) {
-        lastError = retryError;
-
-        if (attempt < maxRetries) {
-          // Attente exponentielle avant retry
-          const delay = Math.pow(2, attempt) * 1000;
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-      }
-    }
-
-    throw lastError;
+  getAvailableTemplates(): CertificationTemplate[] {
+    return this.certificationTemplates;
   }
 
   /**
-   * Enregistrer avec fallback local
+   * Récupérer les produits éligibles à la certification
    */
-  private async registerProofWithFallback(
-    productId: string,
-    proofHash: string,
-    ipfsCID: string,
-    step: string,
-    checkpointId?: string,
-  ): Promise<{
-    success: boolean;
-    txHash?: string;
-    localFallback: boolean;
+  async getCertifiableProducts(producerId: string): Promise<Product[]> {
+    try {
+      const products =
+        await this.firebaseService.getProducerProducts(producerId);
+
+      // Filtrer les produits sans certification active
+      const certifiableProducts: Product[] = [];
+
+      for (const product of products) {
+        const existingCert = await this.getProductCertification(product.id!);
+        if (!existingCert) {
+          certifiableProducts.push(product);
+        }
+      }
+
+      return certifiableProducts;
+    } catch (error) {
+      console.error('Erreur récupération produits éligibles:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Vérifier une certification (pour acheteurs)
+   */
+  async verifyCertification(certificationId: string): Promise<{
+    valid: boolean;
+    details: any;
+    score: number;
+    warnings: string[];
   }> {
     try {
-      // Tentative blockchain
-      const result = await this.handleBlockchainError(null, 'registerProof', {
-        productId,
-        proofHash,
-        ipfsCID,
-        step,
-        checkpointId,
-      });
+      const certRef = doc(this.firestore, 'certifications', certificationId);
+      const certSnap = await getDoc(certRef);
 
-      if (result.success) {
+      if (!certSnap.exists()) {
         return {
-          success: true,
-          txHash: result.txHash,
-          localFallback: false,
+          valid: false,
+          details: null,
+          score: 0,
+          warnings: ['Certification non trouvée'],
         };
       }
 
-      throw new Error('Blockchain non disponible');
-    } catch (error) {
-      console.warn('⚠️ Fallback local activé pour', {
-        productId,
-        checkpointId,
-      });
+      const certification = certSnap.data() as Certification;
+      const warnings: string[] = [];
 
-      // Fallback local
-      await this.saveLocalFallbackProof({
-        productId,
-        proofHash,
-        ipfsCID,
-        step,
-        checkpointId,
-        timestamp: Date.now(),
-      });
+      // Vérifications
+      if (
+        certification.status !== 'completed' &&
+        certification.status !== 'verified'
+      ) {
+        warnings.push('Certification non complétée');
+      }
+
+      if (certification.completedCheckpoints < certification.totalCheckpoints) {
+        warnings.push('Tous les checkpoints ne sont pas complétés');
+      }
+
+      const blockchainVerifiedCount = certification.checkpoints.filter(
+        (cp) => cp.blockchainVerified,
+      ).length;
+
+      if (blockchainVerifiedCount < certification.totalCheckpoints) {
+        warnings.push(
+          `${certification.totalCheckpoints - blockchainVerifiedCount} preuves non vérifiées sur blockchain`,
+        );
+      }
+
+      const timeConsistent = this.checkTimeConsistency(certification);
+      if (!timeConsistent) {
+        warnings.push('Incohérences temporelles détectées');
+      }
+
+      const locationConsistent = this.checkLocationConsistency(certification);
+      if (!locationConsistent) {
+        warnings.push('Incohérences spatiales détectées');
+      }
+
+      const score = await this.calculateVerificationScore(certificationId);
+      const valid = score >= 70 && warnings.length === 0;
 
       return {
-        success: true,
-        localFallback: true,
+        valid,
+        details: certification,
+        score,
+        warnings,
+      };
+    } catch (error) {
+      console.error('Erreur vérification:', error);
+      return {
+        valid: false,
+        details: null,
+        score: 0,
+        warnings: ['Erreur lors de la vérification'],
       };
     }
   }
 
   /**
-   * Sauvegarder une preuve en local (fallback)
+   * Valider et activer une certification
    */
-  private async saveLocalFallbackProof(proof: any): Promise<void> {
+  async activateCertification(
+    certificationId: string,
+    initialPhoto?: File,
+    location?: { lat: number; lng: number },
+  ): Promise<{ success: boolean; error?: string }> {
     try {
-      // Sauvegarder dans une collection Firestore séparée
-      await addDoc(
-        collection(this.firebaseService.firestore, 'blockchain_fallback'),
-        {
-          ...proof,
-          createdAt: serverTimestamp(),
-          status: 'pending_sync',
-          syncAttempts: 0,
-        },
-      );
+      const certRef = doc(this.firestore, 'certifications', certificationId);
+      const certSnap = await getDoc(certRef);
 
-      console.log('✅ Preuve sauvegardée en local (fallback)');
-    } catch (error) {
-      console.error('❌ Erreur sauvegarde fallback:', error);
+      if (!certSnap.exists()) {
+        return { success: false, error: 'Certification non trouvée' };
+      }
+
+      const certification = certSnap.data() as Certification;
+
+      if (certification.status !== 'draft') {
+        return { success: false, error: 'Certification déjà activée' };
+      }
+
+      // Vérifier le premier checkpoint (INIT)
+      const firstCheckpoint = certification.checkpoints.find(
+        (cp) => cp.order === 1,
+      );
+      if (!firstCheckpoint) {
+        return { success: false, error: 'Checkpoint initial non trouvé' };
+      }
+
+      // Si photo requise pour l'initialisation
+      if (firstCheckpoint.photoRequired && !initialPhoto) {
+        return { success: false, error: 'Photo initiale requise' };
+      }
+
+      // Si location requise
+      if (firstCheckpoint.locationRequired && !location) {
+        return { success: false, error: 'Localisation requise' };
+      }
+
+      // Mettre à jour le statut
+      await updateDoc(certRef, {
+        status: 'active',
+        currentStep: 1,
+        updatedAt: serverTimestamp(),
+        'checkpoints.0.completed': true,
+        'checkpoints.0.completedAt': new Date(),
+        ...(location && { 'checkpoints.0.location': location }),
+      });
+
+      // Si photo fournie, l'uploader vers IPFS et blockchain
+      if (initialPhoto && location) {
+        await this.uploadCheckpointProof(
+          certificationId,
+          0,
+          initialPhoto,
+          location,
+        );
+      }
+
+      // Calculer le progrès
+      await this.updateProgress(certificationId);
+
+      await this.addAuditLog(certificationId, 'CERTIFICATION_ACTIVATED', {
+        withPhoto: !!initialPhoto,
+        location: location,
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Erreur activation certification:', error);
+      return { success: false, error: error.message };
     }
   }
 
   /**
-   * Synchroniser les preuves fallback
+   * Notifier les acheteurs du nouveau produit certifié
    */
-  async syncFallbackProofs(): Promise<void> {
-    try {
-      const q = query(
-        collection(this.firebaseService.firestore, 'blockchain_fallback'),
-        where('status', '==', 'pending_sync'),
-        orderBy('createdAt', 'asc'),
-        limit(10), // Limiter pour éviter les rate limits
-      );
-
-      const snapshot = await getDocs(q);
-
-      for (const docSnap of snapshot.docs) {
-        const proof = docSnap.data();
-
-        try {
-          // Tenter de synchroniser sur blockchain
-          const result = await this.blockchainService.registerProofOnEthereum(
-            proof['productId'],
-            proof['proofHash'],
-            proof['ipfsCID'],
-            proof['step'],
-            proof['checkpointId'],
-          );
-
-          if (result.success && result.txHash) {
-            // Mettre à jour comme synchronisé
-            await updateDoc(docSnap.ref, {
-              status: 'synced',
-              txHash: result.txHash,
-              syncedAt: serverTimestamp(),
-            });
-
-            // Mettre à jour la certification
-            await this.updateCheckpointWithBlockchainData(
-              proof['productId'],
-              proof['checkpointId'],
-              {
-                blockchainTransactionId: result.txHash,
-                blockchainVerified: true,
-              },
-            );
-
-            console.log(`✅ Preuve fallback synchronisée: ${docSnap.id}`);
-          } else {
-            // Incrémenter les tentatives
-            await updateDoc(docSnap.ref, {
-              syncAttempts: (proof['syncAttempts'] || 0) + 1,
-              lastSyncAttempt: serverTimestamp(),
-              ...(proof['syncAttempts'] >= 5 && { status: 'failed' }),
-            });
-          }
-        } catch (error) {
-          console.error(`❌ Erreur synchro fallback ${docSnap.id}:`, error);
-        }
-
-        // Petite pause entre les synchronisations
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-    } catch (error) {
-      console.error('❌ Erreur synchronisation fallback:', error);
-    }
-  }
-
-  private async updateCheckpointWithBlockchainData(
-    certificationId: string,
-    checkpointId: string,
-    data: {
-      blockchainTransactionId: string;
-      blockchainVerified: boolean;
-    },
+  private async notifyBuyersAboutNewCertifiedProduct(
+    productId: string,
   ): Promise<void> {
     try {
-      const certification = await this.getCertification(certificationId);
-      const checkpointIndex = certification.checkpoints.findIndex(
-        (cp) => cp.id === checkpointId,
+      console.log(
+        `Notification: Nouveau produit certifié disponible: ${productId}`,
       );
+    } catch (error) {
+      console.error('Erreur notification acheteurs:', error);
+    }
+  }
 
-      if (checkpointIndex === -1) {
-        throw new Error('Checkpoint non trouvé');
+  // certification.service.ts
+  async initializeCertificationCheckpoints(
+    certificationId: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const certRef = doc(this.firestore, 'certifications', certificationId);
+      const certSnap = await getDoc(certRef);
+
+      if (!certSnap.exists()) {
+        return { success: false, error: 'Certification non trouvée' };
       }
 
-      const updatedCheckpoints = [...certification.checkpoints];
-      updatedCheckpoints[checkpointIndex] = {
-        ...updatedCheckpoints[checkpointIndex],
-        blockchainTransactionId: data.blockchainTransactionId,
-        blockchainVerified: data.blockchainVerified,
-        blockchainTimestamp: new Date(),
-      };
+      const certification = certSnap.data() as Certification;
 
-      await updateDoc(
-        doc(this.firebaseService.firestore, 'certifications', certificationId),
-        {
-          checkpoints: updatedCheckpoints,
-          updatedAt: serverTimestamp(),
-        },
+      // Récupérer le template
+      const template = this.certificationTemplates.find(
+        (t) => t.certificationType === certification.certificationType,
       );
 
-      console.log('✅ Checkpoint mis à jour avec données blockchain:', {
-        certificationId,
-        checkpointId,
-        transactionId: data.blockchainTransactionId,
+      if (!template) {
+        return { success: false, error: 'Template non trouvé' };
+      }
+
+      // Créer les checkpoints
+      const checkpoints: CertificationCheckpoint[] = template.checkpoints.map(
+        (cp, index) => ({
+          id: `cp_${Date.now()}_${index}`,
+          title: cp.title,
+          description: cp.description,
+          step: cp.step,
+          order: index + 1,
+          daysFromStart: cp.daysFromStart,
+          photoRequired: cp.photoRequired,
+          locationRequired: cp.locationRequired,
+          completed: false,
+          metadata: cp.validationRules || {},
+        }),
+      );
+
+      // Mettre à jour la certification
+      await updateDoc(certRef, {
+        checkpoints,
+        totalCheckpoints: checkpoints.length,
+        updatedAt: serverTimestamp(),
       });
-    } catch (error) {
-      console.error('❌ Erreur mise à jour checkpoint blockchain:', error);
-      throw error;
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Erreur initialisation checkpoints:', error);
+      return { success: false, error: error.message };
     }
   }
 }

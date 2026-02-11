@@ -25,7 +25,18 @@ export interface BlockchainProof {
   blockNumber?: number;
   verified: boolean;
 }
-
+export interface CertificationProof {
+  productId: string;
+  proofHash: string;
+  ipfsCID: string;
+  timestamp: number;
+  step: 'INIT' | 'FOLLOW_UP' | 'HARVEST' | 'CHECKPOINT';
+  checkpointId?: string;
+  checkpointOrder?: number;
+  txHash?: string;
+  blockNumber?: number;
+  verified: boolean;
+}
 // Configuration du smart contract
 const CONTRACT_ADDRESS = '0x4020e67078c8ca3f6d27d698c036a57b4a278fde';
 const CONTRACT_ABI = CERTIFICATION_REGISTRY_ABI;
@@ -36,6 +47,8 @@ const CONTRACT_ABI = CERTIFICATION_REGISTRY_ABI;
 export class BlockchainService {
   private ipfsService = inject(IpfsService);
   private ethereumService = inject(EthereumService);
+
+
 
   /**
    * Enregistrer une preuve sur la blockchain Ethereum (VRAIE VERSION)
@@ -405,21 +418,29 @@ export class BlockchainService {
   /**
    * Flux complet : Photo -> IPFS -> Blockchain
    */
+    /**
+   * Créer une preuve de certification complète
+   */
   async createCertificationProof(
     productId: string,
     photoFile: File,
     step: 'INIT' | 'FOLLOW_UP' | 'HARVEST' | 'CHECKPOINT',
     checkpointId?: string,
     checkpointOrder?: number,
-    location?: { lat: number; lng: number },
+    location?: { lat: number; lng: number }
   ): Promise<{
     success: boolean;
     ipfsProof?: IPFSProof;
-    blockchainProof?: BlockchainProof;
+    blockchainProof?: CertificationProof;
     error?: string;
   }> {
     try {
-      console.log('🚀 Début création preuve complète...');
+      console.log('🚀 Création preuve certification:', {
+        productId,
+        step,
+        checkpointId,
+        location
+      });
 
       // 1. Upload sur IPFS
       const ipfsResult = await this.uploadCertificationPhoto(photoFile, {
@@ -428,87 +449,69 @@ export class BlockchainService {
         checkpointId,
         lat: location?.lat,
         lng: location?.lng,
-        deviceInfo: navigator.userAgent?.substring(0, 100),
+        deviceInfo: navigator.userAgent?.substring(0, 100)
       });
 
       if (!ipfsResult.success) {
         throw new Error(`Erreur IPFS: ${ipfsResult.error}`);
       }
 
-      // 2. Calculer le hash de preuve final
-      const finalProofHash = this.calculateSHA256(
-        JSON.stringify({
-          productId,
-          step,
-          ipfsCID: ipfsResult.ipfsProof!.cid,
-          fileHash: ipfsResult.ipfsProof!.fileHash,
-          metadataHash: ipfsResult.ipfsProof!.metadataHash,
-          timestamp: ipfsResult.ipfsProof!.timestamp,
-        }),
-      );
+      console.log('✅ Photo uploadée sur IPFS:', ipfsResult.ipfsProof);
 
-      // 3. Enregistrer sur blockchain
-      const blockchainResult = await this.registerProofOnEthereum(
+      // 2. Créer l'objet canonique pour le hash
+      const canonicalObject = {
         productId,
-        finalProofHash,
-        ipfsResult.ipfsProof!.cid,
+        photoHash: ipfsResult.ipfsProof!.fileHash,
+        lat: location?.lat?.toFixed(6),
+        lng: location?.lng?.toFixed(6),
+        timestamp: Math.floor(Date.now() / 1000),
         step,
         checkpointId,
+        version: '1.0'
+      };
+
+      // 3. Calculer le hash final
+      const proofHash = this.calculateSHA256(JSON.stringify(canonicalObject));
+      console.log('🔑 Hash de preuve calculé:', proofHash);
+
+      // 4. Enregistrer sur blockchain
+      const blockchainResult = await this.registerProofOnEthereum(
+        productId,
+        proofHash,
+        ipfsResult.ipfsProof!.cid,
+        step,
+        checkpointId
       );
 
-      if (!blockchainResult.success) {
-        console.warn(
-          '⚠️ Blockchain non disponible, sauvegarde locale uniquement',
-        );
+      console.log('📊 Résultat blockchain:', blockchainResult);
 
-        // Sauvegarde locale comme fallback
-        const localBlockchainProof: BlockchainProof = {
-          productId,
-          proofHash: finalProofHash,
-          ipfsCID: ipfsResult.ipfsProof!.cid,
-          timestamp: Math.floor(Date.now() / 1000),
-          step,
-          checkpointId,
-          checkpointOrder,
-          verified: false,
-        };
-
-        return {
-          success: true,
-          ipfsProof: ipfsResult.ipfsProof,
-          blockchainProof: localBlockchainProof,
-        };
-      }
-
-      // 4. Créer la preuve blockchain complète
-      const blockchainProof: BlockchainProof = {
+      // 5. Créer l'objet preuve
+      const blockchainProof: CertificationProof = {
         productId,
-        proofHash: finalProofHash,
+        proofHash,
         ipfsCID: ipfsResult.ipfsProof!.cid,
         timestamp: Math.floor(Date.now() / 1000),
         step,
         checkpointId,
         checkpointOrder,
+        verified: blockchainResult.success,
         txHash: blockchainResult.txHash,
-        blockNumber: blockchainResult.blockNumber,
-        verified: true,
+        blockNumber: blockchainResult.blockNumber
       };
 
-      console.log('✅ Preuve complète créée:', {
-        ipfs: ipfsResult.ipfsProof,
-        blockchain: blockchainProof,
-      });
+      console.log('✅ Preuve certification créée:', blockchainProof);
 
       return {
         success: true,
         ipfsProof: ipfsResult.ipfsProof,
-        blockchainProof,
+        blockchainProof
       };
+
     } catch (error: any) {
-      console.error('❌ Erreur création preuve:', error);
+      console.error('❌ Erreur création preuve certification:', error);
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   }
@@ -792,4 +795,57 @@ export class BlockchainService {
 
     return results;
   }
+
+
+
+
+  /**
+   * Vérifier l'intégrité d'une preuve de certification
+   */
+  async verifyCertificationProof(
+    productId: string,
+    ipfsCID: string,
+    proofHash: string,
+    txHash: string
+  ): Promise<{
+    valid: boolean;
+    details?: any;
+    errors?: string[];
+  }> {
+    try {
+      const errors: string[] = [];
+
+      // 1. Vérifier la transaction sur blockchain
+      const txDetails = await this.getTransactionDetails(txHash);
+      if (!txDetails.confirmed) {
+        errors.push('Transaction non confirmée sur blockchain');
+        return { valid: false, errors };
+      }
+
+      // 2. Vérifier que le hash correspond
+      // (Cela nécessiterait de récupérer les données IPFS originales)
+      const ipfsData = await this.ipfsService.getFile(ipfsCID);
+      if (!ipfsData.success) {
+        errors.push('Impossible de récupérer les données IPFS');
+        return { valid: false, errors };
+      }
+
+      // 3. Recalculer le hash à partir des données IPFS
+      // Note: Vous devrez stocker les métadonnées originales sur IPFS
+      // pour pouvoir les revalider
+
+      // Pour l'instant, retourner basé sur la confirmation blockchain
+      return {
+        valid: txDetails.confirmed && txDetails.status === 'success',
+        details: txDetails
+      };
+
+    } catch (error: any) {
+      return {
+        valid: false,
+        errors: [error.message]
+      };
+    }
+  }
+
 }
