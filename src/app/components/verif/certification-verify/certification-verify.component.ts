@@ -4,12 +4,11 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CertificationService } from '../../../services/certification.service';
 import { BlockchainSyncService } from '../../../services/blockchain-sync.service';
-import { QRCodeModule } from 'angularx-qrcode';
 
 @Component({
   selector: 'app-certification-verify',
   standalone: true,
-  imports: [CommonModule, QRCodeModule],
+  imports: [CommonModule],
   templateUrl: './certification-verify.component.html',
   styleUrls: ['./certification-verify.component.css'],
 })
@@ -25,14 +24,20 @@ export class CertificationVerifyComponent implements OnInit {
   verificationUrl: string = '';
   isLoading = true;
   error: string | null = null;
-
-  // Dans certification-verify.component.ts, assurez-vous que l'URL est correcte
-
+  qrCodeUrl: string = '';
+  qrCodeSmallUrl: string = '';
   ngOnInit() {
     this.route.params.subscribe((params) => {
       this.certificationId = params['id'];
-      // Utiliser window.location.origin pour l'URL de vérification
       this.verificationUrl = `${window.location.origin}/verify/${this.certificationId}`;
+
+      // 👇 Génération propre du QR
+      this.qrCodeUrl =
+        'https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=' +
+        encodeURIComponent(this.verificationUrl);
+      this.qrCodeSmallUrl =
+        'https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=' +
+        encodeURIComponent(this.verificationUrl);
       this.verifyCertification();
     });
   }
@@ -106,7 +111,6 @@ export class CertificationVerifyComponent implements OnInit {
     return icons[step] || '📋';
   }
 
-
   formatTxHash(txHash: string): string {
     if (!txHash) return '';
     return `${txHash.substring(0, 6)}...${txHash.substring(txHash.length - 4)}`;
@@ -151,8 +155,6 @@ export class CertificationVerifyComponent implements OnInit {
     navigator.clipboard.writeText(this.verificationUrl);
     alert('🔗 Lien de vérification copié dans le presse-papier!');
   }
-
-
 
   downloadCertificate() {
     if (this.certification?.certificateUrl) {

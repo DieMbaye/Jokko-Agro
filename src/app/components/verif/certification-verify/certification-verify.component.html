@@ -12,7 +12,9 @@
     <div class="error-icon">⚠️</div>
     <h2>Certification non trouvée</h2>
     <p>{{ error }}</p>
-    <p class="error-help">Vérifiez que le lien est correct ou contactez le producteur.</p>
+    <p class="error-help">
+      Vérifiez que le lien est correct ou contactez le producteur.
+    </p>
     <button class="btn-primary" routerLink="/">Retour à l'accueil</button>
   </div>
 
@@ -30,7 +32,11 @@
           <p class="certification-id">
             <span class="id-label">ID:</span>
             <span class="id-value">{{ certificationId }}</span>
-            <button class="btn-copy" (click)="copyVerificationLink()" title="Copier le lien">
+            <button
+              class="btn-copy"
+              (click)="copyVerificationLink()"
+              title="Copier le lien"
+            >
               📋
             </button>
           </p>
@@ -38,12 +44,7 @@
 
         <div class="qr-section">
           <div class="qr-container">
-            <qrcode
-              [qrdata]="verificationUrl"
-              [width]="140"
-              [errorCorrectionLevel]="'M'"
-              [margin]="1"
-            ></qrcode>
+            <img [src]="qrCodeUrl" alt="QR Code" class="qr-image" />
           </div>
           <div class="qr-info">
             <p class="qr-title">Scanner pour vérifier</p>
@@ -59,40 +60,67 @@
     <main class="verify-main">
       <!-- Résultat de vérification -->
       <section class="verification-result-section">
-        <div class="verification-result" [class.valid]="verificationResult?.valid" [class.invalid]="!verificationResult?.valid">
+        <div
+          class="verification-result"
+          [class.valid]="verificationResult?.valid"
+          [class.invalid]="!verificationResult?.valid"
+        >
           <div class="result-icon">
-            {{ verificationResult?.valid ? '✓' : '✗' }}
+            {{ verificationResult?.valid ? "✓" : "✗" }}
           </div>
           <div class="result-content">
-            <h2>{{ verificationResult?.valid ? 'Certification Valide' : 'Certification Non Valide' }}</h2>
+            <h2>
+              {{
+                verificationResult?.valid
+                  ? "Certification Valide"
+                  : "Certification Non Valide"
+              }}
+            </h2>
             <p *ngIf="verificationResult?.valid">
-              Cette certification a été vérifiée avec succès sur la blockchain Ethereum
+              Cette certification a été vérifiée avec succès sur la blockchain
+              Ethereum
             </p>
             <p *ngIf="!verificationResult?.valid">
-              Cette certification présente des anomalies ou n'a pas été complétée
+              Cette certification présente des anomalies ou n'a pas été
+              complétée
             </p>
 
             <div class="result-stats">
               <div class="stat">
                 <span class="stat-label">Score</span>
-                <span class="stat-value">{{ verificationResult?.score || 0 }}%</span>
+                <span class="stat-value"
+                  >{{ verificationResult?.score || 0 }}%</span
+                >
                 <div class="stat-bar">
-                  <div class="stat-fill" [style.width.%]="verificationResult?.score || 0"></div>
+                  <div
+                    class="stat-fill"
+                    [style.width.%]="verificationResult?.score || 0"
+                  ></div>
                 </div>
               </div>
               <div class="stat">
                 <span class="stat-label">Checkpoints</span>
-                <span class="stat-value">{{ certification.completedCheckpoints }}/{{ certification.totalCheckpoints }}</span>
+                <span class="stat-value"
+                  >{{ certification.completedCheckpoints }}/{{
+                    certification.totalCheckpoints
+                  }}</span
+                >
               </div>
               <div class="stat">
                 <span class="stat-label">Blockchain</span>
-                <span class="stat-value">{{ getVerifiedCount() }}/{{ certification.totalCheckpoints }}</span>
+                <span class="stat-value"
+                  >{{ getVerifiedCount() }}/{{
+                    certification.totalCheckpoints
+                  }}</span
+                >
               </div>
             </div>
 
             <div class="result-badge" *ngIf="verificationResult?.valid">
               <span class="badge-verified">✓ Vérifié par Jokko-Agro</span>
-              <span class="badge-date">Le {{ currentDate | date:'dd/MM/yyyy' }}</span>
+              <span class="badge-date"
+                >Le {{ currentDate | date: "dd/MM/yyyy" }}</span
+              >
             </div>
           </div>
         </div>
@@ -114,11 +142,15 @@
               </div>
               <div class="info-row">
                 <span class="info-label">Catégorie:</span>
-                <span class="info-value">{{ certification.productData?.category || 'Non spécifié' }}</span>
+                <span class="info-value">{{
+                  certification.productData?.category || "Non spécifié"
+                }}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Description:</span>
-                <span class="info-value">{{ certification.productData?.description || 'Non spécifié' }}</span>
+                <span class="info-value">{{
+                  certification.productData?.description || "Non spécifié"
+                }}</span>
               </div>
             </div>
           </div>
@@ -135,11 +167,15 @@
               </div>
               <div class="info-row">
                 <span class="info-label">Localisation:</span>
-                <span class="info-value">{{ certification.productData?.location || 'Sénégal' }}</span>
+                <span class="info-value">{{
+                  certification.productData?.location || "Sénégal"
+                }}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Contact:</span>
-                <span class="info-value">{{ certification.productData?.contactPhone || 'Non disponible' }}</span>
+                <span class="info-value">{{
+                  certification.productData?.contactPhone || "Non disponible"
+                }}</span>
               </div>
             </div>
           </div>
@@ -152,21 +188,30 @@
             <div class="card-content">
               <div class="info-row">
                 <span class="info-label">Type:</span>
-                <span class="info-value certification-type" [class]="certification.certificationType">
+                <span
+                  class="info-value certification-type"
+                  [class]="certification.certificationType"
+                >
                   {{ certification.certificationType | titlecase }}
                 </span>
               </div>
               <div class="info-row">
                 <span class="info-label">Durée:</span>
-                <span class="info-value">{{ certification.durationDays }} jours</span>
+                <span class="info-value"
+                  >{{ certification.durationDays }} jours</span
+                >
               </div>
               <div class="info-row">
                 <span class="info-label">Début:</span>
-                <span class="info-value">{{ certification.startDate | date:'dd/MM/yyyy' }}</span>
+                <span class="info-value">{{
+                  certification.startDate | date: "dd/MM/yyyy"
+                }}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Fin estimée:</span>
-                <span class="info-value">{{ certification.estimatedEndDate | date:'dd/MM/yyyy' }}</span>
+                <span class="info-value">{{
+                  certification.estimatedEndDate | date: "dd/MM/yyyy"
+                }}</span>
               </div>
             </div>
           </div>
@@ -176,21 +221,30 @@
       <!-- Timeline des checkpoints -->
       <section class="timeline-section">
         <h2>Traçabilité complète</h2>
-        <p class="section-subtitle">{{ certification.totalCheckpoints }} points de contrôle • {{ getVerifiedCount() }} vérifiés sur blockchain</p>
+        <p class="section-subtitle">
+          {{ certification.totalCheckpoints }} points de contrôle •
+          {{ getVerifiedCount() }} vérifiés sur blockchain
+        </p>
 
         <div class="timeline">
-          <div *ngFor="let checkpoint of certification.checkpoints; let i = index"
-               class="timeline-item"
-               [class.completed]="checkpoint.completed"
-               [class.verified]="checkpoint.blockchainVerified"
-               [class.pending]="checkpoint.completed && !checkpoint.blockchainVerified"
-               [class.upcoming]="!checkpoint.completed">
-
+          <div
+            *ngFor="let checkpoint of certification.checkpoints; let i = index"
+            class="timeline-item"
+            [class.completed]="checkpoint.completed"
+            [class.verified]="checkpoint.blockchainVerified"
+            [class.pending]="
+              checkpoint.completed && !checkpoint.blockchainVerified
+            "
+            [class.upcoming]="!checkpoint.completed"
+          >
             <div class="timeline-marker">
               <div class="marker-icon">
                 {{ getStepIcon(checkpoint.step) }}
               </div>
-              <div class="marker-line" *ngIf="i < certification.checkpoints.length - 1"></div>
+              <div
+                class="marker-line"
+                *ngIf="i < certification.checkpoints.length - 1"
+              ></div>
             </div>
 
             <div class="timeline-content">
@@ -199,7 +253,10 @@
                   <h3>{{ checkpoint.title }}</h3>
                   <span class="checkpoint-step">{{ checkpoint.step }}</span>
                 </div>
-                <div class="status-badge" [class]="getCheckpointStatus(checkpoint)">
+                <div
+                  class="status-badge"
+                  [class]="getCheckpointStatus(checkpoint)"
+                >
                   {{ getStatusText(checkpoint) }}
                 </div>
               </div>
@@ -209,20 +266,30 @@
               <div class="checkpoint-details" *ngIf="checkpoint.completed">
                 <div class="detail-row" *ngIf="checkpoint.completedAt">
                   <span class="detail-label">Réalisé le:</span>
-                  <span class="detail-value">{{ checkpoint.completedAt | date:'dd/MM/yyyy à HH:mm' }}</span>
+                  <span class="detail-value">{{
+                    checkpoint.completedAt | date: "dd/MM/yyyy à HH:mm"
+                  }}</span>
                 </div>
 
                 <div class="detail-row" *ngIf="checkpoint.location">
                   <span class="detail-label">Localisation:</span>
                   <span class="detail-value coordinates">
-                    {{ checkpoint.location.lat.toFixed(6) }}, {{ checkpoint.location.lng.toFixed(6) }}
+                    {{ checkpoint.location.lat.toFixed(6) }},
+                    {{ checkpoint.location.lng.toFixed(6) }}
                     <span class="accuracy" *ngIf="checkpoint.location.accuracy">
                       (précision: {{ checkpoint.location.accuracy }}m)
                     </span>
                   </span>
-                  <a [href]="'https://www.google.com/maps?q=' + checkpoint.location.lat + ',' + checkpoint.location.lng"
-                     target="_blank"
-                     class="btn-map">
+                  <a
+                    [href]="
+                      'https://www.google.com/maps?q=' +
+                      checkpoint.location.lat +
+                      ',' +
+                      checkpoint.location.lng
+                    "
+                    target="_blank"
+                    class="btn-map"
+                  >
                     Voir carte
                   </a>
                 </div>
@@ -230,28 +297,56 @@
                 <div class="detail-row" *ngIf="checkpoint.photoUrl">
                   <span class="detail-label">Preuve photo:</span>
                   <div class="photo-preview">
-                    <img [src]="checkpoint.photoUrl" [alt]="checkpoint.title" (click)="viewPhoto(checkpoint.photoUrl!)">
-                    <a [href]="checkpoint.photoUrl" target="_blank" class="photo-link">
+                    <img
+                      [src]="checkpoint.photoUrl"
+                      [alt]="checkpoint.title"
+                      (click)="viewPhoto(checkpoint.photoUrl!)"
+                    />
+                    <a
+                      [href]="checkpoint.photoUrl"
+                      target="_blank"
+                      class="photo-link"
+                    >
                       Voir sur IPFS 🔗
                     </a>
                   </div>
                 </div>
 
-                <div class="detail-row" *ngIf="checkpoint.blockchainTransactionId">
+                <div
+                  class="detail-row"
+                  *ngIf="checkpoint.blockchainTransactionId"
+                >
                   <span class="detail-label">Transaction blockchain:</span>
                   <div class="blockchain-info">
-                    <a [href]="getEtherscanUrl(checkpoint.blockchainTransactionId)"
-                       target="_blank"
-                       class="tx-link">
-                      <span class="tx-hash">{{ formatTxHash(checkpoint.blockchainTransactionId) }}</span>
+                    <a
+                      [href]="
+                        getEtherscanUrl(checkpoint.blockchainTransactionId)
+                      "
+                      target="_blank"
+                      class="tx-link"
+                    >
+                      <span class="tx-hash">{{
+                        formatTxHash(checkpoint.blockchainTransactionId)
+                      }}</span>
                       <span class="tx-icon">⛓️</span>
                     </a>
-                    <span class="verification-status" [class.verified]="checkpoint.blockchainVerified">
-                      {{ checkpoint.blockchainVerified ? 'Confirmé' : 'En attente' }}
+                    <span
+                      class="verification-status"
+                      [class.verified]="checkpoint.blockchainVerified"
+                    >
+                      {{
+                        checkpoint.blockchainVerified
+                          ? "Confirmé"
+                          : "En attente"
+                      }}
                     </span>
-                    <button *ngIf="!checkpoint.blockchainVerified"
-                            class="btn-verify-tx"
-                            (click)="verifyTransaction(checkpoint.blockchainTransactionId!)">
+                    <button
+                      *ngIf="!checkpoint.blockchainVerified"
+                      class="btn-verify-tx"
+                      (click)="
+                        verifyTransaction(checkpoint.blockchainTransactionId!)
+                      "
+                    >
                       Vérifier
                     </button>
                   </div>
@@ -261,7 +356,11 @@
                   <span class="detail-label">IPFS CID:</span>
                   <span class="detail-value ipfs-cid">
                     {{ checkpoint.ipfsCID }}
-                    <button class="btn-copy" (click)="copyToClipboard(checkpoint.ipfsCID!)" title="Copier le CID">
+                    <button
+                      class="btn-copy"
+                      (click)="copyToClipboard(checkpoint.ipfsCID!)"
+                      title="Copier le CID"
+                    >
                       📋
                     </button>
                   </span>
@@ -285,7 +384,9 @@
           <div class="stat-card">
             <div class="stat-icon">⛓️</div>
             <div class="stat-content">
-              <span class="stat-number">{{ certification.blockchainTransactions?.length || 0 }}</span>
+              <span class="stat-number">{{
+                certification.blockchainTransactions?.length || 0
+              }}</span>
               <span class="stat-label">Transactions</span>
             </div>
           </div>
@@ -309,22 +410,38 @@
           <div class="stat-card" *ngIf="certification.integrityCheck?.summary">
             <div class="stat-icon">📊</div>
             <div class="stat-content">
-              <span class="stat-number">{{ certification.integrityCheck.summary.verificationRate }}%</span>
+              <span class="stat-number"
+                >{{
+                  certification.integrityCheck.summary.verificationRate
+                }}%</span
+              >
               <span class="stat-label">Taux vérification</span>
             </div>
           </div>
         </div>
 
-        <div class="transactions-list" *ngIf="certification.blockchainTransactions?.length > 0">
+        <div
+          class="transactions-list"
+          *ngIf="certification.blockchainTransactions?.length > 0"
+        >
           <h3>Toutes les transactions</h3>
           <div class="transactions-grid">
-            <div *ngFor="let tx of certification.blockchainTransactions" class="transaction-card">
+            <div
+              *ngFor="let tx of certification.blockchainTransactions"
+              class="transaction-card"
+            >
               <div class="transaction-header">
                 <span class="tx-status confirmed">✓ Confirmé</span>
-                <span class="tx-date">{{ currentDate | date:'dd/MM/yyyy' }}</span>
+                <span class="tx-date">{{
+                  currentDate | date: "dd/MM/yyyy"
+                }}</span>
               </div>
               <div class="transaction-body">
-                <a [href]="getEtherscanUrl(tx)" target="_blank" class="transaction-hash">
+                <a
+                  [href]="getEtherscanUrl(tx)"
+                  target="_blank"
+                  class="transaction-hash"
+                >
                   {{ formatTxHash(tx) }}
                 </a>
               </div>
@@ -345,7 +462,12 @@
         <div class="certificate-preview">
           <div class="certificate-content">
             <div class="certificate-header">
-              <img src="assets/logo-jokko.png" alt="Jokko-Agro" class="certificate-logo" onerror="this.style.display='none'">
+              <img
+                src="assets/logo-jokko.png"
+                alt="Jokko-Agro"
+                class="certificate-logo"
+                onerror="this.style.display = 'none'"
+              />
               <h3>JOKKO-AGRO</h3>
               <p class="certificate-subtitle">Certification Blockchain</p>
             </div>
@@ -353,31 +475,46 @@
             <div class="certificate-body">
               <p class="certificate-statement">Ce certificat atteste que</p>
               <h4 class="product-name">{{ certification.productName }}</h4>
-              <p class="producer-name">Produit par {{ certification.producerName }}</p>
+              <p class="producer-name">
+                Produit par {{ certification.producerName }}
+              </p>
 
               <div class="certificate-details">
                 <div class="detail">
                   <span class="label">Type de certification:</span>
-                  <span class="value">{{ certification.certificationType | titlecase }}</span>
+                  <span class="value">{{
+                    certification.certificationType | titlecase
+                  }}</span>
                 </div>
                 <div class="detail">
                   <span class="label">Score de vérification:</span>
-                  <span class="value">{{ verificationResult?.score || 0 }}%</span>
+                  <span class="value"
+                    >{{ verificationResult?.score || 0 }}%</span
+                  >
                 </div>
                 <div class="detail">
                   <span class="label">Date de certification:</span>
-                  <span class="value">{{ certification.completedAt || certification.updatedAt | date:'dd/MM/yyyy' }}</span>
+                  <span class="value">{{
+                    certification.completedAt || certification.updatedAt
+                      | date: "dd/MM/yyyy"
+                  }}</span>
                 </div>
               </div>
             </div>
 
             <div class="certificate-footer">
               <div class="qr-small">
-                <qrcode [qrdata]="verificationUrl" [width]="80" [errorCorrectionLevel]="'M'"></qrcode>
+                <img
+                  [src]="qrCodeSmallUrl"
+                  alt="QR Code"
+                  class="qr-image-small"
+                />
               </div>
               <div class="verification-info">
                 <p>Scanner pour vérifier</p>
-                <a [href]="verificationUrl" target="_blank">{{ verificationUrl }}</a>
+                <a [href]="verificationUrl" target="_blank">{{
+                  verificationUrl
+                }}</a>
               </div>
             </div>
           </div>
@@ -396,10 +533,16 @@
       </section>
 
       <!-- Warnings -->
-      <section *ngIf="verificationResult?.warnings?.length > 0" class="warnings-section">
+      <section
+        *ngIf="verificationResult?.warnings?.length > 0"
+        class="warnings-section"
+      >
         <h3>⚠️ Avertissements</h3>
         <div class="warnings-list">
-          <div *ngFor="let warning of verificationResult.warnings" class="warning-item">
+          <div
+            *ngFor="let warning of verificationResult.warnings"
+            class="warning-item"
+          >
             {{ warning }}
           </div>
         </div>
@@ -430,7 +573,8 @@
           <span class="badge">📦 Stocké sur IPFS</span>
         </div>
         <p class="verification-time">
-          Dernière vérification: {{ currentDate | date:'dd/MM/yyyy à HH:mm:ss' }}
+          Dernière vérification:
+          {{ currentDate | date: "dd/MM/yyyy à HH:mm:ss" }}
         </p>
       </div>
     </footer>

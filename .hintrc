@@ -13,7 +13,10 @@
           "scrollbar-width",
           "scrollbar-width: none",
           "scrollbar-color",
-          "scrollbar-width: thin"
+          "scrollbar-width: thin",
+          "-webkit-overflow-scrolling",
+          "forced-color-adjust",
+          "forced-color-adjust: none"
         ]
       }
     ],

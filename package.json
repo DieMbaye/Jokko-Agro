@@ -20,7 +20,9 @@
     "@angular/platform-browser-dynamic": "^17.3.0",
     "@angular/router": "^17.3.0",
     "@pinata/sdk": "^2.1.0",
-    "angularx-qrcode": "^14.0.0",
+    "@tensorflow-models/knn-classifier": "^1.2.6",
+    "@tensorflow-models/mobilenet": "^2.1.1",
+    "@tensorflow/tfjs": "^4.22.0",
     "animate.css": "^4.1.1",
     "chart.js": "^4.5.1",
     "crypto-js": "^4.2.0",
@@ -29,6 +31,7 @@
     "firebase": "^12.6.0",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.6.0",
+    "ngx-qrcode2": "^9.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.0"

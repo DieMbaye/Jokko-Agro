@@ -446,3 +446,129 @@
 .nav-item:hover::after {
   transform: translateX(100%);
 }
+/* ===== RESPONSIVE MOBILE - CORRECTION RADICALE ===== */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    height: 70px;
+    width: 100%;
+    flex-direction: row;
+    z-index: 1000;
+    background: white;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .sidebar-header,
+  .user-details,
+  .collapse-btn,
+  .sidebar-footer,
+  .user-info,
+  .nav-label,
+  .badge,
+  .logout-btn {
+    display: none !important;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly; /* ← Distribution égale */
+    align-items: center;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    overflow-x: visible; /* ← Évite le scroll horizontal */
+  }
+
+  .sidebar-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ✅ CORRECTION MAJEURE : Zone de clic = taille de l'icône */
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    /* 🔥 La zone de clic est EXACTEMENT la taille de l'icône */
+    width: 48px; /* ← Largeur fixe comme une icône standard */
+    height: 48px; /* ← Hauteur fixe comme une icône standard */
+    padding: 0; /* ← Supprime tout padding */
+    margin: 0; /* ← Supprime toute marge */
+
+    border-left: none;
+    border-top: 3px solid transparent;
+    border-radius: 12px;
+
+    /* 🔥 Important : évite l'étirement */
+    flex: 0 0 48px;
+
+    /* Animation */
+    transition: all 0.2s ease;
+  }
+
+  /* ✅ L'icône prend toute la place */
+  .nav-icon {
+    margin: 0 !important; /* ← Force suppression des marges */
+    font-size: 1.6rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* 🔥 La zone de clic est sur l'icône */
+    pointer-events: none; /* ← Le clic passe à travers */
+  }
+
+  /* ✅ Le lien reçoit le clic, mais visuellement c'est l'icône */
+  .nav-item {
+    -webkit-tap-highlight-color: rgba(46, 125, 50, 0.2);
+  }
+
+  /* ✅ État actif */
+  .nav-item.active {
+    border-left: none;
+    border-top-color: #2e7d32;
+    background: transparent; /* ← Fond supprimé pour ne pas étendre */
+  }
+
+  /* ✅ Petit indicateur visuel sous l'icône */
+  .nav-item.active .nav-icon {
+    position: relative;
+  }
+
+  .nav-item.active .nav-icon::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #2e7d32;
+  }
+
+  /* ✅ Feedback tactile - NE DÉPASSE PAS de l'icône */
+  .nav-item:active .nav-icon {
+    background: rgba(46, 125, 50, 0.12);
+    border-radius: 12px;
+  }
+
+  /* ✅ Suppression de tout élément qui pourrait élargir */
+  .nav-item::before,
+  .nav-item::after {
+    display: none !important;
+  }
+
+  .cart-mini-indicator {
+    display: none !important;
+  }
+}

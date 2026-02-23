@@ -45,10 +45,17 @@ const CONTRACT_ABI = CERTIFICATION_REGISTRY_ABI;
   providedIn: 'root',
 })
 export class BlockchainService {
+  logInconsistency(arg0: {
+    certificationId: string;
+    checkpointIndex: number;
+    similarity: any;
+    warnings: any;
+    timestamp: Date;
+  }) {
+    throw new Error('Method not implemented.');
+  }
   private ipfsService = inject(IpfsService);
   private ethereumService = inject(EthereumService);
-
-
 
   /**
    * Enregistrer une preuve sur la blockchain Ethereum (VRAIE VERSION)
@@ -418,7 +425,7 @@ export class BlockchainService {
   /**
    * Flux complet : Photo -> IPFS -> Blockchain
    */
-    /**
+  /**
    * Créer une preuve de certification complète
    */
   async createCertificationProof(
@@ -427,7 +434,7 @@ export class BlockchainService {
     step: 'INIT' | 'FOLLOW_UP' | 'HARVEST' | 'CHECKPOINT',
     checkpointId?: string,
     checkpointOrder?: number,
-    location?: { lat: number; lng: number }
+    location?: { lat: number; lng: number },
   ): Promise<{
     success: boolean;
     ipfsProof?: IPFSProof;
@@ -439,7 +446,7 @@ export class BlockchainService {
         productId,
         step,
         checkpointId,
-        location
+        location,
       });
 
       // 1. Upload sur IPFS
@@ -449,7 +456,7 @@ export class BlockchainService {
         checkpointId,
         lat: location?.lat,
         lng: location?.lng,
-        deviceInfo: navigator.userAgent?.substring(0, 100)
+        deviceInfo: navigator.userAgent?.substring(0, 100),
       });
 
       if (!ipfsResult.success) {
@@ -467,7 +474,7 @@ export class BlockchainService {
         timestamp: Math.floor(Date.now() / 1000),
         step,
         checkpointId,
-        version: '1.0'
+        version: '1.0',
       };
 
       // 3. Calculer le hash final
@@ -480,7 +487,7 @@ export class BlockchainService {
         proofHash,
         ipfsResult.ipfsProof!.cid,
         step,
-        checkpointId
+        checkpointId,
       );
 
       console.log('📊 Résultat blockchain:', blockchainResult);
@@ -496,7 +503,7 @@ export class BlockchainService {
         checkpointOrder,
         verified: blockchainResult.success,
         txHash: blockchainResult.txHash,
-        blockNumber: blockchainResult.blockNumber
+        blockNumber: blockchainResult.blockNumber,
       };
 
       console.log('✅ Preuve certification créée:', blockchainProof);
@@ -504,14 +511,13 @@ export class BlockchainService {
       return {
         success: true,
         ipfsProof: ipfsResult.ipfsProof,
-        blockchainProof
+        blockchainProof,
       };
-
     } catch (error: any) {
       console.error('❌ Erreur création preuve certification:', error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -796,9 +802,6 @@ export class BlockchainService {
     return results;
   }
 
-
-
-
   /**
    * Vérifier l'intégrité d'une preuve de certification
    */
@@ -806,7 +809,7 @@ export class BlockchainService {
     productId: string,
     ipfsCID: string,
     proofHash: string,
-    txHash: string
+    txHash: string,
   ): Promise<{
     valid: boolean;
     details?: any;
@@ -837,15 +840,13 @@ export class BlockchainService {
       // Pour l'instant, retourner basé sur la confirmation blockchain
       return {
         valid: txDetails.confirmed && txDetails.status === 'success',
-        details: txDetails
+        details: txDetails,
       };
-
     } catch (error: any) {
       return {
         valid: false,
-        errors: [error.message]
+        errors: [error.message],
       };
     }
   }
-
 }

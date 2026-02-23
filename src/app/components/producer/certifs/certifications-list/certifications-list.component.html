@@ -1,128 +1,207 @@
-<div class="certifications-list-container">
+<!-- components/producer/certifs/certifications-list/certifications-list.component.html -->
+<div class="certifications-list-container" [class]="currentBreakpoint">
   <!-- Header -->
   <header class="header">
     <div class="header-content">
-      <h1>Mes Certifications</h1>
-      <p>Suivez vos processus de certification en cours</p>
+      <h1>{{ isMobileView ? 'Certifications' : 'Mes Certifications' }}</h1>
+      <p *ngIf="!isMobileView">Suivez vos processus de certification en cours</p>
+      <p *ngIf="isMobileView">{{ certifications.length }} certification(s)</p>
     </div>
     <button class="btn-primary" routerLink="/producer/certification/start">
-      <span class="btn-icon">➕</span>
-      Démarrer une certification
+      <span class="btn-icon">
+        <ng-container [ngSwitch]="currentBreakpoint">
+          <span *ngSwitchCase="'mobile'">➕</span>
+          <span *ngSwitchDefault>➕</span>
+        </ng-container>
+      </span>
+      <span class="btn-text" *ngIf="!isMobileView">Démarrer une certification</span>
+      <span class="btn-text" *ngIf="isMobileView">Nouvelle</span>
     </button>
   </header>
 
   <main class="main-content">
-    <!-- Stats Overview -->
-    <div class="stats-overview">
-      <div class="stat-card">
+    <!-- Stats Overview - Responsive -->
+    <div class="stats-overview" [class.mobile-stats]="isMobileView" [class.tablet-stats]="isTabletView">
+      <div class="stat-card" (click)="isMobileView && setActiveTab('all')">
         <div class="stat-content">
           <span class="stat-number">{{ certifications.length }}</span>
-          <span class="stat-label">Total certifications</span>
+          <span class="stat-label">Total</span>
         </div>
         <div class="stat-icon">📋</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" (click)="isMobileView && setActiveTab('active')">
         <div class="stat-content">
           <span class="stat-number">{{ getActiveCount() }}</span>
           <span class="stat-label">En cours</span>
         </div>
         <div class="stat-icon">⏳</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" (click)="isMobileView && setActiveTab('completed')">
         <div class="stat-content">
           <span class="stat-number">{{ getCompletedCount() }}</span>
           <span class="stat-label">Terminées</span>
         </div>
         <div class="stat-icon">✅</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" *ngIf="!isMobileView" (click)="isMobileView && setActiveTab('draft')">
+        <div class="stat-content">
+          <span class="stat-number">{{ getDraftCount() }}</span>
+          <span class="stat-label">Brouillons</span>
+        </div>
+        <div class="stat-icon">📝</div>
+      </div>
+      <div class="stat-card average-progress" *ngIf="!isMobileView">
         <div class="stat-content">
           <span class="stat-number">{{ getAverageProgress() }}%</span>
-          <span class="stat-label">Progression moyenne</span>
+          <span class="stat-label">Prog. moyenne</span>
         </div>
         <div class="stat-icon">📈</div>
       </div>
     </div>
 
-    <!-- Filters -->
-    <div class="filters-section">
-      <div class="filter-group">
-        <label for="statusFilter">
-          <span class="filter-icon">🎯</span>
-          Statut:
-        </label>
-        <select
-          id="statusFilter"
-          [(ngModel)]="selectedStatus"
-          (change)="filterCertifications()"
-          class="filter-select"
-        >
-          <option value="all">Tous les statuts</option>
-          <option value="active">En cours</option>
-          <option value="completed">Terminées</option>
-          <option value="draft">Brouillons</option>
-          <option value="verified">Vérifiées</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label for="typeFilter">
-          <span class="filter-icon">🏷️</span>
-          Type:
-        </label>
-        <select id="typeFilter" class="filter-select">
-          <option value="all">Tous les types</option>
-          <option value="standard">Standard</option>
-          <option value="premium">Premium</option>
-          <option value="organic">Bio</option>
-        </select>
-      </div>
-
-      <button class="btn-filter" (click)="resetFilters()">
-        <span class="btn-icon">🔄</span>
-        Réinitialiser
+    <!-- Mobile Tabs Navigation -->
+    <div class="mobile-tabs" *ngIf="isMobileView">
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'all'"
+        (click)="setActiveTab('all')">
+        <span class="tab-icon">📋</span>
+        <span class="tab-label">Tous</span>
+        <span class="tab-count">{{ certifications.length }}</span>
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'active'"
+        (click)="setActiveTab('active')">
+        <span class="tab-icon">⚡</span>
+        <span class="tab-label">En cours</span>
+        <span class="tab-count">{{ getActiveCount() }}</span>
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'completed'"
+        (click)="setActiveTab('completed')">
+        <span class="tab-icon">✅</span>
+        <span class="tab-label">Terminé</span>
+        <span class="tab-count">{{ getCompletedCount() }}</span>
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'draft'"
+        (click)="setActiveTab('draft')">
+        <span class="tab-icon">📝</span>
+        <span class="tab-label">Brouillon</span>
+        <span class="tab-count">{{ getDraftCount() }}</span>
       </button>
     </div>
 
+    <!-- Filters Section - Responsive -->
+    <div class="filters-section" [class.mobile-filters]="isMobileView" [class.filters-hidden]="isMobileView && !showMobileFilters">
+      <!-- Mobile Filter Toggle -->
+      <div class="mobile-filter-header" *ngIf="isMobileView">
+        <button class="btn-filter-toggle" (click)="toggleMobileFilters()">
+          <span class="filter-icon">🔍</span>
+          <span>Filtrer les certifications</span>
+          <span class="chevron">{{ showMobileFilters ? '▲' : '▼' }}</span>
+        </button>
+      </div>
+
+      <!-- Filter Content -->
+      <div class="filter-content" [class.show]="!isMobileView || showMobileFilters">
+        <div class="filter-group">
+          <label for="statusFilter">
+            <span class="filter-icon">🎯</span>
+            <span *ngIf="!isMobileView">Statut:</span>
+          </label>
+          <select
+            id="statusFilter"
+            [(ngModel)]="selectedStatus"
+            (change)="filterCertifications()"
+            class="filter-select"
+          >
+            <option value="all">Tous les statuts</option>
+            <option value="active">En cours</option>
+            <option value="completed">Terminées</option>
+            <option value="draft">Brouillons</option>
+            <option value="verified">Vérifiées</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="typeFilter">
+            <span class="filter-icon">🏷️</span>
+            <span *ngIf="!isMobileView">Type:</span>
+          </label>
+          <select
+            id="typeFilter"
+            [(ngModel)]="selectedType"
+            (change)="filterCertifications()"
+            class="filter-select">
+            <option value="all">Tous les types</option>
+            <option value="standard">Standard</option>
+            <option value="premium">Premium</option>
+            <option value="organic">Bio</option>
+            <option value="fairtrade">Fair Trade</option>
+          </select>
+        </div>
+
+        <button class="btn-filter" (click)="resetFilters()">
+          <span class="btn-icon">🔄</span>
+          <span *ngIf="!isMobileView">Réinitialiser</span>
+          <span *ngIf="isMobileView">Reset</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Certifications Grid -->
-    <div class="certifications-grid">
+    <div class="certifications-grid" [class.mobile-grid]="isMobileView" [class.tablet-grid]="isTabletView">
       <div
         *ngFor="let cert of filteredCertifications"
         class="certification-card"
-        [routerLink]="['/producer/certification', cert.id]"
+        (click)="viewCertificationDetails(cert.id)"
         [class.draft]="cert.status === 'draft'"
         [class.active]="cert.status === 'active'"
         [class.completed]="cert.status === 'completed'"
+        [class.mobile-card]="isMobileView"
+        [class.tablet-card]="isTabletView"
       >
         <!-- Card Header -->
         <div class="card-header">
           <div class="product-info">
             <div class="product-name-wrapper">
-              <h3 class="product-name">{{ cert.productName }}</h3>
-              <span class="certification-type-tag">
+              <!-- CORRECTION: Parenthèses autour de l'expression ternaire -->
+              <h3 class="product-name">
+                {{ isMobileView ? (cert.productName | slice:0:25) : cert.productName }}
+                {{ isMobileView && cert.productName.length > 25 ? '...' : '' }}
+              </h3>
+              <span class="certification-type-tag" *ngIf="!isMobileView">
                 {{ getCertificationTypeText(cert.certificationType) }}
               </span>
+              <span class="certification-type-icon" *ngIf="isMobileView">
+                {{ getCertificationIcon(cert.certificationType) }}
+              </span>
             </div>
-            <p class="product-category">
+            <p class="product-category" *ngIf="!isMobileView">
               <span class="category-icon">🏭</span>
               {{ cert.producerName }}
+            </p>
+            <p class="product-category mobile-only" *ngIf="isMobileView">
+              <span class="category-icon">🏷️</span>
+              {{ getCertificationTypeText(cert.certificationType) }}
             </p>
           </div>
           <div class="status-section">
             <div class="status-badge" [class]="cert.status">
-              <span class="badge-icon">
-                <ng-container [ngSwitch]="cert.status">
-                  <span *ngSwitchCase="'draft'">📝</span>
-                  <span *ngSwitchCase="'active'">⚡</span>
-                  <span *ngSwitchCase="'completed'">✅</span>
-                  <span *ngSwitchDefault>📋</span>
-                </ng-container>
-              </span>
-              {{ getStatusText(cert.status) }}
+              <span class="badge-icon">{{ getStatusIcon(cert.status) }}</span>
+              <span class="status-text" *ngIf="!isMobileView">{{ getStatusText(cert.status) }}</span>
             </div>
-            <div class="days-remaining" *ngIf="cert.status === 'active'">
+            <div class="days-remaining" *ngIf="cert.status === 'active' && !isMobileView">
               <span class="days-icon">📅</span>
-              {{ getDaysRemaining(cert) }} jours restants
+              {{ getDaysRemaining(cert) }}j
+            </div>
+            <div class="days-remaining mobile-only" *ngIf="cert.status === 'active' && isMobileView">
+              <span class="days-icon">⏳</span>
+              {{ getDaysRemaining(cert) }}j
             </div>
           </div>
         </div>
@@ -142,12 +221,12 @@
           </div>
         </div>
 
-        <!-- Stats -->
-        <div class="card-stats">
+        <!-- Stats - Responsive -->
+        <div class="card-stats" [class.mobile-stats]="isMobileView">
           <div class="stat-item">
             <div class="stat-icon">🎯</div>
             <div class="stat-content">
-              <span class="stat-label">Checkpoints</span>
+              <span class="stat-label">{{ isMobileView ? 'CP' : 'Checkpoints' }}</span>
               <span class="stat-value"
                 >{{ cert.completedCheckpoints }}/{{ cert.totalCheckpoints }}</span
               >
@@ -157,12 +236,12 @@
           <div class="stat-item">
             <div class="stat-icon">⏱️</div>
             <div class="stat-content">
-              <span class="stat-label">Durée</span>
-              <span class="stat-value">{{ cert.durationDays }} jours</span>
+              <span class="stat-label">{{ isMobileView ? 'Durée' : 'Durée' }}</span>
+              <span class="stat-value">{{ cert.durationDays }}j</span>
             </div>
           </div>
 
-          <div class="stat-item">
+          <div class="stat-item" *ngIf="!isMobileView || cert.verificationScore">
             <div class="stat-icon">⭐</div>
             <div class="stat-content">
               <span class="stat-label">Score</span>
@@ -170,29 +249,33 @@
             </div>
           </div>
 
-          <div class="stat-item">
+          <div class="stat-item" *ngIf="!isMobileView">
             <div class="stat-icon">⛓️</div>
             <div class="stat-content">
-              <span class="stat-label">Transactions</span>
+              <span class="stat-label">TX</span>
               <span class="stat-value">{{ (cert.blockchainTransactions || []).length }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Timeline -->
-        <div class="timeline-section">
+        <!-- Timeline - Responsive -->
+        <div class="timeline-section" [class.mobile-timeline]="isMobileView">
           <div class="timeline-item">
-            <span class="timeline-label">Début</span>
-            <span class="timeline-value">{{ cert.startDate | date: 'dd/MM/yyyy' }}</span>
+            <span class="timeline-label">{{ isMobileView ? 'Début' : 'Début' }}</span>
+            <span class="timeline-value">{{ cert.startDate | date: isMobileView ? 'dd/MM' : 'dd/MM/yyyy' }}</span>
           </div>
           <div class="timeline-item">
-            <span class="timeline-label">Fin estimée</span>
-            <span class="timeline-value">{{ cert.estimatedEndDate | date: 'dd/MM/yyyy' }}</span>
+            <span class="timeline-label">{{ isMobileView ? 'Fin' : 'Fin estimée' }}</span>
+            <span class="timeline-value">{{ cert.estimatedEndDate | date: isMobileView ? 'dd/MM' : 'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="timeline-item mobile-only" *ngIf="isMobileView && cert.status === 'active'">
+            <span class="timeline-label">Prochain</span>
+            <span class="timeline-value">J{{ getNextCheckpointDay(cert) }}</span>
           </div>
         </div>
 
         <!-- Next Checkpoint -->
-        <div class="next-checkpoint" *ngIf="cert.status === 'active'">
+        <div class="next-checkpoint" *ngIf="cert.status === 'active' && !isMobileView">
           <div class="next-checkpoint-info">
             <span class="next-icon">👉</span>
             <div class="next-details">
@@ -205,15 +288,25 @@
           </button>
         </div>
 
+        <!-- Mobile Next Checkpoint - Simplified -->
+        <div class="mobile-next-checkpoint" *ngIf="cert.status === 'active' && isMobileView">
+          <button class="btn-continue-mobile" (click)="continueCertification($event, cert.id)">
+            <span class="btn-icon">▶️</span>
+            <span>Continuer</span>
+          </button>
+        </div>
+
         <!-- Action Buttons -->
         <div class="card-actions" *ngIf="cert.status === 'draft'">
           <button class="btn-action btn-start" (click)="startCertification($event, cert.id)">
             <span class="btn-icon">🚀</span>
-            Démarrer
+            <span *ngIf="!isMobileView">Démarrer</span>
+            <span *ngIf="isMobileView">Démarrer</span>
           </button>
           <button class="btn-action btn-edit" (click)="editCertification($event, cert.id)">
             <span class="btn-icon">✏️</span>
-            Modifier
+            <span *ngIf="!isMobileView">Modifier</span>
+            <span *ngIf="isMobileView">Edit</span>
           </button>
         </div>
       </div>
@@ -228,22 +321,27 @@
             <div class="shape shape-3"></div>
           </div>
         </div>
-        <h3 class="empty-title">Aucune certification trouvée</h3>
-        <p class="empty-description">
+        <h3 class="empty-title">
+          {{ isMobileView ? 'Aucune certification' : 'Aucune certification trouvée' }}
+        </h3>
+        <p class="empty-description" *ngIf="!isMobileView">
           Commencez par démarrer une certification pour vos produits
           <br />
           et suivez leur progression en temps réel.
         </p>
+        <p class="empty-description" *ngIf="isMobileView">
+          Démarrez votre première certification
+        </p>
         <button class="btn-primary" routerLink="/producer/certification/start">
           <span class="btn-icon">🚀</span>
-          Démarrer votre première certification
+          <span>{{ isMobileView ? 'Démarrer' : 'Démarrer votre première certification' }}</span>
         </button>
       </div>
 
       <!-- Loading State -->
       <div *ngIf="isLoading" class="loading-state">
         <div class="loading-spinner"></div>
-        <p class="loading-text">Chargement des certifications...</p>
+        <p class="loading-text">Chargement...</p>
       </div>
     </div>
   </main>

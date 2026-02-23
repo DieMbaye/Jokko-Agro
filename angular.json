@@ -56,7 +56,8 @@
               "buildTarget": "jokko-agro:build:production"
             },
             "development": {
-              "buildTarget": "jokko-agro:build:development"
+              "buildTarget": "jokko-agro:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

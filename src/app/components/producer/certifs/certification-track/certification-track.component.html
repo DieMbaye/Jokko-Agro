@@ -9,7 +9,7 @@
       <div class="header-title">
         <h1>{{ certification?.productName }}</h1>
         <div class="certification-badge" [class]="certification?.status">
-          {{ getStatusText(certification?.status || '') }}
+          {{ getStatusText(certification?.status || "") }}
         </div>
       </div>
     </div>
@@ -25,34 +25,47 @@
         <div class="stat">
           <span class="stat-label">Checkpoints</span>
           <span class="stat-value">
-            {{ certification?.completedCheckpoints || 0 }}/{{ certification?.totalCheckpoints || 0 }}
+            {{ certification?.completedCheckpoints || 0 }}/{{
+              certification?.totalCheckpoints || 0
+            }}
           </span>
         </div>
 
         <div class="stat">
           <span class="stat-label">Score</span>
-          <span class="stat-value">{{ certification?.verificationScore || 0 }}/100</span>
+          <span class="stat-value"
+            >{{ certification?.verificationScore || 0 }}/100</span
+          >
         </div>
       </div>
 
       <div class="progress-bar">
-        <div class="progress-fill" [style.width.%]="certification?.progress || 0"></div>
+        <div
+          class="progress-fill"
+          [style.width.%]="certification?.progress || 0"
+        ></div>
       </div>
 
       <div class="timeline-info">
         <div class="timeline-item">
           <span class="timeline-label">Début:</span>
-          <span class="timeline-value">{{ certification?.startDate | date:'dd/MM/yyyy' }}</span>
+          <span class="timeline-value">{{
+            certification?.startDate | date: "dd/MM/yyyy"
+          }}</span>
         </div>
 
         <div class="timeline-item">
           <span class="timeline-label">Fin estimée:</span>
-          <span class="timeline-value">{{ certification?.estimatedEndDate | date:'dd/MM/yyyy' }}</span>
+          <span class="timeline-value">{{
+            certification?.estimatedEndDate | date: "dd/MM/yyyy"
+          }}</span>
         </div>
 
         <div class="timeline-item">
           <span class="timeline-label">Durée:</span>
-          <span class="timeline-value">{{ certification?.durationDays }} jours</span>
+          <span class="timeline-value"
+            >{{ certification?.durationDays }} jours</span
+          >
         </div>
       </div>
     </div>
@@ -65,17 +78,21 @@
       <h2>Points de contrôle</h2>
 
       <div class="checkpoints-timeline">
-        <div *ngFor="let checkpoint of certification?.checkpoints; let i = index"
-             class="checkpoint-card"
-             [class.completed]="checkpoint.completed"
-             [class.current]="i === (certification?.currentStep || 1) - 1"
-             [class.upcoming]="i > (certification?.currentStep || 1) - 1">
-
+        <div
+          *ngFor="let checkpoint of certification?.checkpoints; let i = index"
+          class="checkpoint-card"
+          [class.completed]="checkpoint.completed"
+          [class.current]="i === (certification?.currentStep || 1) - 1"
+          [class.upcoming]="i > (certification?.currentStep || 1) - 1"
+        >
           <div class="checkpoint-header">
             <!-- Checkpoint Number -->
             <div class="checkpoint-number">
               <div class="number">{{ i + 1 }}</div>
-              <div class="status-indicator" [class]="getCheckpointStatus(checkpoint)"></div>
+              <div
+                class="status-indicator"
+                [class]="getCheckpointStatus(checkpoint)"
+              ></div>
             </div>
 
             <!-- Checkpoint Info -->
@@ -91,22 +108,26 @@
 
                 <span class="meta-item" *ngIf="checkpoint.completedAt">
                   <span class="meta-icon">✓</span>
-                  {{ checkpoint.completedAt | date:'dd/MM/yyyy' }}
+                  {{ checkpoint.completedAt | date: "dd/MM/yyyy" }}
                 </span>
               </div>
             </div>
 
             <!-- Checkpoint Actions -->
             <div class="checkpoint-actions">
-              <button *ngIf="showCompleteButton(checkpoint)"
-                      class="btn-complete"
-                      (click)="openCheckpointModal(checkpoint, i)">
+              <button
+                *ngIf="showCompleteButton(checkpoint)"
+                class="btn-complete"
+                (click)="openCheckpointModal(checkpoint, i)"
+              >
                 {{ getButtonText(checkpoint) }}
               </button>
 
-              <button *ngIf="checkpoint.completed"
-                      class="btn-view"
-                      (click)="viewCheckpointDetails(checkpoint)">
+              <button
+                *ngIf="checkpoint.completed"
+                class="btn-view"
+                (click)="viewCheckpointDetails(checkpoint)"
+              >
                 Voir détails
               </button>
             </div>
@@ -118,10 +139,12 @@
               <!-- Photo -->
               <div class="detail-item" *ngIf="checkpoint.photoUrl">
                 <span class="detail-label">Photo:</span>
-                <img [src]="checkpoint.photoUrl"
-                     alt="Checkpoint photo"
-                     class="checkpoint-photo"
-                     (click)="viewPhoto(checkpoint.photoUrl)">
+                <img
+                  [src]="checkpoint.photoUrl"
+                  alt="Checkpoint photo"
+                  class="checkpoint-photo"
+                  (click)="viewPhoto(checkpoint.photoUrl)"
+                />
               </div>
 
               <!-- Location -->
@@ -134,15 +157,26 @@
               </div>
 
               <!-- Blockchain Transaction -->
-              <div class="detail-item" *ngIf="checkpoint.blockchainTransactionId">
+              <div
+                class="detail-item"
+                *ngIf="checkpoint.blockchainTransactionId"
+              >
                 <span class="detail-label">Transaction:</span>
-                <a [href]="getEtherscanUrl(checkpoint.blockchainTransactionId)"
-                   target="_blank"
-                   class="blockchain-link">
+                <a
+                  [href]="getEtherscanUrl(checkpoint.blockchainTransactionId)"
+                  target="_blank"
+                  class="blockchain-link"
+                >
                   {{ formatTxHash(checkpoint.blockchainTransactionId) }}
-                  <span class="verification-badge"
-                        [class.verified]="checkpoint.blockchainVerified">
-                    {{ checkpoint.blockchainVerified ? '✓ Vérifié' : '⏳ En attente' }}
+                  <span
+                    class="verification-badge"
+                    [class.verified]="checkpoint.blockchainVerified"
+                  >
+                    {{
+                      checkpoint.blockchainVerified
+                        ? "✓ Vérifié"
+                        : "⏳ En attente"
+                    }}
                   </span>
                 </a>
               </div>
@@ -166,7 +200,9 @@
         <div class="info-grid">
           <div class="info-item">
             <span class="info-label">Type:</span>
-            <span class="info-value">{{ certification?.certificationType | titlecase }}</span>
+            <span class="info-value">{{
+              certification?.certificationType | titlecase
+            }}</span>
           </div>
 
           <div class="info-item">
@@ -181,7 +217,9 @@
 
           <div class="info-item">
             <span class="info-label">Date création:</span>
-            <span class="info-value">{{ certification?.createdAt | date:'dd/MM/yyyy' }}</span>
+            <span class="info-value">{{
+              certification?.createdAt | date: "dd/MM/yyyy"
+            }}</span>
           </div>
         </div>
       </div>
@@ -192,12 +230,18 @@
         <div class="blockchain-stats">
           <div class="stat">
             <span class="stat-label">Transactions</span>
-            <span class="stat-value">{{ certification?.blockchainTransactions?.length || 0 }}</span>
+            <span class="stat-value">{{
+              certification?.blockchainTransactions?.length || 0
+            }}</span>
           </div>
 
           <div class="stat">
             <span class="stat-label">Vérifiées</span>
-            <span class="stat-value">{{ getVerifiedCount() }}/{{ certification?.totalCheckpoints }}</span>
+            <span class="stat-value"
+              >{{ getVerifiedCount() }}/{{
+                certification?.totalCheckpoints
+              }}</span
+            >
           </div>
 
           <div class="stat">
@@ -211,9 +255,11 @@
           Vérifier sur Blockchain
         </button>
 
-        <button *ngIf="hasMultipleTransactions()"
-                class="btn-outline-small"
-                (click)="viewAllTransactions()">
+        <button
+          *ngIf="hasMultipleTransactions()"
+          class="btn-outline-small"
+          (click)="viewAllTransactions()"
+        >
           Voir toutes les transactions ({{ getTransactionCount() }})
         </button>
       </div>
@@ -222,9 +268,11 @@
       <div class="actions-card">
         <h3>Actions</h3>
         <div class="action-buttons">
-          <button class="btn-action"
-                  (click)="viewCertificate()"
-                  [disabled]="certification?.status !== 'completed'">
+          <button
+            class="btn-action"
+            (click)="viewCertificate()"
+            [disabled]="certification?.status !== 'completed'"
+          >
             <span class="btn-icon">📄</span>
             Voir certificat
           </button>
@@ -273,18 +321,26 @@
           </div>
 
           <!-- Photo Upload Section -->
+          <!-- certification-track.component.html -->
+          <!-- MODIFIER la section photo-upload -->
+
           <div class="photo-upload">
             <h4>Photo du produit</h4>
-            <div class="upload-area"
-                 (click)="triggerPhotoUpload()"
-                 [class.has-photo]="checkpointPhotoPreview">
-
-              <input #photoInput
-                     type="file"
-                     accept="image/*"
-                     capture="environment"
-                     (change)="onPhotoSelected($event)"
-                     class="hidden-input">
+            <div
+              class="upload-area"
+              (click)="triggerPhotoUpload()"
+              [class.has-photo]="checkpointPhotoPreview"
+              [class.scanning]="isScanning"
+              #uploadArea
+            >
+              <input
+                #photoInput
+                type="file"
+                accept="image/*"
+                capture="environment"
+                (change)="onPhotoSelected($event)"
+                class="hidden-input"
+              />
 
               <!-- Upload Placeholder -->
               <div *ngIf="!checkpointPhotoPreview" class="upload-placeholder">
@@ -293,12 +349,210 @@
                 <small>Utilisez l'appareil photo</small>
               </div>
 
-              <!-- Photo Preview -->
-              <div *ngIf="checkpointPhotoPreview" class="photo-preview">
-                <img [src]="checkpointPhotoPreview" alt="Photo preview">
-                <button type="button" class="remove-photo" (click)="removePhoto(); $event.stopPropagation()">
+              <!-- Photo Preview AVEC SCAN INTÉGRÉ -->
+              <div
+                *ngIf="checkpointPhotoPreview"
+                class="photo-preview scan-container"
+                [class.scan-active]="isScanning"
+              >
+                <img
+                  [src]="checkpointPhotoPreview"
+                  alt="Photo preview"
+                  class="scan-image"
+                />
+
+                <!-- Effets de scan superposés -->
+                <div class="scan-overlay" *ngIf="isScanning">
+                  <div class="scan-line-animation"></div>
+                  <div class="scan-particles">
+                    <div
+                      class="particle"
+                      *ngFor="let particle of scanParticles"
+                      [style.left.%]="particle.left"
+                      [style.top.%]="particle.top"
+                      [style.animation-delay]="particle.delay + 'ms'"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- Indicateur de scan -->
+                <div class="scan-indicator" *ngIf="isScanning">
+                  <div class="scanner-line"></div>
+                  <div class="scan-progress">
+                    <div class="progress-text">Analyse en cours...</div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        [style.width.%]="scanProgress"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  class="remove-photo"
+                  (click)="removePhoto(); $event.stopPropagation()"
+                >
                   ×
                 </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Résultat de validation IA amélioré -->
+          <div
+            class="validation-result-enhanced"
+            *ngIf="imageValidationResult"
+            [class]="'validation-' + imageValidationResult.action"
+            [style.animation]="'resultPopIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)'"
+          >
+            <!-- En-tête du résultat -->
+            <div class="result-header">
+              <div class="result-icon-wrapper">
+                <div
+                  class="result-icon"
+                  [class]="'icon-' + imageValidationResult.action"
+                >
+                  {{
+                    imageValidationResult.action === "accept"
+                      ? "✓"
+                      : imageValidationResult.action === "review"
+                        ? "⚠"
+                        : "✗"
+                  }}
+                </div>
+              </div>
+
+              <div class="result-title">
+                <h4>{{ getValidationTitle() }}</h4>
+                <div class="result-similarity">
+                  <span class="similarity-value"
+                    >{{ imageValidationResult.similarity.toFixed(1) }}%</span
+                  >
+                  <span class="similarity-label">de similarité</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Barre de similarité animée -->
+            <div class="similarity-meter">
+              <div class="meter-track">
+                <div
+                  class="meter-fill"
+                  [style.width.%]="imageValidationResult.similarity"
+                  [style.background]="
+                    getSimilarityGradient(imageValidationResult.similarity)
+                  "
+                ></div>
+              </div>
+              <div class="meter-markers">
+                <span
+                  class="marker"
+                  [class.active]="imageValidationResult.similarity >= 85"
+                  >✅ Excellent</span
+                >
+                <span
+                  class="marker"
+                  [class.active]="
+                    imageValidationResult.similarity >= 70 &&
+                    imageValidationResult.similarity < 85
+                  "
+                  >⚠️ Bon</span
+                >
+                <span
+                  class="marker"
+                  [class.active]="imageValidationResult.similarity < 70"
+                  >❌ À revoir</span
+                >
+              </div>
+            </div>
+
+            <!-- Liste des avertissements -->
+            <div
+              class="warnings-list"
+              *ngIf="imageValidationResult.warnings.length > 0"
+            >
+              <div
+                class="warning-item"
+                *ngFor="let warning of imageValidationResult.warnings"
+              >
+                <span class="warning-bullet">•</span>
+                <span class="warning-text">{{ warning }}</span>
+              </div>
+            </div>
+
+            <!-- Détails techniques -->
+            <div class="technical-details">
+              <details>
+                <summary>🔬 Détails de l'analyse</summary>
+                <div class="details-grid">
+                  <div class="detail-cell">
+                    <span class="detail-label">Similarité cosinus</span>
+                    <span class="detail-value">
+                      {{
+                        (
+                          imageValidationResult.details.structuralSimilarity *
+                          100
+                        ).toFixed(1)
+                      }}%
+                    </span>
+                  </div>
+                  <div class="detail-cell">
+                    <span class="detail-label">Métadonnées EXIF</span>
+                    <span
+                      class="detail-value"
+                      [class.valid]="imageValidationResult.details.exifValid"
+                    >
+                      {{
+                        imageValidationResult.details.exifValid
+                          ? "✓ Valides"
+                          : "⚠️ Manquantes"
+                      }}
+                    </span>
+                  </div>
+                  <div class="detail-cell">
+                    <span class="detail-label">Source de l'image</span>
+                    <span
+                      class="detail-value"
+                      [class.warning]="
+                        imageValidationResult.details.isDownloadedImage
+                      "
+                    >
+                      {{
+                        imageValidationResult.details.isDownloadedImage
+                          ? "⚠️ Téléchargée"
+                          : "✓ Originale"
+                      }}
+                    </span>
+                  </div>
+                  <div class="detail-cell">
+                    <span class="detail-label">Éclairage</span>
+                    <span
+                      class="detail-value"
+                      [class.valid]="
+                        imageValidationResult.details.lightingConsistent
+                      "
+                    >
+                      {{
+                        imageValidationResult.details.lightingConsistent
+                          ? "✓ Cohérent"
+                          : "⚠️ Différent"
+                      }}
+                    </span>
+                  </div>
+                </div>
+              </details>
+            </div>
+
+            <!-- Badge blockchain -->
+            <div
+              class="blockchain-badge"
+              *ngIf="imageValidationResult.action === 'accept'"
+            >
+              <div class="badge-content">
+                <span class="badge-icon">⛓️</span>
+                <span class="badge-text">Preuve blockchain prête</span>
               </div>
             </div>
           </div>
@@ -316,7 +570,9 @@
               </div>
 
               <div class="acquisition-message">
-                <strong>{{ locationStatus || 'Recherche du signal GPS...' }}</strong>
+                <strong>{{
+                  locationStatus || "Recherche du signal GPS..."
+                }}</strong>
                 <small>Restez immobile, le GPS affine sa précision</small>
                 <div class="acquisition-tip">
                   📍 Placez-vous dans un endroit dégagé
@@ -330,43 +586,64 @@
               <div *ngIf="currentLocation" class="location-coordinates">
                 <div class="coordinates-box">
                   <span class="coord-label">Latitude:</span>
-                  <span class="coord-value">{{ currentLocation.lat.toFixed(6) }}</span>
+                  <span class="coord-value">{{
+                    currentLocation.lat.toFixed(6)
+                  }}</span>
                 </div>
 
                 <div class="coordinates-box">
                   <span class="coord-label">Longitude:</span>
-                  <span class="coord-value">{{ currentLocation.lng.toFixed(6) }}</span>
+                  <span class="coord-value">{{
+                    currentLocation.lng.toFixed(6)
+                  }}</span>
                 </div>
 
                 <!-- Accuracy Indicator -->
-                <div class="accuracy-indicator"
-                     [ngClass]="getAccuracyClass(locationAccuracy)">
-
+                <div
+                  class="accuracy-indicator"
+                  [ngClass]="getAccuracyClass(locationAccuracy)"
+                >
                   <div class="accuracy-header">
                     <span class="accuracy-icon">
-                      {{ locationAccuracy <= 5 ? '🎯' :
-                         locationAccuracy <= 15 ? '✓' :
-                         locationAccuracy <= 30 ? '⚠️' :
-                         locationAccuracy <= 50 ? '⚡' : '❌' }}
+                      {{
+                        locationAccuracy <= 5
+                          ? "🎯"
+                          : locationAccuracy <= 15
+                            ? "✓"
+                            : locationAccuracy <= 30
+                              ? "⚠️"
+                              : locationAccuracy <= 50
+                                ? "⚡"
+                                : "❌"
+                      }}
                     </span>
-                    <span class="accuracy-value">{{ locationAccuracy.toFixed(0) || '0' }}m</span>
-                    <span class="accuracy-label">{{ getAccuracyMessage(locationAccuracy) }}</span>
+                    <span class="accuracy-value"
+                      >{{ locationAccuracy.toFixed(0) || "0" }}m</span
+                    >
+                    <span class="accuracy-label">{{
+                      getAccuracyMessage(locationAccuracy)
+                    }}</span>
                   </div>
 
                   <!-- Accuracy Meter -->
                   <div class="accuracy-meter">
-                    <div class="accuracy-meter-fill"
-                         [style.width.%]="getAccuracyPercentage(locationAccuracy)"
-                         [style.background]="getAccuracyColor(locationAccuracy)">
-                    </div>
+                    <div
+                      class="accuracy-meter-fill"
+                      [style.width.%]="getAccuracyPercentage(locationAccuracy)"
+                      [style.background]="getAccuracyColor(locationAccuracy)"
+                    ></div>
                   </div>
 
                   <!-- Accuracy Feedback -->
                   <div class="accuracy-feedback" *ngIf="locationAccuracy > 15">
-                    <span *ngIf="locationAccuracy > 15 && locationAccuracy <= 30">
+                    <span
+                      *ngIf="locationAccuracy > 15 && locationAccuracy <= 30"
+                    >
                       ⚠️ Précision moyenne - Acceptable pour la certification
                     </span>
-                    <span *ngIf="locationAccuracy > 30 && locationAccuracy <= 50">
+                    <span
+                      *ngIf="locationAccuracy > 30 && locationAccuracy <= 50"
+                    >
                       📡 Signal faible - Déplacez-vous pour améliorer
                     </span>
                     <span *ngIf="locationAccuracy > 50">
@@ -377,41 +654,70 @@
               </div>
 
               <!-- Location Message -->
-              <div *ngIf="locationMessage"
-                   class="location-message"
-                   [ngClass]="'location-message-' + locationMessage.type">
+              <div
+                *ngIf="locationMessage"
+                class="location-message"
+                [ngClass]="'location-message-' + locationMessage.type"
+              >
                 <span class="message-icon">
-                  {{ locationMessage.type === 'success' ? '✅' :
-                     locationMessage.type === 'warning' ? '⚠️' :
-                     locationMessage.type === 'error' ? '❌' : '📢' }}
+                  {{
+                    locationMessage.type === "success"
+                      ? "✅"
+                      : locationMessage.type === "warning"
+                        ? "⚠️"
+                        : locationMessage.type === "error"
+                          ? "❌"
+                          : "📢"
+                  }}
                 </span>
                 <span class="message-text">{{ locationMessage.text }}</span>
               </div>
 
               <!-- Location Actions -->
               <div class="location-actions">
-                <button class="btn-location"
-                        [ngClass]="{ 'btn-primary': !currentLocation, 'btn-secondary': currentLocation }"
-                        (click)="getCurrentLocation()"
-                        [disabled]="isGettingLocation">
+                <button
+                  class="btn-location"
+                  [ngClass]="{
+                    'btn-primary': !currentLocation,
+                    'btn-secondary': currentLocation,
+                  }"
+                  (click)="getCurrentLocation()"
+                  [disabled]="isGettingLocation"
+                >
                   <span class="btn-icon">
-                    {{ isGettingLocation ? '⏳' : currentLocation ? '🔄' : '📍' }}
+                    {{
+                      isGettingLocation ? "⏳" : currentLocation ? "🔄" : "📍"
+                    }}
                   </span>
-                  {{ isGettingLocation ? 'Recherche...' :
-                     currentLocation ? 'Mettre à jour' : 'Obtenir ma position' }}
+                  {{
+                    isGettingLocation
+                      ? "Recherche..."
+                      : currentLocation
+                        ? "Mettre à jour"
+                        : "Obtenir ma position"
+                  }}
                 </button>
 
                 <!-- Improve Accuracy Button -->
-                <button *ngIf="currentLocation && locationAccuracy > 20 && !isGettingLocation"
-                        class="btn-improve"
-                        (click)="improveLocationAccuracy()">
+                <button
+                  *ngIf="
+                    currentLocation &&
+                    locationAccuracy > 20 &&
+                    !isGettingLocation
+                  "
+                  class="btn-improve"
+                  (click)="improveLocationAccuracy()"
+                >
                   <span class="btn-icon">🎯</span>
                   Améliorer la précision
                 </button>
               </div>
 
               <!-- No Location State -->
-              <div *ngIf="!currentLocation && !isGettingLocation" class="no-location">
+              <div
+                *ngIf="!currentLocation && !isGettingLocation"
+                class="no-location"
+              >
                 <div class="no-location-icon">📍</div>
                 <p>Aucune position obtenue</p>
                 <small>Cliquez sur "Obtenir ma position" pour continuer</small>
@@ -423,10 +729,17 @@
               <details>
                 <summary>📌 Comment améliorer la précision GPS ?</summary>
                 <ul>
-                  <li>🌳 Placez-vous dans un espace dégagé, loin des bâtiments</li>
+                  <li>
+                    🌳 Placez-vous dans un espace dégagé, loin des bâtiments
+                  </li>
                   <li>📱 Tenez le téléphone à la main, pas dans une poche</li>
-                  <li>⏳ Restez immobile pendant l'acquisition (5-10 secondes)</li>
-                  <li>📡 Activez le WiFi même sans connexion (améliore la précision)</li>
+                  <li>
+                    ⏳ Restez immobile pendant l'acquisition (5-10 secondes)
+                  </li>
+                  <li>
+                    📡 Activez le WiFi même sans connexion (améliore la
+                    précision)
+                  </li>
                   <li>🔋 Désactivez le mode économie d'énergie</li>
                 </ul>
               </details>
@@ -436,15 +749,20 @@
           <!-- Notes Section -->
           <div class="notes-section">
             <h4>Notes (optionnel)</h4>
-            <textarea [(ngModel)]="checkpointNotes"
-                      placeholder="Ajoutez des observations sur cette étape..."
-                      rows="3">
+            <textarea
+              [(ngModel)]="checkpointNotes"
+              placeholder="Ajoutez des observations sur cette étape..."
+              rows="3"
+            >
             </textarea>
           </div>
 
           <!-- Validation Errors -->
           <div class="validation-errors" *ngIf="validationErrors.length > 0">
-            <div *ngFor="let error of validationErrors" class="validation-error">
+            <div
+              *ngFor="let error of validationErrors"
+              class="validation-error"
+            >
               ⚠️ {{ error }}
             </div>
           </div>
@@ -455,10 +773,11 @@
               Annuler
             </button>
 
-            <button class="btn-primary"
-                    (click)="submitCheckpoint()"
-                    [disabled]="!canSubmitCheckpoint() || isSubmitting">
-
+            <button
+              class="btn-primary"
+              (click)="submitCheckpoint()"
+              [disabled]="!canSubmitCheckpoint() || isSubmitting"
+            >
               <span *ngIf="!isSubmitting">
                 <span class="btn-icon">✓</span>
                 Enregistrer

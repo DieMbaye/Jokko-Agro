@@ -34,7 +34,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   cartItemCount = 0;
   private cartSubscription?: Subscription;
 
-  // 🔥 NOUVEAU : État du chatbot
+  // État du chatbot
   isChatbotOpen = false;
 
   // Configurations par défaut
@@ -63,7 +63,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
       { label: 'Messages', icon: '✉️', route: '/buyer/messages', badge: 2 },
       { label: 'Favoris', icon: '❤️', route: '/buyer/favorites', badge: 5 },
       { label: 'Paramètres', icon: '⚙️', route: '/buyer/settings' },
-      // 🔥 NOUVEAU : Item chatbot dans la sidebar
       { label: 'Assistant IA', icon: '🤖', route: '#', disabled: false }
     ]
   };
@@ -87,6 +86,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     // Surveiller les changements dans le panier
     this.setupCartMonitoring();
+
+    // ✅ CORRECTION : Appel de la méthode après initialisation
+    this.fixMobileClickArea();
   }
 
   ngOnDestroy() {
@@ -95,18 +97,36 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
   }
 
-  // 🔥 NOUVEAU : Toggle chatbot
+  // ✅ CORRECTION : Méthode séparée pour le mobile
+  private fixMobileClickArea() {
+    // Vérifier si on est sur mobile
+    if (window.innerWidth <= 768) {
+      setTimeout(() => {
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+          const el = item as HTMLElement;
+          el.style.pointerEvents = 'auto';
+          el.style.width = '48px';
+          el.style.minWidth = '48px';
+          el.style.maxWidth = '48px';
+          el.style.padding = '0';
+          el.style.margin = '0 4px';
+        });
+      }, 100);
+    }
+  }
+
+  // 🔥 Toggle chatbot
   toggleChatbot() {
     this.isChatbotOpen = !this.isChatbotOpen;
     console.log('🤖 Chatbot:', this.isChatbotOpen ? 'ouvert' : 'fermé');
 
-    // Émettre un événement pour le composant parent
     if (this.isChatbotOpen) {
       this.openChatbotWindow();
     }
   }
 
-  // 🔥 NOUVEAU : Ouvrir la fenêtre du chatbot
+  // 🔥 Ouvrir la fenêtre du chatbot
   private openChatbotWindow() {
     // Créer une fenêtre de chatbot simple
     const chatbotHTML = `
@@ -144,7 +164,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
   }
 
-  // 🔥 NOUVEAU : Ajouter les styles du chatbot
+  // 🔥 Ajouter les styles du chatbot
   private addChatbotStyles() {
     if (!document.querySelector('#chatbot-sidebar-styles')) {
       const style = document.createElement('style');
@@ -290,8 +310,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
     return this.config.type === 'producer' ? '👨‍🌾 Producteur' : '🛒 Acheteur';
   }
 
-
-
   getInitials(): string {
     if (!this.userData?.fullName) return 'U';
     return this.userData.fullName
@@ -318,16 +336,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
     return item.badge;
   }
 
-  // 🔥 NOUVEAU : Gérer le clic sur les items
+  // 🔥 Gérer le clic sur les items
   onItemClick(item: SidebarItem, event: Event) {
     if (item.label === 'Assistant IA') {
       event.preventDefault();
       this.toggleChatbot();
     }
   }
+
   getRoleColor(): string {
-  return this.config?.type === 'producer'
-    ? '#2e7d32' // Vert agricole (Producteur)
-    : '#1976d2'; // Bleu moderne (Acheteur)
-}
+    return this.config?.type === 'producer'
+      ? '#2e7d32'
+      : '#1976d2';
+  }
 }

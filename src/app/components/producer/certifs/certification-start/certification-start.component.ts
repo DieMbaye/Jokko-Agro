@@ -32,6 +32,30 @@ interface CertificationOption {
   icon: string;
 }
 
+// ⚠️ AJOUT: Type pour les clés d'engagement
+type CommitmentKey =
+  | 'photoConsent'
+  | 'locationConsent'
+  | 'timeCommitment'
+  | 'blockchainConsent'
+  | 'publishConsent';
+
+interface CommitmentAgreements {
+  photoConsent: boolean;
+  locationConsent: boolean;
+  timeCommitment: boolean;
+  blockchainConsent: boolean;
+  publishConsent: boolean;
+}
+
+// Interface pour la liste des engagements avec typage strict
+interface CommitmentItem {
+  id: CommitmentKey; // ⚠️ Utilisation du type spécifique
+  label: string;
+  description: string;
+  icon: string;
+}
+
 @Component({
   selector: 'app-certification-start',
   standalone: true,
@@ -75,7 +99,8 @@ export class CertificationStartComponent implements OnInit {
     { id: 'seasonal', name: 'Saison', icon: '🌞' },
   ];
 
-  agreements = {
+  // Engagements
+  agreements: CommitmentAgreements = {
     photoConsent: false,
     locationConsent: false,
     timeCommitment: false,
@@ -83,12 +108,57 @@ export class CertificationStartComponent implements OnInit {
     publishConsent: false,
   };
 
+  // ⚠️ CORRECTION: Typage strict des engagements
+  commitmentsList: CommitmentItem[] = [
+    {
+      id: 'photoConsent',
+      label: 'Authenticité des photos',
+      description:
+        "Je m'engage à prendre des photos réelles et authentiques à chaque checkpoint",
+      icon: '📸',
+    },
+    {
+      id: 'locationConsent',
+      label: 'Partage de localisation',
+      description:
+        "J'accepte de partager ma localisation GPS pour chaque checkpoint",
+      icon: '📍',
+    },
+    {
+      id: 'timeCommitment',
+      label: 'Respect du calendrier',
+      description:
+        "Je m'engage à respecter rigoureusement le calendrier des checkpoints",
+      icon: '⏰',
+    },
+    {
+      id: 'blockchainConsent',
+      label: 'Enregistrement blockchain',
+      description:
+        "J'accepte l'enregistrement des preuves sur la blockchain Ethereum",
+      icon: '⛓️',
+    },
+    {
+      id: 'publishConsent',
+      label: 'Publication automatique',
+      description:
+        "J'accepte que le produit soit publié automatiquement après certification",
+      icon: '🚀',
+    },
+  ];
+
   isLoading = false;
+  allAgreementsAccepted = false;
+
+  // ⚠️ AJOUT: Pour utiliser Object.values dans le template
+  Object = Object;
 
   ngOnInit() {
     this.loadUserData();
     this.certificationTemplates =
       this.certificationService.getAvailableTemplates();
+    // Vérifier l'état initial
+    this.allAgreementsAccepted = this.areAllAgreementsAccepted();
   }
 
   loadUserData() {
@@ -126,10 +196,10 @@ export class CertificationStartComponent implements OnInit {
 
   isProductFormValid(): boolean {
     return (
-      !!this.productForm.name &&
+      !!this.productForm.name?.trim() &&
       !!this.productForm.category &&
-      !!this.productForm.description &&
-      !!this.productForm.location &&
+      !!this.productForm.description?.trim() &&
+      !!this.productForm.location?.trim() &&
       this.productForm.price > 0 &&
       this.productForm.quantity > 0
     );
@@ -151,8 +221,60 @@ export class CertificationStartComponent implements OnInit {
     return (
       this.isProductFormValid() &&
       !!this.selectedTemplateId &&
-      Object.values(this.agreements).every((agreement) => agreement)
+      Object.values(this.agreements).every((agreement) => agreement === true)
     );
+  }
+
+  /**
+   * ✅ BOUTON "ACCEPTER TOUT"
+   */
+  toggleAllAgreements() {
+    const newValue = !this.areAllAgreementsAccepted();
+
+    // Mettre à jour chaque engagement individuellement
+    this.agreements.photoConsent = newValue;
+    this.agreements.locationConsent = newValue;
+    this.agreements.timeCommitment = newValue;
+    this.agreements.blockchainConsent = newValue;
+    this.agreements.publishConsent = newValue;
+
+    this.allAgreementsAccepted = newValue;
+
+    if (newValue) {
+      this.showNotification(
+        'success',
+        '✅ Tous les engagements ont été acceptés',
+      );
+    }
+  }
+
+  /**
+   * ✅ Vérifie si tous les engagements sont acceptés
+   */
+  areAllAgreementsAccepted(): boolean {
+    return Object.values(this.agreements).every((value) => value === true);
+  }
+
+  /**
+   * ✅ Met à jour l'état global quand on coche/décoche individuellement
+   */
+  onAgreementChange() {
+    this.allAgreementsAccepted = this.areAllAgreementsAccepted();
+  }
+
+  /**
+   * ⚠️ AJOUT: Méthode pour accéder en toute sécurité aux valeurs des engagements
+   */
+  getAgreementValue(key: CommitmentKey): boolean {
+    return this.agreements[key];
+  }
+
+  /**
+   * ⚠️ AJOUT: Méthode pour mettre à jour en toute sécurité les valeurs des engagements
+   */
+  setAgreementValue(key: CommitmentKey, value: boolean): void {
+    this.agreements[key] = value;
+    this.onAgreementChange();
   }
 
   async startCertificationProcess() {
@@ -178,16 +300,23 @@ export class CertificationStartComponent implements OnInit {
         );
 
       if (certResult.success && certResult.certificationId) {
-        // Rediriger vers la page de suivi de certification
-        this.router.navigate(
-          ['/producer/certification', certResult.certificationId],
-          {
-            queryParams: {
-              newProduct: true,
-              productId: productResult.productId,
-            },
-          },
+        this.showNotification(
+          'success',
+          '✨ Certification démarrée avec succès !',
         );
+
+        // Rediriger vers la page de suivi de certification
+        setTimeout(() => {
+          this.router.navigate(
+            ['/producer/certification', certResult.certificationId],
+            {
+              queryParams: {
+                newProduct: true,
+                productId: productResult.productId,
+              },
+            },
+          );
+        }, 800);
       } else {
         throw new Error(certResult.error || 'Erreur démarrage certification');
       }
@@ -200,35 +329,6 @@ export class CertificationStartComponent implements OnInit {
     } finally {
       this.isLoading = false;
     }
-  }
-
-  private showErrorNotification(message: string) {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 1rem 1.5rem;
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      color: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 9999;
-      animation: slideInRight 0.3s ease;
-      max-width: 400px;
-    `;
-    notification.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 20px;">⚠️</span>
-        <span>${message}</span>
-      </div>
-    `;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-      notification.remove();
-    }, 5000);
   }
 
   private async createProductForCertification(): Promise<{
@@ -294,29 +394,6 @@ export class CertificationStartComponent implements OnInit {
 
       if (result.success) {
         console.log('Produit créé avec ID:', result.productId);
-
-        // Vérifier la création du produit
-        let product = null;
-        for (let i = 0; i < 5; i++) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          product = await this.firebaseService.getProductById(
-            result.productId!,
-          );
-
-          if (product) {
-            console.log('✅ Produit récupéré après tentative', i + 1);
-            break;
-          }
-        }
-
-        if (!product) {
-          console.error('❌ Impossible de récupérer le produit après création');
-          return {
-            success: true,
-            productId: result.productId,
-            error: 'Produit créé mais récupération différée',
-          };
-        }
       }
 
       return result;
@@ -329,13 +406,45 @@ export class CertificationStartComponent implements OnInit {
     }
   }
 
+  /**
+   * Notification succès
+   */
   private showNotification(
     type: 'success' | 'error' | 'info',
     message: string,
   ) {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
-    notification.textContent = message;
+
+    const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+
+    notification.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 22px;">${icon}</span>
+        <span style="font-weight: 500;">${message}</span>
+      </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      notification.remove();
+    }, 5000);
+  }
+
+  /**
+   * Notification erreur
+   */
+  private showErrorNotification(message: string) {
+    const notification = document.createElement('div');
+    notification.className = 'notification notification-error';
+    notification.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 22px;">⚠️</span>
+        <span style="font-weight: 500;">${message}</span>
+      </div>
+    `;
+
     document.body.appendChild(notification);
 
     setTimeout(() => {
@@ -345,24 +454,24 @@ export class CertificationStartComponent implements OnInit {
 
   getCategoryName(categoryId: string): string {
     const categories: { [key: string]: string } = {
-      vegetables: 'Légumes',
-      fruits: 'Fruits',
-      cereals: 'Céréales',
-      tubers: 'Tubercules',
-      legumes: 'Légumineuses',
-      spices: 'Épices',
-      dairy: 'Produits laitiers',
-      poultry: 'Volaille',
+      vegetables: '🥦 Légumes',
+      fruits: '🍎 Fruits',
+      cereals: '🌾 Céréales',
+      tubers: '🥔 Tubercules',
+      legumes: '🥜 Légumineuses',
+      spices: '🌶️ Épices',
+      dairy: '🥛 Produits laitiers',
+      poultry: '🐔 Volaille',
     };
     return categories[categoryId] || categoryId;
   }
 
   getCertificationsNames(certIds: string[]): string {
     const certNames: { [key: string]: string } = {
-      organic: 'Bio',
-      local: 'Local',
-      fairtrade: 'Équitable',
-      seasonal: 'Saison',
+      organic: '🌱 Bio',
+      local: '📍 Local',
+      fairtrade: '🤝 Équitable',
+      seasonal: '🌞 Saison',
     };
     return certIds.map((id) => certNames[id] || id).join(', ');
   }
@@ -371,7 +480,11 @@ export class CertificationStartComponent implements OnInit {
     if (!dateString) return '';
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('fr-FR');
+      return date.toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
     } catch {
       return dateString;
     }
@@ -382,9 +495,28 @@ export class CertificationStartComponent implements OnInit {
       standard: '✓',
       premium: '⭐',
       organic: '🌱',
+      express: '⚡',
     };
     return icons[type] || '📋';
   }
+
+  // À AJOUTER dans la classe CertificationStartComponent
+
+  /**
+   * ✅ Compte le nombre d'engagements acceptés
+   */
+  getAcceptedAgreementsCount(): number {
+    return Object.values(this.agreements).filter((value) => value === true)
+      .length;
+  }
+
+  /**
+   * ✅ Retourne le nombre total d'engagements
+   */
+  getTotalAgreementsCount(): number {
+    return this.commitmentsList.length;
+  }
+
 
   goBack() {
     this.router.navigate(['/producer/dashboard']);

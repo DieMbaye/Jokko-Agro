@@ -18,11 +18,15 @@ import {
   CertificationCheckpoint,
   CheckpointSubmissionResult,
 } from '../../../../services/certification.service';
-import {
-  GeolocationService,
-  LocationData,
-} from '../../../../services/geolocation.service';
 import { BlockchainService } from '../../../../blockchain/services/blockchain.service';
+import {
+  SmartGeolocationService,
+  LocationData,
+} from '../../../../services/smart-geolocation.service';
+import {
+  ImageComparisonResult,
+  ImageComparisonService,
+} from 'src/app/services/image-comparison.service';
 
 // Types
 interface LocationMessage {
@@ -53,7 +57,7 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly certificationService = inject(CertificationService);
-  private readonly geolocationService = inject(GeolocationService);
+  private readonly geolocationService = inject(SmartGeolocationService); // Garder le même nom pour compatibilité
   private readonly blockchainService = inject(BlockchainService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly ngZone = inject(NgZone);
@@ -69,7 +73,8 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
 
   private readonly LOCATION_THRESHOLDS =
     this.geolocationService.getThresholds();
-
+  private preheatedLocation: any = null;
+  private isPreheating = false;
   // State
   certificationId = '';
   certification: Certification | null = null;
@@ -97,10 +102,30 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
 
   // Validation
   validationErrors: string[] = [];
+  imageValidationResult: ImageComparisonResult | null = null;
 
-  // Lifecycle
+  scanParticles: Array<{ left: number; top: number; delay: number }> = [];
+  scanLines: Array<{ position: number; delay: number }> = [];
+
   ngOnInit(): void {
     this.loadCertificationFromRoute();
+    this.initScanParticles();
+    this.initScanLines();
+  }
+
+  private initScanParticles(): void {
+    this.scanParticles = Array.from({ length: 20 }, () => ({
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      delay: Math.random() * 2000,
+    }));
+  }
+
+  private initScanLines(): void {
+    this.scanLines = Array.from({ length: 3 }, (_, i) => ({
+      position: Math.random() * 100,
+      delay: i * 500,
+    }));
   }
 
   ngOnDestroy(): void {
@@ -172,6 +197,10 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
       this.currentCheckpointIndex = index;
       this.showCheckpointModal = true;
       this.resetCheckpointForm();
+      this.initScanParticles(); // <-- Réinitialiser pour une nouvelle animation
+      this.initScanLines();
+      // LANCER LE PRÉCHAUFFAGE IMMÉDIATEMENT
+      this.preheatLocation();
     }
   }
 
@@ -191,11 +220,10 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
     this.validationErrors = [];
   }
 
-  // ============== Photo Management ==============
+  isScanning = false;
+  scanProgress = 0;
 
-  triggerPhotoUpload(): void {
-    this.photoInput.nativeElement.click();
-  }
+  // MODIFIER la méthode onPhotoSelected
 
   onPhotoSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -206,8 +234,148 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
       if (this.validatePhoto(file)) {
         this.checkpointPhotoFile = file;
         this.generatePhotoPreview(file);
+
+        // Scanner l'image directement
+        this.scanImage();
       }
     }
+  }
+  private getPreviousCheckpoint(): CertificationCheckpoint | null {
+    if (!this.certification || this.currentCheckpointIndex === 0) {
+      return null;
+    }
+
+    // Récupérer le checkpoint précédent (index - 1)
+    const previousIndex = this.currentCheckpointIndex - 1;
+    return this.certification.checkpoints[previousIndex] || null;
+  }
+  // Dans certification-track.component.ts
+
+  // Dans certification-track.component.ts
+
+  // AJOUTER l'injection du service
+  private readonly imageComparisonService = inject(ImageComparisonService);
+
+  // CORRIGER la méthode scanImage
+  async scanImage(): Promise<void> {
+    if (!this.checkpointPhotoFile) return;
+
+    this.isScanning = true;
+    this.scanProgress = 0;
+    this.imageValidationResult = null;
+
+    const progressInterval = setInterval(() => {
+      if (this.scanProgress < 90 && this.isScanning) {
+        this.scanProgress += Math.random() * 15;
+        if (this.scanProgress > 90) this.scanProgress = 90;
+      }
+    }, 100);
+
+    try {
+      const previousCheckpoint = this.getPreviousCheckpoint();
+
+      if (!previousCheckpoint?.photoUrl) {
+        // Premier checkpoint
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        this.imageValidationResult = {
+          similarity: 100,
+          isValid: true,
+          warnings: [],
+          action: 'accept',
+          details: {
+            structuralSimilarity: 1,
+            featureSimilarity: 1,
+            colorConsistency: 1,
+            exifValid: true,
+            isDownloadedImage: false,
+            lightingConsistent: true,
+          },
+        };
+      } else {
+        // Utiliser le service de comparaison
+        const comparison = await this.imageComparisonService.compareImages(
+          this.checkpointPhotoFile,
+          previousCheckpoint.photoUrl,
+          {
+            previousCheckpointDate: previousCheckpoint.completedAt,
+            expectedGrowthDays:
+              this.currentCheckpoint!.daysFromStart -
+              previousCheckpoint.daysFromStart,
+            location: previousCheckpoint.location,
+          },
+        );
+
+        this.imageValidationResult = comparison;
+      }
+
+      this.scanProgress = 100;
+
+      setTimeout(() => {
+        this.isScanning = false;
+      }, 500);
+    } catch (error) {
+      console.error('❌ Erreur scan:', error);
+      this.handleError('Erreur scan image', error);
+      this.isScanning = false;
+    } finally {
+      clearInterval(progressInterval);
+    }
+  }
+
+  private simulateScanProgress(): void {
+    const interval = setInterval(() => {
+      if (this.scanProgress < 90) {
+        this.scanProgress += Math.random() * 15;
+      } else {
+        clearInterval(interval);
+      }
+    }, 100);
+  }
+
+  getValidationTitle(): string {
+    if (!this.imageValidationResult) return '';
+
+    switch (this.imageValidationResult.action) {
+      case 'accept':
+        return 'Image validée ✓';
+      case 'review':
+        return 'Analyse mitigée ⚠';
+      case 'reject':
+        return 'Image rejetée ✗';
+      default:
+        return "Résultat de l'analyse";
+    }
+  }
+
+  // AJOUTER cette méthode pour le gradient
+  getSimilarityGradient(similarity: number): string {
+    if (similarity >= 85) {
+      return 'linear-gradient(90deg, #10b981, #34d399, #6ee7b7)';
+    } else if (similarity >= 70) {
+      return 'linear-gradient(90deg, #f59e0b, #fbbf24, #fcd34d)';
+    } else {
+      return 'linear-gradient(90deg, #ef4444, #f87171, #fca5a5)';
+    }
+  }
+
+  // AJOUTER cette méthode pour l'événement scanComplete
+  onScanComplete(result: any): void {
+    console.log('Scan completed:', result);
+    // Vous pouvez utiliser le résultat ici si nécessaire
+  }
+
+  // MODIFIER la méthode removePhoto
+
+  removePhoto(): void {
+    this.checkpointPhotoFile = null;
+    this.checkpointPhotoPreview = null;
+    this.isScanning = false;
+    this.imageValidationResult = null;
+  }
+  // ============== Photo Management ==============
+
+  triggerPhotoUpload(): void {
+    this.photoInput.nativeElement.click();
   }
 
   private validatePhoto(file: File): boolean {
@@ -238,35 +406,6 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
     reader.readAsDataURL(file);
   }
 
-  removePhoto(): void {
-    this.checkpointPhotoFile = null;
-    this.checkpointPhotoPreview = null;
-  }
-
-  // ============== Location Management ==============
-
-  async getCurrentLocation(): Promise<void> {
-    if (this.isGettingLocation) return;
-
-    this.initializeLocationAcquisition();
-
-    try {
-      await this.checkLocationPermission();
-
-      this.updateLocationStatus('Recherche du signal GPS (restez immobile)...');
-
-      const result = await this.geolocationService.acquireLocation({
-        requiredAccuracy: this.LOCATION_THRESHOLDS.ACCEPTABLE,
-        maxWaitTime: 20000,
-        showUserPrompt: true,
-      });
-
-      this.processLocationResult(result);
-    } catch (error) {
-      this.handleLocationError(error);
-    }
-  }
-
   private initializeLocationAcquisition(): void {
     this.ngZone.run(() => {
       this.isGettingLocation = true;
@@ -275,80 +414,6 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
       this.clearLocationValidationErrors();
       this.cdr.markForCheck();
     });
-  }
-
-  private async checkLocationPermission(): Promise<void> {
-    const permission = await navigator.permissions.query({
-      name: 'geolocation' as PermissionName,
-    });
-
-    if (permission.state === 'denied') {
-      throw new Error('PERMISSION_DENIED');
-    }
-  }
-
-  private processLocationResult(result: any): void {
-    this.ngZone.run(() => {
-      this.currentLocation = {
-        lat: result.location.lat,
-        lng: result.location.lng,
-      };
-      this.locationAccuracy = result.location.accuracy;
-
-      this.setLocationMessage(result);
-      this.checkLocationConsistency(result.location);
-      this.validateLocationRequirements();
-
-      this.isGettingLocation = false;
-      this.cdr.markForCheck();
-    });
-  }
-
-  private setLocationMessage(result: any): void {
-    const accuracy = Math.round(result.location.accuracy);
-
-    switch (result.status) {
-      case 'excellent':
-      case 'good':
-        this.locationMessage = {
-          type: 'success',
-          text: `✓ Position acquise (${accuracy}m)`,
-        };
-        break;
-      case 'acceptable':
-        this.locationMessage = {
-          type: 'warning',
-          text: `⚠️ Précision limitée (${accuracy}m). C'est acceptable.`,
-        };
-        break;
-      case 'poor':
-      case 'timeout':
-        this.locationMessage = {
-          type: 'error',
-          text: result.message,
-        };
-        this.addValidationError(result.message);
-        break;
-    }
-  }
-
-  private checkLocationConsistency(currentLocation: LocationData): void {
-    if (!this.certification || !this.currentCheckpoint) return;
-
-    const previousLocation = this.getPreviousCheckpointLocation();
-    if (!previousLocation) return;
-
-    const consistency = this.geolocationService.checkConsistency(
-      currentLocation,
-      previousLocation,
-      { maxDistance: 50, maxAccuracy: 30 },
-    );
-
-    if (!consistency.consistent) {
-      this.addValidationError(
-        `⚠️ ${consistency.warning || 'Incohérence de localisation'}`,
-      );
-    }
   }
 
   private getPreviousCheckpointLocation(): LocationData | null {
@@ -506,25 +571,25 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
     }
   }
 
-  private validateLocationRequirement(errors: string[]): void {
-    if (!this.currentCheckpoint?.locationRequired) return;
+  // Ajoutez cette méthode helper
+  private calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
+    const R = 6371e3;
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
 
-    if (!this.currentLocation) {
-      errors.push('📍 La localisation GPS est requise.');
-      return;
-    }
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    if (this.locationAccuracy > this.LOCATION_THRESHOLDS.REJECT) {
-      errors.push(
-        `❌ Précision GPS insuffisante: ${Math.round(this.locationAccuracy)}m. ` +
-          `Déplacez-vous pour améliorer le signal.`,
-      );
-    } else if (this.locationAccuracy > this.LOCATION_THRESHOLDS.ACCEPTABLE) {
-      errors.push(
-        `⚠️ Précision faible (${Math.round(this.locationAccuracy)}m). ` +
-          `Vérifiez avant de valider.`,
-      );
-    }
+    return R * c;
   }
 
   private validateLocationRequirements(): void {
@@ -577,14 +642,72 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
 
   // ============== Checkpoint Submission ==============
 
+  // MODIFIER cette méthode dans le component
   async submitCheckpoint(): Promise<void> {
     if (!this.currentCheckpoint || !this.canSubmitCheckpoint()) return;
 
     this.setSubmitting(true);
+    this.imageValidationResult = null;
 
     try {
-      await this.validateSubmissionRequirements();
+      // ÉTAPE 1: Valider l'image avec IA (sauf premier checkpoint)
 
+      // CORRIGER la méthode submitCheckpoint (partie validation)
+      if (
+        this.currentCheckpoint.photoRequired &&
+        this.checkpointPhotoFile &&
+        this.currentCheckpointIndex > 0
+      ) {
+        const validation =
+          await this.certificationService.validateCheckpointImage(
+            this.certificationId,
+            this.currentCheckpointIndex,
+            this.checkpointPhotoFile,
+          );
+
+        this.imageValidationResult = {
+          similarity: validation.similarity,
+          isValid: validation.valid,
+          warnings: validation.warnings,
+          action: validation.action,
+          details: {
+            structuralSimilarity: validation.similarity / 100,
+            featureSimilarity: validation.similarity / 100,
+            colorConsistency: validation.similarity / 100,
+            exifValid: validation.warnings.length === 0,
+            isDownloadedImage: validation.warnings.some((w) =>
+              w.includes('téléchargée'),
+            ),
+            lightingConsistent: validation.warnings.length < 2,
+          },
+        };
+
+        // Afficher les résultats
+        if (validation.warnings.length > 0) {
+          validation.warnings.forEach((w) => this.addValidationError(w));
+        }
+
+        // Bloquer si rejeté
+        if (validation.action === 'reject') {
+          this.showNotification(
+            'error',
+            `❌ Image trop différente du checkpoint précédent (${validation.similarity.toFixed(1)}% de similarité)`,
+          );
+          this.setSubmitting(false);
+          return;
+        }
+
+        // Demander confirmation si révision
+        if (validation.action === 'review') {
+          const confirmed = await this.confirmReviewSubmission(validation);
+          if (!confirmed) {
+            this.setSubmitting(false);
+            return;
+          }
+        }
+      }
+
+      // ÉTAPE 2: Continuer avec la soumission normale
       const result = await this.certificationService.uploadCheckpointProof(
         this.certificationId,
         this.currentCheckpointIndex,
@@ -599,6 +722,26 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
     } finally {
       this.setSubmitting(false);
     }
+  }
+
+  // ✅ AJOUTER cette méthode helper
+  getSimilarityColor(similarity: number): string {
+    if (similarity >= 85) return '#10b981';
+    if (similarity >= 70) return '#f59e0b';
+    if (similarity >= 50) return '#ef4444';
+    return '#7f1d1d';
+  }
+
+  private async confirmReviewSubmission(validation: any): Promise<boolean> {
+    return new Promise((resolve) => {
+      const message =
+        `⚠️ Attention: L'image soumise présente des différences avec le checkpoint précédent.\n\n` +
+        `Similarité: ${validation.similarity.toFixed(1)}%\n` +
+        `Avertissements:\n${validation.warnings.join('\n')}\n\n` +
+        `Voulez-vous quand même continuer ?`;
+
+      resolve(confirm(message));
+    });
   }
 
   private async validateSubmissionRequirements(): Promise<void> {
@@ -1107,5 +1250,275 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
     if (this.checkpointPhotoPreview) {
       URL.revokeObjectURL(this.checkpointPhotoPreview);
     }
+  }
+
+  private async preheatLocation(): Promise<void> {
+    if (this.isPreheating) return;
+    this.isPreheating = true;
+
+    try {
+      this.locationMessage = {
+        type: 'info',
+        text: '📡 Préparation du GPS...',
+      };
+
+      // ❌ ERREUR: Pas d'appel au service
+      // ✅ CORRECTION:
+      this.geolocationService
+        .acquireWithCorrection()
+        .then((location) => {
+          this.preheatedLocation = location;
+          this.isPreheating = false;
+          if (this.showCheckpointModal) {
+            this.locationMessage = {
+              type: 'success',
+              text: '✓ GPS prêt',
+            };
+            this.cdr.markForCheck();
+          }
+        })
+        .catch((error) => {
+          console.warn('⚠️ Échec préchauffage:', error);
+          this.isPreheating = false;
+        });
+    } catch (error) {
+      this.isPreheating = false;
+    }
+  }
+
+  private readonly MAX_ALLOWED_DISTANCE_BETWEEN_CHECKPOINTS = 100; // 100 mètres maximum
+
+  async getCurrentLocation(): Promise<void> {
+    if (this.isGettingLocation) return;
+
+    this.initializeLocationAcquisition();
+
+    try {
+      // Récupérer la localisation du checkpoint précédent
+      const previousLocation = this.getPreviousCheckpointLocation();
+
+      // Préparer le point de référence si disponible
+      const referencePoint = previousLocation
+        ? {
+            lat: previousLocation.lat,
+            lng: previousLocation.lng,
+          }
+        : undefined;
+
+      // Si on a une position préchauffée
+      if (this.preheatedLocation) {
+        const location = this.preheatedLocation;
+        this.preheatedLocation = null;
+        this.isPreheating = false;
+
+        // Vérifier la cohérence avec le point de référence
+        if (referencePoint) {
+          const distance = this.calculateDistance(
+            location.lat,
+            location.lng,
+            referencePoint.lat,
+            referencePoint.lng,
+          );
+
+          if (distance > this.MAX_ALLOWED_DISTANCE_BETWEEN_CHECKPOINTS) {
+            this.locationMessage = {
+              type: 'error',
+              text: `❌ Trop loin du dernier checkpoint (${Math.round(distance)}m > ${this.MAX_ALLOWED_DISTANCE_BETWEEN_CHECKPOINTS}m)`,
+            };
+            this.isGettingLocation = false;
+            this.cdr.markForCheck();
+            return; // ❌ BLOQUER ici - ne pas accepter la position
+          }
+        }
+
+        this.processLocationResult(location);
+        return;
+      }
+
+      this.locationMessage = {
+        type: 'info',
+        text: '🧠 Acquisition de la position...',
+      };
+
+      // Passer le point de référence au service
+      const location =
+        await this.geolocationService.acquireWithCorrection(referencePoint);
+
+      this.processLocationResult(location);
+    } catch (error) {
+      console.error("❌ Erreur lors de l'acquisition de la position:", error);
+      this.handleLocationError(error);
+    }
+  }
+
+  // Dans certification-track.component.ts
+
+  private processLocationResult(location: any): void {
+    this.ngZone.run(() => {
+      this.currentLocation = {
+        lat: location.lat,
+        lng: location.lng,
+      };
+
+      this.locationAccuracy = location.realAccuracy;
+
+      // Récupérer le point de référence (checkpoint précédent)
+      const previousLocation = this.getPreviousCheckpointLocation();
+
+      let message = '';
+      let messageType: 'success' | 'warning' | 'error' = 'success';
+
+      if (previousLocation) {
+        // ✅ Ce n'est PAS le premier checkpoint - on compare avec le précédent
+        const distanceToPrevious = this.calculateDistance(
+          location.lat,
+          location.lng,
+          previousLocation.lat,
+          previousLocation.lng,
+        );
+
+        if (
+          distanceToPrevious > this.MAX_ALLOWED_DISTANCE_BETWEEN_CHECKPOINTS
+        ) {
+          message = `❌ Trop loin du dernier checkpoint (${Math.round(distanceToPrevious)}m > ${this.MAX_ALLOWED_DISTANCE_BETWEEN_CHECKPOINTS}m)`;
+          messageType = 'error';
+
+          this.currentLocation = null;
+          this.locationAccuracy = 0;
+
+          this.locationMessage = {
+            type: 'error',
+            text: message,
+          };
+
+          this.addValidationError(message);
+          this.isGettingLocation = false;
+          this.cdr.markForCheck();
+          return;
+        }
+
+        if (distanceToPrevious <= 30) {
+          message = `🎯 Parfaitement cohérent (${distanceToPrevious.toFixed(1)}m du dernier checkpoint)`;
+        } else if (distanceToPrevious <= 50) {
+          message = `✓ Bonne cohérence (${distanceToPrevious.toFixed(1)}m)`;
+        } else {
+          message = `⚠️ Distance acceptable (${distanceToPrevious.toFixed(1)}m)`;
+          messageType = 'warning';
+        }
+
+        this.checkLocationConsistency({
+          lat: location.lat,
+          lng: location.lng,
+          accuracy: this.locationAccuracy,
+          timestamp: Date.now(),
+        });
+      } else {
+        // ✅ PREMIER CHECKPOINT - pas de comparaison, c'est la référence
+        message = `📍 Position initiale enregistrée comme référence`;
+        messageType = 'success';
+
+        console.log(
+          '📍 Premier checkpoint - cette position servira de référence',
+        );
+      }
+
+      this.locationMessage = {
+        type: messageType,
+        text: message,
+      };
+
+      this.validateLocationRequirements();
+      this.isGettingLocation = false;
+      this.cdr.markForCheck();
+    });
+  }
+
+  // MODIFIER cette méthode pour renforcer la validation
+  private validateLocationRequirement(errors: string[]): void {
+    if (!this.currentCheckpoint?.locationRequired) return;
+
+    if (!this.currentLocation) {
+      errors.push('📍 Localisation requise');
+      return;
+    }
+
+    // ✅ Vérifier la distance avec le checkpoint précédent
+    const previousLocation = this.getPreviousCheckpointLocation();
+    if (previousLocation) {
+      const distance = this.calculateDistance(
+        this.currentLocation.lat,
+        this.currentLocation.lng,
+        previousLocation.lat,
+        previousLocation.lng,
+      );
+
+      if (distance > this.MAX_ALLOWED_DISTANCE_BETWEEN_CHECKPOINTS) {
+        errors.push(
+          `❌ Distance trop grande: ${Math.round(distance)}m > ${this.MAX_ALLOWED_DISTANCE_BETWEEN_CHECKPOINTS}m`,
+        );
+        return; // ❌ Sortir immédiatement - ne pas continuer la validation
+      }
+    }
+
+    // ✅ Vérifier la précision
+    if (this.locationAccuracy > this.LOCATION_THRESHOLDS.ACCEPTABLE) {
+      errors.push(
+        `⚠️ Précision GPS insuffisante: ${Math.round(this.locationAccuracy)}m (max: ${this.LOCATION_THRESHOLDS.ACCEPTABLE}m)`,
+      );
+    }
+  }
+
+  // MODIFIER cette méthode pour s'assurer qu'elle bloque vraiment
+  private async checkLocationConsistency(
+    currentLocation: LocationData,
+  ): Promise<boolean> {
+    if (!this.certification || !this.currentCheckpoint) return true;
+
+    const previousLocation = this.getPreviousCheckpointLocation();
+
+    if (previousLocation) {
+      const consistency = this.geolocationService.checkConsistency(
+        currentLocation,
+        previousLocation,
+        { maxDistance: 50, maxAccuracy: 30 },
+      );
+
+      if (!consistency.consistent) {
+        this.addValidationError(
+          consistency.warning || '⚠️ Incohérence de localisation',
+        );
+
+        // ❌ Blocage si incohérence trop importante
+        if (
+          consistency.distance > this.MAX_ALLOWED_DISTANCE_BETWEEN_CHECKPOINTS
+        ) {
+          this.locationMessage = {
+            type: 'error',
+            text: `❌ Trop loin du dernier checkpoint (${Math.round(consistency.distance)}m > ${this.MAX_ALLOWED_DISTANCE_BETWEEN_CHECKPOINTS}m)`,
+          };
+
+          // IMPORTANT: Réinitialiser la position
+          this.currentLocation = null;
+          this.locationAccuracy = 0;
+
+          return false; // ❌ Retourner false pour indiquer que c'est invalide
+        } else {
+          this.locationMessage = {
+            type: 'warning',
+            text: `⚠️ Position à ${Math.round(consistency.distance)}m du dernier checkpoint`,
+          };
+          return false;
+        }
+      } else {
+        // ✅ Feedback positif
+        this.locationMessage = {
+          type: 'success',
+          text: `✓ Position cohérente (${Math.round(consistency.distance)}m du dernier checkpoint)`,
+        };
+        return true;
+      }
+    }
+
+    return true;
   }
 }

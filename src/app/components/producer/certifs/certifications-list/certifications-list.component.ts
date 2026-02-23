@@ -1,6 +1,6 @@
 // components/producer/certifications-list/certifications-list.component.ts
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import {
   CertificationService,
@@ -9,7 +9,6 @@ import {
 import { AuthService } from '../../../../services/auth.service';
 import { FirebaseService } from '../../../../services/firebase.service';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-certifications-list',
@@ -27,13 +26,40 @@ export class CertificationsListComponent implements OnInit {
   certifications: Certification[] = [];
   filteredCertifications: Certification[] = [];
   selectedStatus = 'all';
+  selectedType = 'all';
   isLoading = true;
 
+  // Responsive properties
+  isMobileView = false;
+  isTabletView = false;
+  currentBreakpoint = 'desktop';
+  showMobileFilters = false;
+  activeTab = 'all'; // For mobile tab navigation
+
   ngOnInit() {
+    this.checkScreenSize();
     this.loadCertifications();
   }
 
-  // certifications-list.component.ts - loadCertifications
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.checkScreenSize();
+  }
+
+  checkScreenSize() {
+    const width = window.innerWidth;
+    this.isMobileView = width <= 768;
+    this.isTabletView = width > 768 && width <= 1024;
+
+    if (width <= 768) {
+      this.currentBreakpoint = 'mobile';
+    } else if (width <= 1024) {
+      this.currentBreakpoint = 'tablet';
+    } else {
+      this.currentBreakpoint = 'desktop';
+    }
+  }
+
   async loadCertifications() {
     this.isLoading = true;
     try {
@@ -55,11 +81,8 @@ export class CertificationsListComponent implements OnInit {
       // Filtrer seulement les produits EN certification
       const productsInCertification = allProducts.filter(
         (product) =>
-          // Soit le produit a certificationInProgress = true
           product.certificationInProgress === true ||
-          // Soit le produit a un statut 'certification'
           product.status === 'certification' ||
-          // Soit le produit a un objet certification
           (product.certification && product.certification.id),
       );
 
@@ -74,9 +97,7 @@ export class CertificationsListComponent implements OnInit {
           (c) => c.productId === product.id,
         );
 
-        // Si pas de certification existante, créer un objet temporaire UNIQUEMENT si vraiment en certification
         if (!existingCert) {
-          // Vérifier que le produit est bien en certification (pas juste un produit normal)
           const isInCertificationMode =
             product.status === 'certification' ||
             product.certificationInProgress === true ||
@@ -96,7 +117,7 @@ export class CertificationsListComponent implements OnInit {
               producerId: producerId,
               producerName: product.producerName,
               durationDays: 30,
-              certificationType: 'standard',
+              certificationType: product.certification?.type || 'standard',
               startDate: new Date(
                 product.certificationStartDate || product.createdAt,
               ),
@@ -104,10 +125,10 @@ export class CertificationsListComponent implements OnInit {
               status: this.getCertificationStatus(product),
               currentStep: 0,
               progress: this.calculateProgress(product),
-              checkpoints: [],
-              totalCheckpoints: 0,
-              completedCheckpoints: 0,
-              verificationScore: 0,
+              checkpoints: product.certification?.checkpoints || [],
+              totalCheckpoints: product.certification?.totalCheckpoints || 5,
+              completedCheckpoints: product.certification?.completedCheckpoints || 0,
+              verificationScore: product.certification?.score || 0,
               blockchainVerified: false,
               blockchainTransactions: [],
               productData: product,
@@ -129,13 +150,11 @@ export class CertificationsListComponent implements OnInit {
     }
   }
 
-  // Ajoutez ces méthodes utilitaires
   private calculateEstimatedEndDate(product: any): Date {
     if (product.certification && product.certification.estimatedEndDate) {
       return new Date(product.certification.estimatedEndDate);
     }
 
-    // Par défaut, 30 jours après le début
     const startDate = product.certificationStartDate
       ? new Date(product.certificationStartDate)
       : new Date(product.createdAt);
@@ -158,7 +177,6 @@ export class CertificationsListComponent implements OnInit {
       }
     }
 
-    // Par défaut
     if (
       product.status === 'certification' ||
       product.certificationInProgress === true
@@ -176,18 +194,33 @@ export class CertificationsListComponent implements OnInit {
     return 0;
   }
 
-filterCertifications() {
-  if (this.selectedStatus === 'all') {
-    // Afficher toutes les certifications
-    this.filteredCertifications = this.certifications;
-  } else {
-    this.filteredCertifications = this.certifications.filter(
-      (cert) => cert.status === this.selectedStatus
-    );
-  }
+  filterCertifications() {
+    let filtered = this.certifications;
 
-  console.log('🔍 Certifications filtrées:', this.filteredCertifications.length);
-}
+    // Filter by status
+    if (this.selectedStatus !== 'all') {
+      filtered = filtered.filter(
+        (cert) => cert.status === this.selectedStatus
+      );
+    }
+
+    // Filter by type
+    if (this.selectedType !== 'all') {
+      filtered = filtered.filter(
+        (cert) => cert.certificationType === this.selectedType
+      );
+    }
+
+    // Mobile tab filtering
+    if (this.isMobileView && this.activeTab !== 'all') {
+      filtered = filtered.filter(
+        (cert) => cert.status === this.activeTab
+      );
+    }
+
+    this.filteredCertifications = filtered;
+    console.log('🔍 Certifications filtrées:', this.filteredCertifications.length);
+  }
 
   getStatusText(status: string): string {
     const texts: { [key: string]: string } = {
@@ -243,6 +276,11 @@ filterCertifications() {
       .length;
   }
 
+  getDraftCount(): number {
+    return this.certifications.filter((cert) => cert.status === 'draft')
+      .length;
+  }
+
   getAverageProgress(): number {
     if (this.certifications.length === 0) return 0;
     const total = this.certifications.reduce(
@@ -254,6 +292,17 @@ filterCertifications() {
 
   resetFilters(): void {
     this.selectedStatus = 'all';
+    this.selectedType = 'all';
+    this.activeTab = 'all';
+    this.filterCertifications();
+  }
+
+  toggleMobileFilters(): void {
+    this.showMobileFilters = !this.showMobileFilters;
+  }
+
+  setActiveTab(tab: string): void {
+    this.activeTab = tab;
     this.filterCertifications();
   }
 
@@ -267,22 +316,43 @@ filterCertifications() {
   startCertification(event: Event, certId: string | undefined): void {
     event.stopPropagation();
     if (certId) {
-      // Implémentez la logique pour démarrer la certification
       console.log('Démarrer certification:', certId);
-      // Exemple:
-      // this.certificationService.startCertification(certId).then(() => {
-      //   this.loadCertifications();
-      // });
     }
   }
 
   editCertification(event: Event, certId: string | undefined): void {
     event.stopPropagation();
     if (certId) {
-      // Implémentez la logique pour éditer la certification
       console.log('Éditer certification:', certId);
-      // Exemple:
-      // this.router.navigate(['/producer/certification/edit', certId]);
     }
+  }
+
+  viewCertificationDetails(certId: string | undefined): void {
+    if (certId) {
+      this.router.navigate(['/producer/certification', certId]);
+    }
+  }
+
+  getCertificationIcon(type: string): string {
+    const icons: { [key: string]: string } = {
+      standard: '📋',
+      premium: '⭐',
+      organic: '🌱',
+      fairtrade: '🤝',
+      sustainable: '♻️',
+    };
+    return icons[type] || '📋';
+  }
+
+  getStatusIcon(status: string): string {
+    const icons: { [key: string]: string } = {
+      draft: '📝',
+      active: '⚡',
+      completed: '✅',
+      verified: '🔒',
+      expired: '⏰',
+      cancelled: '❌',
+    };
+    return icons[status] || '📋';
   }
 }

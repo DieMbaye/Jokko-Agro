@@ -21,7 +21,7 @@ import { AuthService } from './auth.service';
 import { FirebaseService } from './firebase.service';
 import { BlockchainService } from '../blockchain/services/blockchain.service';
 import { Product } from '../interfaces/data.interfaces';
-
+import { ImageComparisonService } from './image-comparison.service';
 // ============== INTERFACES ==============
 
 export interface CertificationCheckpoint {
@@ -181,6 +181,7 @@ export class CertificationService {
   private authService = inject(AuthService);
   private blockchainService = inject(BlockchainService);
   private firebaseService = inject(FirebaseService);
+  private imageComparisonService = inject(ImageComparisonService);
 
   // Templates de certification prédéfinis
   private certificationTemplates: CertificationTemplate[] = [
@@ -462,9 +463,11 @@ export class CertificationService {
         producerName: data['producerName'],
         durationDays: data['durationDays'],
         certificationType: data['certificationType'],
-        startDate: this.convertFirestoreTimestamp(data['startDate']) || new Date(),
+        startDate:
+          this.convertFirestoreTimestamp(data['startDate']) || new Date(),
         estimatedEndDate:
-          this.convertFirestoreTimestamp(data['estimatedEndDate']) || new Date(),
+          this.convertFirestoreTimestamp(data['estimatedEndDate']) ||
+          new Date(),
         status: data['status'] || 'draft',
         currentStep: data['currentStep'] || 0,
         progress: data['progress'] || 0,
@@ -475,8 +478,10 @@ export class CertificationService {
         blockchainVerified: data['blockchainVerified'] || false,
         blockchainTransactions: data['blockchainTransactions'] || [],
         productData: data['productData'],
-        createdAt: this.convertFirestoreTimestamp(data['createdAt']) || new Date(),
-        updatedAt: this.convertFirestoreTimestamp(data['updatedAt']) || new Date(),
+        createdAt:
+          this.convertFirestoreTimestamp(data['createdAt']) || new Date(),
+        updatedAt:
+          this.convertFirestoreTimestamp(data['updatedAt']) || new Date(),
         completedAt: this.convertFirestoreTimestamp(data['completedAt']),
         verifiedAt: this.convertFirestoreTimestamp(data['verifiedAt']),
         certificateUrl: data['certificateUrl'],
@@ -484,7 +489,8 @@ export class CertificationService {
         verificationUrl: data['verificationUrl'],
         auditLogs: (data['auditLogs'] || []).map((log: any) => ({
           ...log,
-          timestamp: this.convertFirestoreTimestamp(log.timestamp) || new Date(),
+          timestamp:
+            this.convertFirestoreTimestamp(log.timestamp) || new Date(),
         })),
         isPendingCertification: data['isPendingCertification'] || false,
       } as Certification;
@@ -519,10 +525,15 @@ export class CertificationService {
       return {
         id: docSnap.id,
         ...data,
-        startDate: this.convertFirestoreTimestamp(data['startDate']) || new Date(),
-        estimatedEndDate: this.convertFirestoreTimestamp(data['estimatedEndDate']) || new Date(),
-        createdAt: this.convertFirestoreTimestamp(data['createdAt']) || new Date(),
-        updatedAt: this.convertFirestoreTimestamp(data['updatedAt']) || new Date(),
+        startDate:
+          this.convertFirestoreTimestamp(data['startDate']) || new Date(),
+        estimatedEndDate:
+          this.convertFirestoreTimestamp(data['estimatedEndDate']) ||
+          new Date(),
+        createdAt:
+          this.convertFirestoreTimestamp(data['createdAt']) || new Date(),
+        updatedAt:
+          this.convertFirestoreTimestamp(data['updatedAt']) || new Date(),
         completedAt: this.convertFirestoreTimestamp(data['completedAt']),
         verifiedAt: this.convertFirestoreTimestamp(data['verifiedAt']),
       } as Certification;
@@ -552,10 +563,15 @@ export class CertificationService {
         return {
           id: docSnap.id,
           ...data,
-          startDate: this.convertFirestoreTimestamp(data['startDate']) || new Date(),
-          estimatedEndDate: this.convertFirestoreTimestamp(data['estimatedEndDate']) || new Date(),
-          createdAt: this.convertFirestoreTimestamp(data['createdAt']) || new Date(),
-          updatedAt: this.convertFirestoreTimestamp(data['updatedAt']) || new Date(),
+          startDate:
+            this.convertFirestoreTimestamp(data['startDate']) || new Date(),
+          estimatedEndDate:
+            this.convertFirestoreTimestamp(data['estimatedEndDate']) ||
+            new Date(),
+          createdAt:
+            this.convertFirestoreTimestamp(data['createdAt']) || new Date(),
+          updatedAt:
+            this.convertFirestoreTimestamp(data['updatedAt']) || new Date(),
           completedAt: this.convertFirestoreTimestamp(data['completedAt']),
           verifiedAt: this.convertFirestoreTimestamp(data['verifiedAt']),
         } as Certification;
@@ -571,7 +587,8 @@ export class CertificationService {
    */
   async getCertifiableProducts(producerId: string): Promise<Product[]> {
     try {
-      const products = await this.firebaseService.getProducerProducts(producerId);
+      const products =
+        await this.firebaseService.getProducerProducts(producerId);
       const certifiableProducts: Product[] = [];
 
       for (const product of products) {
@@ -1267,7 +1284,8 @@ export class CertificationService {
         };
       }
 
-      const verificationScore = await this.calculateVerificationScore(certificationId);
+      const verificationScore =
+        await this.calculateVerificationScore(certificationId);
       const certificateResult = await this.generateCertificate(certificationId);
 
       await updateDoc(certRef, {
@@ -1344,15 +1362,20 @@ export class CertificationService {
       const certification: Certification = {
         id: certSnap.id,
         ...data,
-        startDate: this.convertFirestoreTimestamp(data['startDate']) || new Date(),
-        estimatedEndDate: this.convertFirestoreTimestamp(data['estimatedEndDate']) || new Date(),
+        startDate:
+          this.convertFirestoreTimestamp(data['startDate']) || new Date(),
+        estimatedEndDate:
+          this.convertFirestoreTimestamp(data['estimatedEndDate']) ||
+          new Date(),
         checkpoints: (data['checkpoints'] || []).map((cp: any) => ({
           ...cp,
           completedAt: this.convertFirestoreTimestamp(cp.completedAt),
         })),
       } as Certification;
 
-      const allCompleted = certification.checkpoints.every((cp) => cp.completed);
+      const allCompleted = certification.checkpoints.every(
+        (cp) => cp.completed,
+      );
       if (!allCompleted) {
         return {
           success: false,
@@ -1360,7 +1383,8 @@ export class CertificationService {
         };
       }
 
-      const verificationScore = await this.calculateVerificationScore(certificationId);
+      const verificationScore =
+        await this.calculateVerificationScore(certificationId);
       const certificateResult = await this.generateCertificate(certificationId);
 
       await updateDoc(certRef, {
@@ -1427,7 +1451,10 @@ export class CertificationService {
         );
       }
 
-      await this.addCheckpointImagesToProduct(certificationId, certification.productId);
+      await this.addCheckpointImagesToProduct(
+        certificationId,
+        certification.productId,
+      );
       await this.notifyBuyersAboutNewCertifiedProduct(certification.productId);
 
       await this.addAuditLog(
@@ -1559,7 +1586,8 @@ export class CertificationService {
       const expectedDaysDiff = currentExpectedDays - previousExpectedDays;
 
       const actualDaysDiff = Math.abs(
-        (currentDate.getTime() - previousDate.getTime()) / (1000 * 60 * 60 * 24),
+        (currentDate.getTime() - previousDate.getTime()) /
+          (1000 * 60 * 60 * 24),
       );
 
       if (Math.abs(actualDaysDiff - expectedDaysDiff) > 3) {
@@ -1672,7 +1700,10 @@ export class CertificationService {
       const certification = certSnap.data() as Certification;
       const warnings: string[] = [];
 
-      if (certification.status !== 'completed' && certification.status !== 'verified') {
+      if (
+        certification.status !== 'completed' &&
+        certification.status !== 'verified'
+      ) {
         warnings.push('Certification non complétée');
       }
 
@@ -1736,10 +1767,95 @@ export class CertificationService {
     productId: string,
   ): Promise<void> {
     try {
-      console.log(`Notification: Nouveau produit certifié disponible: ${productId}`);
+      console.log(
+        `Notification: Nouveau produit certifié disponible: ${productId}`,
+      );
       // Implémentation à ajouter selon les besoins
     } catch (error) {
       console.error('Erreur notification acheteurs:', error);
+    }
+  }
+
+  // services/certification.service.ts
+  // Ajouter dans le service existant
+
+  async validateCheckpointImage(
+    certificationId: string,
+    checkpointIndex: number,
+    currentImage: File,
+  ): Promise<{
+    valid: boolean;
+    similarity: number;
+    warnings: string[];
+    action: 'accept' | 'review' | 'reject';
+  }> {
+    try {
+      // Récupérer la certification
+      const certification = await this.getCertificationById(certificationId);
+      if (!certification) {
+        throw new Error('Certification non trouvée');
+      }
+
+      // Si c'est le premier checkpoint, pas de comparaison
+      if (checkpointIndex === 0) {
+        return {
+          valid: true,
+          similarity: 100,
+          warnings: [],
+          action: 'accept',
+        };
+      }
+
+      // Récupérer l'image du checkpoint précédent
+      const previousCheckpoint = certification.checkpoints[checkpointIndex - 1];
+      if (!previousCheckpoint?.ipfsUrl) {
+        return {
+          valid: true,
+          similarity: 100,
+          warnings: [],
+          action: 'accept',
+        };
+      }
+
+      // Comparer les images
+      const comparison = await this.imageComparisonService.compareImages(
+        currentImage,
+        previousCheckpoint.ipfsUrl,
+        {
+          previousCheckpointDate: previousCheckpoint.completedAt,
+          expectedGrowthDays:
+            certification.checkpoints[checkpointIndex].daysFromStart -
+            previousCheckpoint.daysFromStart,
+          location: previousCheckpoint.location,
+        },
+      );
+
+      // Journaliser sur blockchain si incohérence
+      if (comparison.action === 'reject' || comparison.warnings.length > 2) {
+        await this.blockchainService.logInconsistency({
+          certificationId,
+          checkpointIndex,
+          similarity: comparison.similarity,
+          warnings: comparison.warnings,
+          timestamp: new Date(),
+        });
+      }
+
+      return {
+        valid: comparison.isValid,
+        similarity: comparison.similarity,
+        warnings: comparison.warnings,
+        action: comparison.action,
+      };
+    } catch (error) {
+      console.error('Erreur validation image:', error);
+      // En cas d'erreur, on laisse passer mais on log
+      return {
+        valid: true, // Bénéfice du doute
+        similarity: 0,
+        warnings: [`⚠️ Erreur technique: ${error}`],
+        action: 'review',
+      };
     }
   }
 }

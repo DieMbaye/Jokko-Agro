@@ -1,0 +1,11 @@
+{
+  "/ipfs/*": {
+    "target": "https://gateway.pinata.cloud",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/ipfs": "/ipfs"
+    },
+    "logLevel": "debug"
+  }
+}

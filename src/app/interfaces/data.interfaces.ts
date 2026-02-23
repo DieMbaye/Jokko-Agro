@@ -133,7 +133,7 @@ export interface Product {
   producerName: string;
   producerPhone: string;
   images: string[];
-  status: 'available' | 'sold_out' | 'inactive' | 'certification'; // Ajouter 'certification'
+  status: 'available' | 'sold_out' | 'inactive' | 'certification';
   views: number;
   sales: number;
   rating: number;
@@ -142,6 +142,8 @@ export interface Product {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+
+  // Certification améliorée
   certification?: {
     id?: string;
     type?: 'standard' | 'certified' | 'in_progress';
@@ -158,7 +160,27 @@ export interface Product {
     certificateUrl?: string;
     verificationUrl?: string;
     details?: any;
+
+    // NOUVEAUX CHAMPS POUR LA CERTIFICATION
+    checkpoints?: Array<{
+      id: string;
+      title: string;
+      description: string;
+      step: string;
+      order: number;
+      daysFromStart: number;
+      completed: boolean;
+      completedAt?: Date;
+      photoUrl?: string;
+      location?: { lat: number; lng: number };
+      blockchainVerified?: boolean;
+    }>;
+    totalCheckpoints?: number;
+    completedCheckpoints?: number;
+    progress?: number;
+    currentStep?: number;
   };
+
   badges?: Array<{
     id: string;
     label: string;
@@ -166,12 +188,10 @@ export interface Product {
     color: string;
   }>;
 
-  // NOUVEAUX CHAMPS
   featuredImage?: string;
   certificationInProgress?: boolean;
   certificationStartDate?: string;
   isPendingCertification?: boolean;
-  
 }
 
 export interface Sale {
