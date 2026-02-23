@@ -1,4 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import {
+  Firestore,
+  collection,
+  addDoc,
+  serverTimestamp,
+} from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -11,8 +17,12 @@ import {
   CartItem,
   DeliveryOption,
   PaymentMethod,
+  HybridPaymentInfo,
 } from '../../../services/cart.service';
 import { interval, Subscription } from 'rxjs';
+import { AGCService } from 'src/app/services/agc.service';
+import { AGCPurchaseComponent } from '../../agc/agc-purchase/agc-purchase.component';
+import { Sale } from 'src/app/interfaces/data.interfaces';
 
 interface EnhancedCartItem extends CartItem {
   originalPrice?: number;
@@ -54,6 +64,19 @@ interface InstallmentOption {
   total: number;
   interestRate: number;
 }
+interface AGCPaymentState {
+  enabled: boolean;
+  amount: number;
+  fiatAmount: number;
+  agcAmount: number;
+  balance: number;
+  hasEnough: boolean;
+  missingAGC: number;
+  canProceed: boolean;
+  warning: string | null;
+  error: string | null;
+  partialPayment: boolean;
+}
 
 interface Notification {
   message: string;
@@ -65,14 +88,27 @@ interface Notification {
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    AGCPurchaseComponent,
+  ],
   templateUrl: './cart.html',
   styleUrls: ['./cart.css'],
 })
 export class CartComponent implements OnInit, OnDestroy {
-onImageError($event: ErrorEvent,arg1: string) {
-throw new Error('Method not implemented.');
-}
+  private agcService = inject(AGCService);
+  private firestore = inject(Firestore); // ← AJOUTER CETTE LIGNE
+
+  agcBalance: number = 0;
+  agcPaymentInfo: HybridPaymentInfo | null = null;
+  useAGCPayment: boolean = true; // Activer par défaut
+  showAGCPurchaseModal = false;
+  agcError: string = '';
+  onImageError($event: ErrorEvent, arg1: string) {
+    throw new Error('Method not implemented.');
+  }
   cartItems: EnhancedCartItem[] = [];
   deliveryOptions: DeliveryOption[] = [];
   paymentMethods: PaymentMethod[] = [];
@@ -127,21 +163,46 @@ throw new Error('Method not implemented.');
 
   // Sauvegarde
   savedCart?: SavedCart;
+  agcState: AGCPaymentState = {
+    enabled: true,
+    amount: 0,
+    fiatAmount: 0,
+    agcAmount: 0,
+    balance: 0,
+    hasEnough: false,
+    missingAGC: 0,
+    canProceed: false,
+    warning: null,
+    error: null,
+    partialPayment: false,
+  };
 
+  // Options de paiement avancées
+  paymentOptions = {
+    allowPartialAGC: true,
+    forceAGCPayment: false,
+    showAGCOptions: true,
+  };
+
+  // Historique des tentatives
+  private paymentAttempts: Array<{
+    timestamp: Date;
+    success: boolean;
+    error?: string;
+  }> = [];
   // Abonnements
   private cartSubscription?: Subscription;
   private priceUpdateSubscription?: Subscription;
 
-constructor(
-  private authService: AuthService,
-  private cartService: CartService,
-  private salesService: SalesService,
-  private router: Router,
-  private notificationService: NotificationService // ✅ AJOUT
-) {}
+  constructor(
+    private authService: AuthService,
+    public cartService: CartService,
+    private salesService: SalesService,
+    private router: Router,
+    private notificationService: NotificationService, // ✅ AJOUT
+  ) {}
 
-
-  ngOnInit() {
+  async ngOnInit() {
     this.loadCartItems();
     this.loadDeliveryOptions();
     this.loadPaymentMethods();
@@ -152,9 +213,20 @@ constructor(
 
     // Surveiller les changements de prix
     this.startPriceMonitoring();
-
-    // Vérifier la disponibilité en temps réel
     this.checkItemAvailability();
+
+    // Charger les données AGC
+    await this.loadAGCData();
+
+    // ✅ AJOUTER CETTE LIGNE pour utiliser la nouvelle logique
+    await this.updateAGCState();
+
+    // Surveiller les changements de solde
+    this.agcService.balance$.subscribe((balance: number) => {
+      this.agcBalance = balance;
+      this.updateAGCPaymentInfo();
+      this.updateAGCState(); // ← Ajouter aussi ici
+    });
   }
 
   ngOnDestroy() {
@@ -369,7 +441,7 @@ constructor(
     if (!this.selectedDeliveryOption) return 0;
 
     const option = this.deliveryOptions.find(
-      (o) => o.id === this.selectedDeliveryOption
+      (o) => o.id === this.selectedDeliveryOption,
     );
     if (!option) return 0;
 
@@ -392,7 +464,7 @@ constructor(
     if (!this.selectedPaymentMethod) return 0;
 
     const method = this.paymentMethods.find(
-      (m) => m.id === this.selectedPaymentMethod
+      (m) => m.id === this.selectedPaymentMethod,
     );
     return method ? method.fee : 0;
   }
@@ -418,7 +490,7 @@ constructor(
 
     return Math.max(
       0,
-      subtotal + deliveryFee + paymentFee - couponDiscount - savings
+      subtotal + deliveryFee + paymentFee - couponDiscount - savings,
     );
   }
 
@@ -444,7 +516,7 @@ constructor(
     if (item.quantity > item.maxQuantity) {
       item.quantity = item.maxQuantity;
       this.showWarning(
-        `Quantité limitée à ${item.maxQuantity} pour ${item.name}`
+        `Quantité limitée à ${item.maxQuantity} pour ${item.name}`,
       );
     }
     this.cartService.updateQuantity(item.id, item.quantity);
@@ -493,7 +565,7 @@ constructor(
     if (!couponToApply) return;
 
     const coupon = this.availableCoupons.find(
-      (c) => c.code === couponToApply.toUpperCase()
+      (c) => c.code === couponToApply.toUpperCase(),
     );
 
     if (coupon) {
@@ -520,7 +592,7 @@ constructor(
     return this.deliveryOptions.filter((option) => {
       // Filtrer selon le type de produits dans le panier
       const hasDeliveryItems = this.cartItems.some(
-        (item) => item.selected && item.deliveryType === 'delivery'
+        (item) => item.selected && item.deliveryType === 'delivery',
       );
 
       if (option.id.includes('delivery') && !hasDeliveryItems) {
@@ -548,7 +620,7 @@ constructor(
     if (!this.selectedDeliveryOption) return 'Non estimé';
 
     const option = this.deliveryOptions.find(
-      (o) => o.id === this.selectedDeliveryOption
+      (o) => o.id === this.selectedDeliveryOption,
     );
     return option ? option.time : 'Non estimé';
   }
@@ -556,7 +628,7 @@ constructor(
   getDeliveryBreakdown() {
     const breakdown = [];
     const option = this.deliveryOptions.find(
-      (o) => o.id === this.selectedDeliveryOption
+      (o) => o.id === this.selectedDeliveryOption,
     );
 
     if (option) {
@@ -568,7 +640,7 @@ constructor(
         (item) =>
           item.selected &&
           item.deliveryType === 'delivery' &&
-          item.deliveryFee > 0
+          item.deliveryFee > 0,
       )
       .forEach((item) => {
         breakdown.push({
@@ -645,7 +717,7 @@ constructor(
           // Utiliser un service de géocodage simple (optionnel)
           this.geocodeLocation(
             position.coords.latitude,
-            position.coords.longitude
+            position.coords.longitude,
           );
 
           this.showSuccess('Position détectée avec succès');
@@ -653,13 +725,13 @@ constructor(
         (error) => {
           console.error('Erreur de géolocalisation:', error);
           this.showError(
-            'Impossible de détecter votre position. Veuillez saisir manuellement.'
+            'Impossible de détecter votre position. Veuillez saisir manuellement.',
           );
-        }
+        },
       );
     } else {
       this.showError(
-        "La géolocalisation n'est pas supportée par votre navigateur"
+        "La géolocalisation n'est pas supportée par votre navigateur",
       );
     }
   }
@@ -697,139 +769,462 @@ constructor(
     return phoneRegex.test(phone);
   }
 
-  // Commande
-  // Dans cart.ts, méthode proceedToCheckout
- async proceedToCheckout() {
-  if (!this.canCheckout()) {
-    this.showError('Veuillez compléter toutes les étapes');
-    return;
+  /**
+   * Mise à jour complète de l'état AGC
+   */
+  private async updateAGCState(): Promise<void> {
+    try {
+      const total = this.getTotal();
+      const agcAmount = Math.floor(total / 100);
+      const fiatAmount = total - agcAmount * 100;
+      const user = this.authService.getUserData();
+
+      if (!user) {
+        this.agcState.error = 'Utilisateur non connecté';
+        return;
+      }
+
+      // Recharger le solde en temps réel
+      this.agcBalance = await this.agcService.getBalance(user.uid);
+
+      const hasEnough = this.agcBalance >= agcAmount;
+      const missingAGC = !hasEnough ? agcAmount - this.agcBalance : 0;
+
+      // Calculer les montants effectifs
+      let actualAgcToUse = agcAmount;
+      let actualFiatToPay = fiatAmount;
+      let warning = null;
+      let canProceed = true;
+
+      if (!hasEnough && this.paymentOptions.allowPartialAGC) {
+        // Paiement partiel
+        actualAgcToUse = this.agcBalance;
+        actualFiatToPay = total - this.agcBalance * 100;
+        warning = `⚠️ Paiement partiel: ${actualAgcToUse} AGC + ${actualFiatToPay.toLocaleString()} FCFA`;
+        canProceed = this.agcBalance > 0;
+      } else if (!hasEnough) {
+        warning = `⚠️ Solde insuffisant: besoin de ${agcAmount} AGC`;
+        canProceed = false;
+      }
+
+      // Mettre à jour agcState
+      this.agcState = {
+        enabled: this.useAGCPayment,
+        amount: total,
+        fiatAmount: actualFiatToPay,
+        agcAmount: actualAgcToUse,
+        balance: this.agcBalance,
+        hasEnough,
+        missingAGC,
+        canProceed,
+        warning,
+        error: null,
+        partialPayment:
+          !hasEnough &&
+          this.paymentOptions.allowPartialAGC &&
+          this.agcBalance > 0,
+      };
+
+      // ✅ SYNC : Mettre à jour agcPaymentInfo pour l'interface
+      this.agcPaymentInfo = {
+        fiatAmount: actualFiatToPay,
+        agcAmount: actualAgcToUse,
+        agcBalance: this.agcBalance,
+        hasEnoughAGC: hasEnough,
+        agcEquivalent: actualAgcToUse * 100,
+      };
+
+      console.log('📊 État AGC mis à jour:', {
+        agcState: this.agcState,
+        agcPaymentInfo: this.agcPaymentInfo,
+      });
+    } catch (error) {
+      console.error('❌ Erreur mise à jour état AGC:', error);
+      this.agcState.error = 'Impossible de vérifier votre solde AGC';
+    }
   }
 
-  this.isCheckingOut = true;
-
-  try {
-    const selectedItems = this.cartItems.filter(item => item.selected);
-    const currentUser = this.authService.getUserData();
-
-    // Vérifier si l'utilisateur est connecté
-    if (!currentUser || !currentUser.uid) {
-      this.showError('Veuillez vous connecter pour commander');
-      this.isCheckingOut = false;
+  /**
+   * Processus de checkout amélioré avec gestion avancée AGC
+   */
+  async proceedToCheckout(): Promise<void> {
+    // Validation préliminaire
+    if (!this.canCheckout()) {
+      this.showError('Veuillez compléter toutes les étapes obligatoires');
       return;
     }
 
-    const deliveryType: 'pickup' | 'delivery' =
-      this.selectedDeliveryOption.includes('pickup') ? 'pickup' : 'delivery';
-
-    // Numéro de commande unique
-    const orderNumber = `CMD-${Date.now().toString().slice(-8)}`;
-    const salesToCreate: any[] = [];
-
-    // Sauvegarde avant vidage panier
-    const orderTotal = this.getTotal();
-    const itemsCount = selectedItems.length;
-
-    // Préparer les ventes
-    for (const item of selectedItems) {
-      if (!item.producerId) {
-        console.error('producerId manquant pour:', item);
-        continue;
-      }
-
-      const saleData = {
-        buyerId: currentUser.uid,
-        buyerName: currentUser.fullName || 'Client',
-        buyerPhone: this.deliveryAddress.phone,
-        buyerLocation: this.deliveryAddress.city,
-
-        producerId: item.producerId,
-        producerName: item.producer,
-        producerPhone: item.producerPhone || '',
-
-        productId: item.productId || item.id,
-        productName: item.name,
-        productCategory: item.category || 'Divers',
-
-        quantity: item.quantity,
-        unitPrice: item.price,
-        totalAmount: this.calculateItemPrice(item),
-        deliveryFee: this.getItemDeliveryFee(item),
-
-        status: 'pending' as const,
-        paymentMethod: this.selectedPaymentMethod as any,
-        paymentStatus: 'pending' as const,
-        deliveryType: deliveryType,
-
-        notes: item.notes || '',
-        orderDate: new Date(),
-        orderNumber: orderNumber,
-      };
-
-      salesToCreate.push(saleData);
+    if (this.isCheckingOut) {
+      this.showWarning('Une commande est déjà en cours de traitement');
+      return;
     }
 
-    // Créer les ventes en base
-    for (const saleData of salesToCreate) {
-      const result = await this.salesService.createSale(saleData);
+    // Dernière vérification de l'état AGC
+    await this.updateAGCState();
 
-      if (!result.success) {
-        throw new Error(
-          `Erreur lors de l'enregistrement de ${saleData.productName}: ${result.error}`
+    if (this.useAGCPayment && !this.agcState.canProceed) {
+      this.showError(
+        this.agcState.warning || 'Impossible de procéder avec le paiement AGC',
+      );
+      return;
+    }
+
+    this.isCheckingOut = true;
+    this.paymentAttempts.push({ timestamp: new Date(), success: false });
+
+    try {
+      const selectedItems = this.cartItems.filter((item) => item.selected);
+      const currentUser = this.authService.getUserData();
+
+      if (!currentUser?.uid) {
+        throw new Error('Veuillez vous connecter pour commander');
+      }
+
+      // Générer un numéro de commande unique
+      const orderNumber = `CMD-${Date.now().toString().slice(-8)}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+
+      console.log(`🚀 Début checkout - Commande #${orderNumber}`);
+
+      // Étape 1: Paiement hybride (si activé)
+      if (this.useAGCPayment && this.agcState.agcAmount > 0) {
+        const paymentResult = await this.agcService.processHybridPayment(
+          currentUser.uid,
+          'system', // Plateforme reçoit les AGC temporairement
+          this.getTotal(),
+          orderNumber,
+          {
+            allowPartialAGC: this.paymentOptions.allowPartialAGC,
+            forceAGCPayment: this.paymentOptions.forceAGCPayment,
+          },
+        );
+
+        if (!paymentResult.success) {
+          // Gestion granulaire des erreurs
+          switch (paymentResult.errorCode) {
+            case 'INSUFFICIENT_BALANCE':
+              if (paymentResult.missingAGC) {
+                this.showError(
+                  `Solde AGC insuffisant. Il vous manque ${paymentResult.missingAGC} AGC`,
+                );
+                this.openAGCPurchase(); // Proposer d'acheter
+              }
+              break;
+            case 'NETWORK_ERROR':
+              this.showError('Erreur réseau. Veuillez réessayer.');
+              break;
+            default:
+              this.showError(paymentResult.error || 'Erreur de paiement AGC');
+          }
+          throw new Error(paymentResult.error);
+        }
+
+        console.log(`✅ Paiement AGC réussi: ${paymentResult.agcPaid} AGC`);
+        this.showSuccess(
+          `✅ ${paymentResult.agcPaid} AGC utilisés avec succès`,
         );
       }
+
+      // Étape 2: Création des ventes
+      const salesResults = await this.createSales(
+        selectedItems,
+        currentUser,
+        orderNumber,
+      );
+
+      // Étape 3: Nettoyage et confirmation
+      await this.finalizeOrder(
+        selectedItems,
+        currentUser,
+        orderNumber,
+        salesResults,
+      );
+
+      // Marquer la tentative comme réussie
+      this.paymentAttempts[this.paymentAttempts.length - 1].success = true;
+    } catch (error: any) {
+      console.error('❌ Erreur checkout:', error);
+
+      // Tentative de rollback si nécessaire
+      await this.attemptRollback(error);
+
+      this.showError(
+        error.message || 'Une erreur est survenue lors de la commande',
+      );
+    } finally {
+      this.isCheckingOut = false;
+    }
+  }
+
+  /**
+   * Création des ventes avec gestion d'erreur par lot
+   */
+  private async createSales(
+    selectedItems: EnhancedCartItem[],
+    user: any,
+    orderNumber: string,
+  ): Promise<any[]> {
+    const salesResults = [];
+    const errors = [];
+
+    for (const item of selectedItems) {
+      try {
+        if (!item.producerId) {
+          console.warn(`⚠️ Producteur non identifié pour ${item.name}`);
+          continue;
+        }
+
+        const deliveryType = this.selectedDeliveryOption.includes('pickup')
+          ? ('pickup' as const)
+          : ('delivery' as const);
+
+        const saleData = {
+          buyerId: user.uid,
+          buyerName: user.fullName || 'Client',
+          buyerPhone: this.deliveryAddress.phone,
+          buyerLocation: this.deliveryAddress.city,
+          producerId: item.producerId,
+          producerName: item.producer,
+          producerPhone: item.producerPhone || '',
+          productId: item.productId || item.id,
+          productName: item.name,
+          productCategory: item.category || 'Divers',
+          quantity: item.quantity,
+          unitPrice: item.price,
+          totalAmount: this.calculateItemPrice(item),
+          deliveryFee: this.getItemDeliveryFee(item),
+          status: 'pending' as const,
+          paymentMethod: this.selectedPaymentMethod as Sale['paymentMethod'],
+          paymentStatus: 'pending' as const,
+          deliveryType: deliveryType,
+          notes: item.notes || '',
+          orderDate: new Date(),
+          orderNumber: orderNumber,
+          agcUsed: this.useAGCPayment ? this.agcState.agcAmount : 0,
+          agcPayment: this.useAGCPayment
+            ? {
+                amount: this.agcState.agcAmount,
+                fiatEquivalent: this.agcState.agcAmount * 100,
+                partial: this.agcState.partialPayment,
+              }
+            : null,
+        };
+
+        const result = await this.salesService.createSale(saleData);
+
+        if (result.success) {
+          salesResults.push({ item, success: true, saleId: result.saleId });
+        } else {
+          errors.push({ item, error: result.error });
+        }
+      } catch (itemError) {
+        console.error(`❌ Erreur pour ${item.name}:`, itemError);
+        errors.push({ item, error: itemError });
+      }
     }
 
-    // Vider le panier (uniquement les items commandés)
-    selectedItems.forEach(item => {
-      this.cartService.removeItem(item.id);
+    if (errors.length > 0) {
+      // Logger simplement dans la console au lieu de Firestore
+      console.group('📝 Erreurs de création de ventes');
+      errors.forEach((e) => {
+        console.error(`${e.item?.name}:`, e.error);
+      });
+      console.groupEnd();
+
+      if (errors.length === selectedItems.length) {
+        throw new Error("Aucune vente n'a pu être enregistrée");
+      }
+
+      this.showWarning(
+        `${errors.length} article(s) n'ont pas pu être commandés`,
+      );
+    }
+
+    return salesResults;
+  }
+
+  /**
+   * Finalisation de la commande
+   */
+  private async finalizeOrder(
+    selectedItems: EnhancedCartItem[],
+    user: any,
+    orderNumber: string,
+    salesResults: any[],
+  ): Promise<void> {
+    // Vider le panier des articles commandés avec succès
+    salesResults.forEach((result) => {
+      if (result.success) {
+        this.cartService.removeItem(result.item.id);
+      }
     });
 
     this.loadCartItems();
 
-    // Sauvegarder commande récente
-    const recentOrderData = {
-      orderNumber: orderNumber,
-      total: orderTotal,
-      itemsCount: itemsCount,
+    // Sauvegarder la commande
+    const orderData = {
+      orderNumber,
+      total: this.getTotal(),
+      itemsCount: selectedItems.length,
+      successfulItems: salesResults.length,
       orderDate: new Date(),
-      items: selectedItems.map(item => ({
+      agcUsed: this.useAGCPayment ? this.agcState.agcAmount : 0,
+      fiatPaid: this.useAGCPayment ? this.agcState.fiatAmount : this.getTotal(),
+      items: selectedItems.map((item) => ({
         name: item.name,
         quantity: item.quantity,
         price: item.price,
+        success: salesResults.some((r) => r.item.id === item.id && r.success),
       })),
+      paymentMethod: this.selectedPaymentMethod,
+      deliveryMethod: this.selectedDeliveryOption,
     };
-    this.saveRecentOrder(recentOrderData);
 
-    // 🔔 NOTIFICATION FIRESTORE (RÉELLE)
-    await this.notificationService.createNotification({
-      userId: currentUser.uid,                 // UID acheteur
-      type: 'order',
-      title: 'Commande enregistrée',
-      message: `Votre commande ${orderNumber} est en cours de traitement.`,
-      link: '/buyer/tracking'
-    });
+    this.saveRecentOrder(orderData);
 
-    // Toast local
-    this.showSuccess(`🎉 Commande #${orderNumber} passée avec succès !`);
+    // Notifications
+    await Promise.all([
+      this.notificationService.createNotification({
+        userId: user.uid,
+        type: 'order',
+        title: 'Commande enregistrée',
+        message: `Votre commande ${orderNumber} est en cours de traitement.${this.useAGCPayment ? ` (${this.agcState.agcAmount} AGC utilisés)` : ''}`,
+        link: '/buyer/tracking',
+      }),
+      // Notification au producteur pour les items réussis
+      ...salesResults.map((result) =>
+        this.notificationService.createNotification({
+          userId: result.item.producerId,
+          type: 'order' as const,
+          title: 'Nouvelle vente',
+          message: `${result.item.name} (x${result.item.quantity}) a été commandé`,
+          link: '/producer/sales',
+        }),
+      ),
+    ]);
 
-    // Modal de confirmation
+    // Afficher la confirmation
     this.showOrderConfirmationModal(
       orderNumber,
-      orderTotal,
-      itemsCount
+      this.getTotal(),
+      salesResults.length,
     );
 
-  } catch (error: any) {
-    console.error('Erreur lors de la commande:', error);
-    this.showError(
-      error.message || 'Une erreur est survenue lors de la commande'
-    );
-  } finally {
-    this.isCheckingOut = false;
+    // Log pour analytics
+    await this.logOrderSuccess(orderData);
   }
-}
 
+  /**
+   * Tentative de rollback en cas d'erreur critique
+   */
+  private async attemptRollback(error: any): Promise<void> {
+    console.log('🔄 Tentative de rollback...');
 
+    // Log l'erreur pour analyse
+    await this.logCheckoutError(error);
+
+    // Si le paiement AGC a été effectué mais pas les ventes, rembourser
+    if (error.agcPaid && !error.salesCreated) {
+      // Logique de remboursement
+      console.log('💰 Remboursement AGC nécessaire');
+      // await this.agcService.refundAGC(...)
+    }
+  }
+
+  /**
+   * Logging pour debugging
+   */
+  private async logSalesErrors(
+    errors: any[],
+    orderNumber: string,
+  ): Promise<void> {
+    console.error('📝 Erreurs de création de ventes:', errors);
+
+    try {
+      await addDoc(collection(this.firestore, 'checkout_errors'), {
+        orderNumber,
+        errors,
+        timestamp: serverTimestamp(),
+        userAgent: navigator.userAgent,
+      });
+    } catch (logError) {
+      console.error('Erreur logging:', logError);
+    }
+  }
+
+  private async logCheckoutError(error: any): Promise<void> {
+    try {
+      await addDoc(collection(this.firestore, 'checkout_errors'), {
+        error: error.message,
+        stack: error.stack,
+        timestamp: serverTimestamp(),
+        userAgent: navigator.userAgent,
+      });
+    } catch (logError) {
+      console.error('Erreur logging:', logError);
+    }
+  }
+
+  private async logOrderSuccess(orderData: any): Promise<void> {
+    try {
+      await addDoc(collection(this.firestore, 'checkout_success'), {
+        ...orderData,
+        timestamp: serverTimestamp(),
+      });
+    } catch (logError) {
+      console.error('Erreur logging succès:', logError);
+    }
+  }
+
+  /**
+   * Validation avancée avant checkout
+   */
+  canCheckout(): boolean {
+    const hasItems = this.getSelectedItemsCount() > 0;
+    const hasDelivery = !!this.selectedDeliveryOption;
+    const hasPayment = !!this.selectedPaymentMethod;
+
+    // Validation adresse si livraison
+    const addressValid =
+      !this.selectedDeliveryOption.includes('delivery') ||
+      (!!this.deliveryAddress.street &&
+        !!this.deliveryAddress.city &&
+        !!this.deliveryAddress.phone);
+
+    // Validation AGC si activé
+    const agcValid = !this.useAGCPayment || this.agcState.canProceed;
+
+    return hasItems && hasDelivery && hasPayment && addressValid && agcValid;
+  }
+
+  /**
+   * Actions rapides pour l'utilisateur
+   */
+  async quickBuyAGC(): Promise<void> {
+    const missing = this.agcState.missingAGC;
+    if (missing > 0) {
+      const amount = missing * 100; // Montant en FCFA
+      this.showInfo(
+        `Achat recommandé: ${missing} AGC (${amount.toLocaleString()} FCFA)`,
+      );
+      this.openAGCPurchase();
+    }
+  }
+
+  /**
+   * Statistiques d'utilisation AGC
+   */
+  getAGCStats(): {
+    totalUsed: number;
+    totalSaved: number;
+    monthlyAverage: number;
+  } {
+    // À implémenter avec les données réelles
+    return {
+      totalUsed: 150, // Exemple
+      totalSaved: 15000, // Économies en FCFA
+      monthlyAverage: 25,
+    };
+  }
   private async simulatePayment() {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
@@ -847,10 +1242,10 @@ constructor(
   private createOrderData() {
     const selectedItems = this.cartItems.filter((item) => item.selected);
     const deliveryOption = this.deliveryOptions.find(
-      (o) => o.id === this.selectedDeliveryOption
+      (o) => o.id === this.selectedDeliveryOption,
     );
     const paymentMethod = this.paymentMethods.find(
-      (m) => m.id === this.selectedPaymentMethod
+      (m) => m.id === this.selectedPaymentMethod,
     );
 
     return {
@@ -899,7 +1294,7 @@ constructor(
   private async saveOrder(orderData: any) {
     try {
       const orders = JSON.parse(
-        localStorage.getItem('jokko_agro_orders') || '[]'
+        localStorage.getItem('jokko_agro_orders') || '[]',
       );
       orders.push(orderData);
       localStorage.setItem('jokko_agro_orders', JSON.stringify(orders));
@@ -979,7 +1374,7 @@ constructor(
       .join('%0A');
 
     const message = `Mon panier Jokko Agro:%0A${itemsText}%0A%0ATotal: ${this.formatPrice(
-      this.getTotal()
+      this.getTotal(),
     )}`;
     const whatsappUrl = `https://wa.me/?text=${message}`;
 
@@ -993,13 +1388,13 @@ constructor(
       .map(
         (item) =>
           `• ${item.name} - ${item.quantity}${item.unit} - ${this.formatPrice(
-            item.price * item.quantity
-          )}`
+            item.price * item.quantity,
+          )}`,
       )
       .join('%0A')}%0A%0ATotal: ${this.formatPrice(this.getTotal())}`;
 
     window.location.href = `mailto:?subject=${encodeURIComponent(
-      subject
+      subject,
     )}&body=${body}`;
     this.closeShareModal();
   }
@@ -1070,7 +1465,7 @@ constructor(
     orderData.status = 'draft';
 
     const drafts = JSON.parse(
-      localStorage.getItem('jokko_agro_drafts') || '[]'
+      localStorage.getItem('jokko_agro_drafts') || '[]',
     );
     drafts.push(orderData);
     localStorage.setItem('jokko_agro_drafts', JSON.stringify(drafts));
@@ -1089,7 +1484,7 @@ constructor(
       this.cartItems
         .filter((item) => item.selected && item.local)
         .reduce((total, item) => total + (item.carbonFootprint || 0), 0)
-        .toFixed(2)
+        .toFixed(2),
     );
   }
 
@@ -1098,7 +1493,7 @@ constructor(
       this.cartItems
         .filter((item) => item.selected && item.isOrganic)
         .reduce((total, item) => total + (item.waterSaved || 0), 0)
-        .toFixed(2)
+        .toFixed(2),
     );
   }
 
@@ -1106,7 +1501,7 @@ constructor(
     const producers = new Set(
       this.cartItems
         .filter((item) => item.selected && item.local)
-        .map((item) => item.producer)
+        .map((item) => item.producer),
     );
     return producers.size;
   }
@@ -1130,7 +1525,7 @@ constructor(
 
   private addNotification(
     message: string,
-    type: 'success' | 'error' | 'info' | 'warning'
+    type: 'success' | 'error' | 'info' | 'warning',
   ) {
     const id = ++this.notificationId;
     this.notifications.push({ message, type, id });
@@ -1161,7 +1556,7 @@ constructor(
 
   getDefaultDeliveryOption(): string {
     const hasDeliveryItems = this.cartItems.some(
-      (item) => item.deliveryType === 'delivery'
+      (item) => item.deliveryType === 'delivery',
     );
     return hasDeliveryItems ? 'delivery_1' : 'pickup_1';
   }
@@ -1193,18 +1588,6 @@ constructor(
     }
 
     return 'Autres';
-  }
-
-  canCheckout(): boolean {
-    return (
-      this.getSelectedItemsCount() > 0 &&
-      !!this.selectedDeliveryOption &&
-      !!this.selectedPaymentMethod &&
-      (!this.selectedDeliveryOption.includes('delivery') ||
-        (!!this.deliveryAddress.street &&
-          !!this.deliveryAddress.city &&
-          !!this.deliveryAddress.phone))
-    );
   }
 
   getSelectedItemsCount(): number {
@@ -1250,7 +1633,7 @@ constructor(
 
     if (hasPriceChange) {
       this.showInfo(
-        'Les prix ont été mis à jour. Veuillez vérifier votre panier.'
+        'Les prix ont été mis à jour. Veuillez vérifier votre panier.',
       );
       this.loadCartItems();
     }
@@ -1259,12 +1642,12 @@ constructor(
   private checkItemAvailability() {
     // Simulation de vérification de disponibilité
     const unavailableItems = this.cartItems.filter(
-      (item) => Math.random() < 0.05
+      (item) => Math.random() < 0.05,
     ); // 5% de chance
 
     if (unavailableItems.length > 0) {
       this.showWarning(
-        `${unavailableItems.length} article(s) pourrait(ent) ne plus être disponible(s)`
+        `${unavailableItems.length} article(s) pourrait(ent) ne plus être disponible(s)`,
       );
     }
   }
@@ -1317,7 +1700,7 @@ constructor(
 
       return ordersData.some((order: any) => {
         const orderDate = new Date(
-          order.orderDate || order.createdAt
+          order.orderDate || order.createdAt,
         ).getTime();
         return orderDate > twentyFourHoursAgo;
       });
@@ -1348,7 +1731,7 @@ constructor(
   private saveRecentOrder(orderData: any) {
     try {
       let recentOrders = JSON.parse(
-        localStorage.getItem('jokko_agro_recent_orders') || '[]'
+        localStorage.getItem('jokko_agro_recent_orders') || '[]',
       );
 
       // Garder seulement les 5 commandes les plus récentes
@@ -1359,7 +1742,7 @@ constructor(
 
       localStorage.setItem(
         'jokko_agro_recent_orders',
-        JSON.stringify(recentOrders)
+        JSON.stringify(recentOrders),
       );
     } catch (error) {
       console.error('Erreur sauvegarde commande récente:', error);
@@ -1380,7 +1763,7 @@ constructor(
   private showOrderConfirmationModal(
     orderNumber: string,
     total: number,
-    itemsCount: number
+    itemsCount: number,
   ) {
     const userData = this.authService.getUserData();
 
@@ -1401,5 +1784,112 @@ constructor(
   closeOrderConfirmation() {
     this.showOrderConfirmation = false;
     this.orderConfirmationData = undefined;
+  }
+
+  /**
+   * Charger les données AGC
+   */
+  public async loadAGCData(): Promise<void> {
+    const user = this.authService.getUserData();
+    if (user) {
+      this.agcBalance = await this.agcService.getBalance(user.uid);
+      this.updateAGCPaymentInfo();
+    }
+  }
+
+  /**
+   * Mettre à jour les informations de paiement hybride
+   */
+  private updateAGCPaymentInfo(): void {
+    if (!this.useAGCPayment) {
+      this.agcPaymentInfo = null;
+      return;
+    }
+
+    // Utiliser les valeurs déjà calculées par agcState
+    this.agcPaymentInfo = {
+      fiatAmount: this.agcState.fiatAmount,
+      agcAmount: this.agcState.agcAmount,
+      agcBalance: this.agcBalance,
+      hasEnoughAGC: this.agcState.hasEnough,
+      agcEquivalent: this.agcState.agcAmount * 100,
+    };
+  }
+
+  /**
+   * Basculer l'utilisation des AGC
+   */
+  toggleAGCPayment(): void {
+    this.useAGCPayment = !this.useAGCPayment;
+    this.updateAGCPaymentInfo();
+  }
+
+  /**
+   * Obtenir le montant final après application des AGC
+   */
+  getFinalAmount(): number {
+    if (!this.useAGCPayment || !this.agcPaymentInfo) {
+      return this.getTotal();
+    }
+
+    if (this.agcPaymentInfo.hasEnoughAGC) {
+      return this.agcPaymentInfo.fiatAmount;
+    } else {
+      // Si pas assez d'AGC, payer en FCFA la partie non couverte
+      const missingAGC = this.agcPaymentInfo.agcAmount - this.agcBalance;
+      const missingFiat = missingAGC * 100;
+      return this.agcPaymentInfo.fiatAmount + missingFiat;
+    }
+  }
+
+  /**
+   * Obtenir le montant à payer en AGC
+   */
+  getAGCToPay(): number {
+    if (!this.useAGCPayment || !this.agcPaymentInfo) return 0;
+
+    if (this.agcPaymentInfo.hasEnoughAGC) {
+      return this.agcPaymentInfo.agcAmount;
+    } else {
+      return this.agcBalance;
+    }
+  }
+
+  /**
+   * Obtenir le montant à payer en FCFA
+   */
+  getFiatToPay(): number {
+    if (!this.useAGCPayment) return this.getTotal();
+    return this.getFinalAmount();
+  }
+
+  /**
+   * Obtenir le message d'état AGC
+   */
+  getAGCStatusMessage(): string {
+    if (!this.useAGCPayment) return '';
+
+    const info = this.agcPaymentInfo;
+    if (!info) return '';
+
+    if (info.hasEnoughAGC) {
+      return `✅ Vous paierez ${info.agcAmount} AGC (${info.agcEquivalent.toLocaleString()} FCFA) + ${info.fiatAmount.toLocaleString()} FCFA`;
+    } else {
+      const missing = info.agcAmount - info.agcBalance;
+      return `⚠️ Solde AGC insuffisant. Vous paierez ${info.agcBalance} AGC + ${(info.fiatAmount + missing * 100).toLocaleString()} FCFA`;
+    }
+  }
+
+  /**
+   * Ouvrir le modal d'achat d'AGC
+   */
+  openAGCPurchase(): void {
+    console.log("🪙 Ouverture du modal d'achat AGC");
+    this.showAGCPurchaseModal = true;
+
+    // Optionnel : recharger les données AGC
+    this.loadAGCData().catch((error) => {
+      console.error('Erreur chargement données AGC:', error);
+    });
   }
 }

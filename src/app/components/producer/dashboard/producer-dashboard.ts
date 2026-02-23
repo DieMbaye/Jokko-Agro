@@ -6,6 +6,7 @@ import { AuthService } from '../../../services/auth.service';
 import { FirebaseService } from '../../../services/firebase.service';
 import { SalesService } from '../../../services/sales.service';
 import { Product } from '../../../interfaces/data.interfaces';
+import { AGCBalanceWidgetComponent } from '../../agc/agc-balance-widget/agc-balance-widget.component';
 
 interface DashboardStat {
   label: string;
@@ -38,7 +39,7 @@ interface Notification {
 @Component({
   selector: 'app-producer-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, AGCBalanceWidgetComponent],
   templateUrl: './producer-dashboard.html',
   styleUrls: ['./producer-dashboard.css'],
 })

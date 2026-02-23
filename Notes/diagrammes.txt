@@ -1,0 +1,218 @@
+CLASSES PRINCIPALES :
+
+User (avec attributs : uid, email, fullName, phone, role, verified, createdAt, location)
+
+Product (avec attributs : id, name, category, price, quantity, unit, isOrganic, certifications)
+
+Sale (avec attributs : orderNumber, totalAmount, status, paymentMethod, hybridPayment)
+
+AGCBalance (avec attributs : userId, balance, lockedBalance, totalEarned, totalSpent)
+
+AGCTransaction (avec attributs : fromUserId, toUserId, amount, type, referenceId)
+
+Certification (avec attributs : productId, producerId, level, status, progress, checkpoints)
+
+Rating (avec attributs : buyerId, producerId, productId, stars, comment)
+
+Notification (avec attributs : userId, type, title, message, read)
+
+Activity (avec attributs : userId, action, timestamp, metadata)
+
+Coupon (avec attributs : code, type, value, startDate, endDate, usedCount)
+
+RELATIONS :
+
+User 1 ----> * Product (un producteur peut avoir plusieurs produits)
+
+User 1 ----> * Sale (en tant qu'acheteur)
+
+User 1 ----> * Sale (en tant que producteur)
+
+User 1 ----> 1 AGCBalance
+
+User 1 ----> * AGCTransaction (envoyées/reçues)
+
+User 1 ----> * Rating (donnés/reçus)
+
+User 1 ----> * Notification
+
+User 1 ----> * Activity
+
+Product 1 ----> * Sale
+
+Product 1 ----> 0..1 Certification
+
+Product 1 ----> * Rating
+
+Sale 1 ----> 1 Rating (optionnel)
+
+Sale 1 ----> 0..1 AGCTransaction
+
+
+
+### 2. DIAGRAMME DE BASE DE DONNÉES (Modèle relationnel)
+Représente les collections Firestore avec leurs champs et types :
+COLLECTION users {
+uid: string (PK)
+email: string
+fullName: string
+phone: string
+role: enum['producer','buyer']
+verified: boolean
+createdAt: timestamp
+updatedAt: timestamp
+lastLogin: timestamp
+location: string
+address: object
+stats: object
+agcStats: object
+preferences: object
+farmName?: string (producer only)
+farmType?: string
+farmSize?: number
+}
+
+COLLECTION products {
+id: string (PK)
+producerId: string (FK → users.uid)
+producerName: string
+name: string
+category: string
+description: string
+price: number
+quantity: number
+unit: string
+isOrganic: boolean
+isLocal: boolean
+images: array
+certifications: array
+certification: object
+status: enum
+views: number
+sales: number
+rating: number
+ratingCount: number
+createdAt: timestamp
+updatedAt: timestamp
+}
+
+COLLECTION sales {
+id: string (PK)
+orderNumber: string (unique)
+buyerId: string (FK → users.uid)
+buyerName: string
+producerId: string (FK → users.uid)
+producerName: string
+productId: string (FK → products.id)
+productName: string
+quantity: number
+unitPrice: number
+totalAmount: number
+deliveryFee: number
+finalAmount: number
+hybridPayment: object
+status: enum
+paymentStatus: enum
+paymentMethod: enum
+deliveryType: enum
+rating: number
+orderDate: timestamp
+}
+
+COLLECTION agc_balances {
+userId: string (PK, FK → users.uid)
+balance: number
+lockedBalance: number
+lastUpdated: timestamp
+totalEarned: number
+totalSpent: number
+totalPurchased: number
+totalBonus: number
+transactionCount: number
+}
+
+COLLECTION agc_transactions {
+id: string (PK)
+fromUserId: string (FK → users.uid)
+toUserId: string (FK → users.uid)
+amount: number
+fiatEquivalent: number
+type: enum
+referenceId: string
+referenceType: string
+description: string
+status: enum
+createdAt: timestamp
+completedAt: timestamp
+}
+
+COLLECTION certifications {
+id: string (PK)
+producerId: string (FK → users.uid)
+productId: string (FK → products.id)
+productName: string
+type: enum
+level: enum
+status: enum
+progress: number
+score: number
+requestedAt: timestamp
+completedAt: timestamp
+validUntil: timestamp
+checkpoints: array
+certificateUrl: string
+qrCodeUrl: string
+}
+
+COLLECTION ratings {
+id: string (PK)
+buyerId: string (FK → users.uid)
+buyerName: string
+producerId: string (FK → users.uid)
+productId: string (FK → products.id)
+saleId: string (FK → sales.id)
+stars: number
+comment: string
+criteria: object
+createdAt: timestamp
+}
+
+COLLECTION notifications {
+id: string (PK)
+userId: string (FK → users.uid)
+type: enum
+title: string
+message: string
+link: string
+read: boolean
+readAt: timestamp
+priority: enum
+createdAt: timestamp
+}
+
+COLLECTION activity {
+id: string (PK)
+userId: string (FK → users.uid)
+action: string
+category: string
+details: object
+ipAddress: string
+duration: number
+timestamp: timestamp
+}
+
+COLLECTION coupons {
+id: string (PK)
+code: string (unique)
+type: enum
+value: number
+minOrderAmount: number
+startDate: timestamp
+endDate: timestamp
+maxUses: number
+usedCount: number
+active: boolean
+}
+
+
+

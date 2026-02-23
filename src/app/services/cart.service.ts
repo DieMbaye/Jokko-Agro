@@ -24,6 +24,16 @@ export interface CartItem {
   producerPhone?: string;
   minOrderQuantity?: number;
   stock?: number;
+  agcDiscount?: number; // Réduction en AGC si applicable
+  agcEligible?: boolean; // Si le produit peut être payé avec AGC
+}
+
+export interface HybridPaymentInfo {
+  fiatAmount: number; // Montant en FCFA (90%)
+  agcAmount: number; // Montant en AGC (10%)
+  agcBalance: number; // Solde AGC de l'utilisateur
+  hasEnoughAGC: boolean; // Si l'utilisateur a assez d'AGC
+  agcEquivalent: number; // Équivalent en FCFA de l'AGC utilisé
 }
 
 export interface DeliveryOption {
@@ -89,7 +99,7 @@ export class CartService {
       } catch (error) {
         console.error(
           'Erreur lors du chargement des items sauvegardés:',
-          error
+          error,
         );
         this.savedItems = [];
       }
@@ -100,7 +110,7 @@ export class CartService {
   private saveSavedItems(): void {
     localStorage.setItem(
       'jokko_agro_saved_items',
-      JSON.stringify(this.savedItems)
+      JSON.stringify(this.savedItems),
     );
   }
 
@@ -118,7 +128,7 @@ export class CartService {
 
     // Vérifier si le produit existe déjà dans le panier
     const existingItemIndex = this.cartItems.findIndex(
-      (item) => item.productId === product.id
+      (item) => item.productId === product.id,
     );
 
     if (existingItemIndex !== -1) {
@@ -303,6 +313,41 @@ export class CartService {
         document.body.removeChild(toast);
       }
     }, 3000);
+  }
+
+  /**
+   * Calculer le montant hybride pour le panier
+   */
+  calculateHybridPayment(
+    totalFiat: number,
+    agcBalance: number,
+  ): HybridPaymentInfo {
+    const agcAmount = Math.floor(totalFiat / 100); // 1 AGC = 100 FCFA
+    const fiatAmount = totalFiat - agcAmount * 100;
+
+    return {
+      fiatAmount,
+      agcAmount,
+      agcBalance,
+      hasEnoughAGC: agcBalance >= agcAmount,
+      agcEquivalent: agcAmount * 100,
+    };
+  }
+
+  /**
+   * Vérifier si le panier est éligible au paiement hybride
+   */
+  isHybridPaymentEligible(): boolean {
+    return this.cartItems.some((item) => item.selected && item.certified);
+  }
+
+  /**
+   * Obtenir le total des produits certifiés (éligibles AGC)
+   */
+  getCertifiedSubtotal(): number {
+    return this.cartItems
+      .filter((item) => item.selected && item.certified)
+      .reduce((total, item) => total + item.price * item.quantity, 0);
   }
 
   // Données de test

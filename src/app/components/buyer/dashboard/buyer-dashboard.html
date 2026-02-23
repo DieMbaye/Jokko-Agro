@@ -11,6 +11,9 @@
       </div>
 
       <div class="header-right">
+        <div class="agc-widget-container">
+          <app-agc-balance-widget></app-agc-balance-widget>
+        </div>
         <!-- 🔔 + 🔍 SUR LA MÊME LIGNE -->
         <div class="search-notification-row">
           <!-- 🔔 NOTIFICATIONS -->
@@ -51,9 +54,7 @@
               [(ngModel)]="searchTerm"
               (keyup.enter)="onSearch()"
             />
-            <button class="search-btn" (click)="onSearch()">
-              🔍
-            </button>
+            <button class="search-btn" (click)="onSearch()">🔍</button>
           </div>
 
           <!-- ⚡ ACTION RAPIDE -->
@@ -75,7 +76,10 @@
           [routerLink]="stat.link"
           [ngStyle]="{ borderLeftColor: stat.color }"
         >
-          <div class="stat-icon" [ngStyle]="{ backgroundColor: stat.color + '20' }">
+          <div
+            class="stat-icon"
+            [ngStyle]="{ backgroundColor: stat.color + '20' }"
+          >
             {{ stat.icon }}
           </div>
           <div class="stat-info">
@@ -180,7 +184,9 @@
         <div *ngFor="let product of recommendedProducts" class="product-card">
           <div class="product-image">
             {{ product.image }}
-            <span *ngIf="product.certified" class="certified-tag">✔ Certifié</span>
+            <span *ngIf="product.certified" class="certified-tag"
+              >✔ Certifié</span
+            >
           </div>
           <div class="product-info">
             <h4>{{ product.name }}</h4>

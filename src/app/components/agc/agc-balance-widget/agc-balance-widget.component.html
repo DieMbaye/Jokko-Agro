@@ -1,0 +1,35 @@
+<div class="agc-widget">
+  <button class="agc-balance-btn" (click)="toggleTooltip()">
+    <span class="agc-icon">🪙</span>
+    <span class="agc-balance">{{ balance }} AGC</span>
+    <span class="agc-add">+</span>
+  </button>
+
+  <div class="agc-tooltip" *ngIf="showTooltip"
+       (mouseleave)="showTooltip = false">
+    <div class="tooltip-header">
+      <span class="tooltip-icon">ℹ️</span>
+      <span>Votre solde AGC</span>
+    </div>
+    <div class="tooltip-content">
+      <p>1 AGC = 100 FCFA</p>
+      <p>Utilisez vos AGC pour:</p>
+      <ul>
+        <li>✅ Paiements hybrides (10% des achats)</li>
+        <li>✅ Certifications produit</li>
+        <li>✅ Mise en avant</li>
+        <li>✅ Services premium</li>
+      </ul>
+    </div>
+    <div class="tooltip-actions">
+      <button class="btn-buy" (click)="openPurchaseModal()">
+        💰 Acheter des AGC
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-agc-purchase
+  [visible]="showPurchase"
+  (close)="closePurchaseModal()">
+</app-agc-purchase>

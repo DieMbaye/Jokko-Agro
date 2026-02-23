@@ -313,7 +313,7 @@
         </div>
       </div>
 
-      <!-- Section droite : Récapitulatif amélioré -->
+      <!-- Section droite : Récapitulatif  -->
       <div class="cart-summary-section">
         <!-- Récapitulatif de commande -->
         <div class="summary-card">
@@ -469,7 +469,7 @@
           </div>
         </div>
 
-        <!-- Options de livraison améliorées -->
+        <!-- Options de livraison  -->
         <div class="delivery-card">
           <h3>📦 Options de livraison</h3>
 
@@ -545,7 +545,11 @@
               <div class="form-row">
                 <div class="form-group">
                   <label>Ville *</label>
-                  <select [(ngModel)]="deliveryAddress.city" class="form-input" title="Sélectionnez une ville" >
+                  <select
+                    [(ngModel)]="deliveryAddress.city"
+                    class="form-input"
+                    title="Sélectionnez une ville"
+                  >
                     <option value="">Sélectionnez une ville</option>
                     <option value="Dakar">Dakar</option>
                     <option value="Thiès">Thiès</option>
@@ -648,12 +652,18 @@
               (click)="selectedPaymentMethod = 'wave'"
             >
               <div class="payment-icon">
-                <img src="/assets/images/wave-money-logo.png" alt="Wave Money" class="payment-logo" 
-                     (error)="onImageError($event, 'wave')" />
+                <img
+                  src="/assets/images/wave-money-logo.png"
+                  alt="Wave Money"
+                  class="payment-logo"
+                  (error)="onImageError($event, 'wave')"
+                />
               </div>
               <div class="payment-info">
                 <div class="payment-name">Wave Money</div>
-                <div class="payment-description">Paiement mobile rapide et sécurisé</div>
+                <div class="payment-description">
+                  Paiement mobile rapide et sécurisé
+                </div>
                 <div class="payment-promo">🎁 0% de frais jusqu'au 31/12</div>
               </div>
               <div class="payment-fee">Gratuit</div>
@@ -666,12 +676,18 @@
               (click)="selectedPaymentMethod = 'orange'"
             >
               <div class="payment-icon">
-                <img src="/assets/images/orange-logo.png" alt="Orange Money" class="payment-logo"
-                     (error)="onImageError($event, 'orange')" />
+                <img
+                  src="/assets/images/orange-logo.png"
+                  alt="Orange Money"
+                  class="payment-logo"
+                  (error)="onImageError($event, 'orange')"
+                />
               </div>
               <div class="payment-info">
                 <div class="payment-name">Orange Money</div>
-                <div class="payment-description">Service de paiement Orange</div>
+                <div class="payment-description">
+                  Service de paiement Orange
+                </div>
                 <div class="payment-promo">🎁 Premier paiement offert</div>
               </div>
               <div class="payment-fee">+500 FCFA</div>
@@ -684,8 +700,12 @@
               (click)="selectedPaymentMethod = 'free'"
             >
               <div class="payment-icon">
-                <img src="/assets/images/free-money.jpeg" alt="Free Money" class="payment-logo"
-                     (error)="onImageError($event, 'free')" />
+                <img
+                  src="/assets/images/free-money.jpeg"
+                  alt="Free Money"
+                  class="payment-logo"
+                  (error)="onImageError($event, 'free')"
+                />
               </div>
               <div class="payment-info">
                 <div class="payment-name">Free Money</div>
@@ -718,7 +738,9 @@
               <div class="payment-icon">💵</div>
               <div class="payment-info">
                 <div class="payment-name">Espèces à la livraison</div>
-                <div class="payment-description">Paiement lors de la réception</div>
+                <div class="payment-description">
+                  Paiement lors de la réception
+                </div>
               </div>
               <div class="payment-fee">+1 000 FCFA</div>
             </div>
@@ -749,288 +771,397 @@
             </div>
           </div>
         </div>
+        <!-- Section Paiement Hybride AGC -->
+        <!-- Section AGC améliorée dans cart.html -->
+        <div
+          class="agc-payment-section"
+          *ngIf="cartService.isHybridPaymentEligible()"
+        >
+          <!-- En-tête avec stats -->
+          <div class="agc-header">
+            <div class="agc-title">
+              <h3>🪙 Paiement Hybride AGC</h3>
+              <span class="agc-badge" *ngIf="agcState.partialPayment"
+                >Partiel</span
+              >
+            </div>
 
-        <!-- Bouton de commande amélioré -->
+            <div
+              class="agc-balance-display"
+              [class.warning]="!agcState.hasEnough"
+            >
+              <span>💰 Solde:</span>
+              <strong>{{agcState.balance}} AGC</strong>
+              <button
+                class="btn-buy-agc"
+                (click)="openAGCPurchase()"
+                [class.pulse]="agcState.missingAGC > 0"
+              >
+                {{agcState.missingAGC > 0 ? 'Acheter ' + agcState.missingAGC + '
+                AGC' : 'Recharger'}}
+              </button>
+            </div>
+          </div>
+
+          <!-- Toggle avec indicateur -->
+          <div class="agc-toggle" [class.disabled]="agcState.balance === 0">
+            <label class="toggle-switch">
+              <input
+                type="checkbox"
+                [(ngModel)]="useAGCPayment"
+                (change)="toggleAGCPayment()"
+                [disabled]="agcState.balance === 0"
+              />
+              <span class="toggle-slider"></span>
+            </label>
+
+            <div class="toggle-info">
+              <span class="toggle-label"
+                >Utiliser mes AGC (10% de réduction)</span
+              >
+              <span class="toggle-sublabel" *ngIf="agcState.hasEnough">
+                ✅ Économisez {{agcState.agcAmount * 100 | currency:'XOF'}}
+              </span>
+              <span
+                class="toggle-sublabel warning"
+                *ngIf="!agcState.hasEnough && agcState.balance > 0"
+              >
+                ⚠️ Paiement partiel possible ({{agcState.balance}} AGC
+                disponibles)
+              </span>
+            </div>
+          </div>
+
+          <!-- Détails détaillés -->
+          <div *ngIf="useAGCPayment" class="agc-details">
+            <!-- Barre de progression du solde -->
+            <div class="agc-progress" *ngIf="agcState.agcAmount > 0">
+              <div class="progress-label">
+                <span>Utilisation AGC</span>
+                <span>{{agcState.agcAmount}} / {{agcState.agcAmount}} AGC</span>
+              </div>
+              <div class="progress-bar">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="(agcState.balance / agcState.agcAmount) * 100"
+                  [class.warning]="!agcState.hasEnough"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Breakdown détaillé -->
+            <div class="agc-breakdown">
+              <div class="breakdown-row">
+                <span>💰 Total commande:</span>
+                <span class="amount">{{formatPrice(agcState.amount)}}</span>
+              </div>
+
+              <div class="breakdown-row highlight">
+                <div class="label-with-icon">
+                  <span>🪙 À payer en AGC (10%)</span>
+                  <span class="info-icon" title="1 AGC = 100 FCFA">ⓘ</span>
+                </div>
+                <div class="agc-amount">
+                  <strong>{{agcState.agcAmount}} AGC</strong>
+                  <small>({{formatPrice(agcState.agcAmount * 100)}})</small>
+                </div>
+              </div>
+
+              <div class="breakdown-row">
+                <span>💵 À payer en FCFA (90%)</span>
+                <span class="amount">{{formatPrice(agcState.fiatAmount)}}</span>
+              </div>
+
+              <div class="breakdown-row total" *ngIf="agcState.partialPayment">
+                <span>🔄 Total à payer (partiel):</span>
+                <span class="amount total"
+                  >{{formatPrice(agcState.fiatAmount)}}</span
+                >
+              </div>
+            </div>
+
+            <!-- Messages d'état -->
+            <div class="agc-status-messages">
+              <div *ngIf="agcState.hasEnough" class="status success">
+                <span class="icon">✅</span>
+                <div class="message">
+                  <strong>Paiement optimal</strong>
+                  <p>
+                    Vous utilisez {{agcState.agcAmount}} AGC et économisez
+                    {{formatPrice(agcState.agcAmount * 100)}}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                *ngIf="!agcState.hasEnough && agcState.balance > 0"
+                class="status warning"
+              >
+                <span class="icon">⚠️</span>
+                <div class="message">
+                  <strong>Paiement partiel</strong>
+                  <p>
+                    Vous utilisez {{agcState.balance}} AGC sur
+                    {{agcState.agcAmount}} requis
+                  </p>
+                  <button class="btn-link" (click)="quickBuyAGC()">
+                    Acheter {{agcState.missingAGC}} AGC manquants
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="agcState.balance === 0" class="status error">
+                <span class="icon">❌</span>
+                <div class="message">
+                  <strong>Solde insuffisant</strong>
+                  <p>
+                    Vous n'avez pas d'AGC. Achetez-en pour bénéficier de
+                    réduction.
+                  </p>
+                  <button class="btn-link" (click)="openAGCPurchase()">
+                    Acheter des AGC
+                  </button>
+                </div>
+              </div>
+
+              <div
+                *ngIf="agcState.warning && agcState.hasEnough"
+                class="status info"
+              >
+                <span class="icon">ℹ️</span>
+                <div class="message">
+                  <p>{{agcState.warning}}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Avantages cumulés -->
+            <div class="agc-benefits">
+              <div class="benefit-item">
+                <span class="benefit-icon">🌟</span>
+                <div class="benefit-text">
+                  <strong>Fidélité</strong>
+                  <span>+{{getLoyaltyPoints()}} points</span>
+                </div>
+              </div>
+              <div class="benefit-item">
+                <span class="benefit-icon">🌱</span>
+                <div class="benefit-text">
+                  <strong>Impact</strong>
+                  <span>{{calculateCarbonSavings()}}kg CO₂ économisé</span>
+                </div>
+              </div>
+              <div class="benefit-item">
+                <span class="benefit-icon">🏷️</span>
+                <div class="benefit-text">
+                  <strong>Réduction</strong>
+                  <span>{{formatPrice(agcState.agcAmount * 100)}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bouton de commande avec récapitulatif AGC -->
         <div class="checkout-card">
           <div class="checkout-summary">
-            <div class="checkout-total">
-              <span>Total à payer</span>
-              <span class="amount">{{ formatPrice(getTotal()) }}</span>
-            </div>
-
-            <div class="checkout-details">
-              <div class="detail-item">
-                <span>Dont TVA:</span>
-                <span>{{ formatPrice(calculateTax()) }}</span>
+            <div class="checkout-total" [class.agc-active]="useAGCPayment">
+              <div class="total-info">
+                <span>Total à payer</span>
+                <small *ngIf="useAGCPayment">après réduction AGC</small>
               </div>
-              <div class="detail-item" *ngIf="getCouponDiscount() > 0">
-                <span>Dont réduction:</span>
-                <span>-{{ formatPrice(getCouponDiscount()) }}</span>
+              <div class="total-amount">
+                <span class="fiat">{{formatPrice(agcState.fiatAmount)}}</span>
+                <span
+                  *ngIf="useAGCPayment && agcState.agcAmount > 0"
+                  class="agc-chip"
+                >
+                  + {{agcState.agcAmount}} AGC
+                </span>
               </div>
             </div>
 
-            <p class="checkout-note">
-              <span>🔒 Paiement sécurisé</span>
-              <span>🛡️ Garantie blockchain</span>
-              <span>✅ Satisfaction garantie</span>
-            </p>
-          </div>
-
-          <div class="checkout-buttons">
-            <button
-              class="checkout-btn btn-primary"
-              (click)="proceedToCheckout()"
-              [disabled]="!canCheckout() || isCheckingOut"
-              [class.loading]="isCheckingOut"
+            <div
+              class="checkout-details"
+              *ngIf="useAGCPayment && agcState.agcAmount > 0"
             >
-              <span *ngIf="!isCheckingOut" class="btn-content">
-                <span class="btn-icon">✅</span>
-                Commander maintenant
-                <span class="btn-subtext">{{ formatPrice(getTotal()) }}</span>
-              </span>
-
-              <span *ngIf="isCheckingOut" class="btn-content">
-                <span class="spinner"></span>
-                Traitement en cours...
-              </span>
-            </button>
-
-            <button class="checkout-btn btn-secondary" (click)="requestQuote()">
-              📋 Demander un devis
-            </button>
-
-            <button
-              class="checkout-btn btn-tertiary"
-              (click)="saveOrderAsDraft()"
-            >
-              💾 Enregistrer comme brouillon
-            </button>
-          </div>
-
-          <div class="checkout-guarantees">
-            <div class="guarantee">
-              <span>🚚 Livraison garantie</span>
-              <span class="guarantee-desc">ou remboursé</span>
-            </div>
-            <div class="guarantee">
-              <span>🔄 48h pour changer d'avis</span>
-            </div>
-            <div class="guarantee">
-              <span>📞 Support 7j/7</span>
+              <div class="detail-row">
+                <span>Dont AGC:</span>
+                <span
+                  >{{agcState.agcAmount}} AGC ({{formatPrice(agcState.agcAmount
+                  * 100)}})</span
+                >
+              </div>
+              <div class="detail-row">
+                <span>Dont FCFA:</span>
+                <span>{{formatPrice(agcState.fiatAmount)}}</span>
+              </div>
+              <div class="detail-row saving" *ngIf="agcState.hasEnough">
+                <span>Vous économisez:</span>
+                <span class="saving-amount"
+                  >{{formatPrice(agcState.agcAmount * 100)}}</span
+                >
+              </div>
             </div>
           </div>
 
-          <p class="secure-payment">
-            Votre paiement est protégé par notre système de sécurité blockchain
-          </p>
-        </div>
-      </div>
-    </div>
+          <button
+            class="checkout-btn"
+            (click)="proceedToCheckout()"
+            [disabled]="!canCheckout() || isCheckingOut"
+            [class.loading]="isCheckingOut"
+            [class.agc-active]="useAGCPayment"
+          >
+            <span *ngIf="!isCheckingOut" class="btn-content">
+              <span class="btn-icon">✅</span>
+              <span class="btn-text">
+                {{useAGCPayment ? 'Payer avec AGC + FCFA' : 'Payer en FCFA'}}
+              </span>
+              <span class="btn-price"
+                >{{formatPrice(agcState.fiatAmount)}}</span
+              >
+            </span>
 
-    <!-- Conseils et informations améliorés -->
-    <div class="cart-tips">
-      <div class="tip-card">
-        <h4>💡 Pourquoi acheter chez nous ?</h4>
-        <ul>
-          <li>✅ Produits certifiés blockchain</li>
-          <li>✅ Producteurs vérifiés et notés</li>
-          <li>✅ Paiements sécurisés multicanal</li>
-          <li>✅ Livraison garantie et traçable</li>
-          <li>✅ Frais de port réduits dès 3 articles</li>
-        </ul>
-      </div>
-
-      <div class="tip-card">
-        <h4>🛡️ Nos garanties incluses</h4>
-        <ul>
-          <li>Authenticité vérifiée par QR code</li>
-          <li>Traçabilité complète du produit</li>
-          <li>Remboursement sous 48h si problème</li>
-          <li>Support client 7j/7 par WhatsApp</li>
-          <li>Programme de fidélité avec récompenses</li>
-        </ul>
-      </div>
-
-      <div class="tip-card">
-        <h4>📱 Acheter en toute confiance</h4>
-        <p>
-          Scannez les QR codes pour vérifier l'authenticité de chaque produit
-          avant l'achat.
-        </p>
-        <div class="tip-actions">
-          <button routerLink="/buyer/scan" class="scan-btn">
-            📱 Tester le scanner
-          </button>
-          <button (click)="showVerificationInfo()" class="info-btn">
-            ℹ️ En savoir plus
+            <span *ngIf="isCheckingOut" class="btn-content">
+              <span class="spinner"></span>
+              Traitement sécurisé...
+            </span>
           </button>
         </div>
-      </div>
 
-      <div class="tip-card">
-        <h4>🌱 Impact environnemental</h4>
-        <div class="impact-stats">
-          <div class="impact-stat">
-            <span class="stat-value">{{calculateCarbonSavings()}} kg</span>
-            <span class="stat-label">CO2 économisé</span>
-          </div>
-          <div class="impact-stat">
-            <span class="stat-value">{{countLocalProducers()}}</span>
-            <span class="stat-label">Producteurs locaux</span>
-          </div>
-          <div class="impact-stat">
-            <span class="stat-value">{{calculateWaterSaved()}} L</span>
-            <span class="stat-label">Eau préservée</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Widget de progression de commande -->
-    <div class="order-progress">
-      <div class="progress-steps">
-        <div class="step active">
-          <div class="step-number">1</div>
-          <div class="step-label">Panier</div>
-        </div>
-        <div class="step" [class.active]="canCheckout()">
-          <div class="step-number">2</div>
-          <div class="step-label">Livraison</div>
-        </div>
+        <!-- Modal pour le partage du panier -->
         <div
-          class="step"
-          [class.active]="canCheckout() && selectedPaymentMethod"
+          *ngIf="showShareModal"
+          class="modal-overlay"
+          (click)="closeShareModal()"
         >
-          <div class="step-number">3</div>
-          <div class="step-label">Paiement</div>
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <h3>📤 Partager mon panier</h3>
+            <p>Partagez votre panier avec vos amis ou votre famille</p>
+            <div class="share-options">
+              <button class="share-option" (click)="shareViaWhatsApp()">
+                <span>📱 WhatsApp</span>
+              </button>
+              <button class="share-option" (click)="shareViaEmail()">
+                <span>📧 Email</span>
+              </button>
+              <button class="share-option" (click)="copyCartLink()">
+                <span>🔗 Copier le lien</span>
+              </button>
+            </div>
+            <div class="modal-actions">
+              <button class="btn-secondary" (click)="closeShareModal()">
+                Annuler
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="step">
-          <div class="step-number">4</div>
-          <div class="step-label">Confirmation</div>
-        </div>
-      </div>
-      <div class="progress-bar">
+        <!-- Modal de confirmation de commande -->
         <div
-          class="progress-fill"
-          [style.width.%]="getCheckoutProgress()"
-        ></div>
-      </div>
-    </div>
-  </div>
+          *ngIf="showOrderConfirmation"
+          class="modal-overlay confirmation-modal"
+          (click)="closeOrderConfirmation()"
+        >
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h2>🎉 Commande Confirmée !</h2>
+              <button class="modal-close" (click)="closeOrderConfirmation()">
+                ×
+              </button>
+            </div>
 
-  <!-- Modal pour le partage du panier -->
-  <div *ngIf="showShareModal" class="modal-overlay" (click)="closeShareModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <h3>📤 Partager mon panier</h3>
-      <p>Partagez votre panier avec vos amis ou votre famille</p>
-      <div class="share-options">
-        <button class="share-option" (click)="shareViaWhatsApp()">
-          <span>📱 WhatsApp</span>
-        </button>
-        <button class="share-option" (click)="shareViaEmail()">
-          <span>📧 Email</span>
-        </button>
-        <button class="share-option" (click)="copyCartLink()">
-          <span>🔗 Copier le lien</span>
-        </button>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-secondary" (click)="closeShareModal()">
-          Annuler
-        </button>
-      </div>
-    </div>
-  </div>
-  <!-- Modal de confirmation de commande -->
-  <div
-    *ngIf="showOrderConfirmation"
-    class="modal-overlay confirmation-modal"
-    (click)="closeOrderConfirmation()"
-  >
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>🎉 Commande Confirmée !</h2>
-        <button class="modal-close" (click)="closeOrderConfirmation()">
-          ×
-        </button>
-      </div>
+            <div class="modal-body">
+              <div class="confirmation-icon">✅</div>
+              <h3>Merci pour votre commande !</h3>
 
-      <div class="modal-body">
-        <div class="confirmation-icon">✅</div>
-        <h3>Merci pour votre commande !</h3>
+              <div class="confirmation-details">
+                <div class="detail-item">
+                  <span class="detail-label">Numéro de commande</span>
+                  <span class="detail-value"
+                    >{{orderConfirmationData?.orderNumber}}</span
+                  >
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Total</span>
+                  <span class="detail-value"
+                    >{{formatPrice(orderConfirmationData?.total || 0)}}</span
+                  >
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Articles</span>
+                  <span class="detail-value"
+                    >{{orderConfirmationData?.itemsCount}} produit(s)</span
+                  >
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Statut</span>
+                  <span class="detail-value status-pending"
+                    >En attente de confirmation</span
+                  >
+                </div>
+                <div
+                  class="detail-item"
+                  *ngIf="orderConfirmationData?.estimatedDelivery"
+                >
+                  <span class="detail-label">Livraison estimée</span>
+                  <span class="detail-value"
+                    >{{getEstimatedDeliveryTime()}}</span
+                  >
+                </div>
+              </div>
 
-        <div class="confirmation-details">
-          <div class="detail-item">
-            <span class="detail-label">Numéro de commande</span>
-            <span class="detail-value"
-              >{{orderConfirmationData?.orderNumber}}</span
-            >
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">Total</span>
-            <span class="detail-value"
-              >{{formatPrice(orderConfirmationData?.total || 0)}}</span
-            >
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">Articles</span>
-            <span class="detail-value"
-              >{{orderConfirmationData?.itemsCount}} produit(s)</span
-            >
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">Statut</span>
-            <span class="detail-value status-pending"
-              >En attente de confirmation</span
-            >
-          </div>
-          <div
-            class="detail-item"
-            *ngIf="orderConfirmationData?.estimatedDelivery"
-          >
-            <span class="detail-label">Livraison estimée</span>
-            <span class="detail-value">{{getEstimatedDeliveryTime()}}</span>
-          </div>
-        </div>
+              <div class="confirmation-message">
+                <p>Votre commande a été enregistrée avec succès.</p>
+                <p>
+                  Vous recevrez une notification lorsque le producteur
+                  confirmera votre commande.
+                </p>
 
-        <div class="confirmation-message">
-          <p>Votre commande a été enregistrée avec succès.</p>
-          <p>
-            Vous recevrez une notification lorsque le producteur confirmera
-            votre commande.
-          </p>
+                <div
+                  class="confirmation-alert"
+                  *ngIf="orderConfirmationData?.isFirstOrder"
+                >
+                  <strong>🎁 Bienvenue chez Jokko Agro !</strong>
+                  <p>
+                    Pour votre première commande, vous recevez
+                    <strong>100 points de fidélité</strong>.
+                  </p>
+                </div>
+              </div>
 
-          <div
-            class="confirmation-alert"
-            *ngIf="orderConfirmationData?.isFirstOrder"
-          >
-            <strong>🎁 Bienvenue chez Jokko Agro !</strong>
-            <p>
-              Pour votre première commande, vous recevez
-              <strong>100 points de fidélité</strong>.
-            </p>
+              <div class="next-steps">
+                <h4>Prochaines étapes :</h4>
+                <ul>
+                  <li>📱 Le producteur va confirmer votre commande sous 24h</li>
+                  <li>💬 Vous serez notifié par WhatsApp/SMS</li>
+                  <li>🔄 Suivez l'avancement dans "Mes commandes"</li>
+                  <li>📞 Contactez-nous en cas de question</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button
+                class="btn btn-secondary"
+                (click)="closeOrderConfirmation()"
+              >
+                Continuer mes achats
+              </button>
+              <button class="btn btn-primary" (click)="goToOrders()">
+                📋 Voir mes commandes
+              </button>
+            </div>
           </div>
         </div>
-
-        <div class="next-steps">
-          <h4>Prochaines étapes :</h4>
-          <ul>
-            <li>📱 Le producteur va confirmer votre commande sous 24h</li>
-            <li>💬 Vous serez notifié par WhatsApp/SMS</li>
-            <li>🔄 Suivez l'avancement dans "Mes commandes"</li>
-            <li>📞 Contactez-nous en cas de question</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeOrderConfirmation()">
-          Continuer mes achats
-        </button>
-        <button class="btn btn-primary" (click)="goToOrders()">
-          📋 Voir mes commandes
-        </button>
       </div>
     </div>
+
+
+    <app-agc-purchase
+      [visible]="showAGCPurchaseModal"
+      (close)="showAGCPurchaseModal = false"
+      (purchased)="loadAGCData()"
+    >
+    </app-agc-purchase>
   </div>
 </div>

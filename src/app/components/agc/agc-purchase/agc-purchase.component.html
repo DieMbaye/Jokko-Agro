@@ -1,0 +1,99 @@
+<div class="agc-purchase-modal" *ngIf="visible" (click)="closeModal($event)">
+  <div class="agc-purchase-content">
+    <div class="purchase-header">
+      <h2>🪙 Acheter des AGC</h2>
+      <button class="close-btn" type="button" (click)="closeModalManually()">
+        ✕
+      </button>
+    </div>
+
+    <div class="purchase-info">
+      <div class="rate-info">
+        <span class="rate-badge">Taux: 1 AGC = 100 FCFA</span>
+      </div>
+
+      <div class="current-balance" *ngIf="currentBalance !== null">
+        <span>Votre solde actuel:</span>
+        <strong>{{ currentBalance }} AGC</strong>
+      </div>
+    </div>
+
+    <div class="purchase-form">
+      <div class="form-group">
+        <label>Montant en FCFA</label>
+        <div class="amount-input">
+          <input
+            type="number"
+            [(ngModel)]="fiatAmount"
+            (input)="calculateAGC()"
+            placeholder="1000"
+            min="100"
+            step="100"
+          />
+          <span class="currency">FCFA</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Vous recevrez</label>
+        <div class="agc-amount-display">
+          <span class="agc-value">{{ agcAmount }}</span>
+          <span class="agc-unit">AGC</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Mode de paiement</label>
+        <div class="payment-methods">
+          <button
+            *ngFor="let method of paymentMethods"
+            class="payment-method"
+            [class.selected]="selectedMethod === method.id"
+            (click)="selectedMethod = method.id"
+          >
+            <img
+              [src]="method.icon"
+              [alt]="method.name"
+              class="method-icon-img"
+            />
+            <span class="method-name">{{ method.name }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="purchase-actions">
+        <button
+          class="btn-purchase"
+          (click)="purchaseAGC()"
+          [disabled]="!canPurchase || isProcessing"
+        >
+          <span *ngIf="!isProcessing">💳 Acheter maintenant</span>
+          <span *ngIf="isProcessing" class="processing">
+            <span class="spinner-small"></span>
+            Traitement...
+          </span>
+        </button>
+
+        <p class="purchase-note" *ngIf="!isProcessing">
+          Les AGC sont crédités immédiatement après confirmation du paiement
+        </p>
+
+        <div *ngIf="errorMessage" class="error-message">
+          ⚠️ {{ errorMessage }}
+        </div>
+
+        <div *ngIf="successMessage" class="success-message">
+          ✅ {{ successMessage }}
+        </div>
+      </div>
+    </div>
+
+    <div class="purchase-footer">
+      <p class="info-text">
+        <span class="info-icon">ℹ️</span>
+        Les AGC sont des crédits numériques utilisables pour les paiements
+        hybrides (10% de vos achats) et les services premium de la plateforme.
+      </p>
+    </div>
+  </div>
+</div>

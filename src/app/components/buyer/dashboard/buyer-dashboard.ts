@@ -15,6 +15,7 @@ import {
   AppNotification,
 } from '../../../services/notification.service';
 import { Subscription } from 'rxjs';
+import { AGCBalanceWidgetComponent } from '../../agc/agc-balance-widget/agc-balance-widget.component';
 
 interface DashboardStat {
   label: string;
@@ -55,7 +56,7 @@ interface RecommendedProduct {
 @Component({
   selector: 'app-buyer-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ChatbotVoiceComponent],
+  imports: [CommonModule, RouterLink, FormsModule, ChatbotVoiceComponent, AGCBalanceWidgetComponent  ],
   templateUrl: './buyer-dashboard.html',
   styleUrls: ['./buyer-dashboard.css'],
 })

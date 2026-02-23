@@ -1,80 +1,74 @@
 <div class="dashboard-container">
-
   <!-- Main Content -->
   <main class="main-content">
     <!-- Header -->
     <header class="main-header">
-  <div class="header-left">
-    <h1>Tableau de bord</h1>
-    <p class="welcome-text">
-      Bonjour {{ userData?.fullName }}, voici votre activité aujourd’hui
-    </p>
-  </div>
+      <div class="header-left">
+        <h1>Tableau de bord</h1>
+        <p class="welcome-text">
+          Bonjour {{ userData?.fullName }}, voici votre activité aujourd’hui
+        </p>
+      </div>
 
-  <div class="header-right">
+      <div class="header-right">
+        <!-- À ajouter dans la section header-right, avant les notifications -->
+        <div class="agc-widget-container">
+          <app-agc-balance-widget></app-agc-balance-widget>
+        </div>
+        <!-- 🔔 NOTIFICATIONS -->
+        <div class="notification-wrapper">
+          <button class="bell-btn" (click)="toggleNotifications()">
+            🔔
+            <span class="notification-badge" *ngIf="getUnreadCount() > 0">
+              {{ getUnreadCount() }}
+            </span>
+          </button>
 
-    <!-- 🔔 NOTIFICATIONS -->
-    <div class="notification-wrapper">
+          <!-- 📋 DROPDOWN -->
+          <div class="notification-dropdown" *ngIf="showNotifications">
+            <div class="dropdown-header">
+              <span>Notifications</span>
+              <button class="mark-all" (click)="markAllAsRead()">
+                Tout lire
+              </button>
+            </div>
 
-      <button class="bell-btn" (click)="toggleNotifications()">
-        🔔
-        <span
-          class="notification-badge"
-          *ngIf="getUnreadCount() > 0"
-        >
-          {{ getUnreadCount() }}
-        </span>
-      </button>
+            <div class="dropdown-body">
+              <div
+                *ngFor="let n of notifications"
+                class="notification-item"
+                [class.unread]="!n.read"
+                (click)="markAsRead(n.id)"
+              >
+                <div class="notif-icon">
+                  <span *ngIf="n.type === 'sale'">💰</span>
+                  <span *ngIf="n.type === 'stock'">📦</span>
+                  <span *ngIf="n.type === 'review'">⭐</span>
+                  <span *ngIf="!n.type">📌</span>
+                </div>
 
-      <!-- 📋 DROPDOWN -->
-      <div class="notification-dropdown" *ngIf="showNotifications">
+                <div class="notif-content">
+                  <strong>{{ n.title }}</strong>
+                  <p>{{ n.message }}</p>
+                  <small>{{ n.time }}</small>
+                </div>
+              </div>
 
-        <div class="dropdown-header">
-          <span>Notifications</span>
-          <button class="mark-all" (click)="markAllAsRead()">
-            Tout lire
+              <div *ngIf="notifications.length === 0" class="notif-empty">
+                Aucune notification
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ⚡ ACTIONS -->
+        <div class="quick-actions">
+          <button routerLink="/producer/add-product" class="quick-btn">
+            ➕ Ajouter un produit
           </button>
         </div>
-
-        <div class="dropdown-body">
-          <div
-            *ngFor="let n of notifications"
-            class="notification-item"
-            [class.unread]="!n.read"
-            (click)="markAsRead(n.id)"
-          >
-            <div class="notif-icon">
-              <span *ngIf="n.type === 'sale'">💰</span>
-              <span *ngIf="n.type === 'stock'">📦</span>
-              <span *ngIf="n.type === 'review'">⭐</span>
-              <span *ngIf="!n.type">📌</span>
-            </div>
-
-            <div class="notif-content">
-              <strong>{{ n.title }}</strong>
-              <p>{{ n.message }}</p>
-              <small>{{ n.time }}</small>
-            </div>
-          </div>
-
-          <div *ngIf="notifications.length === 0" class="notif-empty">
-            Aucune notification
-          </div>
-        </div>
-
       </div>
-    </div>
-
-    <!-- ⚡ ACTIONS -->
-    <div class="quick-actions">
-      <button routerLink="/producer/add-product" class="quick-btn">
-        ➕ Ajouter un produit
-      </button>
-    </div>
-
-  </div>
-</header>
-
+    </header>
 
     <!-- Chargement -->
     <div *ngIf="isLoading" class="loading-overlay">
@@ -95,19 +89,31 @@
         </div>
         <div class="stat-info">
           <h3>
-            <span *ngIf="stat.label === 'Revenus total'">{{ stat.value.toLocaleString('fr-FR') }}</span>
-            <span *ngIf="stat.label === 'Note moyenne'">{{ stat.value.toFixed(1) }}</span>
-            <span *ngIf="stat.label !== 'Revenus total' && stat.label !== 'Note moyenne'">
+            <span *ngIf="stat.label === 'Revenus total'"
+              >{{ stat.value.toLocaleString('fr-FR') }}</span
+            >
+            <span *ngIf="stat.label === 'Note moyenne'"
+              >{{ stat.value.toFixed(1) }}</span
+            >
+            <span
+              *ngIf="stat.label !== 'Revenus total' && stat.label !== 'Note moyenne'"
+            >
               {{ stat.value.toLocaleString('fr-FR') }}
             </span>
           </h3>
           <p>{{ stat.label }}</p>
 
           <!-- Indicateur de tendance pour les ventes -->
-          <div *ngIf="stat.label === 'Ventes du mois' && stat.change !== undefined"
-               class="stat-trend">
-            <span *ngIf="stat.trend === 1" class="trend-up">↑ +{{ stat.change.toFixed(1) }}%</span>
-            <span *ngIf="stat.trend === -1" class="trend-down">↓ -{{ stat.change.toFixed(1) }}%</span>
+          <div
+            *ngIf="stat.label === 'Ventes du mois' && stat.change !== undefined"
+            class="stat-trend"
+          >
+            <span *ngIf="stat.trend === 1" class="trend-up"
+              >↑ +{{ stat.change.toFixed(1) }}%</span
+            >
+            <span *ngIf="stat.trend === -1" class="trend-down"
+              >↓ -{{ stat.change.toFixed(1) }}%</span
+            >
             <span *ngIf="stat.trend === 0" class="trend-neutral">→ Stable</span>
           </div>
         </div>
@@ -139,7 +145,9 @@
               <td class="product-cell">{{ sale.product }}</td>
               <td>{{ sale.buyer }}</td>
               <td>{{ sale.date }}</td>
-              <td class="amount">{{ sale.amount.toLocaleString('fr-FR') }} FCFA</td>
+              <td class="amount">
+                {{ sale.amount.toLocaleString('fr-FR') }} FCFA
+              </td>
               <td>
                 <span
                   class="status-badge"
@@ -203,7 +211,10 @@
             Marquer lu
           </button>
         </div>
-        <div *ngIf="notifications.length === 0 && !isLoading" class="empty-notifications">
+        <div
+          *ngIf="notifications.length === 0 && !isLoading"
+          class="empty-notifications"
+        >
           <p>Aucune notification</p>
         </div>
       </div>
@@ -213,15 +224,23 @@
     <div class="quick-stats">
       <div class="stat-box">
         <h3>🎯 Objectifs du mois</h3>
-        <p>Ventes: <strong>{{ currentSales }}/{{ monthlyGoal }} produits</strong></p>
+        <p>
+          Ventes: <strong>{{ currentSales }}/{{ monthlyGoal }} produits</strong>
+        </p>
         <div class="progress-bar">
-          <div class="progress-fill" [style.width.%]="getGoalPercentage()"></div>
+          <div
+            class="progress-fill"
+            [style.width.%]="getGoalPercentage()"
+          ></div>
         </div>
-        <p class="progress-text">{{ getGoalPercentage().toFixed(0) }}% atteint</p>
+        <p class="progress-text">
+          {{ getGoalPercentage().toFixed(0) }}% atteint
+        </p>
       </div>
       <div class="stat-box">
         <h3>📈 Performance</h3>
-        <p>Augmentation des ventes:
+        <p>
+          Augmentation des ventes:
           <strong [class]="getPerformanceClass()">
             {{ getPerformanceText() }}
           </strong>
@@ -242,7 +261,8 @@
           Excellent! Vos certifications augmentent votre crédibilité
         </p>
         <button routerLink="/producer/certifications" class="advice-btn">
-          {{ totalCertifications === 0 ? 'Certifier maintenant' : 'Ajouter certifications' }}
+          {{ totalCertifications === 0 ? 'Certifier maintenant' : 'Ajouter
+          certifications' }}
         </button>
       </div>
     </div>
@@ -255,24 +275,26 @@
           <div class="insight-item">
             <span class="insight-label">Panier moyen:</span>
             <span class="insight-value">
-              {{ monthlySales > 0 ? (totalRevenue / monthlySales).toLocaleString('fr-FR') : '0' }} FCFA
+              {{ monthlySales > 0 ? (totalRevenue /
+              monthlySales).toLocaleString('fr-FR') : '0' }} FCFA
             </span>
           </div>
           <div class="insight-item">
             <span class="insight-label">Taux de conversion:</span>
             <span class="insight-value">
-              {{ (totalProducts > 0 ? (currentSales / totalProducts * 100) : 0).toFixed(1) }}%
+              {{ (totalProducts > 0 ? (currentSales / totalProducts * 100) :
+              0).toFixed(1) }}%
             </span>
           </div>
           <div class="insight-item">
             <span class="insight-label">Clients satisfaits:</span>
             <span class="insight-value">
-              {{ averageRating >= 4 ? 'Excellent' : averageRating >= 3 ? 'Bon' : 'À améliorer' }}
+              {{ averageRating >= 4 ? 'Excellent' : averageRating >= 3 ? 'Bon' :
+              'À améliorer' }}
             </span>
           </div>
         </div>
       </div>
     </div>
   </main>
-
 </div>

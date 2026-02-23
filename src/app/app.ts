@@ -20,9 +20,10 @@ import { AuthService } from './services/auth.service';
 import { filter } from 'rxjs/operators';
 import { FirebaseService } from './services/firebase.service';
 import { ThemeService } from './services/theme.service';
-// AJOUTER ces imports
 import { BlockchainSyncService } from './services/blockchain-sync.service';
 import { CertificationService } from './services/certification.service';
+import { AGCInitService } from './services/agc-init.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -40,7 +41,7 @@ import { CertificationService } from './services/certification.service';
 export class App implements OnInit {
   // AJOUTER ces injections
   private blockchainSyncService = inject(BlockchainSyncService);
-  private certificationService = inject(CertificationService);
+  private agcInitService = inject(AGCInitService);
 
   showSidebar = false;
   showVoiceAssistant = false;
@@ -60,6 +61,7 @@ export class App implements OnInit {
     private authService: AuthService,
     private firebaseService: FirebaseService,
     private themeService: ThemeService,
+
     @Inject(PLATFORM_ID) platformId: Object,
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -91,17 +93,6 @@ export class App implements OnInit {
       });
   }
 
-  private initializeBlockchainSync(): void {
-    // Démarrer la synchro automatique (toutes les 5 minutes)
-    this.blockchainSyncService.startAutoSync(5);
-
-
-    // Synchro immédiate au démarrage
-    setTimeout(() => {
-      this.blockchainSyncService.syncPendingTransactions();
-    }, 30000); // 30 secondes après le démarrage
-  } // ⚠️ AJOUTER cette accolade fermante qui manquait
-
   async ngOnInit() {
     this.themeService.initTheme();
 
@@ -121,7 +112,26 @@ export class App implements OnInit {
     if (this.isBrowser) {
       this.initializeBlockchainSync();
     }
+
+    // ✅ CORRIGÉ: Utiliser agcInitService injecté
+    await this.agcInitService.initializeAGC();
+
+    // Optionnel: Afficher les stats en développement
+    if (!environment.production) {
+      const stats = await this.agcInitService.getAGCStats();
+      console.log('📊 Statistiques AGC:', stats);
+    }
   }
+
+  private initializeBlockchainSync(): void {
+    // Démarrer la synchro automatique (toutes les 5 minutes)
+    this.blockchainSyncService.startAutoSync(5);
+
+    // Synchro immédiate au démarrage
+    setTimeout(() => {
+      this.blockchainSyncService.syncPendingTransactions();
+    }, 30000); // 30 secondes après le démarrage
+  } // ⚠️ AJOUTER cette accolade fermante qui manquait
 
   private async waitForCompleteFirebaseInitialization(): Promise<void> {
     return new Promise((resolve) => {
@@ -199,7 +209,10 @@ export class App implements OnInit {
     const role = this.authService.getUserRole();
 
     // ✅ AJOUT: Si /test-blockchain, laisser passer directement
-    if (targetUrl === '/test-blockchain' || targetUrl.startsWith('/test-blockchain/')) {
+    if (
+      targetUrl === '/test-blockchain' ||
+      targetUrl.startsWith('/test-blockchain/')
+    ) {
       if (targetUrl !== this.router.url) {
         await this.router.navigateByUrl(targetUrl, { replaceUrl: true });
       }
@@ -349,7 +362,11 @@ export class App implements OnInit {
     const currentUrl = this.router.url;
 
     // ✅ AJOUT: /test-blockchain est aussi une page publique
-    const publicRoutes = [...this.noSidebarRoutes, '/access-denied', '/test-blockchain'];
+    const publicRoutes = [
+      ...this.noSidebarRoutes,
+      '/access-denied',
+      '/test-blockchain',
+    ];
 
     return publicRoutes.some(
       (route) => currentUrl === route || currentUrl.startsWith(route + '/'),
