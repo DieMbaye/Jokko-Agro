@@ -64,7 +64,6 @@ export class ImageComparisonService {
     this.modelLoading = true;
     try {
       // Version simplifiée - on utilise un modèle plus simple
-      console.log("📸 Service de comparaison d'images initialisé");
       this.model = { ready: true };
     } catch (error) {
       console.warn('⚠️ Erreur chargement modèle:', error);

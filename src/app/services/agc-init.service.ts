@@ -22,7 +22,6 @@ export class AGCInitService {
     }
 
     try {
-      console.log('🚀 Initialisation du système AGC...');
 
       // 1. S'assurer que la collection agc_balances existe
       await this.ensureCollectionExists();
@@ -34,7 +33,6 @@ export class AGCInitService {
       this.listenForNewUsers();
 
       this.initialized = true;
-      console.log('✅ Système AGC initialisé avec succès');
 
     } catch (error) {
       console.error('❌ Erreur lors de l\'initialisation du système AGC:', error);
@@ -92,7 +90,6 @@ export class AGCInitService {
         }
       }
 
-      console.log(`🎉 ${newBalancesCount} nouveaux soldes AGC créés`);
 
     } catch (error) {
       console.error('Erreur lors de l\'initialisation des soldes:', error);

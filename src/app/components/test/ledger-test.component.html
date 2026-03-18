@@ -1,0 +1,187 @@
+<!-- src/app/components/test/ledger-test/ledger-test.component.html -->
+<div class="ledger-test-container">
+  <div class="header">
+    <h1>🧪 Test du Ledger Immuable AGC</h1>
+    <p class="user-info" *ngIf="userEmail">
+      Connecté en tant que: {{ userEmail }}
+    </p>
+    <p class="user-info" *ngIf="!userEmail">Non connecté</p>
+  </div>
+
+  <div class="stats-card" *ngIf="recentTransactions.length > 0">
+    <h3>📊 Statistiques</h3>
+    <p>
+      Total transactions: <strong>{{ recentTransactions.length }}</strong>
+    </p>
+    <p>
+      Dernier bloc:
+      <strong>#{{ recentTransactions[0].blockHeight || 0 }}</strong>
+    </p>
+    <p>
+      Solde actuel: <strong>{{ getBalance() || 0 }} AGC</strong>
+    </p>
+  </div>
+
+  <div class="test-actions">
+    <button
+      class="btn btn-primary"
+      (click)="checkBalance()"
+      [disabled]="isProcessing"
+    >
+      💰 Voir mon solde
+    </button>
+
+    <button
+      class="btn btn-success"
+      (click)="testPurchase()"
+      [disabled]="isProcessing"
+    >
+      🛒 1. Tester achat (1000 FCFA → 10 AGC)
+    </button>
+
+    <button
+      class="btn btn-info"
+      (click)="testHybridPayment()"
+      [disabled]="isProcessing"
+    >
+      💳 2. Tester paiement hybride (10,000 FCFA)
+    </button>
+
+    <button
+      class="btn btn-warning"
+      (click)="verifyIntegrity()"
+      [disabled]="isProcessing"
+    >
+      🔍 3. Vérifier intégrité du ledger
+    </button>
+
+    <button
+      class="btn btn-danger"
+      (click)="simulateTampering()"
+      [disabled]="isProcessing"
+    >
+      ⚠️ 4. Simuler corruption (ATTENTION)
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="isProcessing" class="loader">
+    <div class="spinner"></div>
+    <p>Traitement en cours...</p>
+  </div>
+
+  <!-- Résultat de vérification -->
+  <div
+    *ngIf="verificationResult"
+    class="result-card"
+    [class.valid]="verificationResult.isValid"
+    [class.invalid]="!verificationResult.isValid"
+  >
+    <h3>📋 Rapport de vérification</h3>
+
+    <div class="result-status">
+      <span
+        class="status-badge"
+        [class.valid]="verificationResult.isValid"
+        [class.invalid]="!verificationResult.isValid"
+      >
+        {{
+          verificationResult.isValid ? "✅ LEDGER VALIDE" : "❌ LEDGER CORROMPU"
+        }}
+      </span>
+    </div>
+
+    <div class="result-stats">
+      <p>
+        <strong>Blocs vérifiés:</strong> {{ verificationResult.blocksChecked }}
+      </p>
+      <p>
+        <strong>Dernier hash:</strong>
+        <code
+          >{{
+            (verificationResult.lastBlockHash || "").substring(0, 20)
+          }}...</code
+        >
+      </p>
+    </div>
+
+    <div *ngIf="verificationResult.errors.length > 0" class="errors-list">
+      <h4>Erreurs détectées:</h4>
+      <ul>
+        <li *ngFor="let error of verificationResult.errors">
+          ⚠️ Bloc #{{ error.blockHeight }}: {{ error.error }}
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Transactions récentes -->
+  <!-- components/test/ledger-test/ledger-test.component.html -->
+  <!-- ... (début inchangé) ... -->
+
+  <!-- Transactions récentes -->
+  <div *ngIf="recentTransactions.length > 0" class="transactions-card">
+    <h3>📜 Historique des transactions</h3>
+
+    <div class="table-responsive">
+      <table class="transactions-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Type</th>
+            <th>Montant</th>
+            <th>De → À</th>
+            <th>Hash (début)</th>
+            <th>Prev Hash</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tx of recentTransactions">
+            <td class="block-height">#{{ tx.blockHeight }}</td>
+            <td>
+              <span class="badge" [class]="'type-' + (tx.type || 'unknown')">
+                {{ getTypeIcon(tx.type || "unknown") }}
+                {{ tx.type || "inconnu" }}
+              </span>
+            </td>
+            <td class="amount">{{ tx.amount || 0 }} AGC</td>
+            <td class="users">
+              <small>
+                {{ formatUserId(tx.fromUserId, "from") }} →
+                {{ formatUserId(tx.toUserId, "to") }}
+              </small>
+            </td>
+            <td>
+              <code>{{ (tx.hash || "").substring(0, 8) }}...</code>
+            </td>
+            <td>
+              <code>{{ (tx.previousHash || "").substring(0, 8) }}...</code>
+            </td>
+            <!-- ✅ CORRECTION: Utilisation de la méthode getDisplayDate -->
+            <td>{{ getDisplayDate(tx.createdAt) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ... (reste inchangé) ... -->
+
+  <div
+    *ngIf="recentTransactions.length === 0 && !isProcessing"
+    class="empty-state"
+  >
+    <p>Aucune transaction trouvée. Lancez un test pour commencer !</p>
+  </div>
+</div>
+
+

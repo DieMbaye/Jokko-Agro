@@ -1,0 +1,287 @@
+## 🔄 **FONCTIONNEMENT COMPLET D'UNE TRANSACTION AGC**
+
+Prenons l'exemple concret d'un **achat de 10 AGC** par Alice. Voici comment chaque étape de sécurité intervient :
+
+---
+
+## 📦 **SCÉNARIO : Alice achète 10 AGC pour 1000 FCFA**
+
+---
+
+### **🏗️ ÉTAPE 0 : AVANT LA TRANSACTION**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                 PRÉPARATION                              │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  👤 Alice se connecte                                    │
+│  ├─ Le système génère ses clés ECDSA                    │
+│  │  • Clé privée 🔐 (secrète, en session)               │
+│  │  • Clé publique 🔓 (publique, dans Firestore)        │
+│  │                                                       │
+│  📋 État initial du ledger                               │
+│  └─ Dernier bloc #45 avec hash: "a1b2c3d4..."           │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+### **🛡️ ÉTAPE 1 : LEDGER IMMUABLE (Traçabilité)**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  ÉTAPE 1 - CRÉATION DU BLOC                               │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  Alice demande: "Acheter 10 AGC"                         │
+│                                                          │
+│  🔍 Récupération du dernier bloc                         │
+│  └─ Bloc #45: hash = "a1b2c3d4..."                       │
+│                                                          │
+│  📦 Création du nouveau bloc #46                          │
+│  ├─ Données: Alice → Système, 10 AGC                     │
+│  ├─ previousHash = "a1b2c3d4..."                         │
+│  ├─ Calcul du hash du bloc #46:                          │
+│  │   SHA256( données + previousHash )                    │
+│  │   = "x9y8z7w6..."                                     │
+│  └─ Stockage dans Firestore                              │
+│                                                          │
+│  🔗 Chaînage cryptographique                              │
+│  Bloc #45 (a1b2c3d4) ← Bloc #46 (x9y8z7w6)               │
+│                                                          │
+│  ✅ Si quelqu'un modifie le bloc #46 plus tard :          │
+│     Le hash ne correspondra plus → DÉTECTION             │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+### **🔐 ÉTAPE 2 : SIGNATURE NUMÉRIQUE (Authenticité)**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  ÉTAPE 2 - SIGNATURE DE LA TRANSACTION                    │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  🖊️ Alice SIGNE la transaction                           │
+│                                                          │
+│  1. Création de l'empreinte :                            │
+│     hashTransaction = SHA256(                            │
+│       "Alice → Système, 10 AGC, timestamp"               │
+│     ) = "123abc..."                                       │
+│                                                          │
+│  2. Signature avec sa CLÉ PRIVÉE 🔐                       │
+│     signature = ECDSA( hashTransaction, cléPrivéeAlice ) │
+│                = "7x8y9z..."                              │
+│                                                          │
+│  3. La transaction signée contient :                      │
+│     ├─ Données: Alice → Système, 10 AGC                   │
+│     ├─ Signature: "7x8y9z..."                             │
+│     ├─ Clé publique: "BCgLMQ3..."                         │
+│     └─ Signataire: "Alice"                                │
+│                                                          │
+│  🔍 Vérification avant ajout au ledger :                  │
+│  ├─ Recalcul de l'empreinte                               │
+│  ├─ Vérification avec la CLÉ PUBLIQUE 🔓                  │
+│  └─ ✅ Signature valide → Transaction authentique         │
+│                                                          │
+│  ⚠️ Si quelqu'un modifie "10 AGC" → "1000 AGC" :          │
+│     La signature ne correspond plus → ❌ REJET            │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+### **🔒 ÉTAPE 3 : SÉQUESTRE (Escrow) - Protection du paiement**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  ÉTAPE 3 - BLOCAGE DES FONDS (SÉQUESTRE)                  │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  Alice veut acheter un produit à Bob (producteur)        │
+│  Montant: 50 AGC                                          │
+│                                                          │
+│  🔒 ÉTAPE 3.1 - BLOCAGE                                   │
+│  ├─ Les 50 AGC d'Alice sont BLOQUÉS                      │
+│  ├─ Ils ne sont NI à Alice, NI à Bob                     │
+│  ├─ Transaction "escrow_lock" créée dans le ledger        │
+│  └─ Statut: "locked"                                      │
+│                                                          │
+│  📦 ÉTAPE 3.2 - LIVRAISON                                 │
+│  ├─ Bob prépare et expédie la commande                    │
+│  └─ Alice reçoit le produit                               │
+│                                                          │
+│  ✅ ÉTAPE 3.3 - CONFIRMATION                              │
+│  ├─ Alice confirme la réception                           │
+│  ├─ Transaction "escrow_release" créée                    │
+│  ├─ Les 50 AGC sont TRANSFÉRÉS à Bob                      │
+│  └─ Statut: "released"                                    │
+│                                                          │
+│  ❌ ÉTAPE 3.4 - ANNULATION (si problème)                  │
+│  ├─ Bob ne livre pas ou produit défectueux                │
+│  ├─ Transaction "escrow_cancel" créée                     │
+│  ├─ Les 50 AGC sont RETOURNÉS à Alice                     │
+│  └─ Statut: "cancelled"                                   │
+│                                                          │
+│  🛡️ PROTECTION :                                           │
+│  ├─ Alice est protégée : Bob ne peut pas prendre l'argent │
+│  │  sans livrer                                           │
+│  ├─ Bob est protégé : Alice ne peut pas annuler après     │
+│  │  réception                                             │
+│  └─ La plateforme ne peut pas voler les fonds             │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+### **⚛️ ÉTAPE 4 : ATOMICITÉ TRANSACTIONNELLE (Tout ou Rien)**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  ÉTAPE 4 - TRANSACTION ATOMIQUE                           │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  Une transaction complexe peut nécessiter plusieurs      │
+│  opérations :                                            │
+│                                                          │
+│  Exemple: Alice achète 3 produits à 3 producteurs        │
+│          différents                                      │
+│                                                          │
+│  Opérations nécessaires :                                │
+│  1. 🔒 Bloquer 100 AGC d'Alice (escrow)                  │
+│  2. 📝 Créer vente #1 (Alice → Producteur1)              │
+│  3. 📝 Créer vente #2 (Alice → Producteur2)              │
+│  4. 📝 Créer vente #3 (Alice → Producteur3)              │
+│  5. 📦 Mettre à jour les stocks (3 produits)             │
+│                                                          │
+│  ⚡ PRINCIPE D'ATOMICITÉ :                                │
+│  ┌────────────────────────────────────────┐             │
+│  │  SOIT TOUTES les opérations réussissent │             │
+│  │  SOIT AUCUNE n'est appliquée           │             │
+│  └────────────────────────────────────────┘             │
+│                                                          │
+│  🔄 DÉROULEMENT :                                        │
+│  ├─ DÉBUT DE TRANSACTION                                 │
+│  ├─ Étape 1: ✅ Réussie                                  │
+│  ├─ Étape 2: ✅ Réussie                                  │
+│  ├─ Étape 3: ✅ Réussie                                  │
+│  ├─ Étape 4: ✅ Réussie                                  │
+│  ├─ Étape 5: ❌ ÉCHEC (problème stock)                   │
+│  └─ 🚫 ROLLBACK - TOUT est annulé !                      │
+│     • Les 100 AGC sont débloqués                         │
+│     • Aucune vente n'est créée                           │
+│     • Les stocks restent inchangés                       │
+│                                                          │
+│  ✅ RÉSULTAT :                                           │
+│  ├─ Pas de transaction orpheline                         │
+│  ├─ Pas de perte d'argent                                │
+│  ├─ Pas d'incohérence dans les données                   │
+│  └─ Alice peut réessayer                                 │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔄 **RÉSUMÉ VISUEL D'UNE TRANSACTION COMPLÈTE**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    TRANSACTION COMPLÈTE                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  👤 Alice                                                         │
+│    ↓                                                              │
+│  🔐 ÉTAPE 2 - SIGNATURE                                           │
+│    ├─ Alice signe avec sa clé privée                              │
+│    └─ Signature: "7x8y9z..."                                      │
+│    ↓                                                              │
+│  🔒 ÉTAPE 3 - SÉQUESTRE                                            │
+│    ├─ Fonds bloqués (ni à Alice, ni au vendeur)                  │
+│    └─ Bloc #47: escrow_lock                                       │
+│    ↓                                                              │
+│  📦 ÉTAPE 1 - LEDGER                                               │
+│    ├─ Création du bloc #48                                        │
+│    ├─ previousHash = hash du bloc #47                             │
+│    ├─ hash = SHA256( données + previousHash )                     │
+│    └─ Bloc ajouté au ledger                                       │
+│    ↓                                                              │
+│  ⚛️ ÉTAPE 4 - ATOMICITÉ                                            │
+│    ├─ Vérification que TOUT a réussi                              │
+│    └─ Commit final (ou rollback)                                  │
+│    ↓                                                              │
+│  ✅ TRANSACTION VALIDÉE                                            │
+│                                                                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🛡️ **CE QUE CHAQUE ÉTAPE PROTÈGE**
+
+| Étape | Protection | Contre |
+|-------|------------|--------|
+| **Étape 1 - Ledger** | Intégrité des données | Modification des transactions |
+| **Étape 2 - Signature** | Authenticité | Usurpation d'identité |
+| **Étape 3 - Séquestre** | Équité | Vol, non-livraison |
+| **Étape 4 - Atomicité** | Cohérence | Transactions orphelines |
+
+---
+
+## 🎯 **EXEMPLE CONCRET AVEC NOTRE SYSTÈME**
+
+```
+Transaction d'achat de 50 AGC par Alice
+
+┌──────────────────────────────────────────────────────────────┐
+│  AVANT LA TRANSACTION                                         │
+│  ├─ Alice a 100 AGC dans son compte                          │
+│  ├─ Dernier bloc: #50 (hash: a1b2c3d4)                       │
+│  └─ Alice a ses clés (privée et publique)                    │
+│                                                              │
+│  PENDANT LA TRANSACTION                                       │
+│  ├─ 🔐 Alice signe la demande avec sa clé privée             │
+│  ├─ 🔒 Les 50 AGC sont bloqués (séquestre)                   │
+│  ├─ 📝 Bloc #51 créé: "Alice → Séquestre, 50 AGC"            │
+│  │     previousHash: a1b2c3d4, hash: x9y8z7w6                │
+│  │     signature: 7x8y9z, signataire: Alice                  │
+│  ├─ ✅ Vérification : signature OK, hash OK                   │
+│  └─ ⚛️ Commit de la transaction                               │
+│                                                              │
+│  APRÈS LA TRANSACTION                                         │
+│  ├─ Nouveau solde Alice: 50 AGC (disponibles)                │
+│  ├─ 50 AGC en séquestre (bloqués)                            │
+│  ├─ Dernier bloc: #51 (hash: x9y8z7w6)                       │
+│  └─ Historique complet et vérifiable                         │
+│                                                              │
+│  SI ATTAQUE : "Modifier 50 → 5000 AGC"                        │
+│  ├─ Le hash du bloc #51 ne correspond plus                   │
+│  ├─ La signature ne correspond plus                           │
+│  └─ 🚨 ALERTE : LEDGER CORROMPU !                            │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🏆 **CONCLUSION**
+
+Notre système de paiement AGC combine **4 couches de sécurité** qui fonctionnent ensemble :
+
+1. **Ledger immuable** : On ne peut pas modifier l'historique
+2. **Signatures numériques** : On ne peut pas usurper l'identité
+3. **Séquestre** : On ne peut pas voler l'argent
+4. **Atomicité** : Pas de transaction incohérente
+
+**Chaque transaction est :**
+- ✅ **Traçable** (Étape 1)
+- ✅ **Authentique** (Étape 2)
+- ✅ **Équitable** (Étape 3)
+- ✅ **Cohérente** (Étape 4)
+
+**C'est un système bancaire complet et sécurisé !** 🏦🔐

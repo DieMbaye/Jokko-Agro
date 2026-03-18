@@ -1,0 +1,19 @@
+Partie  IA - OK
+  ChatBot
+  Traduction en langue Local
+  Comparaison d'image - d'environnement (tensorflow Js) Fichier: image-comparaison
+  geolocalisaiton : Fichier: smart-geolocalisaiton
+
+Parite Blockchain
+  Certification des produits (Etherscan, Polygon)
+
+Partie Monnaie
+  10% des achats, Systeme bancaire, Achat, transfert consultations
+
+
+Partie Sécurité
+  Securisation des transactions AGricoins
+
+  Securisation Partie Blockchain
+
+

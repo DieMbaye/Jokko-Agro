@@ -398,4 +398,156 @@ export class OrderTrackingComponent implements OnInit {
       }
     }, 3000);
   }
+
+  // Dans order-tracking.ts - Ajouter ces méthodes
+
+  /**
+   * Obtenir le texte du statut AGC
+   */
+  getAGCStatusText(status?: string): string {
+    switch (status) {
+      case 'locked':
+        return 'AGC bloqués (en attente)';
+      case 'released':
+        return 'AGC transférés';
+      case 'cancelled':
+        return 'AGC retournés';
+      case 'none':
+      default:
+        return 'Sans AGC';
+    }
+  }
+
+  /**
+   * Obtenir l'icône du statut AGC
+   */
+  getAGCStatusIcon(status?: string): string {
+    switch (status) {
+      case 'locked':
+        return '🔒';
+      case 'released':
+        return '✅';
+      case 'cancelled':
+        return '↩️';
+      default:
+        return '○';
+    }
+  }
+
+  /**
+   * Formater le montant AGC pour l'affichage
+   */
+  formatAGCDisplay(agcAmount: number = 0, agcValue: number = 0): string {
+    if (agcAmount === 0) return '';
+    return `${agcAmount} AGC (${this.formatPrice(agcValue)})`;
+  }
+
+
+// Dans order-tracking.ts - AJOUTER CES MÉTHODES
+
+/**
+ * Obtenir le statut AGC court
+ */
+getAGCStatusShort(status?: string): string {
+  switch (status) {
+    case 'locked': return 'Bloqués';
+    case 'released': return 'Transférés';
+    case 'cancelled': return 'Remboursés';
+    case 'partial': return 'Partiel';
+    default: return '';
+  }
+}
+
+/**
+ * Calculer le pourcentage de réduction
+ */
+calculateDiscountPercentage(order: Sale): number {
+  if (!order.discountedUnitPrice || !order.unitPrice || order.discountedUnitPrice >= order.unitPrice) {
+    return 0;
+  }
+  return Math.round(((order.unitPrice - order.discountedUnitPrice) / order.unitPrice) * 100);
+}
+
+/**
+ * Obtenir l'icône pour le type de réduction
+ */
+getDiscountIcon(type: string): string {
+  const icons: Record<string, string> = {
+    coupon: '🎫',
+    bulk: '📦',
+    promotion: '🏷️',
+    seasonal: '🌱',
+    certified: '✅'
+  };
+  return icons[type] || '💰';
+}
+
+/**
+ * Calculer le total des réductions
+ */
+calculateTotalDiscounts(order: Sale): number {
+  let total = 0;
+
+  if (order.appliedDiscounts) {
+    total += order.appliedDiscounts.reduce((sum, d) => sum + d.amount, 0);
+  }
+
+  if (order.metadata?.couponDiscount) {
+    total += order.metadata.couponDiscount;
+  }
+
+  return total;
+}
+
+/**
+ * Vérifier si l'acheteur peut annuler la commande
+ */
+canCancelOrder(order: Sale): boolean {
+  return this.isBuyer &&
+         (order.status === 'pending' || order.status === 'confirmed') &&
+         order.agcStatus !== 'released';
+}
+
+/**
+ * Annuler une commande en tant qu'acheteur
+ */
+async cancelOrderAsBuyer(order: Sale): Promise<void> {
+  if (!this.isBuyer) return;
+
+  const confirmCancel = window.confirm(
+    `Êtes-vous sûr de vouloir annuler la commande ${order.orderNumber} ?\n` +
+    `Cette action est irréversible.`
+  );
+
+  if (!confirmCancel) return;
+
+  try {
+    this.isLoading = true;
+
+    const result = await this.salesService.cancelOrderByBuyer(order.id, order);
+
+    if (result.success) {
+      await this.loadOrders();
+
+      this.showNotification(
+        `Commande ${order.orderNumber} annulée avec succès`,
+        'success'
+      );
+
+      if (order.agcUsed && order.agcUsed > 0) {
+        this.showNotification(
+          `${order.agcUsed} AGC ont été recrédités sur votre compte`,
+          'info'
+        );
+      }
+    } else {
+      this.showNotification(result.error || 'Erreur lors de l\'annulation', 'error');
+    }
+  } catch (error) {
+    console.error('Erreur annulation commande:', error);
+    this.showNotification('Erreur lors de l\'annulation', 'error');
+  } finally {
+    this.isLoading = false;
+  }
+}
 }

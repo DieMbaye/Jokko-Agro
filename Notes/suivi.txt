@@ -1,0 +1,21 @@
+ÉTAPES D'IMPLÉMENTATION DE LA SÉCURITÉ AGC
+
+    Ledger immuable : Structure de données chaînée pour l'historique des transactions - OK
+
+    Signatures numériques (ECDSA) : Authentification et intégrité de chaque transaction - OK
+
+    Système de séquestre (Escrow) : Blocage des AGC pendant la livraison
+
+    Atomicité transactionnelle : Garantie "tout ou rien" avec rollback automatique
+
+    Rate limiting adaptatif : Limitation dynamique des requêtes par utilisateur
+
+    Détection d'anomalies comportementales : Analyse en temps réel des patterns suspects
+
+    Authentification forte (2FA) : Double vérification pour actions sensibles
+
+    Chiffrement des données sensibles : Protection des informations en base et en transit
+
+    Journalisation et audit trail : Traçabilité complète de toutes les actions
+
+    Tests d'intrusion : Validation de la robustesse face aux attaques simulées

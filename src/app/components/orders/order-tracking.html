@@ -1,6 +1,5 @@
 <!-- components/orders/order-tracking/order-tracking.html -->
 <div class="order-tracking-container">
-
   <!-- EN-TÊTE ADAPTÉ AU RÔLE -->
   <header class="tracking-header">
     <div class="header-content">
@@ -48,7 +47,11 @@
     <div class="filter-controls">
       <div class="filter-group">
         <label>📅 Période</label>
-        <select [(ngModel)]="dateFilter" (ngModelChange)="applyFilters()" title="Filtrer par période">
+        <select
+          [(ngModel)]="dateFilter"
+          (ngModelChange)="applyFilters()"
+          title="Filtrer par période"
+        >
           <option *ngFor="let option of dateOptions" [value]="option.id">
             {{ option.name }}
           </option>
@@ -57,7 +60,11 @@
 
       <div class="filter-group">
         <label>📊 Statut</label>
-        <select [(ngModel)]="statusFilter" (ngModelChange)="applyFilters()" title="Filtrer par statut">
+        <select
+          [(ngModel)]="statusFilter"
+          (ngModelChange)="applyFilters()"
+          title="Filtrer par statut"
+        >
           <option *ngFor="let option of statusOptions" [value]="option.id">
             {{ option.name }}
           </option>
@@ -118,10 +125,8 @@
 
   <!-- CONTENU PRINCIPAL -->
   <div class="tracking-content">
-
     <!-- SIDEBAR (Uniquement visible sur desktop) -->
     <aside class="tracking-sidebar">
-
       <!-- Cartes différentes selon le rôle -->
       <div class="sidebar-card" *ngIf="isBuyer">
         <h3>ℹ️ Informations Acheteur</h3>
@@ -137,7 +142,9 @@
         <div class="sidebar-stats">
           <div class="sidebar-stat">
             <span class="stat-label">Panier moyen</span>
-            <span class="stat-value">{{ formatPrice(stats.averageOrderValue) }}</span>
+            <span class="stat-value"
+              >{{ formatPrice(stats.averageOrderValue) }}</span
+            >
           </div>
           <div class="sidebar-stat">
             <span class="stat-label">Taux de livraison</span>
@@ -169,12 +176,10 @@
           </div>
         </div>
       </div>
-
     </aside>
 
     <!-- CONTENU PRINCIPAL -->
     <main class="tracking-main">
-
       <!-- ÉTAT DE CHARGEMENT -->
       <div *ngIf="isLoading" class="loading-state">
         <div class="spinner"></div>
@@ -182,7 +187,10 @@
       </div>
 
       <!-- ÉTAT VIDE -->
-      <div *ngIf="!isLoading && filteredOrders.length === 0" class="empty-state">
+      <div
+        *ngIf="!isLoading && filteredOrders.length === 0"
+        class="empty-state"
+      >
         <div class="empty-icon">
           <span *ngIf="isBuyer">🛒</span>
           <span *ngIf="isProducer">📭</span>
@@ -193,7 +201,9 @@
         </h3>
         <p>
           <span *ngIf="isBuyer">Vous n'avez pas encore passé de commande</span>
-          <span *ngIf="isProducer">Vous n'avez pas encore reçu de commande</span>
+          <span *ngIf="isProducer"
+            >Vous n'avez pas encore reçu de commande</span
+          >
         </p>
         <button
           *ngIf="isBuyer"
@@ -213,24 +223,53 @@
 
       <!-- LISTE DES COMMANDES -->
       <div *ngIf="!isLoading && filteredOrders.length > 0" class="orders-list">
-
         <div *ngFor="let order of filteredOrders" class="order-card">
-
-          <!-- EN-TÊTE DE LA CARTE -->
+          <!-- EN-TÊTE DE LA CARTE - MODIFIER cette partie -->
           <div class="order-header">
             <div class="order-number">
               <strong>{{ order.orderNumber }}</strong>
               <span class="order-date">{{ formatDate(order.orderDate) }}</span>
             </div>
-            <span class="order-status" [class]="getStatusBadgeClass(order.status)">
-              {{ getStatusIcon(order.status) }}
-              {{ getStatusText(order.status) }}
-            </span>
+            <div class="order-badges">
+              <!-- BADGE STATUT -->
+              <span
+                class="order-status"
+                [class]="getStatusBadgeClass(order.status)"
+              >
+                {{ getStatusIcon(order.status) }} {{ getStatusText(order.status)
+                }}
+              </span>
+
+              <!-- ✅ BADGE AGC AMÉLIORÉ -->
+              <span
+                *ngIf="order.agcUsed && order.agcUsed > 0"
+                class="agc-badge"
+                [class.agc-locked]="order.agcStatus === 'locked'"
+                [class.agc-released]="order.agcStatus === 'released'"
+                [class.agc-cancelled]="order.agcStatus === 'cancelled'"
+                [class.agc-partial]="order.agcStatus === 'partial'"
+                title="Paiement hybride AGC"
+              >
+                🪙 {{ order.agcUsed }} AGC
+                <span class="agc-status-dot"></span>
+                <span class="agc-status-label"
+                  >{{ getAGCStatusShort(order.agcStatus) }}</span
+                >
+              </span>
+
+              <!-- ✅ BADGE RÉDUCTION -->
+              <span
+                *ngIf="order.discountedUnitPrice && order.discountedUnitPrice < order.unitPrice"
+                class="discount-badge"
+                title="Prix après réduction"
+              >
+                🔖 -{{ calculateDiscountPercentage(order) }}%
+              </span>
+            </div>
           </div>
 
           <!-- CORPS DE LA CARTE -->
           <div class="order-body">
-
             <!-- INFORMATIONS PRODUIT -->
             <div class="product-section">
               <div class="product-image">📦</div>
@@ -241,13 +280,19 @@
                 <!-- Informations selon le rôle -->
                 <div class="user-info">
                   <div *ngIf="isBuyer" class="producer-info">
-                    <span class="producer-name">👨‍🌾 {{ order.producerName }}</span>
-                    <span class="producer-phone">📱 {{ order.producerPhone }}</span>
+                    <span class="producer-name"
+                      >👨‍🌾 {{ order.producerName }}</span
+                    >
+                    <span class="producer-phone"
+                      >📱 {{ order.producerPhone }}</span
+                    >
                   </div>
                   <div *ngIf="isProducer" class="buyer-info">
                     <span class="buyer-name">👤 {{ order.buyerName }}</span>
                     <span class="buyer-phone">📱 {{ order.buyerPhone }}</span>
-                    <span class="buyer-location">📍 {{ order.buyerLocation }}</span>
+                    <span class="buyer-location"
+                      >📍 {{ order.buyerLocation }}</span
+                    >
                   </div>
                 </div>
               </div>
@@ -262,46 +307,96 @@
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">Prix unitaire</span>
-                  <span class="detail-value">{{ formatPrice(order.unitPrice) }}</span>
+                  <span class="detail-value">
+                    <span
+                      *ngIf="order.discountedUnitPrice && order.discountedUnitPrice < order.unitPrice"
+                      class="original-price"
+                    >
+                      {{ formatPrice(order.unitPrice) }}
+                    </span>
+                    {{ formatPrice(order.discountedUnitPrice || order.unitPrice)
+                    }}
+                  </span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">Frais livraison</span>
-                  <span class="detail-value">{{ formatPrice(order.deliveryFee) }}</span>
+                  <span class="detail-value"
+                    >{{ formatPrice(order.deliveryFee) }}</span
+                  >
                 </div>
               </div>
+              <!-- ✅ AFFICHER LES RÉDUCTIONS DÉTAILLÉES -->
+              <div
+                *ngIf="order.appliedDiscounts && order.appliedDiscounts.length > 0"
+                class="discounts-breakdown"
+              >
+                <div class="discounts-title">💰 Réductions appliquées :</div>
+                <div
+                  *ngFor="let discount of order.appliedDiscounts"
+                  class="discount-item"
+                >
+                  <span class="discount-icon"
+                    >{{ getDiscountIcon(discount.type) }}</span
+                  >
+                  <span class="discount-description"
+                    >{{ discount.description }}</span
+                  >
+                  <span class="discount-amount"
+                    >-{{ formatPrice(discount.amount) }}</span
+                  >
+                </div>
+              </div>
+
               <div class="detail-row total-row">
                 <div class="detail-item">
                   <span class="detail-label">Total</span>
-                  <span class="detail-value total">{{ formatPrice(order.totalAmount) }}</span>
+                  <span class="detail-value total"
+                    >{{ formatPrice(order.totalAmount) }}</span
+                  >
                 </div>
               </div>
             </div>
 
             <!-- TIMELINE DE SUIVI -->
             <div class="order-timeline">
-              <div class="timeline-step" [class.active]="isTimelineStepActive(order, 0)">
+              <div
+                class="timeline-step"
+                [class.active]="isTimelineStepActive(order, 0)"
+              >
                 <div class="step-icon">📝</div>
                 <div class="step-label">Commandé</div>
                 <div class="step-date" *ngIf="order.orderDate">
                   {{ formatDate(order.orderDate) }}
                 </div>
               </div>
-              <div class="timeline-step" [class.active]="isTimelineStepActive(order, 1)">
+              <div
+                class="timeline-step"
+                [class.active]="isTimelineStepActive(order, 1)"
+              >
                 <div class="step-icon">✅</div>
                 <div class="step-label">Confirmé</div>
               </div>
-              <div class="timeline-step" [class.active]="isTimelineStepActive(order, 2)">
+              <div
+                class="timeline-step"
+                [class.active]="isTimelineStepActive(order, 2)"
+              >
                 <div class="step-icon">🚚</div>
                 <div class="step-label">Expédié</div>
               </div>
-              <div class="timeline-step" [class.active]="isTimelineStepActive(order, 3)">
+              <div
+                class="timeline-step"
+                [class.active]="isTimelineStepActive(order, 3)"
+              >
                 <div class="step-icon">📦</div>
                 <div class="step-label">Livré</div>
                 <div class="step-date" *ngIf="order.deliveryDate">
                   {{ formatDate(order.deliveryDate) }}
                 </div>
               </div>
-              <div class="timeline-step" [class.active]="isTimelineStepActive(order, 4)">
+              <div
+                class="timeline-step"
+                [class.active]="isTimelineStepActive(order, 4)"
+              >
                 <div class="step-icon">⭐</div>
                 <div class="step-label">Terminé</div>
                 <div class="step-date" *ngIf="order.completionDate">
@@ -312,7 +407,6 @@
 
             <!-- ACTIONS -->
             <div class="order-actions">
-
               <!-- Actions communes -->
               <button
                 class="btn btn-outline"
@@ -362,24 +456,33 @@
                   </option>
                 </select>
 
-                <button class="btn-icon" title="Contacter client">
-                  💬
-                </button>
+                <button class="btn-icon" title="Contacter client">💬</button>
               </div>
 
               <!-- Actions spécifiques à l'acheteur -->
               <div *ngIf="isBuyer" class="buyer-actions">
-                <button
+                <!--    <button
                   class="btn btn-secondary"
                   *ngIf="order.status === 'delivered'"
+                  (click)="rateOrder(order)"
                 >
                   ⭐ Évaluer
+                </button> -->
+
+                <!-- ✅ BOUTON ANNULATION POUR ACHETEUR (CORRECTEMENT PLACÉ) -->
+                <button
+                  class="btn btn-danger"
+                  *ngIf="canCancelOrder(order)"
+                  (click)="cancelOrderAsBuyer(order)"
+                  title="Annuler cette commande"
+                >
+                  ❌ Annuler la commande
                 </button>
+
                 <button class="btn-icon" title="Contacter producteur">
                   💬
                 </button>
               </div>
-
             </div>
           </div>
         </div>
@@ -388,7 +491,11 @@
   </div>
 
   <!-- MODAL DÉTAILS COMMANDE -->
-  <div *ngIf="selectedOrder" class="modal-overlay" (click)="closeOrderDetails()">
+  <div
+    *ngIf="selectedOrder"
+    class="modal-overlay"
+    (click)="closeOrderDetails()"
+  >
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>📋 Détails de la commande</h2>
@@ -399,8 +506,11 @@
         <div *ngIf="selectedOrder">
           <div class="modal-section">
             <h3>🛒 Commande {{ selectedOrder.orderNumber }}</h3>
-            <p><strong>Date:</strong> {{ formatDate(selectedOrder.orderDate) }}</p>
-            <p><strong>Statut:</strong>
+            <p>
+              <strong>Date:</strong> {{ formatDate(selectedOrder.orderDate) }}
+            </p>
+            <p>
+              <strong>Statut:</strong>
               <span [class]="getStatusBadgeClass(selectedOrder.status)">
                 {{ getStatusText(selectedOrder.status) }}
               </span>
@@ -417,7 +527,9 @@
             <h3>👤 Client</h3>
             <p><strong>Nom:</strong> {{ selectedOrder.buyerName }}</p>
             <p><strong>Téléphone:</strong> {{ selectedOrder.buyerPhone }}</p>
-            <p><strong>Localisation:</strong> {{ selectedOrder.buyerLocation }}</p>
+            <p>
+              <strong>Localisation:</strong> {{ selectedOrder.buyerLocation }}
+            </p>
             <p *ngIf="selectedOrder.deliveryAddress">
               <strong>Adresse:</strong> {{ selectedOrder.deliveryAddress }}
             </p>
@@ -426,31 +538,166 @@
           <div class="modal-section">
             <h3>📦 Produit</h3>
             <p><strong>Nom:</strong> {{ selectedOrder.productName }}</p>
-            <p><strong>Catégorie:</strong> {{ selectedOrder.productCategory }}</p>
+            <p>
+              <strong>Catégorie:</strong> {{ selectedOrder.productCategory }}
+            </p>
             <p><strong>Quantité:</strong> {{ selectedOrder.quantity }}</p>
-            <p><strong>Prix unitaire:</strong> {{ formatPrice(selectedOrder.unitPrice) }}</p>
+            <p>
+              <strong>Prix unitaire:</strong> {{
+              formatPrice(selectedOrder.unitPrice) }}
+            </p>
           </div>
 
           <div class="modal-section">
             <h3>💰 Montant</h3>
-            <p><strong>Sous-total:</strong> {{ formatPrice(selectedOrder.totalAmount - selectedOrder.deliveryFee) }}</p>
-            <p><strong>Frais de livraison:</strong> {{ formatPrice(selectedOrder.deliveryFee) }}</p>
-            <p><strong class="total">Total:</strong> {{ formatPrice(selectedOrder.totalAmount) }}</p>
+            <p>
+              <strong>Sous-total:</strong> {{
+              formatPrice(selectedOrder.totalAmount - selectedOrder.deliveryFee)
+              }}
+            </p>
+            <p>
+              <strong>Frais de livraison:</strong> {{
+              formatPrice(selectedOrder.deliveryFee) }}
+            </p>
+            <p>
+              <strong class="total">Total:</strong> {{
+              formatPrice(selectedOrder.totalAmount) }}
+            </p>
           </div>
 
+          <!-- MODAL DÉTAILS COMMANDE - Ajouter après la section "💰 Montant" -->
+          <div
+            class="modal-section"
+            *ngIf="selectedOrder && selectedOrder.agcUsed && selectedOrder.agcUsed > 0"
+          >
+            <h3>🪙 Paiement Hybride AGC</h3>
+            <div class="agc-payment-details">
+              <div class="agc-row">
+                <span class="agc-label">💰 Total commande:</span>
+                <span class="agc-value"
+                  >{{ formatPrice(selectedOrder!.totalAmount +
+                  (selectedOrder!.deliveryFee || 0)) }}</span
+                >
+              </div>
+
+              <div class="agc-row highlight">
+                <span class="agc-label">🪙 Partie AGC (10%):</span>
+                <span class="agc-value">
+                  <strong>{{ selectedOrder!.agcUsed }} AGC</strong>
+                  <small
+                    >({{ formatPrice(selectedOrder!.agcValue || 0) }})</small
+                  >
+                </span>
+              </div>
+
+              <div class="agc-row">
+                <span class="agc-label">💵 Partie FCFA (90%):</span>
+                <span class="agc-value"
+                  >{{ formatPrice(selectedOrder!.totalAmount -
+                  (selectedOrder!.agcValue || 0)) }}</span
+                >
+              </div>
+
+              <div class="agc-row status-row">
+                <span class="agc-label">📊 Statut AGC:</span>
+                <span
+                  class="agc-status"
+                  [class]="'agc-' + selectedOrder!.agcStatus"
+                >
+                  {{ getAGCStatusText(selectedOrder!.agcStatus) }}
+                  <span class="status-icon"
+                    >{{ getAGCStatusIcon(selectedOrder!.agcStatus) }}</span
+                  >
+                </span>
+              </div>
+
+              <div
+                class="agc-info-message"
+                *ngIf="selectedOrder!.agcStatus === 'locked'"
+              >
+                <span class="info-icon">ℹ️</span>
+                <span class="info-text">
+                  Les AGC sont bloqués en attente de livraison. Ils seront
+                  transférés au producteur après confirmation de livraison.
+                </span>
+              </div>
+
+              <div
+                class="agc-info-message success"
+                *ngIf="selectedOrder!.agcStatus === 'released'"
+              >
+                <span class="info-icon">✅</span>
+                <span class="info-text">
+                  {{ selectedOrder!.agcUsed }} AGC ont été transférés au
+                  producteur.
+                </span>
+              </div>
+
+              <div
+                class="agc-info-message warning"
+                *ngIf="selectedOrder!.agcStatus === 'cancelled'"
+              >
+                <span class="info-icon">↩️</span>
+                <span class="info-text">
+                  Les AGC ont été retournés à l'acheteur (commande annulée).
+                </span>
+              </div>
+            </div>
+          </div>
           <div class="modal-section">
             <h3>📊 Informations</h3>
-            <p><strong>Méthode de paiement:</strong>
+            <p>
+              <strong>Méthode de paiement:</strong>
               {{ getPaymentMethodText(selectedOrder.paymentMethod) }}
             </p>
-            <p><strong>Type de livraison:</strong>
+            <p>
+              <strong>Type de livraison:</strong>
               {{ getDeliveryTypeText(selectedOrder.deliveryType) }}
             </p>
             <p *ngIf="selectedOrder.notes">
               <strong>Notes:</strong> {{ selectedOrder.notes }}
             </p>
           </div>
+          <div
+            class="modal-section"
+            *ngIf="selectedOrder.appliedDiscounts && selectedOrder!.appliedDiscounts!.length > 0"
+          >
+            <h3>💰 Détail des réductions</h3>
+            <div class="discounts-detail">
+              <div
+                *ngFor="let discount of selectedOrder!.appliedDiscounts"
+                class="discount-detail-row"
+              >
+                <div class="discount-info">
+                  <span class="discount-icon"
+                    >{{ getDiscountIcon(discount.type) }}</span
+                  >
+                  <span class="discount-desc">{{ discount.description }}</span>
+                </div>
+                <span class="discount-amount"
+                  >-{{ formatPrice(discount.amount) }}</span
+                >
+              </div>
 
+              <div
+                class="discount-total"
+                *ngIf="selectedOrder!.metadata?.originalTotal"
+              >
+                <span>Prix original:</span>
+                <span
+                  >{{ formatPrice(selectedOrder!.metadata!.originalTotal!)
+                  }}</span
+                >
+              </div>
+              <div class="discount-total highlight">
+                <span>Vous avez économisé:</span>
+                <span
+                  >{{ formatPrice(calculateTotalDiscounts(selectedOrder!))
+                  }}</span
+                >
+              </div>
+            </div>
+          </div>
           <div class="modal-section" *ngIf="selectedOrder.rating">
             <h3>⭐ Évaluation</h3>
             <p><strong>Note:</strong> {{ selectedOrder.rating }}/5</p>

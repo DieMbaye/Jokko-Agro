@@ -1,0 +1,171 @@
+<!-- components/test/signature-test/signature-test.component.html -->
+<div class="signature-test-container">
+  <!-- En-tête -->
+  <div class="header">
+    <h1>🔐 Test des Signatures Numériques ECDSA</h1>
+    <div class="user-info" *ngIf="userEmail">
+      <span class="user-badge">👤 {{ userEmail }}</span>
+      <span class="keys-badge" [class.has-keys]="hasKeys" [class.no-keys]="!hasKeys">
+        {{ hasKeys ? '✅ Clés générées' : '❌ Clés non générées' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Actions principales -->
+  <div class="actions-grid">
+    <button class="action-btn primary" (click)="testSignature()" [disabled]="isProcessing">
+      <span class="btn-icon">📝</span>
+      <span class="btn-text">1. Tester création signature</span>
+    </button>
+
+    <button class="action-btn warning" (click)="testTampering()" [disabled]="isProcessing">
+      <span class="btn-icon">⚠️</span>
+      <span class="btn-text">2. Tenter de modifier (attaque)</span>
+    </button>
+
+    <button class="action-btn info" (click)="verifyLedger()" [disabled]="isProcessing">
+      <span class="btn-icon">🔍</span>
+      <span class="btn-text">3. Vérifier toutes les signatures</span>
+    </button>
+
+    <button class="action-btn secondary" (click)="checkKeys()" [disabled]="isProcessing">
+      <span class="btn-icon">🔑</span>
+      <span class="btn-text">4. Vérifier mes clés</span>
+    </button>
+
+    <button class="action-btn success" (click)="generateKeys()" [disabled]="isProcessing">
+      <span class="btn-icon">⚡</span>
+      <span class="btn-text">5. Générer mes clés</span>
+    </button>
+  </div>
+
+  <!-- Zone de progression -->
+  <div *ngIf="isProcessing" class="processing-card">
+    <div class="spinner"></div>
+    <p class="processing-text">Traitement en cours...</p>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="message-card success">
+    <span class="message-icon">✅</span>
+    <span class="message-text">{{ successMessage }}</span>
+    <button class="message-close" (click)="successMessage = ''">✕</button>
+  </div>
+
+  <div *ngIf="errorMessage" class="message-card error">
+    <span class="message-icon">❌</span>
+    <span class="message-text">{{ errorMessage }}</span>
+    <button class="message-close" (click)="errorMessage = ''">✕</button>
+  </div>
+
+  <!-- Informations des clés -->
+  <div *ngIf="keysInfo" class="keys-info-card">
+    <h3>🔑 Informations des clés</h3>
+    <div class="keys-grid">
+      <div class="key-item">
+        <span class="key-label">Clés présentes:</span>
+        <span class="key-value" [class.yes]="keysInfo.hasKeys" [class.no]="!keysInfo.hasKeys">
+          {{ keysInfo.hasKeys ? '✅ Oui' : '❌ Non' }}
+        </span>
+      </div>
+      <div class="key-item">
+        <span class="key-label">Clé publique (Firestore):</span>
+        <span class="key-value" [class.yes]="keysInfo.publicKeyExists" [class.no]="!keysInfo.publicKeyExists">
+          {{ keysInfo.publicKeyExists ? '✅ Présente' : '❌ Absente' }}
+        </span>
+      </div>
+      <div class="key-item">
+        <span class="key-label">Clé privée (session):</span>
+        <span class="key-value" [class.yes]="keysInfo.privateKeyInSession" [class.no]="!keysInfo.privateKeyInSession">
+          {{ keysInfo.privateKeyInSession ? '✅ Présente' : '❌ Absente' }}
+        </span>
+      </div>
+      <div class="key-item" *ngIf="keysInfo.publicKeyPreview">
+        <span class="key-label">Aperçu clé publique:</span>
+        <code class="key-preview">{{ keysInfo.publicKeyPreview }}</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Résultat du test -->
+  <div *ngIf="result" class="result-card">
+    <h3>📊 Résultat du test</h3>
+    <pre class="result-pre">{{ result | json }}</pre>
+  </div>
+
+  <!-- Statistiques des signatures -->
+  <div *ngIf="signatureStats" class="stats-card">
+    <h3>📈 Statistiques des signatures</h3>
+
+    <div class="stats-summary">
+      <div class="stat-item">
+        <div class="stat-value">{{ signatureStats.total }}</div>
+        <div class="stat-label">Total transactions</div>
+      </div>
+      <div class="stat-item valid">
+        <div class="stat-value">{{ signatureStats.valid }}</div>
+        <div class="stat-label">Signatures valides</div>
+      </div>
+      <div class="stat-item invalid">
+        <div class="stat-value">{{ signatureStats.invalid }}</div>
+        <div class="stat-label">Signatures invalides</div>
+      </div>
+      <div class="stat-item" *ngIf="signatureStats.total > 0">
+        <div class="stat-value">{{ (signatureStats.valid / signatureStats.total * 100).toFixed(1) }}%</div>
+        <div class="stat-label">Taux de validité</div>
+      </div>
+    </div>
+
+    <!-- Détails des blocs -->
+    <div *ngIf="signatureStats.details && signatureStats.details.length > 0" class="details-section">
+      <h4>Détails des blocs</h4>
+      <div class="details-table-container">
+        <table class="details-table">
+          <thead>
+            <tr>
+              <th>Bloc #</th>
+              <th>Statut</th>
+              <th>Signataire</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let detail of signatureStats.details.slice(0, 10)">
+              <td class="block-height">#{{ detail.blockHeight }}</td>
+              <td>
+                <span class="status-badge" [class.valid]="detail.valid" [class.invalid]="!detail.valid">
+                  {{ detail.valid ? '✅ Valide' : '❌ Invalide' }}
+                </span>
+              </td>
+              <td class="signer-id">
+                <code>{{ detail.signerId || 'non signé' }}</code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p *ngIf="signatureStats.details.length > 10" class="more-hint">
+        ... et {{ signatureStats.details.length - 10 }} autres blocs
+      </p>
+    </div>
+  </div>
+
+  <!-- Pied de page avec aide -->
+  <div class="help-section">
+    <details>
+      <summary>📚 Comment tester ?</summary>
+      <div class="help-content">
+        <h4>🔑 Étape 1: Générer les clés</h4>
+        <p>Cliquez sur "5. Générer mes clés" pour créer votre paire de clés ECDSA.</p>
+
+        <h4>✍️ Étape 2: Tester la signature</h4>
+        <p>Cliquez sur "1. Tester création signature" pour signer une transaction.</p>
+
+        <h4>⚠️ Étape 3: Tenter une attaque</h4>
+        <p>Cliquez sur "2. Tenter de modifier" pour voir si la signature résiste.</p>
+
+        <h4>🔍 Étape 4: Vérifier</h4>
+        <p>Cliquez sur "3. Vérifier toutes les signatures" pour auditer le ledger.</p>
+      </div>
+    </details>
+  </div>
+</div>

@@ -192,12 +192,15 @@ export class App implements OnInit {
       url === '/' ||
       url === '/login' ||
       url === '/register' ||
+      url === '/test' ||
+      url === '/test' ||
       url === '/select-role' ||
       url === '/test-blockchain' || // ← AJOUT ICI
       url.startsWith('/producer/') ||
       url.startsWith('/buyer/') ||
       url.startsWith('/login/') ||
       url.startsWith('/register/') ||
+      url.startsWith('/test/') ||
       url.startsWith('/verify/') ||
       url.startsWith('/test-blockchain/') // ← AJOUT ICI
     );
@@ -230,8 +233,10 @@ export class App implements OnInit {
         targetUrl === '/' ||
         targetUrl === '/login' ||
         targetUrl === '/register' ||
+        targetUrl === '/test' ||
         targetUrl.startsWith('/login') ||
         targetUrl.startsWith('/register') ||
+        targetUrl.startsWith('/test') ||
         targetUrl.startsWith('/verify/');
 
       if (isProtectedRoute) {
@@ -253,7 +258,7 @@ export class App implements OnInit {
 
     // CAS B: Utilisateur connecté
     const isPublicRoot =
-      targetUrl === '/' || targetUrl === '/login' || targetUrl === '/register';
+      targetUrl === '/' || targetUrl === '/login' || targetUrl === '/register' || targetUrl === '/test' ;
 
     const isProtectedRoute =
       targetUrl.startsWith('/producer/') ||

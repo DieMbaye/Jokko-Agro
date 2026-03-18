@@ -76,6 +76,7 @@ function getFirebaseApp(): FirebaseApp {
   providedIn: 'root',
 })
 export class FirebaseService {
+  [x: string]: any;
   private app: FirebaseApp;
   private auth;
   public firestore;
@@ -181,6 +182,7 @@ export class FirebaseService {
     try {
       await setPersistence(this.auth, browserLocalPersistence);
       await signInWithEmailAndPassword(this.auth, email, password);
+      
       return { success: true };
     } catch (error: any) {
       return {

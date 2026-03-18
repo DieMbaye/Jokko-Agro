@@ -208,9 +208,15 @@ export interface Sale {
   productName: string;
   productCategory: string;
   quantity: number;
-  unitPrice: number;
-  totalAmount: number;
+  unitPrice: number; // Prix unitaire original
+  discountedUnitPrice?: number; // Prix unitaire après réduction
+  discountAmount?: number; // Montant de la réduction par unité
+  discountPercentage?: number; // Pourcentage de réduction
+  totalAmount: number; // Montant total APRÈS réductions
+  totalBeforeDiscount?: number; // Montant total avant réductions
   deliveryFee: number;
+
+  // Statuts
   status:
     | 'pending'
     | 'confirmed'
@@ -226,24 +232,58 @@ export interface Sale {
     | 'cash'
     | 'credit_card'
     | 'mobile_money';
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded' | 'partial';
   deliveryType: 'pickup' | 'delivery';
-  deliveryAddress?: string;
-  notes?: string;
-  rating?: number;
-  review?: string;
+
+  // Dates
   orderDate: Date;
   deliveryDate?: Date;
   completionDate?: Date;
   createdAt: Date;
   updatedAt: Date;
+
+  // Notes et adresse
+  deliveryAddress?: string;
+  notes?: string;
+
+  // Évaluations
+  rating?: number;
+  review?: string;
+
+  // MÉTADONNÉES DE RÉDUCTION (NOUVEAU)
+  appliedDiscounts?: {
+    type: 'coupon' | 'bulk' | 'promotion' | 'seasonal';
+    code?: string;
+    description: string;
+    amount: number;
+    percentage?: number;
+  }[];
+
+  // INFORMATIONS AGC (AMÉLIORÉ)
+  agcUsed?: number; // Nombre d'AGC utilisés
+  agcValue?: number; // Valeur en FCFA des AGC utilisés (1 AGC = 100 FCFA)
+  agcStatus?: 'none' | 'locked' | 'released' | 'cancelled' | 'partial';
+  agcLockId?: string; // ID du lock AGC
+  agcTransactionRef?: string; // Référence de transaction
+  agcReleasedAt?: Date; // Date de libération
+  agcCancelledAt?: Date; // Date d'annulation
+  agcPartialAmount?: number; // Montant partiel si pas assez d'AGC
+
+  // MÉTADONNÉES
   metadata?: {
     platformFee?: number;
     tax?: number;
-    discount?: number;
-    promoCode?: string;
+    appliedPromotions?: string[];
+    couponCode?: string;
+    couponDiscount?: number;
+    bulkDiscount?: number;
+    paymentFee?: number;
+    originalTotal?: number; // Total original avant toutes réductions
+    finalTotal?: number; // Total final après toutes réductions
   };
 }
+
+// interfaces/data.interfaces.ts - Mettre à jour SalesStats
 
 export interface SalesStats {
   totalRevenue: number;
@@ -302,6 +342,16 @@ export interface SalesStats {
   predictedRevenue?: number;
   bestSellingDay?: string;
   peakHour?: string;
+
+  // ✅ AJOUT DES STATISTIQUES MANQUANTES
+  totalDiscounts?: number;
+  agcStats?: {
+    totalAgcUsed: number;
+    totalAgcValue: number;
+    agcLocked: number;
+    agcReleased: number;
+    agcCancelled: number;
+  };
 }
 
 export interface SalesFilter {

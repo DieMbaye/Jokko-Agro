@@ -321,7 +321,7 @@
 
           <div class="summary-details">
             <div class="summary-row">
-              <span>Sous-total</span>
+              <span>Sous-total (avant réductions)</span>
               <span>{{ formatPrice(getSubtotal()) }}</span>
             </div>
 
@@ -816,18 +816,18 @@
             </label>
 
             <div class="toggle-info">
-              <span class="toggle-label"
-                >Utiliser mes AGC (10% de réduction)</span
-              >
+              <span class="toggle-label">
+                Utiliser mes AGC (10% du total)
+              </span>
               <span class="toggle-sublabel" *ngIf="agcState.hasEnough">
-                ✅ Économisez {{agcState.agcAmount * 100 | currency:'XOF'}}
+                ✅ Économisez {{formatPrice(agcState.agcAmount * 100)}} (10%)
               </span>
               <span
                 class="toggle-sublabel warning"
                 *ngIf="!agcState.hasEnough && agcState.balance > 0"
               >
                 ⚠️ Paiement partiel possible ({{agcState.balance}} AGC
-                disponibles)
+                disponibles sur {{agcState.agcAmount}} requis)
               </span>
             </div>
           </div>
@@ -882,13 +882,14 @@
 
             <!-- Messages d'état -->
             <div class="agc-status-messages">
-              <div *ngIf="agcState.hasEnough" class="status success">
+              <div class="status success" *ngIf="agcState.hasEnough">
                 <span class="icon">✅</span>
                 <div class="message">
-                  <strong>Paiement optimal</strong>
+                  <strong>Paiement optimal (10% AGC)</strong>
                   <p>
-                    Vous utilisez {{agcState.agcAmount}} AGC et économisez
-                    {{formatPrice(agcState.agcAmount * 100)}}
+                    Vous utilisez {{agcState.agcAmount}} AGC
+                    ({{formatPrice(agcState.agcAmount * 100)}}) et payez
+                    {{formatPrice(agcState.fiatAmount)}} en FCFA
                   </p>
                 </div>
               </div>
@@ -968,7 +969,7 @@
             <div class="checkout-total" [class.agc-active]="useAGCPayment">
               <div class="total-info">
                 <span>Total à payer</span>
-                <small *ngIf="useAGCPayment">après réduction AGC</small>
+                <small *ngIf="useAGCPayment">(10% AGC + 90% FCFA)</small>
               </div>
               <div class="total-amount">
                 <span class="fiat">{{formatPrice(agcState.fiatAmount)}}</span>
@@ -976,7 +977,8 @@
                   *ngIf="useAGCPayment && agcState.agcAmount > 0"
                   class="agc-chip"
                 >
-                  + {{agcState.agcAmount}} AGC
+                  + {{agcState.agcAmount}} AGC ({{formatPrice(agcState.agcAmount
+                  * 100)}})
                 </span>
               </div>
             </div>
@@ -1155,7 +1157,6 @@
         </div>
       </div>
     </div>
-
 
     <app-agc-purchase
       [visible]="showAGCPurchaseModal"

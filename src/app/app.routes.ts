@@ -29,7 +29,22 @@ export const routes: Routes = [
       ),
     canActivate: [authGuard],
   },
-
+  {
+    path: 'test',
+    loadComponent: () =>
+      import('./components/test/ledger-test.component').then(
+        (m) => m.LedgerTestComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'test-signature',
+    loadComponent: () =>
+      import('./components/test/signature-test.component').then(
+        (m) => m.SignatureTestComponent,
+      ),
+    canActivate: [authGuard],
+  },
   // Routes protégées - Sélection de rôle
   {
     path: 'select-role',
@@ -46,6 +61,22 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./components/producer/dashboard/producer-dashboard').then(
         (m) => m.ProducerDashboardComponent,
+      ),
+    canActivate: [producerGuard],
+  },
+    {
+    path: 'producer/test-signature',
+    loadComponent: () =>
+      import('./components/test/signature-test.component').then(
+        (m) => m.SignatureTestComponent,
+      ),
+    canActivate: [producerGuard],
+  },
+  {
+    path: 'producer/test',
+    loadComponent: () =>
+      import('./components/test/ledger-test.component').then(
+        (m) => m.LedgerTestComponent,
       ),
     canActivate: [producerGuard],
   },
@@ -145,6 +176,23 @@ export const routes: Routes = [
       ),
     canActivate: [buyerGuard],
   },
+  {
+    path: 'buyer/test',
+    loadComponent: () =>
+      import('./components/test/ledger-test.component').then(
+        (m) => m.LedgerTestComponent,
+      ),
+    canActivate: [buyerGuard],
+  },
+  {
+    path: 'buyer/test-signature',
+    loadComponent: () =>
+      import('./components/test/signature-test.component').then(
+        (m) => m.SignatureTestComponent,
+      ),
+    canActivate: [buyerGuard],
+  },
+
   {
     path: 'buyer/market',
     loadComponent: () =>

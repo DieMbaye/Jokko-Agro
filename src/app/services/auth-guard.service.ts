@@ -20,7 +20,7 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   if (!authService.isAuthenticated()) {
     // Si sur une page publique, laisser passer
-    const publicRoutes = ['/login', '/register', '/'];
+    const publicRoutes = ['/login', '/register', '/', '/select-role', '/test'];
     if (
       publicRoutes.some(
         (route) => currentUrl === route || currentUrl.startsWith(route + '/'),
@@ -34,7 +34,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   }
 
   // Si authentifié sur page publique, rediriger vers dashboard approprié
-  const publicRoutes = ['/login', '/register', '/'];
+  const publicRoutes = ['/login', '/register', '/', '/select-role', '/test'];
   const isOnPublicRoute = publicRoutes.some(
     (route) => currentUrl === route || currentUrl.startsWith(route + '/'),
   );

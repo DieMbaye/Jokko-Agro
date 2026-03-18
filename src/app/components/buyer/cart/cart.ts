@@ -4,6 +4,7 @@ import {
   collection,
   addDoc,
   serverTimestamp,
+  Timestamp,
 } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -88,12 +89,7 @@ interface Notification {
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterLink,
-    AGCPurchaseComponent,
-  ],
+  imports: [CommonModule, FormsModule, RouterLink, AGCPurchaseComponent],
   templateUrl: './cart.html',
   styleUrls: ['./cart.css'],
 })
@@ -155,8 +151,11 @@ export class CartComponent implements OnInit, OnDestroy {
   deliveryAddress: DeliveryAddress = {
     street: '',
     city: 'Dakar',
+    zipCode: '',
     phone: '',
+    email: '',
     instructions: '',
+    location: undefined,
   };
 
   addressErrors: any = {};
@@ -398,30 +397,6 @@ export class CartComponent implements OnInit, OnDestroy {
     this.sortAscending = !this.sortAscending;
   }
 
-  // Calculs améliorés
-  getSubtotal(): number {
-    return this.cartItems
-      .filter((item) => item.selected)
-      .reduce((total, item) => total + this.calculateItemPrice(item), 0);
-  }
-
-  calculateItemPrice(item: EnhancedCartItem): number {
-    let price = item.price * item.quantity;
-
-    // Appliquer la réduction
-    if (item.originalPrice) {
-      price =
-        item.originalPrice * item.quantity * (1 - (item.discount || 0) / 100);
-    }
-
-    // Appliquer la réduction de volume
-    if (item.bulkDiscount && item.quantity >= 5) {
-      price *= 1 - item.bulkDiscount / 100;
-    }
-
-    return Math.round(price);
-  }
-
   getUnitPrice(item: EnhancedCartItem): number {
     return this.calculateItemPrice(item) / item.quantity;
   }
@@ -429,69 +404,6 @@ export class CartComponent implements OnInit, OnDestroy {
   calculateSavings(item: EnhancedCartItem): number {
     if (!item.originalPrice) return 0;
     return item.originalPrice * item.quantity - this.calculateItemPrice(item);
-  }
-
-  getTotalSavings(): number {
-    return this.cartItems
-      .filter((item) => item.selected)
-      .reduce((total, item) => total + this.calculateSavings(item), 0);
-  }
-
-  getDeliveryFee(): number {
-    if (!this.selectedDeliveryOption) return 0;
-
-    const option = this.deliveryOptions.find(
-      (o) => o.id === this.selectedDeliveryOption,
-    );
-    if (!option) return 0;
-
-    let fee = option.price;
-
-    // Frais de livraison par produit
-    const itemsFee = this.cartItems
-      .filter((item) => item.selected && item.deliveryType === 'delivery')
-      .reduce((total, item) => total + item.deliveryFee, 0);
-
-    // Réduction pour livraison groupée
-    if (this.cartItems.filter((item) => item.selected).length >= 3) {
-      fee *= 0.8; // 20% de réduction
-    }
-
-    return fee + itemsFee;
-  }
-
-  getPaymentFee(): number {
-    if (!this.selectedPaymentMethod) return 0;
-
-    const method = this.paymentMethods.find(
-      (m) => m.id === this.selectedPaymentMethod,
-    );
-    return method ? method.fee : 0;
-  }
-
-  getCouponDiscount(): number {
-    if (!this.appliedCoupon) return 0;
-
-    const subtotal = this.getSubtotal();
-
-    if (this.appliedCoupon.type === 'percentage') {
-      return (subtotal * this.appliedCoupon.discount) / 100;
-    } else {
-      return Math.min(this.appliedCoupon.discount, subtotal);
-    }
-  }
-
-  getTotal(): number {
-    const subtotal = this.getSubtotal();
-    const deliveryFee = this.getDeliveryFee();
-    const paymentFee = this.getPaymentFee();
-    const couponDiscount = this.getCouponDiscount();
-    const savings = this.getTotalSavings();
-
-    return Math.max(
-      0,
-      subtotal + deliveryFee + paymentFee - couponDiscount - savings,
-    );
   }
 
   calculateTax(): number {
@@ -775,8 +687,12 @@ export class CartComponent implements OnInit, OnDestroy {
   private async updateAGCState(): Promise<void> {
     try {
       const total = this.getTotal();
-      const agcAmount = Math.floor(total / 100);
-      const fiatAmount = total - agcAmount * 100;
+
+      // 10% du total en AGC
+      const agcAmount = Math.floor((total * 0.1) / 100); // 10% en AGC
+      const agcEquivalent = agcAmount * 100;
+      const fiatAmount = total - agcEquivalent; // 90% en FCFA
+
       const user = this.authService.getUserData();
 
       if (!user) {
@@ -800,10 +716,10 @@ export class CartComponent implements OnInit, OnDestroy {
         // Paiement partiel
         actualAgcToUse = this.agcBalance;
         actualFiatToPay = total - this.agcBalance * 100;
-        warning = `⚠️ Paiement partiel: ${actualAgcToUse} AGC + ${actualFiatToPay.toLocaleString()} FCFA`;
+        warning = `⚠️ Paiement partiel: ${actualAgcToUse} AGC (${actualAgcToUse * 100} FCFA) + ${(total - actualAgcToUse * 100).toLocaleString()} FCFA`;
         canProceed = this.agcBalance > 0;
       } else if (!hasEnough) {
-        warning = `⚠️ Solde insuffisant: besoin de ${agcAmount} AGC`;
+        warning = `⚠️ Solde insuffisant: besoin de ${agcAmount} AGC (${agcEquivalent.toLocaleString()} FCFA)`;
         canProceed = false;
       }
 
@@ -825,7 +741,7 @@ export class CartComponent implements OnInit, OnDestroy {
           this.agcBalance > 0,
       };
 
-      // ✅ SYNC : Mettre à jour agcPaymentInfo pour l'interface
+      // Mettre à jour agcPaymentInfo pour l'interface
       this.agcPaymentInfo = {
         fiatAmount: actualFiatToPay,
         agcAmount: actualAgcToUse,
@@ -834,9 +750,13 @@ export class CartComponent implements OnInit, OnDestroy {
         agcEquivalent: actualAgcToUse * 100,
       };
 
-      console.log('📊 État AGC mis à jour:', {
-        agcState: this.agcState,
-        agcPaymentInfo: this.agcPaymentInfo,
+      console.log('📊 État AGC mis à jour (10% AGC, 90% FCFA):', {
+        total,
+        agcAmount: actualAgcToUse,
+        agcEquivalent: actualAgcToUse * 100,
+        fiatAmount: actualFiatToPay,
+        balance: this.agcBalance,
+        hasEnough,
       });
     } catch (error) {
       console.error('❌ Erreur mise à jour état AGC:', error);
@@ -885,53 +805,50 @@ export class CartComponent implements OnInit, OnDestroy {
 
       console.log(`🚀 Début checkout - Commande #${orderNumber}`);
 
-      // Étape 1: Paiement hybride (si activé)
+      // ÉTAPE 1: Paiement hybride (si activé) - AVEC SÉQUESTRE
+      let agcLockId: string | undefined;
+
       if (this.useAGCPayment && this.agcState.agcAmount > 0) {
-        const paymentResult = await this.agcService.processHybridPayment(
+        // Vérifier que l'acheteur a assez d'AGC
+        const hasEnough = await this.agcService.hasEnoughBalance(
           currentUser.uid,
-          'system', // Plateforme reçoit les AGC temporairement
-          this.getTotal(),
-          orderNumber,
-          {
-            allowPartialAGC: this.paymentOptions.allowPartialAGC,
-            forceAGCPayment: this.paymentOptions.forceAGCPayment,
-          },
+          this.agcState.agcAmount,
         );
 
-        if (!paymentResult.success) {
-          // Gestion granulaire des erreurs
-          switch (paymentResult.errorCode) {
-            case 'INSUFFICIENT_BALANCE':
-              if (paymentResult.missingAGC) {
-                this.showError(
-                  `Solde AGC insuffisant. Il vous manque ${paymentResult.missingAGC} AGC`,
-                );
-                this.openAGCPurchase(); // Proposer d'acheter
-              }
-              break;
-            case 'NETWORK_ERROR':
-              this.showError('Erreur réseau. Veuillez réessayer.');
-              break;
-            default:
-              this.showError(paymentResult.error || 'Erreur de paiement AGC');
-          }
-          throw new Error(paymentResult.error);
+        if (!hasEnough) {
+          throw new Error(
+            `Solde AGC insuffisant. Besoin de ${this.agcState.agcAmount} AGC`,
+          );
         }
 
-        console.log(`✅ Paiement AGC réussi: ${paymentResult.agcPaid} AGC`);
-        this.showSuccess(
-          `✅ ${paymentResult.agcPaid} AGC utilisés avec succès`,
+        // Bloquer les AGC (sans les transférer)
+        const lockResult = await this.agcService.lockAGCBalance(
+          currentUser.uid,
+          this.agcState.agcAmount,
+          orderNumber,
+          'Commande en attente de livraison',
+        );
+
+        if (!lockResult.success) {
+          throw new Error(lockResult.error || 'Erreur lors du blocage des AGC');
+        }
+
+        agcLockId = lockResult.lockId;
+        console.log(
+          `🔒 ${this.agcState.agcAmount} AGC bloqués pour la commande ${orderNumber}`,
         );
       }
 
-      // Étape 2: Création des ventes
-      const salesResults = await this.createSales(
+      // ÉTAPE 2: Création des ventes (avec statut "pending")
+      const salesResults = await this.createSalesFromCart(
         selectedItems,
         currentUser,
         orderNumber,
+        this.useAGCPayment ? this.agcState.agcAmount : 0,
+        agcLockId,
       );
 
-      // Étape 3: Nettoyage et confirmation
+      // ÉTAPE 3: Nettoyage et confirmation
       await this.finalizeOrder(
         selectedItems,
         currentUser,
@@ -941,12 +858,10 @@ export class CartComponent implements OnInit, OnDestroy {
 
       // Marquer la tentative comme réussie
       this.paymentAttempts[this.paymentAttempts.length - 1].success = true;
+
+      this.showSuccess('✅ Commande enregistrée avec succès !');
     } catch (error: any) {
       console.error('❌ Erreur checkout:', error);
-
-      // Tentative de rollback si nécessaire
-      await this.attemptRollback(error);
-
       this.showError(
         error.message || 'Une erreur est survenue lors de la commande',
       );
@@ -956,15 +871,27 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Création des ventes avec gestion d'erreur par lot
+   * Créer les ventes à partir du panier
    */
-  private async createSales(
+  // components/cart/cart.ts - Remplacer createSalesFromCart
+
+  private async createSalesFromCart(
     selectedItems: EnhancedCartItem[],
     user: any,
     orderNumber: string,
+    totalAgcAmount: number = 0,
+    agcLockId?: string,
   ): Promise<any[]> {
     const salesResults = [];
     const errors = [];
+
+    // ✅ Utiliser le résumé du panier pour avoir des montants cohérents
+    const cartSummary = this.cartService.getCartSummary(
+      this.selectedPaymentMethod,
+    );
+
+    // Calculer la répartition des AGC sur le total APRÈS toutes réductions
+    const totalAfterAllDiscounts = cartSummary.finalTotal;
 
     for (const item of selectedItems) {
       try {
@@ -976,6 +903,54 @@ export class CartComponent implements OnInit, OnDestroy {
         const deliveryType = this.selectedDeliveryOption.includes('pickup')
           ? ('pickup' as const)
           : ('delivery' as const);
+
+        // ✅ Calculer le prix de l'article APRÈS toutes réductions
+        const itemPriceAfterProductDiscounts =
+          this.cartService.calculateItemFinalPrice(item);
+
+        // Calculer la part proportionnelle du coupon pour cet article
+        const subtotalAfterProductDiscounts =
+          this.cartService.getSubtotalAfterProductDiscounts();
+        const itemProportion =
+          itemPriceAfterProductDiscounts / subtotalAfterProductDiscounts;
+        const itemCouponDiscount = cartSummary.couponDiscount * itemProportion;
+
+        // Prix final de l'article (après réductions produit + coupon)
+        const itemFinalPrice =
+          itemPriceAfterProductDiscounts - itemCouponDiscount;
+
+        // Calculer la part d'AGC pour ce produit
+        const itemAgcAmount =
+          totalAgcAmount > 0 && totalAfterAllDiscounts > 0
+            ? Math.floor(
+                (itemFinalPrice / totalAfterAllDiscounts) * totalAgcAmount,
+              )
+            : 0;
+        const itemAgcValue = itemAgcAmount * 100;
+
+        // Collecter les réductions appliquées
+        const appliedDiscounts = [];
+
+        // Réductions produit
+        if (item.appliedPromotions) {
+          appliedDiscounts.push(...item.appliedPromotions);
+        }
+
+        // Réduction coupon
+        if (itemCouponDiscount > 0 && this.appliedCoupon) {
+          appliedDiscounts.push({
+            type: 'coupon' as const,
+            code: this.appliedCoupon.code,
+            description: `Coupon ${this.appliedCoupon.code}`,
+            amount: itemCouponDiscount,
+            percentage:
+              this.appliedCoupon.type === 'percentage'
+                ? this.appliedCoupon.discount
+                : undefined,
+          });
+        }
+
+        // Dans cart.ts, méthode createSalesFromCart, ligne vers 950-970
 
         const saleData = {
           buyerId: user.uid,
@@ -990,29 +965,51 @@ export class CartComponent implements OnInit, OnDestroy {
           productCategory: item.category || 'Divers',
           quantity: item.quantity,
           unitPrice: item.price,
-          totalAmount: this.calculateItemPrice(item),
+          discountedUnitPrice: item.discountedPrice || item.price,
+          totalAmount: itemFinalPrice,
           deliveryFee: this.getItemDeliveryFee(item),
           status: 'pending' as const,
           paymentMethod: this.selectedPaymentMethod as Sale['paymentMethod'],
-          paymentStatus: 'pending' as const,
+          paymentStatus: itemAgcAmount > 0 ? 'partial' : 'pending',
           deliveryType: deliveryType,
+          // ✅ CORRECTION ICI : Vérifier que deliveryAddress n'est pas undefined
+          deliveryAddress:
+            deliveryType === 'delivery' && this.deliveryAddress?.street
+              ? this.deliveryAddress.street
+              : null, // Utiliser null au lieu de undefined
           notes: item.notes || '',
-          orderDate: new Date(),
           orderNumber: orderNumber,
-          agcUsed: this.useAGCPayment ? this.agcState.agcAmount : 0,
-          agcPayment: this.useAGCPayment
-            ? {
-                amount: this.agcState.agcAmount,
-                fiatEquivalent: this.agcState.agcAmount * 100,
-                partial: this.agcState.partialPayment,
-              }
-            : null,
+          orderDate: Timestamp.now(), // Si vous avez accès à Timestamp
+          appliedDiscounts:
+            appliedDiscounts.length > 0 ? appliedDiscounts : null, // null au lieu de undefined
+          metadata: {
+            originalTotal: item.price * item.quantity,
+            finalTotal: itemFinalPrice,
+            couponCode: this.appliedCoupon?.code || null,
+            couponDiscount: itemCouponDiscount || 0,
+            platformFee: 0,
+            tax: 0,
+          },
+          agcUsed: itemAgcAmount || 0,
+          agcValue: itemAgcValue || 0,
+          agcStatus: itemAgcAmount > 0 ? 'locked' : 'none',
+          agcLockId: itemAgcAmount > 0 && agcLockId ? agcLockId : null, // null au lieu de undefined
+          agcTransactionRef: orderNumber,
         };
 
-        const result = await this.salesService.createSale(saleData);
+        // ✅ NETTOYER LES UNDEFINED AVANT ENVOI
+        const cleanData = JSON.parse(JSON.stringify(saleData));
+
+        const result = await this.salesService.createSale(cleanData);
 
         if (result.success) {
-          salesResults.push({ item, success: true, saleId: result.saleId });
+          salesResults.push({
+            item,
+            success: true,
+            saleId: result.saleId,
+            agcAmount: itemAgcAmount,
+            finalPrice: itemFinalPrice,
+          });
         } else {
           errors.push({ item, error: result.error });
         }
@@ -1022,29 +1019,60 @@ export class CartComponent implements OnInit, OnDestroy {
       }
     }
 
+    // Log des erreurs si nécessaire
     if (errors.length > 0) {
-      // Logger simplement dans la console au lieu de Firestore
-      console.group('📝 Erreurs de création de ventes');
-      errors.forEach((e) => {
-        console.error(`${e.item?.name}:`, e.error);
-      });
-      console.groupEnd();
-
+      console.warn(
+        `⚠️ ${errors.length} article(s) n'ont pas pu être commandés`,
+      );
       if (errors.length === selectedItems.length) {
         throw new Error("Aucune vente n'a pu être enregistrée");
       }
-
-      this.showWarning(
-        `${errors.length} article(s) n'ont pas pu être commandés`,
-      );
     }
 
     return salesResults;
   }
 
   /**
-   * Finalisation de la commande
+   * Nettoie un objet pour Firestore en remplaçant undefined par null
    */
+  private cleanForFirestore(obj: any): any {
+    if (obj === undefined || obj === null) {
+      return null;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map((item) => this.cleanForFirestore(item));
+    }
+
+    if (typeof obj === 'object') {
+      const cleaned: any = {};
+      for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          // Ignorer les propriétés undefined
+          if (obj[key] !== undefined) {
+            cleaned[key] = this.cleanForFirestore(obj[key]);
+          }
+        }
+      }
+      return cleaned;
+    }
+
+    return obj;
+  }
+  /**
+   * Générer un numéro de commande unique
+   */
+  generateOrderNumber(): string {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const random = Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, '0');
+    return `CMD-${year}${month}${day}-${random}`;
+  }
+
   private async finalizeOrder(
     selectedItems: EnhancedCartItem[],
     user: any,
@@ -1068,6 +1096,8 @@ export class CartComponent implements OnInit, OnDestroy {
       successfulItems: salesResults.length,
       orderDate: new Date(),
       agcUsed: this.useAGCPayment ? this.agcState.agcAmount : 0,
+      agcValue: this.useAGCPayment ? this.agcState.agcAmount * 100 : 0,
+      agcStatus: this.useAGCPayment ? 'locked' : 'none',
       fiatPaid: this.useAGCPayment ? this.agcState.fiatAmount : this.getTotal(),
       items: selectedItems.map((item) => ({
         name: item.name,
@@ -1087,17 +1117,17 @@ export class CartComponent implements OnInit, OnDestroy {
         userId: user.uid,
         type: 'order',
         title: 'Commande enregistrée',
-        message: `Votre commande ${orderNumber} est en cours de traitement.${this.useAGCPayment ? ` (${this.agcState.agcAmount} AGC utilisés)` : ''}`,
+        message: `Votre commande ${orderNumber} est en cours de traitement.${this.useAGCPayment ? ` (${this.agcState.agcAmount} AGC bloqués en attente de livraison)` : ''}`,
         link: '/buyer/tracking',
       }),
       // Notification au producteur pour les items réussis
       ...salesResults.map((result) =>
         this.notificationService.createNotification({
           userId: result.item.producerId,
-          type: 'order' as const,
+          type: 'order',
           title: 'Nouvelle vente',
           message: `${result.item.name} (x${result.item.quantity}) a été commandé`,
-          link: '/producer/sales',
+          link: '/producer/tracking',
         }),
       ),
     ]);
@@ -1112,7 +1142,6 @@ export class CartComponent implements OnInit, OnDestroy {
     // Log pour analytics
     await this.logOrderSuccess(orderData);
   }
-
   /**
    * Tentative de rollback en cas d'erreur critique
    */
@@ -1891,5 +1920,72 @@ export class CartComponent implements OnInit, OnDestroy {
     this.loadAGCData().catch((error) => {
       console.error('Erreur chargement données AGC:', error);
     });
+  }
+  /**
+   * Obtenir le pourcentage AGC pour l'affichage
+   */
+  getAGCPourcentage(): number {
+    return 10; // Fixe à 10%
+  }
+
+  /**
+   * Obtenir une explication du calcul AGC
+   */
+  getAGCExplanation(): string {
+    const total = this.getTotal();
+    const agcAmount = Math.floor((total * 0.1) / 100);
+    const agcValue = agcAmount * 100;
+
+    return `${agcAmount} AGC (${this.formatPrice(agcValue)}) soit 10% du total ${this.formatPrice(total)}`;
+  }
+
+  // components/cart/cart.ts - Remplacer les méthodes de calcul
+
+  // Supprimer les méthodes redondantes et utiliser uniquement cartService
+
+  getSubtotal(): number {
+    return this.cartService.getOriginalSubtotal();
+  }
+
+  getSubtotalAfterDiscounts(): number {
+    return this.cartService.getSubtotalAfterProductDiscounts();
+  }
+
+  getTotalSavings(): number {
+    const summary = this.cartService.getCartSummary(this.selectedPaymentMethod);
+    return summary.totalSavings;
+  }
+
+  getDeliveryFee(): number {
+    // Utiliser le service ou calculer localement
+    const summary = this.cartService.getCartSummary(this.selectedPaymentMethod);
+    return summary.deliveryFee;
+  }
+
+  getPaymentFee(): number {
+    if (!this.selectedPaymentMethod) return 0;
+    const summary = this.cartService.getCartSummary(this.selectedPaymentMethod);
+    return summary.paymentFee;
+  }
+
+  getCouponDiscount(): number {
+    const summary = this.cartService.getCartSummary(this.selectedPaymentMethod);
+    return summary.couponDiscount;
+  }
+
+  /**
+   * ✅ MÉTHODE PRINCIPALE - LE TOTAL À PAYER
+   */
+  getTotal(): number {
+    // Utiliser le service comme source unique de vérité
+    const summary = this.cartService.getCartSummary(this.selectedPaymentMethod);
+    return summary.finalTotal;
+  }
+
+  /**
+   * Calculer le prix d'un article individuel (pour affichage)
+   */
+  calculateItemPrice(item: EnhancedCartItem): number {
+    return this.cartService.calculateItemFinalPrice(item);
   }
 }

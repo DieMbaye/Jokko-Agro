@@ -1,0 +1,242 @@
+
+Etape 1 
+// À COLLER DANS LA CONSOLE (F12)
+
+console.log('🔥 MODE HACKER ACTIVÉ - Attaque AGC');
+
+// 1. Récupérer l'utilisateur connecté depuis le localStorage
+const userData = JSON.parse(localStorage.getItem('userData'));
+console.log('👤 Utilisateur ciblé:', userData);
+
+if (!userData) {
+  console.log('❌ Personne connectée');
+} else {
+  console.log('✅ Cible trouvée:', userData.email);
+
+  // 2. Tenter de modifier le solde dans Firestore
+  // Note: On ne peut pas accéder directement à Firestore depuis la console
+  // Mais on peut essayer d'intercepter les appels réseau
+
+  console.log('⚠️ Tentative d\'interception des requêtes...');
+
+  // 3. Intercepter les fetch/XHR
+  const originalFetch = window.fetch;
+  window.fetch = function(...args) {
+    console.log('📡 Requête interceptée:', args[0]);
+
+    // Chercher les appels à Firestore
+    if (args[0].includes('firestore')) {
+      console.log('🔥 Appel Firestore détecté!');
+
+      // Essayer de lire le body
+      if (args[1]?.body) {
+        try {
+          const body = JSON.parse(args[1].body);
+          console.log('📦 Body:', body);
+        } catch(e) {}
+      }
+    }
+
+    return originalFetch.apply(this, args);
+  };
+
+  console.log('✅ Interception activée - Faites un achat AGC maintenant');
+}
+
+
+
+// À COLLER DANS LA CONSOLE
+
+console.log('🔥 ATTAQUE DIRECTE - Version Force Brute');
+
+// 1. Fonction pour explorer tous les objets Angular
+function findAngularServices() {
+  console.log('🔍 Scan des composants Angular...');
+
+  const results = {
+    authService: null,
+    agcService: null,
+    firebaseService: null,
+    componentFound: false
+  };
+
+  // Méthode 1: Parcourir les éléments avec des composants Angular
+  const elements = document.querySelectorAll('*');
+  for (const el of elements) {
+    // Chercher les propriétés Angular (__ngContext__)
+    if (el.__ngContext__) {
+      console.log('📦 Contexte Angular trouvé sur:', el.tagName);
+
+      // Explorer le contexte
+      const context = el.__ngContext__;
+      if (Array.isArray(context)) {
+        for (const item of context) {
+          if (item && typeof item === 'object') {
+            // Chercher nos services
+            if (item.agcService) results.agcService = item.agcService;
+            if (item.authService) results.authService = item.authService;
+            if (item.firebaseService) results.firebaseService = item.firebaseService;
+          }
+        }
+      }
+    }
+
+    // Chercher dans les propriétés de l'élément
+    for (const key in el) {
+      if (key.startsWith('ng-') || key.includes('Component')) {
+        results.componentFound = true;
+      }
+    }
+  }
+
+  return results;
+}
+
+
+
+
+
+Etape 2
+// 2. Attaque sur la méthode fetch (toujours efficace)
+function setupFetchInterceptor() {
+  console.log('📡 Configuration de l\'intercepteur fetch...');
+
+  const originalFetch = window.fetch;
+
+  window.fetch = function(url, options = {}) {
+    // Intercepter les appels à Firestore
+    if (url.includes('firestore.googleapis.com')) {
+      console.log('📡 Firestore Request:', {
+        url: url.substring(0, 100) + '...',
+        method: options.method || 'GET',
+        hasBody: !!options.body
+      });
+
+      // Analyser le body si présent
+      if (options.body) {
+        try {
+          const bodyStr = typeof options.body === 'string'
+            ? options.body
+            : JSON.stringify(options.body);
+          console.log('📦 Body:', bodyStr.substring(0, 200));
+        } catch (e) {}
+      }
+    }
+
+    return originalFetch.call(this, url, options);
+  };
+
+  console.log('✅ Intercepteur fetch activé');
+}
+
+// 3. Attaque sur les variables globales
+function scanGlobalVariables() {
+  console.log('🌍 Scan des variables globales...');
+
+  const targets = ['agc', 'AGC', 'firebase', 'angular', 'ng'];
+
+  for (const key in window) {
+    if (targets.some(t => key.toLowerCase().includes(t))) {
+      console.log(`📌 Variable globale trouvée: window.${key}`);
+
+      // Afficher un aperçu
+      try {
+        const value = window[key];
+        if (value && typeof value === 'object') {
+          console.log(`  Type: ${Object.keys(value).length} propriétés`);
+        }
+      } catch (e) {}
+    }
+  }
+}
+
+// 4. Attaque sur localStorage
+function checkLocalStorage() {
+  console.log('💾 Scan du localStorage...');
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.includes('agc') || key.includes('AGC') || key.includes('user')) {
+      console.log(`📁 localStorage: ${key}`);
+      try {
+        const value = localStorage.getItem(key);
+        console.log(`  ${value.substring(0, 100)}`);
+      } catch (e) {}
+    }
+  }
+}
+
+// 5. Injecter un script dans le contexte de l'application
+function injectIntoApp() {
+  console.log('💉 Tentative d\'injection dans l\'application...');
+
+  // Créer un script qui s'exécute dans le contexte de l'app
+  const script = document.createElement('script');
+  script.textContent = `
+    console.log('🔌 Script injecté dans le contexte app');
+
+    // Essayer d'accéder aux services Angular
+    setTimeout(() => {
+      try {
+        // Parcourir les composants
+        document.querySelectorAll('*').forEach(el => {
+          if (el.__ngContext__) {
+            console.log('Composant Angular:', el.tagName);
+          }
+        });
+      } catch(e) {}
+    }, 1000);
+  `;
+
+  document.documentElement.appendChild(script);
+  console.log('✅ Script injecté');
+}
+
+// 6. Attaque sur les appels réseau réels
+function setupNetworkMonitor() {
+  console.log('🌐 Configuration du moniteur réseau...');
+
+  // Performance API pour voir les requêtes
+  const observer = new PerformanceObserver((list) => {
+    list.getEntries().forEach((entry) => {
+      if (entry.name.includes('firestore')) {
+        console.log('📡 Requête réseau détectée:', {
+          url: entry.name.substring(0, 100),
+          duration: entry.duration.toFixed(0) + 'ms',
+          type: entry.entryType
+        });
+      }
+    });
+  });
+
+  observer.observe({ entryTypes: ['resource', 'fetch'] });
+  console.log('✅ Moniteur réseau activé');
+}
+
+// LANCER TOUTES LES ATTAQUES
+console.clear();
+console.log('🔥 ===================================');
+console.log('🔥 MODE HACKER ULTIME - ATTAQUE TOTALE');
+console.log('🔥 ===================================\n');
+
+// 1. Scan des services
+const services = findAngularServices();
+console.log('\n📊 Résultats scan:', services);
+
+// 2. Intercepteur réseau
+setupFetchInterceptor();
+
+// 3. Scan global
+scanGlobalVariables();
+
+// 4. Check localStorage
+checkLocalStorage();
+
+// 5. Moniteur performance
+setupNetworkMonitor();
+
+// 6. Injection
+injectIntoApp();
+
+console.log('\n✅ TOUTES LES ATTAQUES LANCÉES');
+console.log('📝 Faites maintenant un achat AGC et regardez la console');
