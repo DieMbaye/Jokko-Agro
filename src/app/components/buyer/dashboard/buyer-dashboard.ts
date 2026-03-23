@@ -16,6 +16,8 @@ import {
 } from '../../../services/notification.service';
 import { Subscription } from 'rxjs';
 import { AGCBalanceWidgetComponent } from '../../agc/agc-balance-widget/agc-balance-widget.component';
+import { AGCPurchaseComponent } from '../../agc/agc-purchase/agc-purchase.component';
+import { AGCService } from '../../../services/agc.service';
 
 interface DashboardStat {
   label: string;
@@ -56,7 +58,7 @@ interface RecommendedProduct {
 @Component({
   selector: 'app-buyer-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ChatbotVoiceComponent, AGCBalanceWidgetComponent  ],
+  imports: [CommonModule, RouterLink, FormsModule, ChatbotVoiceComponent, AGCBalanceWidgetComponent, AGCPurchaseComponent],
   templateUrl: './buyer-dashboard.html',
   styleUrls: ['./buyer-dashboard.css'],
 })
@@ -82,6 +84,11 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy {
   showNotifications = false;
   private notifSub: Subscription | undefined;
 
+  // 💰 AGC
+  agcBalance: number = 0;
+  showAGCPurchaseModal = false;
+  private agcSub: Subscription | undefined;
+
   // Données dynamiques
   allProducts: Product[] = [];
   allProducers: any[] = [];
@@ -96,6 +103,7 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private firebaseService: FirebaseService,
     private notificationService: NotificationService,
+    private agcService: AGCService,
   ) {}
 
   async ngOnInit() {
@@ -103,6 +111,7 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy {
     this.userName = this.userData?.fullName || 'Utilisateur';
     this.userInitials = this.getInitials(this.userName);
 
+    // Écouter les notifications
     this.notifSub = this.notificationService
       .listenUserNotifications()
       .subscribe((notifs) => {
@@ -110,12 +119,20 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy {
         this.unreadCount = notifs.filter((n) => !n.read).length;
       });
 
+    // Écouter le solde AGC
+    this.agcSub = this.agcService.balance$.subscribe((balance) => {
+      this.agcBalance = balance;
+    });
+
     await this.loadDashboardData();
   }
 
   ngOnDestroy() {
     if (this.notifSub) {
       this.notifSub.unsubscribe();
+    }
+    if (this.agcSub) {
+      this.agcSub.unsubscribe();
     }
   }
 
@@ -128,6 +145,20 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy {
       await this.notificationService.markAsRead(notification.id);
     }
     this.showNotifications = false;
+  }
+
+  // ==================== AGC ====================
+  openAGCPurchase() {
+    this.showAGCPurchaseModal = true;
+  }
+
+  closeAGCPurchaseModal() {
+    this.showAGCPurchaseModal = false;
+  }
+
+  onAGCPurchased() {
+    // Rafraîchir le solde après achat
+    this.agcService.refreshBalance();
   }
 
   // ==================== DASHBOARD ====================
@@ -426,7 +457,6 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy {
 
   // ==================== RECHERCHE ====================
   onSearch() {
-    // Implémentez votre logique de recherche ici
     console.log('Recherche:', this.searchTerm);
   }
 

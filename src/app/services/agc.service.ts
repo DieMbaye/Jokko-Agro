@@ -219,7 +219,17 @@ export class AGCService {
       blockHeight: 0,
     });
   }
+// À ajouter dans la classe AGCService (vers la fin, avec les autres méthodes publiques)
 
+/**
+ * Rafraîchir le solde de l'utilisateur courant
+ */
+async refreshBalance(): Promise<void> {
+  const user = this.auth.currentUser;
+  if (user) {
+    await this.loadUserBalance(user.uid);
+  }
+}
   async getBalance(userId: string): Promise<number> {
     try {
       const balanceRef = doc(this.firestore, 'agc_balances', userId);

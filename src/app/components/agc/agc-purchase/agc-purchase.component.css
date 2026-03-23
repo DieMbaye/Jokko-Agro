@@ -1,11 +1,34 @@
+/* ============================================
+   VARIABLES
+   ============================================ */
+:root {
+  --primary-green: #10B981;
+  --primary-green-dark: #059669;
+  --primary-green-light: #34D399;
+  --bg-dark: #1F2937;
+  --bg-light: #F9FAFB;
+  --text-dark: #111827;
+  --text-gray: #6B7280;
+  --border-light: #E5E7EB;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+  --radius-sm: 0.5rem;
+}
+
+/* ============================================
+   MODAL PRINCIPAL - LARGEUR RÉDUITE
+   ============================================ */
 .agc-purchase-modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,38 +38,63 @@
 
 .agc-purchase-content {
   background: white;
-  border-radius: 24px;
+  border-radius: 28px;
   width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
+  max-width: 520px;
+  max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   animation: slideUp 0.3s ease;
 }
 
+/* Scrollbar élégante */
+.agc-purchase-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.agc-purchase-content::-webkit-scrollbar-track {
+  background: var(--bg-light);
+  border-radius: 10px;
+}
+
+.agc-purchase-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+  border-radius: 10px;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
 .purchase-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-light);
+  background: linear-gradient(135deg, #fff 0%, var(--bg-light) 100%);
+  border-radius: 28px 28px 0 0;
 }
 
 .purchase-header h2 {
   margin: 0;
-  color: #1e293b;
-  font-size: 1.5rem;
+  color: var(--text-dark);
+  font-size: 1.25rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .close-btn {
   background: transparent;
   border: none;
-  font-size: 1.2rem;
-  color: #64748b;
+  font-size: 1.1rem;
+  color: var(--text-gray);
   cursor: pointer;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -55,110 +103,230 @@
 
 .close-btn:hover {
   background: #f1f5f9;
-  color: #1e293b;
+  color: var(--text-dark);
+  transform: rotate(90deg);
 }
 
+/* ============================================
+   ONGLETS COMPACTS
+   ============================================ */
+.purchase-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg-light);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--text-gray);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--primary-green);
+}
+
+.tab-btn.active {
+  background: var(--primary-green);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-content {
+  animation: fadeIn 0.2s ease;
+}
+
+/* ============================================
+   INFOS ACHAT COMPACTES
+   ============================================ */
 .purchase-info {
-  padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .rate-info {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1rem;
+  text-align: center;
+  margin-bottom: 0.75rem;
 }
 
 .rate-badge {
-  background: #10b981;
+  background: var(--primary-green);
   color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 40px;
+  font-size: 0.7rem;
   font-weight: 600;
+  display: inline-block;
 }
 
 .current-balance {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  color: #475569;
+  gap: 0.25rem;
 }
 
-.current-balance strong {
-  color: #10b981;
-  font-size: 1.2rem;
+.balance-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--text-gray);
 }
 
+.refresh-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.25rem;
+  transition: transform 0.2s;
+}
+
+.refresh-btn:hover {
+  transform: rotate(180deg);
+}
+
+.balance-value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.balance-number {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary-green-dark);
+}
+
+.balance-unit {
+  font-size: 0.8rem;
+  color: var(--text-gray);
+}
+
+.balance-equivalent {
+  font-size: 0.7rem;
+  color: var(--text-gray);
+}
+
+/* ============================================
+   FORMULAIRE COMPACT
+   ============================================ */
 .purchase-form {
-  padding: 2rem;
+  padding: 1.25rem;
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.5rem;
-  color: #475569;
+  margin-bottom: 0.375rem;
+  color: var(--text-dark);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .amount-input {
   display: flex;
   align-items: center;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--border-light);
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.2s;
 }
 
 .amount-input:focus-within {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
 }
 
 .amount-input input {
   flex: 1;
-  padding: 0.875rem 1rem;
+  padding: 0.625rem 0.875rem;
   border: none;
   outline: none;
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .currency {
-  padding: 0.875rem 1rem;
-  background: #f8fafc;
-  color: #64748b;
+  padding: 0.625rem 0.875rem;
+  background: var(--bg-light);
+  color: var(--text-gray);
   font-weight: 600;
-  border-left: 2px solid #e2e8f0;
+  font-size: 0.8rem;
+  border-left: 2px solid var(--border-light);
+}
+
+.quick-amounts {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.quick-amount {
+  padding: 0.375rem 0.75rem;
+  background: var(--bg-light);
+  border: 1px solid var(--border-light);
+  border-radius: 40px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-gray);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-amount:hover {
+  background: var(--primary-green);
+  color: white;
+  border-color: var(--primary-green);
 }
 
 .agc-amount-display {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  padding: 1rem;
+  background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+  padding: 0.875rem;
   border-radius: 12px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
 }
 
 .agc-value {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 800;
   color: white;
-  margin-right: 0.5rem;
 }
 
 .agc-unit {
   color: rgba(255, 255, 255, 0.9);
-  font-size: 1rem;
+  font-size: 0.8rem;
 }
 
+.agc-value-equivalent {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ============================================
+   MÉTHODES DE PAIEMENT COMPACTES
+   ============================================ */
 .payment-methods {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.5rem;
 }
 
@@ -166,23 +334,25 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 0.5rem;
+  gap: 0.25rem;
+  padding: 0.625rem 0.375rem;
   background: white;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--border-light);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .payment-method:hover {
-  background: #f8fafc;
-  transform: translateY(-2px);
+  background: var(--bg-light);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .payment-method.selected {
-  border-color: #10b981;
+  border-color: var(--primary-green);
   background: #f0fdf4;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
 }
 
 .method-icon-img {
@@ -192,35 +362,220 @@
 }
 
 .method-name {
-  font-size: 0.8rem;
-  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-dark);
 }
 
+.method-desc {
+  font-size: 0.65rem;
+  color: var(--text-gray);
+}
+
+/* Instructions paiement compactes */
+.payment-instructions {
+  margin-top: 0.75rem;
+}
+
+.instructions-card {
+  background: var(--bg-light);
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+}
+
+.instructions-header {
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border-bottom: 1px solid var(--border-light);
+  font-weight: 600;
+  font-size: 0.7rem;
+  color: var(--text-dark);
+}
+
+.instructions-body {
+  padding: 0.75rem;
+}
+
+.instructions-body p {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.75rem;
+  color: var(--text-gray);
+  line-height: 1.4;
+}
+
+.bank-details {
+  background: white;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+  font-size: 0.7rem;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--text-gray);
+}
+
+.detail-value {
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-green-dark);
+}
+
+.copy-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover {
+  background: var(--bg-light);
+}
+
+/* Formulaire carte compact */
+.card-form {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: var(--bg-light);
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+}
+
+.form-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.form-field {
+  flex: 1;
+}
+
+.form-field.full-width {
+  width: 100%;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-gray);
+}
+
+.form-field input {
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+}
+
+.form-field input:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+}
+
+.secure-badge {
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--primary-green);
+  padding: 0.375rem;
+  background: #f0fdf4;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+/* ============================================
+   BOUTONS D'ACTIONS
+   ============================================ */
 .purchase-actions {
-  margin-top: 2rem;
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .btn-purchase {
   width: 100%;
-  padding: 1rem;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  padding: 0.75rem;
+  background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
   color: white;
   border: none;
   border-radius: 12px;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .btn-purchase:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .btn-purchase:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Boutons d'actions secondaires */
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 0.5rem;
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-gray);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+}
+
+.action-btn:hover {
+  background: var(--bg-light);
+  border-color: var(--primary-green);
+  color: var(--primary-green);
+}
+
+.action-btn-primary {
+  background: var(--primary-green);
+  color: white;
+  border-color: var(--primary-green);
+}
+
+.action-btn-primary:hover {
+  background: var(--primary-green-dark);
+  transform: translateY(-1px);
 }
 
 .processing {
@@ -231,56 +586,308 @@
 }
 
 .spinner-small {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   border-top-color: white;
   animation: spin 0.8s linear infinite;
 }
 
-.purchase-note {
-  text-align: center;
-  color: #64748b;
-  font-size: 0.85rem;
-  margin-top: 1rem;
-}
-
 .error-message {
-  margin-top: 1rem;
-  padding: 0.75rem;
+  margin-top: 0.75rem;
+  padding: 0.625rem;
   background: #fee2e2;
   color: #dc2626;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
 }
 
 .success-message {
-  margin-top: 1rem;
-  padding: 0.75rem;
+  margin-top: 0.75rem;
+  padding: 0.625rem;
   background: #dcfce7;
   color: #166534;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
 }
 
+/* ============================================
+   HISTORIQUE COMPACT
+   ============================================ */
+.history-stats {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--bg-light), white);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--text-gray);
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--primary-green-dark);
+}
+
+.stat-sub {
+  font-size: 0.6rem;
+  color: var(--text-gray);
+}
+
+.history-list {
+  padding: 0.5rem;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--bg-light);
+  border-radius: 12px;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s;
+}
+
+.history-item:hover {
+  background: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.history-icon {
+  font-size: 1.25rem;
+}
+
+.history-details {
+  flex: 1;
+}
+
+.history-amount {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-dark);
+  margin-bottom: 0.125rem;
+}
+
+.history-meta {
+  font-size: 0.6rem;
+  color: var(--text-gray);
+  display: flex;
+  gap: 0.375rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.payment-method-badge {
+  background: white;
+  padding: 0.125rem 0.375rem;
+  border-radius: 12px;
+  font-size: 0.6rem;
+  text-transform: capitalize;
+}
+
+.history-status {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.125rem 0.375rem;
+  border-radius: 20px;
+}
+
+.status-completed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-failed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.empty-history {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.empty-history span {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.empty-history p {
+  font-size: 0.75rem;
+  color: var(--text-gray);
+  margin-bottom: 0.75rem;
+}
+
+.start-purchase-btn {
+  padding: 0.375rem 0.75rem;
+  background: var(--primary-green);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+/* ============================================
+   INFOS BANCAIRES COMPACTES
+   ============================================ */
+.bank-info-section {
+  padding: 1rem;
+}
+
+.bank-info-section h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+.bank-card {
+  background: var(--bg-light);
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+}
+
+.bank-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  background: white;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.bank-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.bank-name {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--text-dark);
+}
+
+.bank-card-body {
+  padding: 0.75rem;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.info-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-gray);
+}
+
+.info-value {
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-green-dark);
+}
+
+.copy-btn-small {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-btn-small:hover {
+  background: var(--primary-green);
+  color: white;
+  border-color: var(--primary-green);
+}
+
+.info-note {
+  font-size: 0.65rem;
+  color: var(--text-gray);
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.security-note {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border-radius: 12px;
+}
+
+.security-note h4 {
+  margin: 0 0 0.375rem 0;
+  font-size: 0.8rem;
+  color: var(--primary-green-dark);
+}
+
+.security-note ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.security-note li {
+  font-size: 0.7rem;
+  color: var(--text-gray);
+  margin-bottom: 0.125rem;
+}
+
+/* ============================================
+   FOOTER COMPACT
+   ============================================ */
 .purchase-footer {
-  padding: 1.5rem 2rem;
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
+  padding: 0.75rem 1rem;
+  background: var(--bg-light);
+  border-top: 1px solid var(--border-light);
+  border-radius: 0 0 28px 28px;
 }
 
 .info-text {
   margin: 0;
-  color: #64748b;
-  font-size: 0.9rem;
-  line-height: 1.5;
+  color: var(--text-gray);
+  font-size: 0.65rem;
+  line-height: 1.3;
+  text-align: center;
 }
 
 .info-icon {
-  margin-right: 0.5rem;
+  margin-right: 0.25rem;
 }
 
+/* ============================================
+   ANIMATIONS
+   ============================================ */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -288,15 +895,55 @@
 
 @keyframes slideUp {
   from {
-    transform: translateY(20px);
     opacity: 0;
+    transform: translateY(20px);
   }
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 480px) {
+  .agc-purchase-content {
+    width: 95%;
+    max-width: none;
+    max-height: 90vh;
+  }
+
+  .payment-methods {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .history-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  .history-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.375rem;
+  }
+
+  .history-status {
+    align-self: center;
+  }
 }

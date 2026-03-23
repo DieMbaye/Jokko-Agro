@@ -11,11 +11,24 @@
       </div>
 
       <div class="header-right">
-        <div class="agc-widget-container">
-          <app-agc-balance-widget></app-agc-balance-widget>
-        </div>
-        <!-- 🔔 + 🔍 SUR LA MÊME LIGNE -->
-        <div class="search-notification-row">
+        <!-- Ligne unique pour AGC, Notifications et Recherche -->
+        <div class="top-actions-row">
+          <!-- 💰 AGC BALANCE WIDGET - AVEC DESIGN VERT -->
+          <div class="agc-balance-premium" (click)="openAGCPurchase()">
+            <div class="agc-icon">🪙</div>
+            <div class="agc-balance-info">
+              <span class="agc-label">Solde AGC</span>
+              <div class="agc-amount-wrapper">
+                <span class="agc-amount">{{ agcBalance }}</span>
+                <span class="agc-currency">AGC</span>
+              </div>
+            </div>
+            <div class="agc-buy-badge">
+              <span>Acheter</span>
+              <span class="buy-icon">+</span>
+            </div>
+          </div>
+
           <!-- 🔔 NOTIFICATIONS -->
           <div class="notifications-wrapper">
             <button class="notif-btn" (click)="toggleNotifications()">
@@ -228,7 +241,13 @@
   </main>
 </div>
 
-<!-- ============================================
-   NOUVEAU CHATBOT VOCAL AMÉLIORÉ
-   ============================================ -->
+<!-- Modal Achat AGC -->
+<app-agc-purchase 
+  *ngIf="showAGCPurchaseModal" 
+  [visible]="showAGCPurchaseModal" 
+  (close)="closeAGCPurchaseModal()"
+  (purchased)="onAGCPurchased()">
+</app-agc-purchase>
+
+<!-- Chatbot Vocal -->
 <app-chatbot-voice></app-chatbot-voice>

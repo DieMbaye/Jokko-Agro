@@ -7,83 +7,303 @@
       </button>
     </div>
 
-    <div class="purchase-info">
-      <div class="rate-info">
-        <span class="rate-badge">Taux: 1 AGC = 100 FCFA</span>
+    <!-- Onglets -->
+    <div class="purchase-tabs">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'purchase'"
+        (click)="activeTab = 'purchase'">
+        💳 Acheter
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'history'"
+        (click)="activeTab = 'history'">
+        📜 Historique
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'info'"
+        (click)="activeTab = 'info'">
+        ℹ️ Infos bancaires
+      </button>
+    </div>
+
+    <!-- Onglet Achat -->
+    <div class="tab-content" *ngIf="activeTab === 'purchase'">
+      <div class="purchase-info">
+        <div class="rate-info">
+          <span class="rate-badge">💱 Taux fixe: 1 AGC = 100 FCFA</span>
+        </div>
+
+        <div class="current-balance" *ngIf="!isLoadingBalance">
+          <div class="balance-label">
+            <span>💰 Votre solde actuel</span>
+            <button class="refresh-btn" (click)="refreshBalance()" title="Rafraîchir">
+              🔄
+            </button>
+          </div>
+          <div class="balance-value">
+            <strong class="balance-number">{{ currentBalance ?? 0 }}</strong>
+            <span class="balance-unit">AGC</span>
+          </div>
+          <div class="balance-equivalent">
+            ≈ {{ (currentBalance ?? 0) * 100 | number }} FCFA
+          </div>
+        </div>
+
+        <div class="balance-skeleton" *ngIf="isLoadingBalance">
+          <div class="skeleton-line"></div>
+          <div class="skeleton-number"></div>
+        </div>
       </div>
 
-      <div class="current-balance" *ngIf="currentBalance !== null">
-        <span>Votre solde actuel:</span>
-        <strong>{{ currentBalance }} AGC</strong>
+      <div class="purchase-form">
+        <div class="form-group">
+          <label>💵 Montant en FCFA</label>
+          <div class="amount-input">
+            <input
+              type="number"
+              [(ngModel)]="fiatAmount"
+              (input)="calculateAGC()"
+              placeholder="1000"
+              min="100"
+              step="100"
+            />
+            <span class="currency">FCFA</span>
+          </div>
+          <div class="quick-amounts">
+            <button class="quick-amount" (click)="setQuickAmount(1000)">1 000 F</button>
+            <button class="quick-amount" (click)="setQuickAmount(5000)">5 000 F</button>
+            <button class="quick-amount" (click)="setQuickAmount(10000)">10 000 F</button>
+            <button class="quick-amount" (click)="setQuickAmount(25000)">25 000 F</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>🎁 Vous recevrez</label>
+          <div class="agc-amount-display">
+            <span class="agc-value">{{ agcAmount }}</span>
+            <span class="agc-unit">AGC</span>
+            <span class="agc-value-equivalent">({{ fiatAmount | number }} FCFA)</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>🏦 Mode de paiement</label>
+          <div class="payment-methods">
+            <button
+              *ngFor="let method of paymentMethods"
+              class="payment-method"
+              [class.selected]="selectedMethod === method.id"
+              (click)="selectedMethod = method.id"
+            >
+              <img
+                [src]="method.icon"
+                [alt]="method.name"
+                class="method-icon-img"
+                (error)="handleImageError($event, method.icon)"
+              />
+              <span class="method-name">{{ method.name }}</span>
+              <span class="method-desc">{{ method.description }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Infos de paiement selon la méthode -->
+        <div class="payment-instructions" *ngIf="selectedMethod !== 'card'">
+          <div class="instructions-card">
+            <div class="instructions-header">
+              <span>📱 Instructions de paiement</span>
+            </div>
+            <div class="instructions-body">
+              <p>{{ getSelectedMethodInstructions() }}</p>
+              <div class="bank-details">
+                <div class="detail-row">
+                  <span class="detail-label">📞 Numéro:</span>
+                  <span class="detail-value">{{ getSelectedMethodPhone() }}</span>
+                  <button class="copy-btn" (click)="copyToClipboard(getSelectedMethodPhone())">
+                    📋
+                  </button>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">🏢 Bénéficiaire:</span>
+                  <span class="detail-value">{{ getSelectedMethodName() }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulaire carte bancaire -->
+        <div class="card-form" *ngIf="selectedMethod === 'card'">
+          <div class="form-row">
+            <div class="form-field full-width">
+              <label>💳 Numéro de carte</label>
+              <input
+                type="text"
+                [(ngModel)]="cardInfo.number"
+                (input)="formatCardNumber($event)"
+                placeholder="1234 5678 9012 3456"
+                maxlength="19"
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>📅 Date d'expiration</label>
+              <input
+                type="text"
+                [(ngModel)]="cardInfo.expiry"
+                (input)="formatExpiry($event)"
+                placeholder="MM/YY"
+                maxlength="5"
+              />
+            </div>
+            <div class="form-field">
+              <label>🔒 CVV</label>
+              <input
+                type="password"
+                [(ngModel)]="cardInfo.cvv"
+                placeholder="123"
+                maxlength="4"
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field full-width">
+              <label>👤 Nom sur la carte</label>
+              <input
+                type="text"
+                [(ngModel)]="cardInfo.name"
+                placeholder="John DOE"
+              />
+            </div>
+          </div>
+          <div class="secure-badge">
+            🔒 Paiement 100% sécurisé
+          </div>
+        </div>
+
+        <div class="purchase-actions">
+          <button
+            class="btn-purchase"
+            (click)="purchaseAGC()"
+            [disabled]="!canPurchase || isProcessing"
+          >
+            <span *ngIf="!isProcessing">💳 Acheter maintenant</span>
+            <span *ngIf="isProcessing" class="processing">
+              <span class="spinner-small"></span>
+              Traitement...
+            </span>
+          </button>
+
+          <div *ngIf="errorMessage" class="error-message">
+            ⚠️ {{ errorMessage }}
+          </div>
+
+          <div *ngIf="successMessage" class="success-message">
+            ✅ {{ successMessage }}
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="purchase-form">
-      <div class="form-group">
-        <label>Montant en FCFA</label>
-        <div class="amount-input">
-          <input
-            type="number"
-            [(ngModel)]="fiatAmount"
-            (input)="calculateAGC()"
-            placeholder="1000"
-            min="100"
-            step="100"
-          />
-          <span class="currency">FCFA</span>
+    <!-- Onglet Historique -->
+    <div class="tab-content" *ngIf="activeTab === 'history'">
+      <div class="history-stats">
+        <div class="stat-item">
+          <span class="stat-label">💰 Total acheté</span>
+          <span class="stat-value">{{ totalPurchased }} AGC</span>
+          <span class="stat-sub">({{ totalSpentInFCFA | number }} FCFA)</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">📦 Nombre d'achats</span>
+          <span class="stat-value">{{ purchaseCount }}</span>
         </div>
       </div>
 
-      <div class="form-group">
-        <label>Vous recevrez</label>
-        <div class="agc-amount-display">
-          <span class="agc-value">{{ agcAmount }}</span>
-          <span class="agc-unit">AGC</span>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Mode de paiement</label>
-        <div class="payment-methods">
-          <button
-            *ngFor="let method of paymentMethods"
-            class="payment-method"
-            [class.selected]="selectedMethod === method.id"
-            (click)="selectedMethod = method.id"
-          >
-            <img
-              [src]="method.icon"
-              [alt]="method.name"
-              class="method-icon-img"
-            />
-            <span class="method-name">{{ method.name }}</span>
+      <div class="history-list" *ngIf="!isLoadingHistory">
+        <div *ngIf="recentPurchases.length === 0" class="empty-history">
+          <span>🪙</span>
+          <p>Vous n'avez pas encore effectué d'achat d'AGC</p>
+          <button class="start-purchase-btn" (click)="activeTab = 'purchase'">
+            Commencer un achat
           </button>
         </div>
+        <div *ngFor="let purchase of recentPurchases" class="history-item">
+          <div class="history-icon">💳</div>
+          <div class="history-details">
+            <div class="history-amount">{{ purchase.amount }} AGC</div>
+            <div class="history-meta">
+              <span>{{ purchase.fiatAmount | number }} FCFA</span>
+              <span>•</span>
+              <span>{{ formatDate(purchase.date) }}</span>
+              <span>•</span>
+              <span class="payment-method-badge">{{ purchase.paymentMethod }}</span>
+            </div>
+          </div>
+          <div class="history-status" [ngClass]="getStatusClass(purchase.status)">
+            {{ getStatusText(purchase.status) }}
+          </div>
+        </div>
       </div>
 
-      <div class="purchase-actions">
-        <button
-          class="btn-purchase"
-          (click)="purchaseAGC()"
-          [disabled]="!canPurchase || isProcessing"
-        >
-          <span *ngIf="!isProcessing">💳 Acheter maintenant</span>
-          <span *ngIf="isProcessing" class="processing">
-            <span class="spinner-small"></span>
-            Traitement...
-          </span>
-        </button>
+      <div class="history-skeleton" *ngIf="isLoadingHistory">
+        <div *ngFor="let i of [1,2,3]" class="skeleton-item"></div>
+      </div>
+    </div>
 
-        <p class="purchase-note" *ngIf="!isProcessing">
-          Les AGC sont crédités immédiatement après confirmation du paiement
-        </p>
-
-        <div *ngIf="errorMessage" class="error-message">
-          ⚠️ {{ errorMessage }}
+    <!-- Onglet Infos bancaires -->
+    <div class="tab-content" *ngIf="activeTab === 'info'">
+      <div class="bank-info-section">
+        <h3>🏦 Coordonnées bancaires</h3>
+        
+        <div class="bank-card" *ngFor="let method of paymentMethods">
+          <div class="bank-card-header">
+            <img 
+              [src]="method.icon" 
+              [alt]="method.name" 
+              class="bank-icon"
+              (error)="handleImageError($event, method.icon)"
+            />
+            <span class="bank-name">{{ method.name }}</span>
+          </div>
+          <div class="bank-card-body" *ngIf="method.id !== 'card'">
+            <div class="info-row">
+              <span class="info-label">📞 Numéro:</span>
+              <span class="info-value">{{ getBankPhone(method.id) }}</span>
+              <button class="copy-btn-small" (click)="copyToClipboard(getBankPhone(method.id))">
+                Copier
+              </button>
+            </div>
+            <div class="info-row">
+              <span class="info-label">🏢 Bénéficiaire:</span>
+              <span class="info-value">{{ getBankName(method.id) }}</span>
+            </div>
+            <div class="info-note">
+              {{ getBankInstructions(method.id) }}
+            </div>
+          </div>
+          <div class="bank-card-body" *ngIf="method.id === 'card'">
+            <div class="info-row">
+              <span class="info-label">💳 Cartes acceptées:</span>
+              <span class="info-value">{{ getSupportedCards() }}</span>
+            </div>
+            <div class="info-note">
+              {{ getCardInstructions() }}
+            </div>
+          </div>
         </div>
 
-        <div *ngIf="successMessage" class="success-message">
-          ✅ {{ successMessage }}
+        <div class="security-note">
+          <h4>🔒 Sécurité des transactions</h4>
+          <ul>
+            <li>✓ Paiements sécurisés par cryptage SSL</li>
+            <li>✓ Transactions traçables via blockchain</li>
+            <li>✓ Reçus électroniques envoyés par email</li>
+            <li>✓ Support client 24/7</li>
+          </ul>
         </div>
       </div>
     </div>
