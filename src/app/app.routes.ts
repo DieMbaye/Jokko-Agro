@@ -64,7 +64,7 @@ export const routes: Routes = [
       ),
     canActivate: [producerGuard],
   },
-    {
+  {
     path: 'producer/test-signature',
     loadComponent: () =>
       import('./components/test/signature-test.component').then(
@@ -181,6 +181,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./components/test/ledger-test.component').then(
         (m) => m.LedgerTestComponent,
+      ),
+    canActivate: [buyerGuard],
+  },
+  {
+    path: 'buyer/secure',
+    loadComponent: () =>
+      import('./components/secure/security-dashboard.component').then(
+        (m) => m.SecurityDashboardComponent,
       ),
     canActivate: [buyerGuard],
   },

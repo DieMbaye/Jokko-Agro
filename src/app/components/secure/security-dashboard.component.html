@@ -1,0 +1,299 @@
+<!-- src/app/components/test/security-dashboard/security-dashboard.component.html -->
+<div class="dash">
+  <!-- ══════════════════════════════════════════════════════════════
+       HEADER
+  ══════════════════════════════════════════════════════════════ -->
+  <header class="dash-header">
+    <div class="header-left">
+      <div class="header-badge">AGC SECURITY SUITE</div>
+      <h1 class="header-title">
+        Tableau de bord<br /><span>des tests de sécurité</span>
+      </h1>
+      <p class="header-sub">
+        Ledger SHA-256 · Signatures ECDSA · Escrow · AES-GCM · Audit Trail
+      </p>
+    </div>
+
+    <div class="header-right">
+      <div class="user-card" *ngIf="userEmail">
+        <div class="user-avatar">{{ userEmail[0].toUpperCase() }}</div>
+        <div>
+          <div class="user-name">{{ userEmail }}</div>
+          <div class="user-balance">{{ balance }} AGC disponibles</div>
+        </div>
+      </div>
+
+      <!-- Score global -->
+      <div class="score-ring" [class]="'score-' + overallStatus">
+        <svg viewBox="0 0 80 80">
+          <circle
+            cx="40"
+            cy="40"
+            r="34"
+            fill="none"
+            stroke="rgba(255,255,255,0.1)"
+            stroke-width="8"
+          />
+          <circle
+            cx="40"
+            cy="40"
+            r="34"
+            fill="none"
+            [attr.stroke]="
+              overallStatus === 'pass'
+                ? '#10b981'
+                : overallStatus === 'fail'
+                  ? '#ef4444'
+                  : '#6366f1'
+            "
+            stroke-width="8"
+            stroke-linecap="round"
+            [attr.stroke-dasharray]="213.6"
+            [attr.stroke-dashoffset]="
+              totalTests > 0 ? 213.6 * (1 - passedTests / totalTests) : 213.6
+            "
+            transform="rotate(-90 40 40)"
+          />
+        </svg>
+        <div class="score-text">
+          <span class="score-num">{{ passedTests }}</span>
+          <span class="score-denom">/{{ totalTests }}</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       BARRE DE MOT DE PASSE + CTA
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="control-bar">
+    <div class="pwd-field">
+      <label class="pwd-label">🔑 Mot de passe des clés (AES-GCM)</label>
+      <div class="pwd-input-wrap">
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          class="pwd-input"
+          [(ngModel)]="keyPassword"
+          placeholder="Min. 8 caractères (ex: TestPassword123!)"
+          [disabled]="isRunningAll"
+        />
+        <button class="pwd-toggle" (click)="showPassword = !showPassword">
+          {{ showPassword ? "🙈" : "👁️" }}
+        </button>
+      </div>
+    </div>
+
+    <button
+      class="run-all-btn"
+      (click)="runAllTests()"
+      [disabled]="isRunningAll || !userUid"
+    >
+      <span *ngIf="!isRunningAll">▶ Lancer tous les tests</span>
+      <span *ngIf="isRunningAll" class="running-label">
+        <span class="dot-spin"></span> Tests en cours… {{ globalProgress }}%
+      </span>
+    </button>
+
+    <!-- Barre de progression -->
+    <div class="progress-bar" *ngIf="isRunningAll || globalProgress > 0">
+      <div class="progress-fill" [style.width.%]="globalProgress"></div>
+    </div>
+  </div>
+
+  <!-- Badges résumé -->
+  <div class="summary-badges">
+    <div class="badge-item pass">
+      <span class="badge-num">{{ passedTests }}</span>
+      <span class="badge-lbl">Réussis</span>
+    </div>
+    <div class="badge-item fail">
+      <span class="badge-num">{{ failedTests }}</span>
+      <span class="badge-lbl">Échoués</span>
+    </div>
+    <div class="badge-item idle">
+      <span class="badge-num">{{
+        totalTests - passedTests - failedTests
+      }}</span>
+      <span class="badge-lbl">En attente</span>
+    </div>
+    <div class="badge-item running" *ngIf="runningTests > 0">
+      <span class="badge-num">{{ runningTests }}</span>
+      <span class="badge-lbl">En cours</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       SECTIONS DE TEST
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="sections">
+    <div
+      *ngFor="let section of sections"
+      class="section-card"
+      [class.expanded]="section.expanded"
+      [class.status-pass]="section.globalStatus === 'pass'"
+      [class.status-fail]="section.globalStatus === 'fail'"
+      [class.status-running]="section.globalStatus === 'running'"
+      [style.--accent]="section.color"
+    >
+      <!-- En-tête de section -->
+      <div class="section-header" (click)="toggleSection(section)">
+        <div class="section-step" [style.background]="section.color">
+          {{ section.step }}
+        </div>
+
+        <div class="section-meta">
+          <div class="section-title">
+            <span class="section-icon">{{ section.icon }}</span>
+            {{ section.title }}
+          </div>
+          <div class="section-sub">{{ section.subtitle }}</div>
+        </div>
+
+        <div class="section-right">
+          <!-- Mini score -->
+          <div class="mini-score">
+            <span class="mini-pass">{{ sectionPassCount(section) }}</span>
+            <span class="mini-sep">/</span>
+            <span class="mini-total">{{ section.tests.length }}</span>
+          </div>
+
+          <!-- Status global -->
+          <div
+            class="section-status-badge"
+            [class]="'sbadge-' + section.globalStatus"
+          >
+            <span *ngIf="section.globalStatus === 'idle'">EN ATTENTE</span>
+            <span *ngIf="section.globalStatus === 'running'">
+              <span class="dot-spin small"></span> EN COURS
+            </span>
+            <span *ngIf="section.globalStatus === 'pass'">✓ RÉUSSI</span>
+            <span *ngIf="section.globalStatus === 'fail'">✗ ÉCHEC</span>
+          </div>
+
+          <!-- Bouton run section -->
+          <button
+            class="run-section-btn"
+            (click)="$event.stopPropagation(); runSection(section)"
+            [disabled]="isRunningAll || section.globalStatus === 'running'"
+          >
+            ▶
+          </button>
+
+          <span class="chevron" [class.open]="section.expanded">›</span>
+        </div>
+      </div>
+
+      <!-- Liste des tests -->
+      <div class="tests-list" *ngIf="section.expanded">
+        <div
+          *ngFor="let test of section.tests"
+          class="test-row"
+          [class.test-pass]="test.status === 'pass'"
+          [class.test-fail]="test.status === 'fail'"
+          [class.test-running]="test.status === 'running'"
+        >
+          <!-- Indicateur statut -->
+          <div class="test-indicator" [class]="'ind-' + test.status">
+            <span *ngIf="test.status === 'idle'">○</span>
+            <span
+              *ngIf="test.status === 'running'"
+              class="dot-spin micro"
+            ></span>
+            <span *ngIf="test.status === 'pass'">✓</span>
+            <span *ngIf="test.status === 'fail'">✗</span>
+          </div>
+
+          <!-- Contenu test -->
+          <div class="test-content">
+            <div class="test-label">{{ test.label }}</div>
+            <div class="test-detail" *ngIf="test.detail !== 'En attente'">
+              {{ test.detail }}
+            </div>
+
+            <!-- Données structurées -->
+            <div class="test-data" *ngIf="test.data && test.status !== 'idle'">
+              <div
+                *ngFor="let entry of objectEntries(test.data)"
+                class="data-entry"
+              >
+                <span class="data-key">{{ entry[0] }}</span>
+                <span class="data-val">{{ formatDataValue(entry[1]) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Durée -->
+          <div class="test-duration" *ngIf="test.duration">
+            {{ test.duration }}ms
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       GRILLE RÉSULTATS : TRANSACTIONS + AUDIT
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="results-grid">
+    <!-- Transactions récentes -->
+    <div class="results-card">
+      <div class="results-header">
+        <span class="results-icon">⛓️</span>
+        <h3>Transactions du ledger</h3>
+        <span class="results-count">{{ recentTransactions.length }}</span>
+      </div>
+
+      <div class="tx-list" *ngIf="recentTransactions.length > 0">
+        <div *ngFor="let tx of recentTransactions" class="tx-row">
+          <div
+            class="tx-type-dot"
+            [style.background]="typeColor(tx.type)"
+          ></div>
+          <div class="tx-info">
+            <div class="tx-type">{{ tx.type }}</div>
+            <div class="tx-hash">{{ (tx.hash || "").substring(0, 12) }}…</div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount">{{ tx.amount }} AGC</div>
+            <div class="tx-block">#{{ tx.blockHeight }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="recentTransactions.length === 0">
+        Aucune transaction — lancez les tests
+      </div>
+    </div>
+
+    <!-- Audit logs -->
+    <div class="results-card">
+      <div class="results-header">
+        <span class="results-icon">📋</span>
+        <h3>Audit Trail</h3>
+        <span class="results-count">{{ auditLogs.length }}</span>
+      </div>
+
+      <div class="audit-list" *ngIf="auditLogs.length > 0">
+        <div
+          *ngFor="let log of auditLogs"
+          class="audit-row"
+          [class.sev-critical]="log.severity === 'critical'"
+          [class.sev-warning]="log.severity === 'warning'"
+        >
+          <div class="audit-sev" [class]="'sev-dot-' + log.severity"></div>
+          <div class="audit-info">
+            <div class="audit-action">{{ log.action }}</div>
+            <div class="audit-desc">
+              {{ log.description.substring(0, 55) }}…
+            </div>
+          </div>
+          <div class="audit-date">{{ formatDate(log.createdAt) }}</div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="auditLogs.length === 0">
+        Aucun log — lancez les tests
+      </div>
+    </div>
+  </div>
+</div>

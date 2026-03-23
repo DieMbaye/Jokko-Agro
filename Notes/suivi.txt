@@ -19,3 +19,15 @@
     Journalisation et audit trail : Traçabilité complète de toutes les actions
 
     Tests d'intrusion : Validation de la robustesse face aux attaques simulées
+
+
+
+
+
+
+
+1. Séquestre (Escrow) — c'est le plus rapide à finir, les champs agcLockId, agcStatus existent déjà dans ton interface Sale. Il suffit de brancher la logique de blocage sur la signature ECDSA existante.
+2. Atomicité — une seule fonction runTransaction() de Firestore. Très court à coder, très fort à argumenter dans un mémoire (garantie ACID, double-dépense impossible).
+3. Audit trail — une collection audit_logs en write-only dans Firestore, avec une règle de sécurité qui interdit la suppression. Léger à coder, très valorisé académiquement car il complète le Ledger SHA-256.
+4. Chiffrement AES-GCM — remplace le btoa() dans user-keys_service par un vrai crypto.subtle.encrypt(). Tu as déjà la structure, c'est une amélioration ciblée.
+

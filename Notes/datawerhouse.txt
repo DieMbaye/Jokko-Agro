@@ -1,0 +1,35 @@
+Tes interfaces TypeScript (data_interfaces.ts) définissent la structure du datawarehouse — SalesStats, SalesFilter, StatCard, Sale avec tous les champs AGC. C'est le schéma de données, pas encore le datawarehouse lui-même.
+Concrètement tu as :
+
+Les types et interfaces bien définis
+Le modèle Sale avec tous les champs (agcUsed, agcValue, agcStatus, appliedDiscounts[], etc.)
+La structure SalesStats avec monthlyRevenue[], dailyStats[], weeklyTrend, predictedRevenue
+
+
+Ce qu'il reste à implémenter
+1. La couche de collecte (ETL)
+Rien dans tes services actuels n'agrège les données. Il te faut une fonction qui lit les commandes Firestore et les compile en SalesStats. Concrètement :
+typescript// À créer : datawarehouse_service.ts
+async computeSalesStats(producerId: string, filter: SalesFilter): Promise<SalesStats>
+Elle doit lire la collection sales dans Firestore, filtrer par période/statut/producteur, et calculer tous les agrégats.
+2. Les agrégats temporels
+Tu as les champs monthlyRevenue[] et dailyStats[] dans l'interface mais aucune logique qui les remplit. Il faut grouper les ventes par jour, semaine, mois.
+3. Les prévisions (predictedRevenue, weeklyTrend)
+Ces champs existent dans l'interface mais aucun calcul ne les alimente. La version minimale pour un mémoire c'est une régression linéaire simple sur les 4 dernières semaines — pas besoin de ML complexe.
+4. Les stats AGC (agcStats)
+Le champ existe dans SalesStats mais n'est jamais calculé :
+typescriptagcStats: {
+  totalAgcUsed, totalAgcValue,
+  agcLocked, agcReleased, agcCancelled
+}
+5. Un tableau de bord de visualisation
+Les StatCard sont définies mais il n'y a pas de composant Angular qui les affiche sous forme de graphiques (courbes de revenus, camembert par statut, etc.).
+
+Ce que je te conseille pour le mémoire
+Tu n'as pas besoin de tout implémenter. Pour que ça soit solide académiquement, l'essentiel est :
+
+datawarehouse_service.ts avec computeSalesStats() — c'est le cœur
+Les agrégats temporels (jour/mois) — sans ça le DW n'existe pas vraiment
+Une page dashboard avec au moins 3 StatCard et un graphique de revenus
+
+Les prévisions (predictedRevenue) c'est un bonus — si tu as le temps, une régression linéaire simple suffit et impressionne. Sinon tu peux en parler comme perspective dans la conclusion.

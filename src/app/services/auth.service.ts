@@ -22,7 +22,7 @@ export class AuthService {
       // ✅ Générer les clés ECDSA après inscription
       const user = this.getUserData();
       if (user) {
-        await this.userKeysService.generateAndSaveUserKeys(user.uid);
+        await this.userKeysService.generateAndSaveUserKeys(user.uid, userData.password);
       }
       this.router.navigate(['/select-role']);
     }
@@ -43,11 +43,11 @@ export class AuthService {
         const publicKey = await this.userKeysService.getPublicKey(user.uid);
         if (!publicKey) {
           // Première connexion : générer les clés
-          await this.userKeysService.generateAndSaveUserKeys(user.uid);
+          await this.userKeysService.generateAndSaveUserKeys(user.uid, password);
         } else {
-          // ✅ CORRECTION: Utiliser getPrivateKey au lieu de restorePrivateKey
-          // La clé privée est automatiquement chargée en session par le service
-          console.log('🔑 Clés existantes trouvées pour', user.email);
+          // Clés existantes : re-dériver la clé privée depuis Firestore pour cette session
+          await this.userKeysService.unlockPrivateKey(user.uid, password);
+          console.log('🔑 Clés déverrouillées pour', user.email);
         }
       }
 

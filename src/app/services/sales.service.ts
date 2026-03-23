@@ -518,6 +518,8 @@ export class SalesService {
         if (saleData.agcUsed && saleData.agcUsed > 0 && saleData.agcLockId) {
           const cancelResult = await this.agcService.cancelAGCLock(
             saleData.agcLockId,
+            'system',
+            'Commande annulée via updateSaleStatus',
           );
           if (cancelResult.success) {
             updateData.agcStatus = 'cancelled';
@@ -621,6 +623,8 @@ export class SalesService {
       if (orderData.agcUsed && orderData.agcUsed > 0 && orderData.agcLockId) {
         const cancelResult = await this.agcService.cancelAGCLock(
           orderData.agcLockId,
+          orderData.buyerId,
+          'Commande annulée par l\'acheteur',
         );
         if (cancelResult.success) {
           updateData.agcStatus = 'cancelled';
