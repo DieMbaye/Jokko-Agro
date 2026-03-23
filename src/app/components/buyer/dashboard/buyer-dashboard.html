@@ -11,9 +11,9 @@
       </div>
 
       <div class="header-right">
-        <!-- Ligne unique pour AGC, Notifications et Recherche -->
+        <!-- Barre d'actions - flex-wrap avec min-width pour éviter la descente -->
         <div class="top-actions-row">
-          <!-- 💰 AGC BALANCE WIDGET - AVEC DESIGN VERT -->
+          <!-- 💰 AGC BALANCE WIDGET -->
           <div class="agc-balance-premium" (click)="openAGCPurchase()">
             <div class="agc-icon">🪙</div>
             <div class="agc-balance-info">
@@ -38,14 +38,11 @@
               </span>
             </button>
 
-            <!-- 📋 DROPDOWN -->
             <div class="notif-dropdown" *ngIf="showNotifications">
               <h4>Notifications</h4>
-
               <div *ngIf="notifications.length === 0" class="notif-empty">
                 Aucune notification
               </div>
-
               <div
                 *ngFor="let n of notifications"
                 class="notif-item"
@@ -116,7 +113,6 @@
         <h2>Catégories populaires</h2>
         <a routerLink="/buyer/market" class="view-all">Tout voir →</a>
       </div>
-
       <div class="categories-grid">
         <div *ngFor="let category of categories" class="category-card">
           <div class="category-icon">{{ category.icon }}</div>
@@ -132,7 +128,6 @@
         <h2>Achats récents</h2>
         <a routerLink="/buyer/purchases" class="view-all">Voir tout →</a>
       </div>
-
       <div class="table-container">
         <table class="purchases-table">
           <thead>
@@ -148,12 +143,12 @@
           </thead>
           <tbody>
             <tr *ngFor="let purchase of recentPurchases | slice:0:5">
-              <td>#{{ purchase.id }}</td>
-              <td class="product-cell">{{ purchase.product }}</td>
-              <td>{{ purchase.producer }}</td>
-              <td>{{ purchase.date }}</td>
-              <td class="amount">{{ formatPrice(purchase.amount) }}</td>
-              <td>
+              <td data-label="Commande">#{{ purchase.id }}</td>
+              <td data-label="Produit" class="product-cell">{{ purchase.product }}</td>
+              <td data-label="Producteur">{{ purchase.producer }}</td>
+              <td data-label="Date">{{ purchase.date }}</td>
+              <td data-label="Montant" class="amount">{{ formatPrice(purchase.amount) }}</td>
+              <td data-label="Note">
                 <div *ngIf="purchase.rated" class="stars readonly">
                   <span *ngFor="let s of starsArray()">
                     {{ s <= purchase.ratingValue ? '★' : '☆' }}
@@ -172,7 +167,7 @@
                   </span>
                 </div>
               </td>
-              <td>
+              <td data-label="Certifié">
                 <span *ngIf="purchase.certified" class="certified-badge">
                   ✅ Certifié
                 </span>
@@ -192,14 +187,11 @@
         <h2>Produits recommandés</h2>
         <p class="section-subtitle">Basé sur vos achats précédents</p>
       </div>
-
       <div class="products-grid">
         <div *ngFor="let product of recommendedProducts" class="product-card">
           <div class="product-image">
             {{ product.image }}
-            <span *ngIf="product.certified" class="certified-tag"
-              >✔ Certifié</span
-            >
+            <span *ngIf="product.certified" class="certified-tag">✔ Certifié</span>
           </div>
           <div class="product-info">
             <h4>{{ product.name }}</h4>
