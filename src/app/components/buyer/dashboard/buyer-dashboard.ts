@@ -156,9 +156,12 @@ export class BuyerDashboardComponent implements OnInit, OnDestroy {
     this.showAGCPurchaseModal = false;
   }
 
-  onAGCPurchased() {
+  async onAGCPurchased() {
     // Rafraîchir le solde après achat
-    this.agcService.refreshBalance();
+    const user = this.authService.getUserData();
+    if (user && user.uid) {
+      await this.agcService.loadUserBalance(user.uid);
+    }
   }
 
   // ==================== DASHBOARD ====================

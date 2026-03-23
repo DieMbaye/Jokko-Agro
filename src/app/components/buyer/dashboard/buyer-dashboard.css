@@ -2,37 +2,25 @@
    VARIABLES GLOBALES
    ============================================ */
 :root {
-  /* Couleurs principales */
   --primary-green: #10B981;
   --primary-green-light: #34D399;
   --primary-green-dark: #059669;
-
   --accent-blue: #3B82F6;
   --accent-orange: #F59E0B;
   --accent-red: #EF4444;
   --accent-purple: #8B5CF6;
-
-  /* Neutres */
   --bg-white: #FFFFFF;
   --bg-light: #F9FAFB;
   --bg-gray: #F3F4F6;
-
-  /* Textes */
   --text-dark: #111827;
   --text-gray: #6B7280;
   --text-light: #9CA3AF;
-
-  /* Bordures */
   --border-light: #E5E7EB;
   --border-medium: #D1D5DB;
-
-  /* Ombres */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-
-  /* Arrondis */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
@@ -40,9 +28,6 @@
   --radius-full: 9999px;
 }
 
-/* ============================================
-   RESET ET BASE
-   ============================================ */
 * {
   margin: 0;
   padding: 0;
@@ -56,9 +41,6 @@ body {
   line-height: 1.5;
 }
 
-/* ============================================
-   DASHBOARD CONTAINER
-   ============================================ */
 .dashboard-container {
   min-height: 100vh;
 }
@@ -70,7 +52,7 @@ body {
 }
 
 /* ============================================
-   HEADER PRINCIPAL
+   HEADER
    ============================================ */
 .main-header {
   display: flex;
@@ -84,7 +66,6 @@ body {
 .header-left h1 {
   font-size: 2.25rem;
   font-weight: 800;
-  color: var(--primary-green-dark);
   margin-bottom: 0.5rem;
   background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
   -webkit-background-clip: text;
@@ -98,9 +79,6 @@ body {
   max-width: 500px;
 }
 
-/* ============================================
-   TOP ACTIONS ROW (AGC + NOTIFS + RECHERCHE)
-   ============================================ */
 .top-actions-row {
   display: flex;
   align-items: center;
@@ -109,7 +87,7 @@ body {
 }
 
 /* ============================================
-   💰 AGC BALANCE PREMIUM - DESIGN VERT
+   AGC BALANCE WIDGET
    ============================================ */
 .agc-balance-premium {
   display: flex;
@@ -185,19 +163,13 @@ body {
   transform: scale(1.05);
 }
 
-.buy-icon {
-  font-size: 0.9rem;
-  font-weight: bold;
-}
-
-/* ================================
-   🔔 NOTIFICATIONS – DESIGN PREMIUM
-================================ */
+/* ============================================
+   NOTIFICATIONS
+   ============================================ */
 .notifications-wrapper {
   position: relative;
 }
 
-/* 🔔 Bouton cloche */
 .notif-btn {
   background: #f5f7f6;
   border: none;
@@ -221,7 +193,6 @@ body {
   box-shadow: var(--shadow-md);
 }
 
-/* 🔴 Badge */
 .notif-badge {
   position: absolute;
   top: -4px;
@@ -237,12 +208,10 @@ body {
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
+  0%, 100% { transform: scale(1); }
   50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
 }
 
-/* 📋 Dropdown */
 .notif-dropdown {
   position: absolute;
   top: 56px;
@@ -259,7 +228,6 @@ body {
   border: 1px solid var(--border-light);
 }
 
-/* Animation */
 @keyframes fadeDown {
   from {
     opacity: 0;
@@ -271,7 +239,6 @@ body {
   }
 }
 
-/* Scrollbar élégante */
 .notif-dropdown::-webkit-scrollbar {
   width: 6px;
 }
@@ -286,7 +253,6 @@ body {
   border-radius: 10px;
 }
 
-/* Titre */
 .notif-dropdown h4 {
   margin: 0 0 1rem 0;
   font-size: 1rem;
@@ -296,7 +262,6 @@ body {
   border-bottom: 2px solid var(--primary-green-light);
 }
 
-/* 🔔 Notification */
 .notif-item {
   padding: 0.75rem;
   border-radius: var(--radius-md);
@@ -313,13 +278,11 @@ body {
   border-color: var(--primary-green-light);
 }
 
-/* Non lue */
 .notif-item.unread {
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   border-left: 4px solid var(--primary-green);
 }
 
-/* Texte */
 .notif-item strong {
   font-size: 0.85rem;
   display: block;
@@ -341,7 +304,6 @@ body {
   margin-top: 0.25rem;
 }
 
-/* Vide */
 .notif-empty {
   text-align: center;
   font-size: 0.85rem;
@@ -350,7 +312,7 @@ body {
 }
 
 /* ============================================
-   BARRE DE RECHERCHE
+   RECHERCHE
    ============================================ */
 .search-box {
   display: flex;
@@ -401,13 +363,6 @@ body {
 .search-btn:hover {
   color: var(--primary-green-dark);
   transform: scale(1.05);
-}
-
-/* ============================================
-   ACTIONS RAPIDES
-   ============================================ */
-.quick-actions {
-  margin-left: 0.25rem;
 }
 
 .quick-btn {
@@ -486,7 +441,6 @@ body {
   font-weight: 500;
 }
 
-/* Skeleton loader */
 .stat-card.skeleton {
   animation: pulse 1.5s infinite;
 }
@@ -511,13 +465,12 @@ body {
 }
 
 @keyframes pulse {
-  0% { opacity: 0.6; }
+  0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
-  100% { opacity: 0.6; }
 }
 
 /* ============================================
-   SECTIONS DU DASHBOARD
+   SECTIONS
    ============================================ */
 .dashboard-section {
   background: var(--bg-white);
@@ -529,15 +482,24 @@ body {
   animation: fadeIn 0.4s ease forwards;
 }
 
-.dashboard-section:nth-child(1) { animation-delay: 0.1s; }
-.dashboard-section:nth-child(2) { animation-delay: 0.2s; }
-.dashboard-section:nth-child(3) { animation-delay: 0.3s; }
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .section-header h2 {
@@ -626,7 +588,7 @@ body {
 }
 
 /* ============================================
-   TABLEAU DES ACHATS
+   TABLEAU DES ACHATS - RESPONSIVE CARD VIEW
    ============================================ */
 .table-container {
   overflow-x: auto;
@@ -678,10 +640,10 @@ body {
 .amount {
   font-weight: 600;
   color: var(--primary-green);
-  font-family: 'SF Mono', Monaco, monospace;
+  font-family: monospace;
 }
 
-/* Étoiles de notation */
+/* Étoiles */
 .stars {
   display: inline-flex;
   gap: 2px;
@@ -703,8 +665,7 @@ body {
   transition: color 0.2s ease;
 }
 
-.stars.clickable span:hover,
-.stars.clickable span:hover ~ span {
+.stars.clickable span:hover {
   color: #FFA000;
 }
 
@@ -713,29 +674,24 @@ body {
   cursor: not-allowed;
 }
 
-/* Badges de certification */
-.certified-badge {
+.certified-badge, .not-certified-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
   padding: 0.375rem 0.75rem;
-  background: rgba(76, 175, 80, 0.1);
-  color: var(--primary-green);
   border-radius: var(--radius-full);
   font-size: 0.8rem;
   font-weight: 600;
 }
 
+.certified-badge {
+  background: rgba(76, 175, 80, 0.1);
+  color: var(--primary-green);
+}
+
 .not-certified-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
   background: rgba(158, 158, 158, 0.1);
   color: var(--text-light);
-  border-radius: var(--radius-full);
-  font-size: 0.8rem;
-  font-weight: 600;
 }
 
 /* ============================================
@@ -806,13 +762,15 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .price {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--primary-green);
-  font-family: 'SF Mono', Monaco, monospace;
+  font-family: monospace;
 }
 
 .rating {
@@ -875,8 +833,7 @@ body {
   gap: 0.5rem;
 }
 
-.tip-card ul,
-.tip-card ol {
+.tip-card ul, .tip-card ol {
   margin-left: 1.5rem;
   color: var(--text-gray);
   margin-bottom: 1.5rem;
@@ -908,128 +865,241 @@ body {
 }
 
 /* ============================================
-   RESPONSIVE DESIGN
+   RESPONSIVE DESIGN - POINTS DE RUPTURE
    ============================================ */
+
+/* Tablette paysage (992px - 1200px) */
 @media (max-width: 1200px) {
   .main-content {
     padding: 1.5rem;
   }
 }
 
+/* Tablette portrait (768px - 992px) */
 @media (max-width: 992px) {
   .main-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1.5rem;
   }
-
+  
   .header-right {
     width: 100%;
   }
-
+  
   .top-actions-row {
     width: 100%;
     justify-content: flex-start;
   }
-
+  
   .search-box {
     flex: 1;
     max-width: 300px;
   }
+  
+  .categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
+/* Mobile (576px - 768px) */
 @media (max-width: 768px) {
   .main-content {
     padding: 1rem;
   }
-
+  
   .header-left h1 {
     font-size: 1.75rem;
   }
-
+  
+  .welcome-text {
+    font-size: 1rem;
+  }
+  
   .top-actions-row {
     flex-direction: column;
     align-items: stretch;
     gap: 0.75rem;
   }
-
+  
   .agc-balance-premium {
     justify-content: space-between;
   }
-
+  
   .search-box {
     width: 100%;
     max-width: none;
   }
-
+  
   .quick-actions {
     width: 100%;
-    margin-left: 0;
   }
-
+  
   .quick-btn {
     width: 100%;
     justify-content: center;
   }
-
+  
   .stats-grid {
     grid-template-columns: 1fr;
   }
-
-  .categories-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
+  
   .products-grid {
     grid-template-columns: 1fr;
   }
-
+  
   .tips-section {
     grid-template-columns: 1fr;
   }
-
+  
   .notif-dropdown {
     width: calc(100vw - 2rem);
     right: -1rem;
     left: auto;
   }
-}
-
-@media (max-width: 576px) {
-  .categories-grid {
-    grid-template-columns: 1fr;
+  
+  .dashboard-section {
+    padding: 1rem;
   }
-
-  .purchases-table {
-    font-size: 0.85rem;
-  }
-
-  .purchases-table th,
-  .purchases-table td {
-    padding: 0.75rem 0.5rem;
-  }
-
+  
   .section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-
-  .message-bubble {
-    max-width: 240px;
+  
+  .section-header h2 {
+    font-size: 1.2rem;
+  }
+  
+  /* Tableau en vue carte pour mobile */
+  .purchases-table thead {
+    display: none;
+  }
+  
+  .purchases-table tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+  }
+  
+  .purchases-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--border-light);
+    text-align: right;
+  }
+  
+  .purchases-table td:last-child {
+    border-bottom: none;
+  }
+  
+  .purchases-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-dark);
+    text-align: left;
+    margin-right: 1rem;
   }
 }
 
-/* ============================================
-   ANIMATIONS
-   ============================================ */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+/* Petit mobile (moins de 576px) */
+@media (max-width: 576px) {
+  .categories-grid {
+    grid-template-columns: 1fr;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  .stats-grid {
+    gap: 1rem;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+  }
+  
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.25rem;
+  }
+  
+  .stat-info h3 {
+    font-size: 1.5rem;
+  }
+  
+  .category-card {
+    padding: 1rem;
+  }
+  
+  .category-icon {
+    font-size: 2rem;
+  }
+  
+  .product-card {
+    margin-bottom: 1rem;
+  }
+  
+  .product-image {
+    height: 120px;
+    font-size: 3rem;
+  }
+  
+  .tip-card {
+    padding: 1rem;
+  }
+  
+  .tip-card h3 {
+    font-size: 1rem;
+  }
+  
+  .tip-card ul, .tip-card ol {
+    font-size: 0.85rem;
+    margin-left: 1rem;
+  }
+  
+  .agc-amount {
+    font-size: 1.1rem;
+  }
+  
+  .notif-dropdown {
+    width: 90vw;
+    right: -1rem;
+  }
+}
+
+/* Très petit mobile (moins de 400px) */
+@media (max-width: 400px) {
+  .main-content {
+    padding: 0.75rem;
+  }
+  
+  .header-left h1 {
+    font-size: 1.5rem;
+  }
+  
+  .dashboard-section {
+    padding: 0.75rem;
+  }
+  
+  .stat-card {
+    padding: 0.75rem;
+  }
+  
+  .purchases-table td {
+    font-size: 0.8rem;
+    padding: 0.5rem;
+  }
+  
+  .stars span {
+    font-size: 0.9rem;
+  }
+  
+  .certified-badge, .not-certified-badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
   }
 }
