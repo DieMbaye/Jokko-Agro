@@ -44,7 +44,6 @@ export class AGCInitService {
    */
   private async ensureCollectionExists(): Promise<void> {
     // Firestore crée automatiquement les collections lors du premier ajout
-    // On peut juste vérifier qu'on peut accéder à la collection
     try {
       await getDocs(collection(this.firestore, 'agc_balances'));
     } catch (error) {

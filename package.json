@@ -30,6 +30,7 @@
     "ethers": "^6.16.0",
     "firebase": "^12.6.0",
     "firebase-admin": "^13.7.0",
+    "firebase-functions": "^7.2.2",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.6.0",
     "ngx-qrcode2": "^9.0.0",

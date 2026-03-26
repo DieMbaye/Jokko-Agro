@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Firestore, doc, setDoc, getDoc } from '@angular/fire/firestore';
 import { CryptoECDAService } from './crypto-ecdsa.service';
 import { AuditTrailService } from './audit-trail.service';
+import { SecureKeyService } from './secure-key.service';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // CHIFFREMENT AES-GCM
@@ -39,9 +40,11 @@ import { AuditTrailService } from './audit-trail.service';
   providedIn: 'root',
 })
 export class UserKeysService {
-  private firestore = inject(Firestore);
+  private firestore  = inject(Firestore);
   private cryptoECDSA = inject(CryptoECDAService);
-  private auditTrail = inject(AuditTrailService);
+  private auditTrail  = inject(AuditTrailService);
+  // ✅ COUCHE 1 — Clé privée dans IndexedDB (non extractable)
+  private secureKey   = inject(SecureKeyService);
 
   // Paramètres PBKDF2 (recommandations OWASP 2024)
   private readonly PBKDF2_ITERATIONS = 310_000;
@@ -68,36 +71,24 @@ export class UserKeysService {
     password?: string,
   ): Promise<{ publicKey: string; success: boolean; error?: string }> {
     try {
-      // Résoudre le secret effectif : mot de passe utilisateur ou dérivation userId
-      const effectivePassword = this.resolvePassword(password, userId);
+      // ✅ COUCHE 1 — Générer dans IndexedDB avec extractable: false
+      // La clé privée ne sort JAMAIS en clair du moteur crypto du navigateur.
+      const publicKey = await this.secureKey.generateAndStoreKeyPair(userId);
 
-      // 1. Générer la paire de clés ECDSA
-      const { publicKey, privateKey } =
-        await this.cryptoECDSA.generateKeyPair();
-
-      // 2. Chiffrer la clé privée avec AES-GCM (vrai chiffrement, remplace btoa)
-      const encryptedPrivateKey = await this.encryptPrivateKey(
-        privateKey,
-        effectivePassword,
-      );
-
-      // 3. Sauvegarder dans Firestore — seule la clé chiffrée part sur le réseau
+      // Chiffrer la clé publique (pour backup Firestore)
+      // Note : on ne stocke plus la clé privée en Firestore ni en sessionStorage
       await setDoc(doc(this.firestore, 'user_keys', userId), {
         userId,
-        publicKey,
-        encryptedPrivateKey, // base64(salt ‖ IV ‖ chiffré AES-GCM)
+        publicKey,                            // clé publique en clair (c'est normal)
         algorithm: 'ECDSA-P256',
-        encryptionAlgorithm: 'AES-GCM-256/PBKDF2-SHA256',
-        pbkdf2Iterations: this.PBKDF2_ITERATIONS,
+        keyStorage: 'IndexedDB-non-extractable', // ← marqueur de la nouvelle architecture
         createdAt: new Date(),
         lastUsed: new Date(),
       });
 
-      // 4. Clé privée en clair uniquement en sessionStorage (durée de vie = onglet)
-      //    Ne JAMAIS utiliser localStorage (persistant, lisible par XSS inter-sessions)
-      sessionStorage.setItem(`private_key_${userId}`, privateKey);
+      // ✅ Supprimer l'ancienne clé de sessionStorage si elle existait
+      sessionStorage.removeItem(`private_key_${userId}`);
 
-      // 5. Audit trail
       await this.auditTrail.logKeysGenerated(userId);
 
       return { publicKey, success: true };
@@ -120,29 +111,31 @@ export class UserKeysService {
     password?: string,
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      const docSnap = await getDoc(doc(this.firestore, 'user_keys', userId));
-      if (!docSnap.exists()) {
-        return {
-          success: false,
-          error: 'Aucune clé trouvée pour cet utilisateur',
-        };
+      // ✅ COUCHE 1 — Vérifier si la clé existe en IndexedDB
+      const hasKey = await this.secureKey.hasKeyPair(userId);
+      if (hasKey) {
+        return { success: true }; // Clé déjà disponible dans IndexedDB
       }
 
-      const encryptedPrivateKey: string = docSnap.data()['encryptedPrivateKey'];
-      const effectivePassword = this.resolvePassword(password, userId);
+      // ── Tentative de migration depuis sessionStorage (ancienne architecture) ──
+      const migrated = await this.secureKey.migrateFromSessionStorage(userId);
+      if (migrated) {
+        console.info('[UserKeys] Migration sessionStorage → IndexedDB réussie.');
+        return { success: true };
+      }
 
-      // Déchiffrement AES-GCM — lève une exception si le mot de passe est incorrect
-      const privateKey = await this.decryptPrivateKey(
-        encryptedPrivateKey,
-        effectivePassword,
-      );
+      // ── Si aucune clé nulle part : régénérer ──────────────────────────────
+      console.warn('[UserKeys] Aucune clé trouvée. Régénération nécessaire.');
+      const docSnap = await getDoc(doc(this.firestore, 'user_keys', userId));
+      if (!docSnap.exists()) {
+        return { success: false, error: 'Aucune clé trouvée. Veuillez régénérer vos clés.' };
+      }
 
-      sessionStorage.setItem(`private_key_${userId}`, privateKey);
-
+      // Régénérer une nouvelle paire (perte de l'ancienne clé privée)
+      await this.generateAndSaveUserKeys(userId, password);
       return { success: true };
     } catch (error: any) {
       console.error('Erreur déverrouillage clé:', error);
-      // Message générique — ne pas révéler si c'est un mauvais mdp ou une corruption
       return {
         success: false,
         error: 'Impossible de déverrouiller les clés. Reconnectez-vous.',
@@ -164,12 +157,20 @@ export class UserKeysService {
   }
 
   /**
-   * Clé privée depuis sessionStorage (en clair, durée de vie = onglet).
-   * Retourne null si l'utilisateur n'a pas encore déverrouillé ses clés
-   * dans cette session → appeler unlockPrivateKey().
+   * ✅ COUCHE 1 — La clé privée n'est PLUS accessible en clair.
+   * Utilisez SecureKeyService.sign() pour signer directement.
+   *
+   * @deprecated Ne retourne plus la clé privée brute.
+   * Injectez SecureKeyService et appelez .sign(userId, message) à la place.
    */
   getPrivateKey(userId: string): string | null {
-    return sessionStorage.getItem(`private_key_${userId}`);
+    // ✅ On retourne null : la clé privée ne sort plus jamais en clair.
+    // Les appelants doivent migrer vers SecureKeyService.sign().
+    console.warn(
+      '[UserKeys] getPrivateKey() est déprécié. ' +
+      'Utilisez SecureKeyService.sign(userId, message) à la place.'
+    );
+    return null;
   }
 
   /**
@@ -177,21 +178,25 @@ export class UserKeysService {
    */
   async hasKeysReady(userId: string): Promise<{
     publicKeyInFirestore: boolean;
-    privateKeyInSession: boolean;
+    privateKeyInIndexedDB: boolean;  // ← renommé (plus sessionStorage)
   }> {
-    const publicKey = await this.getPublicKey(userId);
-    const privateKey = this.getPrivateKey(userId);
+    const publicKey      = await this.getPublicKey(userId);
+    const hasKeyInIDB    = await this.secureKey.hasKeyPair(userId);
     return {
-      publicKeyInFirestore: !!publicKey,
-      privateKeyInSession: !!privateKey,
+      publicKeyInFirestore:  !!publicKey,
+      privateKeyInIndexedDB: hasKeyInIDB,
     };
   }
 
   /**
-   * Effacer la clé privée de la session (déconnexion).
+   * Effacer la clé privée (déconnexion).
+   * Supprime de IndexedDB ET de sessionStorage (migration).
    */
   clearSessionKey(userId: string): void {
+    // Supprimer de sessionStorage (ancienne architecture)
     sessionStorage.removeItem(`private_key_${userId}`);
+    // Supprimer de IndexedDB (nouvelle architecture)
+    this.secureKey.deleteKeyPair(userId).catch(console.error);
   }
 
   // ──────────────────────────────────────────────────────────────────────────

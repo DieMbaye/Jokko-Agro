@@ -1,0 +1,2976 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jokko Agro — Soutenance de Mémoire</title>
+    <style>
+      :root {
+        --dark: #0d1b2a;
+        --dark2: #0f2540;
+        --dark3: #162032;
+        --teal: #0d9488;
+        --tealL: #ccfbf1;
+        --teal2: #1d9e75;
+        --blue: #1e6fbf;
+        --blueL: #dbeafe;
+        --blue2: #185fa5;
+        --amber: #d97706;
+        --amberL: #fef3c7;
+        --coral: #c2410c;
+        --coralL: #ffedd5;
+        --purple: #7c3aed;
+        --purpleL: #ede9fe;
+        --white: #ffffff;
+        --offW: #f8fafc;
+        --gray: #64748b;
+        --grayL: #e2e8f0;
+        --grayD: #1e293b;
+        --text: #0f172a;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: #0a0f18;
+        color: var(--white);
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ── HEADER ── */
+      #header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 24px;
+        background: #060d16;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        flex-shrink: 0;
+        z-index: 10;
+      }
+      #header .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      #header .logo-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--teal);
+      }
+      #header .logo span {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        color: var(--white);
+      }
+      #header .logo small {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.4);
+        margin-left: 4px;
+      }
+      #slide-counter {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+        font-variant-numeric: tabular-nums;
+      }
+      #nav-dots {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+      }
+      .dot.active {
+        background: var(--teal);
+        width: 22px;
+        border-radius: 4px;
+      }
+
+      /* ── MAIN STAGE ── */
+      #stage {
+        flex: 1;
+        display: flex;
+        align-items: stretch;
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* ── SIDEBAR ── */
+      #sidebar {
+        width: 200px;
+        flex-shrink: 0;
+        background: #060d16;
+        border-right: 1px solid rgba(255, 255, 255, 0.07);
+        display: flex;
+        flex-direction: column;
+        padding: 12px 0;
+        overflow-y: auto;
+      }
+      .sb-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 14px;
+        cursor: pointer;
+        transition: background 0.15s;
+        border-left: 3px solid transparent;
+        position: relative;
+      }
+      .sb-item:hover {
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .sb-item.active {
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .sb-item.active .sb-bar {
+        opacity: 1;
+      }
+      .sb-bar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        border-radius: 0 2px 2px 0;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      .sb-num {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.3);
+        min-width: 18px;
+        font-variant-numeric: tabular-nums;
+      }
+      .sb-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.55);
+        line-height: 1.3;
+      }
+      .sb-item.active .sb-label {
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      /* ── SLIDES CONTAINER ── */
+      #slides-wrap {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+      }
+      .slide {
+        position: absolute;
+        inset: 0;
+        padding: 32px 40px;
+        overflow-y: auto;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .slide.active {
+        display: block;
+        opacity: 1;
+      }
+
+      /* ── NAV ARROWS ── */
+      #nav-prev,
+      #nav-next {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 44px;
+        height: 44px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        z-index: 20;
+        color: white;
+        font-size: 18px;
+        user-select: none;
+      }
+      #nav-prev {
+        left: 8px;
+      }
+      #nav-next {
+        right: 8px;
+      }
+      #nav-prev:hover,
+      #nav-next:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.25);
+      }
+      #nav-prev:disabled,
+      #nav-next:disabled {
+        opacity: 0.2;
+        cursor: default;
+      }
+
+      /* ── SLIDE COMPONENTS ── */
+      .slide-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--white);
+        margin-bottom: 4px;
+        line-height: 1.2;
+      }
+      .slide-sub {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.45);
+        margin-bottom: 24px;
+      }
+      .tag {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+      .accent-bar {
+        width: 40px;
+        height: 4px;
+        border-radius: 2px;
+        margin-bottom: 20px;
+      }
+
+      /* Cards */
+      .card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 18px 20px;
+      }
+      .card-colored {
+        border-radius: 10px;
+        padding: 18px 20px;
+      }
+      .card-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .card-body {
+        font-size: 12.5px;
+        color: rgba(255, 255, 255, 0.65);
+        line-height: 1.6;
+      }
+
+      /* Grid layouts */
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 14px;
+      }
+      .grid-4 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: 12px;
+      }
+
+      /* Steps flow */
+      .steps-row {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin: 20px 0;
+      }
+      .step-box {
+        flex: 1;
+        padding: 12px 10px;
+        border-radius: 8px;
+        text-align: center;
+      }
+      .step-num {
+        font-size: 11px;
+        opacity: 0.7;
+        margin-bottom: 4px;
+      }
+      .step-title {
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .step-sub {
+        font-size: 10.5px;
+        opacity: 0.7;
+        margin-top: 2px;
+      }
+      .step-arrow {
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.25);
+        flex-shrink: 0;
+        padding: 0 4px;
+      }
+
+      /* Stat */
+      .stat-num {
+        font-size: 42px;
+        font-weight: 700;
+        line-height: 1;
+      }
+      .stat-label {
+        font-size: 13px;
+        font-weight: 600;
+        margin-top: 6px;
+      }
+      .stat-sub {
+        font-size: 11px;
+        opacity: 0.6;
+        margin-top: 3px;
+      }
+
+      /* Badge pill */
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      /* Code-like label */
+      .mono {
+        font-family: "Consolas", monospace;
+        font-size: 11.5px;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 2px 7px;
+        border-radius: 4px;
+        color: var(--tealL);
+      }
+
+      /* List items */
+      .li-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        font-size: 12.5px;
+        color: rgba(255, 255, 255, 0.75);
+      }
+      .li-row:last-child {
+        border-bottom: none;
+      }
+      .li-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        margin-top: 5px;
+      }
+
+      /* Section header pill */
+      .sec-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        margin-bottom: 16px;
+      }
+
+      /* Matrix table */
+      .matrix {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11.5px;
+      }
+      .matrix th,
+      .matrix td {
+        padding: 7px 10px;
+        text-align: left;
+      }
+      .matrix th {
+        color: rgba(255, 255, 255, 0.5);
+        font-weight: 500;
+        font-size: 11px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .matrix tr:not(:last-child) td {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .matrix td:not(:first-child) {
+        text-align: center;
+      }
+      .check {
+        color: #1d9e75;
+        font-weight: 700;
+      }
+      .partial {
+        color: var(--amber);
+        font-weight: 700;
+      }
+      .dash {
+        color: rgba(255, 255, 255, 0.2);
+      }
+
+      /* ── SLIDE 1: TITRE ── */
+      #s1 {
+        background: var(--dark);
+      }
+      .s1-geo1 {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 220px;
+        height: 160px;
+        background: var(--teal);
+        opacity: 0.9;
+        clip-path: polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%);
+      }
+      .s1-geo2 {
+        position: absolute;
+        top: 60px;
+        right: 0;
+        width: 140px;
+        height: 180px;
+        background: var(--blue2);
+        opacity: 0.85;
+        clip-path: polygon(40% 0%, 100% 0%, 100% 100%, 0% 100%);
+      }
+      .s1-content {
+        position: relative;
+        z-index: 2;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        max-width: 680px;
+      }
+      .s1-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(13, 148, 136, 0.2);
+        border: 1px solid rgba(13, 148, 136, 0.4);
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        color: var(--tealL);
+        margin-bottom: 20px;
+        width: fit-content;
+      }
+      .s1-title {
+        font-size: 62px;
+        font-weight: 800;
+        line-height: 1;
+        color: var(--white);
+        margin-bottom: 14px;
+      }
+      .s1-tagline {
+        font-size: 20px;
+        color: rgba(255, 255, 255, 0.55);
+        margin-bottom: 32px;
+        font-weight: 300;
+      }
+      .s1-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 40px;
+      }
+      .s1-chip {
+        padding: 7px 16px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .s1-footer {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.3);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 16px;
+      }
+
+      /* ── SLIDE 2: PLAN ── */
+      #s2 {
+        background: var(--dark);
+      }
+      .plan-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .plan-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+      .plan-num {
+        font-size: 22px;
+        font-weight: 800;
+        opacity: 0.3;
+        min-width: 36px;
+      }
+      .plan-text {
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .plan-sub {
+        font-size: 11.5px;
+        color: rgba(255, 255, 255, 0.4);
+        margin-top: 2px;
+      }
+
+      /* ── SLIDE 3: CONTEXTE ── */
+      #s3 {
+        background: var(--dark);
+      }
+
+      /* ── SLIDE 4: ARCHI ── */
+      #s4 {
+        background: var(--dark);
+      }
+      .archi-center {
+        background: rgba(124, 58, 237, 0.2);
+        border: 2px solid rgba(124, 58, 237, 0.5);
+        border-radius: 12px;
+        padding: 16px 24px;
+        text-align: center;
+      }
+      .archi-axis {
+        border-radius: 10px;
+        padding: 14px 16px;
+        position: relative;
+      }
+
+      /* ── SLIDE 5: IA ── */
+      #s5 {
+        background: var(--dark);
+      }
+
+      /* ── SLIDE 6: BLOCKCHAIN ── */
+      #s6 {
+        background: var(--dark);
+      }
+
+      /* ── SLIDE 7: AGC ── */
+      #s7 {
+        background: var(--dark);
+      }
+      .agc-big {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(217, 119, 6, 0.15);
+        border: 2px solid rgba(217, 119, 6, 0.4);
+        border-radius: 12px;
+        padding: 20px 14px;
+        text-align: center;
+      }
+
+      /* ── SLIDE 8: SECURITE ── */
+      #s8 {
+        background: var(--dark);
+      }
+
+      /* ── SLIDE 9: STACK ── */
+      #s9 {
+        background: var(--dark);
+      }
+      .stack-col-head {
+        padding: 10px 14px;
+        border-radius: 8px 8px 0 0;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: center;
+      }
+      .stack-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-left: 1px solid rgba(255, 255, 255, 0.07);
+        border-right: 1px solid rgba(255, 255, 255, 0.07);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.75);
+      }
+      .stack-item:last-child {
+        border-radius: 0 0 8px 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      }
+      .stack-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      /* ── SLIDE 10: BILAN ── */
+      #s10 {
+        background: var(--dark);
+      }
+
+      /* ── SLIDE 11: FIN ── */
+      #s11 {
+        background: var(--dark);
+        padding: 0 !important;
+      }
+      .s11-left {
+        width: 34%;
+        background: #060d16;
+        border-right: 3px solid var(--teal);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 30px;
+        text-align: center;
+      }
+      .s11-right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 40px 48px;
+      }
+      .s11-title {
+        font-size: 36px;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      .s11-sub {
+        font-size: 18px;
+        color: var(--tealL);
+        margin-bottom: 32px;
+      }
+      .s11-logo {
+        font-size: 52px;
+        font-weight: 800;
+        color: var(--white);
+        line-height: 1;
+      }
+      .s11-tagline {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.35);
+        margin-top: 10px;
+      }
+      .contact-row {
+        font-family: "Consolas", monospace;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+        padding: 7px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        gap: 12px;
+      }
+      .contact-row span:first-child {
+        color: rgba(255, 255, 255, 0.25);
+        min-width: 90px;
+      }
+      .contact-row span:last-child {
+        color: rgba(255, 255, 255, 0.7);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- HEADER -->
+    <div id="header">
+      <div class="logo">
+        <div class="logo-dot"></div>
+        <span>Jokko Agro <small>— Soutenance de Mémoire</small></span>
+      </div>
+      <div id="nav-dots"></div>
+      <div id="slide-counter">1 / 11</div>
+    </div>
+
+    <!-- STAGE -->
+    <div id="stage">
+      <!-- SIDEBAR -->
+      <div id="sidebar"></div>
+
+      <!-- SLIDES -->
+      <div id="slides-wrap">
+        <button id="nav-prev">&#8592;</button>
+        <button id="nav-next">&#8594;</button>
+
+        <!-- ═══ SLIDE 1 — TITRE ═══ -->
+        <div class="slide" id="s1">
+          <div class="s1-geo1"></div>
+          <div class="s1-geo2"></div>
+          <div class="s1-content">
+            <div class="s1-eyebrow">MÉMOIRE DE FIN D'ÉTUDES</div>
+            <div class="s1-title">Jokko<br />Agro</div>
+            <div class="s1-tagline">Plateforme d'Agriculture Intelligente</div>
+            <div class="s1-chips">
+              <span
+                class="s1-chip"
+                style="
+                  background: rgba(13, 148, 136, 0.2);
+                  border: 1px solid rgba(13, 148, 136, 0.5);
+                  color: #ccfbf1;
+                "
+                >Intelligence Artificielle</span
+              >
+              <span
+                class="s1-chip"
+                style="
+                  background: rgba(30, 111, 191, 0.2);
+                  border: 1px solid rgba(30, 111, 191, 0.5);
+                  color: #dbeafe;
+                "
+                >Blockchain &amp; Certification</span
+              >
+              <span
+                class="s1-chip"
+                style="
+                  background: rgba(217, 119, 6, 0.2);
+                  border: 1px solid rgba(217, 119, 6, 0.5);
+                  color: #fef3c7;
+                "
+                >Agricoins &amp; Datawarehouse</span
+              >
+              <span
+                class="s1-chip"
+                style="
+                  background: rgba(194, 65, 12, 0.2);
+                  border: 1px solid rgba(194, 65, 12, 0.5);
+                  color: #ffedd5;
+                "
+                >Sécurité Cryptographique</span
+              >
+            </div>
+            <div class="s1-footer">
+              [Votre Nom] &nbsp;·&nbsp; [Votre Université] &nbsp;·&nbsp; 2024 –
+              2025
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ SLIDE 2 — PLAN ═══ -->
+        <div class="slide" id="s2">
+          <div class="slide-title">Plan de la présentation</div>
+          <div class="slide-sub">7 sections · 11 slides</div>
+          <div class="grid-2" style="gap: 10px">
+            <div class="plan-item" onclick="goTo(2)">
+              <span class="plan-num" style="color: var(--gray)">01</span>
+              <div>
+                <div class="plan-text">Contexte &amp; Problématique</div>
+                <div class="plan-sub">
+                  Trois défis de l'agriculture sénégalaise
+                </div>
+              </div>
+            </div>
+            <div class="plan-item" onclick="goTo(3)">
+              <span class="plan-num" style="color: var(--purple)">02</span>
+              <div>
+                <div class="plan-text">Architecture Globale</div>
+                <div class="plan-sub">Angular 17 · Firebase · 4 axes</div>
+              </div>
+            </div>
+            <div class="plan-item" onclick="goTo(4)">
+              <span class="plan-num" style="color: var(--teal)">03</span>
+              <div>
+                <div class="plan-text">Axe IA</div>
+                <div class="plan-sub">Chatbot · Voix · Vision · GPS</div>
+              </div>
+            </div>
+            <div class="plan-item" onclick="goTo(5)">
+              <span class="plan-num" style="color: var(--blue)">04</span>
+              <div>
+                <div class="plan-text">Axe Blockchain</div>
+                <div class="plan-sub">Ethereum · IPFS · Smart contract</div>
+              </div>
+            </div>
+            <div class="plan-item" onclick="goTo(6)">
+              <span class="plan-num" style="color: var(--amber)">05</span>
+              <div>
+                <div class="plan-text">Axe Agricoins &amp; Datawarehouse</div>
+                <div class="plan-sub">
+                  1 AGC = 100 FCFA · Commerce · Prévision
+                </div>
+              </div>
+            </div>
+            <div class="plan-item" onclick="goTo(7)">
+              <span class="plan-num" style="color: var(--coral)">06</span>
+              <div>
+                <div class="plan-text">Axe Sécurité</div>
+                <div class="plan-sub">ECDSA · SHA-256 · Audit Trail</div>
+              </div>
+            </div>
+            <div class="plan-item" onclick="goTo(8)" style="grid-column: 1/-1">
+              <span class="plan-num" style="color: var(--gray)">07</span>
+              <div>
+                <div class="plan-text">
+                  Stack Technique &amp; Bilan &amp; Perspectives
+                </div>
+                <div class="plan-sub">
+                  Technologies · Acquis · Évolutions futures
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ SLIDE 3 — CONTEXTE ═══ -->
+        <div class="slide" id="s3">
+          <div
+            class="sec-pill"
+            style="
+              background: rgba(100, 116, 139, 0.15);
+              border: 1px solid rgba(100, 116, 139, 0.3);
+              color: rgba(255, 255, 255, 0.6);
+            "
+          >
+            01 · Contexte &amp; Problématique
+          </div>
+          <div class="slide-title">
+            Trois défis de l'agriculture sénégalaise
+          </div>
+          <div class="slide-sub">
+            Agriculture en Afrique subsaharienne — enjeux numériques non résolus
+          </div>
+          <div class="grid-3" style="margin-bottom: 20px">
+            <div class="card" style="border-left: 3px solid var(--teal)">
+              <div class="card-title" style="color: var(--tealL)">
+                Accès à l'expertise
+              </div>
+              <div class="card-body">
+                Les agriculteurs, souvent non francophones, n'ont pas accès aux
+                conseils agronomiques. Absence de support Wolof dans les outils
+                numériques existants.
+              </div>
+            </div>
+            <div class="card" style="border-left: 3px solid var(--blue)">
+              <div class="card-title" style="color: #dbeafe">
+                Traçabilité absente
+              </div>
+              <div class="card-body">
+                Aucun système fiable pour certifier l'origine et la qualité des
+                produits. La fraude pénalise les producteurs honnêtes sur les
+                marchés locaux.
+              </div>
+            </div>
+            <div class="card" style="border-left: 3px solid var(--amber)">
+              <div class="card-title" style="color: var(--amberL)">
+                Paiement inadapté
+              </div>
+              <div class="card-body">
+                Les outils de paiement ne tiennent pas compte des réalités
+                rurales : micro-transactions, mobile money Wave/Orange, litiges
+                à arbitrer.
+              </div>
+            </div>
+          </div>
+          <div
+            style="
+              background: rgba(13, 148, 136, 0.1);
+              border: 1px solid rgba(13, 148, 136, 0.3);
+              border-radius: 10px;
+              padding: 16px 20px;
+              display: flex;
+              align-items: center;
+              gap: 14px;
+            "
+          >
+            <div
+              style="
+                width: 6px;
+                height: 48px;
+                background: var(--teal);
+                border-radius: 3px;
+                flex-shrink: 0;
+              "
+            ></div>
+            <div>
+              <div
+                style="
+                  font-size: 13px;
+                  font-weight: 600;
+                  color: var(--tealL);
+                  margin-bottom: 4px;
+                "
+              >
+                Solution : Jokko Agro
+              </div>
+              <div style="font-size: 12.5px; color: rgba(255, 255, 255, 0.65)">
+                Connecter les agriculteurs à l'IA, la Blockchain et un
+                écosystème de paiement en Wolof — sur un seul outil accessible
+                depuis un smartphone.
+              </div>
+            </div>
+          </div>
+          <div class="grid-4" style="margin-top: 18px">
+            <div
+              style="
+                text-align: center;
+                padding: 14px 10px;
+                background: rgba(13, 148, 136, 0.08);
+                border-radius: 8px;
+                border: 1px solid rgba(13, 148, 136, 0.2);
+              "
+            >
+              <div
+                style="font-size: 22px; font-weight: 700; color: var(--teal)"
+              >
+                Angular 17
+              </div>
+              <div
+                style="
+                  font-size: 11px;
+                  color: rgba(255, 255, 255, 0.4);
+                  margin-top: 3px;
+                "
+              >
+                Frontend SPA
+              </div>
+            </div>
+            <div
+              style="
+                text-align: center;
+                padding: 14px 10px;
+                background: rgba(30, 111, 191, 0.08);
+                border-radius: 8px;
+                border: 1px solid rgba(30, 111, 191, 0.2);
+              "
+            >
+              <div style="font-size: 22px; font-weight: 700; color: #85b7eb">
+                Firebase
+              </div>
+              <div
+                style="
+                  font-size: 11px;
+                  color: rgba(255, 255, 255, 0.4);
+                  margin-top: 3px;
+                "
+              >
+                Auth + Firestore
+              </div>
+            </div>
+            <div
+              style="
+                text-align: center;
+                padding: 14px 10px;
+                background: rgba(124, 58, 237, 0.08);
+                border-radius: 8px;
+                border: 1px solid rgba(124, 58, 237, 0.2);
+              "
+            >
+              <div style="font-size: 22px; font-weight: 700; color: #afa9ec">
+                Sepolia
+              </div>
+              <div
+                style="
+                  font-size: 11px;
+                  color: rgba(255, 255, 255, 0.4);
+                  margin-top: 3px;
+                "
+              >
+                Ethereum Testnet
+              </div>
+            </div>
+            <div
+              style="
+                text-align: center;
+                padding: 14px 10px;
+                background: rgba(194, 65, 12, 0.08);
+                border-radius: 8px;
+                border: 1px solid rgba(194, 65, 12, 0.2);
+              "
+            >
+              <div style="font-size: 22px; font-weight: 700; color: #f0997b">
+                Claude API
+              </div>
+              <div
+                style="
+                  font-size: 11px;
+                  color: rgba(255, 255, 255, 0.4);
+                  margin-top: 3px;
+                "
+              >
+                Anthropic · IA
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ SLIDE 4 — ARCHI GLOBALE ═══ -->
+        <div class="slide" id="s4">
+          <div
+            class="sec-pill"
+            style="
+              background: rgba(124, 58, 237, 0.15);
+              border: 1px solid rgba(124, 58, 237, 0.3);
+              color: #afa9ec;
+            "
+          >
+            02 · Architecture Globale
+          </div>
+          <div class="slide-title">Dashboard des 4 axes</div>
+          <div class="slide-sub">
+            Angular 17 · Firebase · Ethereum Sepolia · IPFS Pinata · Claude API
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 180px 1fr;
+              grid-template-rows: 1fr 1fr;
+              gap: 12px;
+              margin-bottom: 14px;
+              height: 300px;
+            "
+          >
+            <!-- IA -->
+            <div
+              class="archi-axis"
+              style="
+                background: rgba(13, 148, 136, 0.12);
+                border: 1px solid rgba(13, 148, 136, 0.3);
+              "
+            >
+              <div
+                style="
+                  font-size: 11px;
+                  font-weight: 700;
+                  color: var(--teal);
+                  letter-spacing: 0.8px;
+                  margin-bottom: 8px;
+                "
+              >
+                AXE IA
+              </div>
+              <div
+                style="
+                  font-size: 13px;
+                  font-weight: 600;
+                  color: var(--white);
+                  margin-bottom: 8px;
+                "
+              >
+                Intelligence Artificielle
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <span class="mono">chatbot_service</span>
+                <span class="mono">wolof_voice_service</span>
+                <span class="mono">image_comparison</span>
+                <span class="mono">smart_geolocation</span>
+              </div>
+              <div
+                style="
+                  margin-top: 10px;
+                  font-size: 11px;
+                  color: rgba(255, 255, 255, 0.4);
+                "
+              >
+                Claude API · TF.js · Web Speech
+              </div>
+            </div>
+
+            <!-- Centre haut -->
+            <div
+              style="
+                grid-row: 1/3;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
+            >
+              <div class="archi-center">
+                <div
+                  style="
+                    font-size: 18px;
+                    font-weight: 800;
+                    color: var(--white);
+                    margin-bottom: 4px;
+                  "
+                >
+                  Jokko Agro
+                </div>
+                <div style="font-size: 11px; color: rgba(255, 255, 255, 0.5)">
+                  Angular 17
+                </div>
+                <div style="font-size: 11px; color: rgba(255, 255, 255, 0.5)">
+                  SPA
+                </div>
+                <div
+                  style="
+                    margin-top: 12px;
+                    width: 40px;
+                    height: 2px;
+                    background: var(--teal);
+                    border-radius: 1px;
+                    margin-left: auto;
+                    margin-right: auto;
+                  "
+                ></div>
+                <div
+                  style="
+                    margin-top: 4px;
+                    font-size: 10px;
+                    color: rgba(255, 255, 255, 0.35);
+                  "
+                >
+                  Firebase Auth
+                </div>
+              </div>
+            </div>
+
+            <!-- Blockchain -->
+            <div
+              class="archi-axis"
+              style="
+                background: rgba(30, 111, 191, 0.12);
+                border: 1px solid rgba(30, 111, 191, 0.3);
+              "
+            >
+              <div
+                style="
+                  font-size: 11px;
+                  font-weight: 700;
+                  color: #85b7eb;
+                  letter-spacing: 0.8px;
+                  margin-bottom: 8px;
+                "
+              >
+                AXE BLOCKCHAIN
+              </div>
+              <div
+                style="
+                  font-size: 13px;
+                  font-weight: 600;
+                  color: var(--white);
+                  margin-bottom: 8px;
+                "
+              >
+                Certification Décentralisée
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <span class="mono">certification_service</span>
+                <span class="mono">blockchain_service</span>
+                <span class="mono">ethereum_service</span>
+                <span class="mono">ipfs_service</span>
+              </div>
+              <div
+                style="
+                  margin-top: 10px;
+                  font-size: 11px;
+                  color: rgba(255, 255, 255, 0.4);
+                "
+              >
+                Sepolia · Alchemy · Pinata
+              </div>
+            </div>
+
+            <!-- AGC -->
+            <div
+              class="archi-axis"
+              style="
+                background: rgba(217, 119, 6, 0.12);
+                border: 1px solid rgba(217, 119, 6, 0.3);
+              "
+            >
+              <div
+                style="
+                  font-size: 11px;
+                  font-weight: 700;
+                  color: #fac775;
+                  letter-spacing: 0.8px;
+                  margin-bottom: 8px;
+                "
+              >
+                AXE AGC
+              </div>
+              <div
+                style="
+                  font-size: 13px;
+                  font-weight: 600;
+                  color: var(--white);
+                  margin-bottom: 8px;
+                "
+              >
+                Monnaie · Commerce · DW
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <span class="mono">agc_service</span>
+                <span class="mono">cart_service</span>
+                <span class="mono">sales_service</span>
+                <span class="mono">datawarehouse</span>
+              </div>
+              <div
+                style="
+                  margin-top: 10px;
+                  font-size: 11px;
+                  color: rgba(255, 255, 255, 0.4);
+                "
+              >
+                Wave · Orange Money · Firebase
+              </div>
+            </div>
+
+            <!-- Sécurité -->
+            <div
+              class="archi-axis"
+              style="
+                background: rgba(194, 65, 12, 0.12);
+                border: 1px solid rgba(194, 65, 12, 0.3);
+              "
+            >
+              <div
+                style="
+                  font-size: 11px;
+                  font-weight: 700;
+                  color: #f0997b;
+                  letter-spacing: 0.8px;
+                  margin-bottom: 8px;
+                "
+              >
+                AXE SÉCURITÉ
+              </div>
+              <div
+                style="
+                  font-size: 13px;
+                  font-weight: 600;
+                  color: var(--white);
+                  margin-bottom: 8px;
+                "
+              >
+                Cryptographie · Intégrité
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <span class="mono">ledger SHA-256</span>
+                <span class="mono">ECDSA P-256</span>
+                <span class="mono">escrow service</span>
+                <span class="mono">audit_trail</span>
+              </div>
+              <div
+                style="
+                  margin-top: 10px;
+                  font-size: 11px;
+                  color: rgba(255, 255, 255, 0.4);
+                "
+              >
+                WebCrypto · AES-GCM · Firestore
+              </div>
+            </div>
+          </div>
+
+          <!-- Services strip -->
+          <div
+            style="
+              background: #060d16;
+              border: 1px solid rgba(255, 255, 255, 0.07);
+              border-radius: 8px;
+              padding: 10px 16px;
+              display: flex;
+              gap: 8px;
+              flex-wrap: wrap;
+              align-items: center;
+            "
+          >
+            <span
+              style="
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.3);
+                margin-right: 4px;
+              "
+              >Services externes :</span
+            >
+            <span
+              class="pill"
+              style="
+                background: rgba(13, 148, 136, 0.15);
+                color: var(--tealL);
+                border: 1px solid rgba(13, 148, 136, 0.3);
+              "
+              >Claude API</span
+            >
+            <span
+              class="pill"
+              style="
+                background: rgba(30, 111, 191, 0.15);
+                color: #dbeafe;
+                border: 1px solid rgba(30, 111, 191, 0.3);
+              "
+              >Alchemy RPC</span
+            >
+            <span
+              class="pill"
+              style="
+                background: rgba(30, 111, 191, 0.15);
+                color: #dbeafe;
+                border: 1px solid rgba(30, 111, 191, 0.3);
+              "
+              >MetaMask</span
+            >
+            <span
+              class="pill"
+              style="
+                background: rgba(30, 111, 191, 0.15);
+                color: #dbeafe;
+                border: 1px solid rgba(30, 111, 191, 0.3);
+              "
+              >Pinata IPFS</span
+            >
+            <span
+              class="pill"
+              style="
+                background: rgba(255, 255, 255, 0.08);
+                color: rgba(255, 255, 255, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+              "
+              >Firebase</span
+            >
+            <span
+              class="pill"
+              style="
+                background: rgba(217, 119, 6, 0.15);
+                color: var(--amberL);
+                border: 1px solid rgba(217, 119, 6, 0.3);
+              "
+              >Wave / Orange Money</span
+            >
+            <span
+              class="pill"
+              style="
+                background: rgba(194, 65, 12, 0.15);
+                color: var(--coralL);
+                border: 1px solid rgba(194, 65, 12, 0.3);
+              "
+              >WebCrypto API</span
+            >
+            <span
+              class="pill"
+              style="
+                background: rgba(194, 65, 12, 0.15);
+                color: var(--coralL);
+                border: 1px solid rgba(194, 65, 12, 0.3);
+              "
+              >ethers.js v6</span
+            >
+          </div>
+        </div>
+
+        <!-- ═══ SLIDE 5 — AXE IA ═══ -->
+        <div class="slide" id="s5">
+          <div
+            class="sec-pill"
+            style="
+              background: rgba(13, 148, 136, 0.15);
+              border: 1px solid rgba(13, 148, 136, 0.35);
+              color: var(--tealL);
+            "
+          >
+            03 · Axe IA
+          </div>
+          <div class="slide-title">Intelligence Artificielle</div>
+          <div class="slide-sub">
+            4 services · Bilingue FR/Wolof · TensorFlow.js · Claude API · Web
+            Speech API
+          </div>
+          <div class="grid-2" style="margin-bottom: 14px">
+            <div class="card" style="border-top: 2px solid var(--teal)">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 10px;
+                  margin-bottom: 10px;
+                "
+              >
+                <div
+                  style="
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 6px;
+                    background: rgba(13, 148, 136, 0.2);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: var(--tealL);
+                  "
+                >
+                  01
+                </div>
+                <div>
+                  <div
+                    class="card-title"
+                    style="color: var(--tealL); margin-bottom: 0"
+                  >
+                    chatbot_service
+                  </div>
+                  <div style="font-size: 11px; color: rgba(255, 255, 255, 0.4)">
+                    Assistant agricole bilingue
+                  </div>
+                </div>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Claude API (claude-sonnet) — moteur LLM</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Prompt système : agro-sénégalais · Wolof natif</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Historique de conversation maintenu</span>
+              </div>
+            </div>
+            <div class="card" style="border-top: 2px solid var(--teal)">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 10px;
+                  margin-bottom: 10px;
+                "
+              >
+                <div
+                  style="
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 6px;
+                    background: rgba(13, 148, 136, 0.2);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: var(--tealL);
+                  "
+                >
+                  02
+                </div>
+                <div>
+                  <div
+                    class="card-title"
+                    style="color: var(--tealL); margin-bottom: 0"
+                  >
+                    wolof_voice_service
+                  </div>
+                  <div style="font-size: 11px; color: rgba(255, 255, 255, 0.4)">
+                    Reconnaissance vocale Wolof
+                  </div>
+                </div>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>getUserMedia() → Web Speech API</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Post-traitement phonèmes Wolof</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Transmission au chatbot normalisée</span>
+              </div>
+            </div>
+            <div class="card" style="border-top: 2px solid var(--teal)">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 10px;
+                  margin-bottom: 10px;
+                "
+              >
+                <div
+                  style="
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 6px;
+                    background: rgba(13, 148, 136, 0.2);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: var(--tealL);
+                  "
+                >
+                  03
+                </div>
+                <div>
+                  <div
+                    class="card-title"
+                    style="color: var(--tealL); margin-bottom: 0"
+                  >
+                    image_comparison_service
+                  </div>
+                  <div style="font-size: 11px; color: rgba(255, 255, 255, 0.4)">
+                    Vision anti-fraude TensorFlow.js
+                  </div>
+                </div>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>MSE + Cosinus + HSV + EXIF</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Score pondéré → accept / review / reject</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Exécution 100% navigateur, sans serveur</span>
+              </div>
+            </div>
+            <div class="card" style="border-top: 2px solid var(--teal)">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 10px;
+                  margin-bottom: 10px;
+                "
+              >
+                <div
+                  style="
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 6px;
+                    background: rgba(13, 148, 136, 0.2);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: var(--tealL);
+                  "
+                >
+                  04
+                </div>
+                <div>
+                  <div
+                    class="card-title"
+                    style="color: var(--tealL); margin-bottom: 0"
+                  >
+                    smart_geolocation_service
+                  </div>
+                  <div style="font-size: 11px; color: rgba(255, 255, 255, 0.4)">
+                    GPS intelligent anti-spoofing
+                  </div>
+                </div>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Geolocation API · rayon tolérance 500 m</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Anti-spoofing GPS timestamp</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Lat/Lng inclus dans le proofHash</span>
+              </div>
+            </div>
+          </div>
+          <!-- Flow bar -->
+          <div
+            style="background: #060d16; border-radius: 8px; padding: 10px 14px"
+          >
+            <div
+              style="
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.35);
+                margin-bottom: 8px;
+              "
+            >
+              Convergence vers la certification blockchain
+            </div>
+            <div class="steps-row">
+              <div
+                class="step-box"
+                style="
+                  background: rgba(13, 148, 136, 0.15);
+                  border: 1px solid rgba(13, 148, 136, 0.3);
+                "
+              >
+                <div class="step-num" style="color: var(--tealL)">IA ①</div>
+                <div class="step-title" style="color: var(--white)">
+                  Photo validée
+                </div>
+                <div class="step-sub" style="color: rgba(255, 255, 255, 0.5)">
+                  TF.js accept
+                </div>
+              </div>
+              <div class="step-arrow">›</div>
+              <div
+                class="step-box"
+                style="
+                  background: rgba(13, 148, 136, 0.15);
+                  border: 1px solid rgba(13, 148, 136, 0.3);
+                "
+              >
+                <div class="step-num" style="color: var(--tealL)">IA ④</div>
+                <div class="step-title" style="color: var(--white)">
+                  GPS validé
+                </div>
+                <div class="step-sub" style="color: rgba(255, 255, 255, 0.5)">
+                  Terrain confirmé
+                </div>
+              </div>
+              <div class="step-arrow">›</div>
+              <div
+                class="step-box"
+                style="
+                  background: rgba(30, 111, 191, 0.15);
+                  border: 1px solid rgba(30, 111, 191, 0.3);
+                "
+              >
+                <div class="step-num" style="color: #dbeafe">IPFS</div>
+                <div class="step-title" style="color: var(--white)">
+                  Upload CID
+                </div>
+                <div class="step-sub" style="color: rgba(255, 255, 255, 0.5)">
+                  Pinata CIDv1
+                </div>
+              </div>
+              <div class="step-arrow">›</div>
+              <div
+                class="step-box"
+                style="
+                  background: rgba(124, 58, 237, 0.15);
+                  border: 1px solid rgba(124, 58, 237, 0.3);
+                "
+              >
+                <div class="step-num" style="color: #afa9ec">Hash</div>
+                <div class="step-title" style="color: var(--white)">
+                  SHA-256
+                </div>
+                <div class="step-sub" style="color: rgba(255, 255, 255, 0.5)">
+                  proofHash
+                </div>
+              </div>
+              <div class="step-arrow">›</div>
+              <div
+                class="step-box"
+                style="
+                  background: rgba(194, 65, 12, 0.15);
+                  border: 1px solid rgba(194, 65, 12, 0.3);
+                "
+              >
+                <div class="step-num" style="color: #f0997b">ECDSA</div>
+                <div class="step-title" style="color: var(--white)">
+                  Signature
+                </div>
+                <div class="step-sub" style="color: rgba(255, 255, 255, 0.5)">
+                  MetaMask
+                </div>
+              </div>
+              <div class="step-arrow">›</div>
+              <div
+                class="step-box"
+                style="
+                  background: rgba(30, 111, 191, 0.15);
+                  border: 1px solid rgba(30, 111, 191, 0.3);
+                "
+              >
+                <div class="step-num" style="color: #dbeafe">On-chain</div>
+                <div class="step-title" style="color: var(--white)">
+                  Sepolia Tx
+                </div>
+                <div class="step-sub" style="color: rgba(255, 255, 255, 0.5)">
+                  txHash
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ SLIDE 6 — BLOCKCHAIN ═══ -->
+        <div class="slide" id="s6">
+          <div
+            class="sec-pill"
+            style="
+              background: rgba(30, 111, 191, 0.15);
+              border: 1px solid rgba(30, 111, 191, 0.35);
+              color: #dbeafe;
+            "
+          >
+            04 · Axe Blockchain
+          </div>
+          <div class="slide-title">Certification Décentralisée</div>
+          <div class="slide-sub">
+            Ethereum Sepolia · IPFS Pinata CIDv1 · CertificationRegistry.sol · 7
+            checkpoints
+          </div>
+          <div class="grid-2">
+            <div>
+              <div
+                style="
+                  font-size: 12px;
+                  font-weight: 600;
+                  color: #dbeafe;
+                  margin-bottom: 10px;
+                "
+              >
+                Smart Contract déployé
+              </div>
+              <div
+                class="card"
+                style="
+                  border: 1px solid rgba(30, 111, 191, 0.3);
+                  background: rgba(30, 111, 191, 0.08);
+                  font-family: &quot;Consolas&quot;, monospace;
+                  font-size: 11.5px;
+                  color: rgba(255, 255, 255, 0.75);
+                  line-height: 1.7;
+                "
+              >
+                <span style="color: #85b7eb; font-weight: 700">struct</span>
+                CertificationProof {<br />
+                &nbsp;&nbsp;string productId;<br />
+                &nbsp;&nbsp;string proofHash;
+                <span style="color: rgba(255, 255, 255, 0.35)">// SHA-256</span
+                ><br />
+                &nbsp;&nbsp;string ipfsCID;
+                <span style="color: rgba(255, 255, 255, 0.35)"
+                  >// Pinata CIDv1</span
+                ><br />
+                &nbsp;&nbsp;string step;
+                <span style="color: rgba(255, 255, 255, 0.35)"
+                  >// INIT|FOLLOW_UP…</span
+                ><br />
+                &nbsp;&nbsp;uint256 timestamp;
+                <span style="color: rgba(255, 255, 255, 0.35)"
+                  >// block.timestamp</span
+                ><br />
+                &nbsp;&nbsp;address certifiedBy;
+                <span style="color: rgba(255, 255, 255, 0.35)"
+                  >// msg.sender</span
+                ><br />
+                }
+                <br /><br />
+                <span style="color: #85b7eb; font-weight: 700">function</span>
+                <span style="color: var(--tealL)">registerProof</span>(...)
+                <span style="color: #afa9ec">public</span><br />
+                <span style="color: #85b7eb; font-weight: 700">function</span>
+                <span style="color: var(--tealL)">verifyProof</span>(...)
+                <span style="color: #afa9ec">public view</span><br />
+                <span style="color: #85b7eb; font-weight: 700">event</span>
+                ProofRegistered
+                <span style="color: rgba(255, 255, 255, 0.35)">// indexé</span>
+              </div>
+              <div
+                style="
+                  margin-top: 8px;
+                  font-size: 10.5px;
+                  color: rgba(255, 255, 255, 0.35);
+                  font-family: &quot;Consolas&quot;, monospace;
+                "
+              >
+                0x4020e67078c8ca3f6d27d698c036a57b4a278fde
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px">
+              <div>
+                <div
+                  style="
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #dbeafe;
+                    margin-bottom: 10px;
+                  "
+                >
+                  7 checkpoints du cycle agricole
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 6px;
+                  "
+                >
+                  <div
+                    style="
+                      padding: 8px 10px;
+                      background: rgba(30, 111, 191, 0.1);
+                      border: 1px solid rgba(30, 111, 191, 0.25);
+                      border-radius: 7px;
+                      font-size: 11px;
+                      color: rgba(255, 255, 255, 0.7);
+                    "
+                  >
+                    ① Préparation sol
+                  </div>
+                  <div
+                    style="
+                      padding: 8px 10px;
+                      background: rgba(30, 111, 191, 0.1);
+                      border: 1px solid rgba(30, 111, 191, 0.25);
+                      border-radius: 7px;
+                      font-size: 11px;
+                      color: rgba(255, 255, 255, 0.7);
+                    "
+                  >
+                    ② Semis · INIT
+                  </div>
+                  <div
+                    style="
+                      padding: 8px 10px;
+                      background: rgba(30, 111, 191, 0.1);
+                      border: 1px solid rgba(30, 111, 191, 0.25);
+                      border-radius: 7px;
+                      font-size: 11px;
+                      color: rgba(255, 255, 255, 0.7);
+                    "
+                  >
+                    ③ Irrigation
+                  </div>
+                  <div
+                    style="
+                      padding: 8px 10px;
+                      background: rgba(30, 111, 191, 0.1);
+                      border: 1px solid rgba(30, 111, 191, 0.25);
+                      border-radius: 7px;
+                      font-size: 11px;
+                      color: rgba(255, 255, 255, 0.7);
+                    "
+                  >
+                    ④ Traitements
+                  </div>
+                  <div
+                    style="
+                      padding: 8px 10px;
+                      background: rgba(30, 111, 191, 0.1);
+                      border: 1px solid rgba(30, 111, 191, 0.25);
+                      border-radius: 7px;
+                      font-size: 11px;
+                      color: rgba(255, 255, 255, 0.7);
+                    "
+                  >
+                    ⑤ Surveillance
+                  </div>
+                  <div
+                    style="
+                      padding: 8px 10px;
+                      background: rgba(30, 111, 191, 0.1);
+                      border: 1px solid rgba(30, 111, 191, 0.25);
+                      border-radius: 7px;
+                      font-size: 11px;
+                      color: rgba(255, 255, 255, 0.7);
+                    "
+                  >
+                    ⑥ Récolte · HARVEST
+                  </div>
+                  <div
+                    style="
+                      padding: 8px 10px;
+                      background: rgba(30, 111, 191, 0.15);
+                      border: 1px solid rgba(30, 111, 191, 0.4);
+                      border-radius: 7px;
+                      font-size: 11px;
+                      color: #dbeafe;
+                      font-weight: 600;
+                      grid-column: 1/-1;
+                    "
+                  >
+                    ⑦ Stockage post-récolte
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div
+                  style="
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #dbeafe;
+                    margin-bottom: 8px;
+                  "
+                >
+                  Badges qualité
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr 1fr;
+                    gap: 8px;
+                  "
+                >
+                  <div
+                    style="
+                      padding: 12px 8px;
+                      background: rgba(205, 127, 50, 0.15);
+                      border: 1px solid rgba(205, 127, 50, 0.4);
+                      border-radius: 8px;
+                      text-align: center;
+                    "
+                  >
+                    <div
+                      style="font-size: 14px; font-weight: 700; color: #cd7f32"
+                    >
+                      Bronze
+                    </div>
+                    <div
+                      style="
+                        font-size: 10px;
+                        color: rgba(255, 255, 255, 0.4);
+                        margin-top: 3px;
+                      "
+                    >
+                      Score 0 – 40
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      padding: 12px 8px;
+                      background: rgba(158, 160, 163, 0.15);
+                      border: 1px solid rgba(158, 160, 163, 0.4);
+                      border-radius: 8px;
+                      text-align: center;
+                    "
+                  >
+                    <div
+                      style="font-size: 14px; font-weight: 700; color: #c0c0c0"
+                    >
+                      Silver
+                    </div>
+                    <div
+                      style="
+                        font-size: 10px;
+                        color: rgba(255, 255, 255, 0.4);
+                        margin-top: 3px;
+                      "
+                    >
+                      Score 41 – 70
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      padding: 12px 8px;
+                      background: rgba(217, 119, 6, 0.15);
+                      border: 1px solid rgba(217, 119, 6, 0.4);
+                      border-radius: 8px;
+                      text-align: center;
+                    "
+                  >
+                    <div
+                      style="font-size: 14px; font-weight: 700; color: #fac775"
+                    >
+                      Gold
+                    </div>
+                    <div
+                      style="
+                        font-size: 10px;
+                        color: rgba(255, 255, 255, 0.4);
+                        margin-top: 3px;
+                      "
+                    >
+                      Score 71 – 100
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ SLIDE 7 — AGC ═══ -->
+        <div class="slide" id="s7">
+          <div
+            class="sec-pill"
+            style="
+              background: rgba(217, 119, 6, 0.15);
+              border: 1px solid rgba(217, 119, 6, 0.35);
+              color: var(--amberL);
+            "
+          >
+            05 · Axe Agricoins &amp; Datawarehouse
+          </div>
+          <div class="slide-title">Monnaie Interne &amp; Analyse Agricole</div>
+          <div class="slide-sub">
+            1 AGC = 100 FCFA · Séquestre ECDSA · Commerce · Prévision
+            décisionnelle
+          </div>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 130px 1fr 1fr;
+              gap: 14px;
+              margin-bottom: 14px;
+            "
+          >
+            <div class="agc-big">
+              <div
+                style="font-size: 38px; font-weight: 800; color: var(--amber)"
+              >
+                1
+              </div>
+              <div style="font-size: 18px; font-weight: 700; color: #fac775">
+                AGC
+              </div>
+              <div
+                style="
+                  width: 30px;
+                  height: 2px;
+                  background: var(--amber);
+                  border-radius: 1px;
+                  margin: 8px auto;
+                "
+              ></div>
+              <div style="font-size: 12px; color: rgba(255, 255, 255, 0.5)">
+                100 FCFA
+              </div>
+              <div
+                style="
+                  font-size: 10px;
+                  color: rgba(255, 255, 255, 0.3);
+                  margin-top: 6px;
+                "
+              >
+                parité fixe
+              </div>
+            </div>
+            <div class="card" style="border-top: 2px solid var(--amber)">
+              <div class="card-title" style="color: var(--amberL)">
+                Monnaie &amp; Paiement hybride
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--amber)"></div>
+                <span>Achat via Wave / Orange Money / Carte</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--amber)"></div>
+                <span>Bonus AGC sur certification blockchain réussie</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--amber)"></div>
+                <span>Séquestre Lock → ECDSA requis → Release/Cancel</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--amber)"></div>
+                <span>Paiement partiel : AGC + complément Wave/OM</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--amber)"></div>
+                <span>balance$ Observable RxJS temps réel</span>
+              </div>
+            </div>
+            <div class="card" style="border-top: 2px solid var(--amber)">
+              <div class="card-title" style="color: var(--amberL)">
+                Commerce &amp; Datawarehouse
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--amber)"></div>
+                <span>7 états commande : pending → delivered</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--amber)"></div>
+                <span>Pickup / Delivery · Notation acheteur</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--amber)"></div>
+                <span>monthlyRevenue[] · Top produits · Top acheteurs</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--amber)"></div>
+                <span>Taux de complétion certifications</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--amber)"></div>
+                <span>predictedRevenue — moyenne mobile trend</span>
+              </div>
+            </div>
+          </div>
+          <!-- Cycle paiement -->
+          <div
+            style="background: #060d16; border-radius: 8px; padding: 12px 14px"
+          >
+            <div
+              style="
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.35);
+                margin-bottom: 8px;
+              "
+            >
+              Cycle de vie d'un paiement AGC
+            </div>
+            <div class="steps-row">
+              <div
+                class="step-box"
+                style="
+                  background: rgba(255, 255, 255, 0.05);
+                  border: 1px solid rgba(255, 255, 255, 0.1);
+                "
+              >
+                <div class="step-title" style="color: var(--white)">
+                  Commande
+                </div>
+                <div class="step-sub">acheteur</div>
+              </div>
+              <div class="step-arrow">›</div>
+              <div
+                class="step-box"
+                style="
+                  background: rgba(217, 119, 6, 0.15);
+                  border: 1px solid rgba(217, 119, 6, 0.35);
+                "
+              >
+                <div class="step-title" style="color: var(--amberL)">
+                  Lock AGC
+                </div>
+                <div class="step-sub">séquestre ECDSA</div>
+              </div>
+              <div class="step-arrow">›</div>
+              <div
+                class="step-box"
+                style="
+                  background: rgba(255, 255, 255, 0.05);
+                  border: 1px solid rgba(255, 255, 255, 0.1);
+                "
+              >
+                <div class="step-title" style="color: var(--white)">
+                  Livraison
+                </div>
+                <div class="step-sub">en cours</div>
+              </div>
+              <div class="step-arrow">›</div>
+              <div
+                class="step-box"
+                style="
+                  background: rgba(13, 148, 136, 0.15);
+                  border: 1px solid rgba(13, 148, 136, 0.35);
+                "
+              >
+                <div class="step-title" style="color: var(--tealL)">
+                  Confirmé
+                </div>
+                <div class="step-sub">Release AGC</div>
+              </div>
+              <div class="step-arrow">›</div>
+              <div
+                class="step-box"
+                style="
+                  background: rgba(13, 148, 136, 0.15);
+                  border: 1px solid rgba(13, 148, 136, 0.35);
+                "
+              >
+                <div class="step-title" style="color: var(--tealL)">
+                  Producteur payé
+                </div>
+                <div class="step-sub">hash Ledger</div>
+              </div>
+              <div class="step-arrow">›</div>
+              <div
+                class="step-box"
+                style="
+                  background: rgba(124, 58, 237, 0.15);
+                  border: 1px solid rgba(124, 58, 237, 0.35);
+                "
+              >
+                <div class="step-title" style="color: #afa9ec">
+                  DW mis à jour
+                </div>
+                <div class="step-sub">stats &amp; trend</div>
+              </div>
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-top: 10px;
+                padding-top: 8px;
+                border-top: 1px solid rgba(255, 255, 255, 0.06);
+              "
+            >
+              <div
+                style="
+                  width: 8px;
+                  height: 8px;
+                  background: var(--coral);
+                  border-radius: 50%;
+                  flex-shrink: 0;
+                "
+              ></div>
+              <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.5)">
+                En cas de litige : Cancel → rollback Firestore atomique →
+                remboursement acheteur → Audit Trail écrit
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ SLIDE 8 — SÉCURITÉ ═══ -->
+        <div class="slide" id="s8">
+          <div
+            class="sec-pill"
+            style="
+              background: rgba(194, 65, 12, 0.15);
+              border: 1px solid rgba(194, 65, 12, 0.35);
+              color: var(--coralL);
+            "
+          >
+            06 · Axe Sécurité
+          </div>
+          <div class="slide-title">6 Couches de Protection</div>
+          <div class="slide-sub">
+            Cryptographie · Intégrité · Traçabilité · Couche transversale aux 4
+            axes
+          </div>
+          <div class="grid-2" style="margin-bottom: 14px">
+            <div class="card" style="border-left: 3px solid var(--coral)">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: flex-start;
+                "
+              >
+                <div>
+                  <div class="card-title" style="color: var(--coralL)">
+                    ① Ledger immuable SHA-256
+                  </div>
+                  <div class="card-body">
+                    Historique chaîné · previousHash + data + timestamp · Toute
+                    modification invalide la chaîne
+                  </div>
+                </div>
+                <span
+                  class="pill"
+                  style="
+                    background: rgba(13, 148, 136, 0.15);
+                    color: var(--tealL);
+                    border: 1px solid rgba(13, 148, 136, 0.3);
+                    flex-shrink: 0;
+                    margin-left: 8px;
+                  "
+                  >Impl.</span
+                >
+              </div>
+            </div>
+            <div class="card" style="border-left: 3px solid var(--coral)">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: flex-start;
+                "
+              >
+                <div>
+                  <div class="card-title" style="color: var(--coralL)">
+                    ② Signatures ECDSA P-256
+                  </div>
+                  <div class="card-body">
+                    generateKeyPair() · signTransaction() · verifySignature() ·
+                    Clé privée AES-GCM sessionStorage
+                  </div>
+                </div>
+                <span
+                  class="pill"
+                  style="
+                    background: rgba(13, 148, 136, 0.15);
+                    color: var(--tealL);
+                    border: 1px solid rgba(13, 148, 136, 0.3);
+                    flex-shrink: 0;
+                    margin-left: 8px;
+                  "
+                  >Impl.</span
+                >
+              </div>
+            </div>
+            <div class="card" style="border-left: 3px solid var(--coral)">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: flex-start;
+                "
+              >
+                <div>
+                  <div class="card-title" style="color: var(--coralL)">
+                    ③ Séquestre Escrow AGC
+                  </div>
+                  <div class="card-body">
+                    Lock ECDSA requis · AGC gelés Firestore · Release → hash
+                    Ledger · Cancel → rollback atomique
+                  </div>
+                </div>
+                <span
+                  class="pill"
+                  style="
+                    background: rgba(13, 148, 136, 0.15);
+                    color: var(--tealL);
+                    border: 1px solid rgba(13, 148, 136, 0.3);
+                    flex-shrink: 0;
+                    margin-left: 8px;
+                  "
+                  >Impl.</span
+                >
+              </div>
+            </div>
+            <div class="card" style="border-left: 3px solid var(--coral)">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: flex-start;
+                "
+              >
+                <div>
+                  <div class="card-title" style="color: var(--coralL)">
+                    ④ Atomicité transactionnelle
+                  </div>
+                  <div class="card-body">
+                    Firestore runTransaction() · Débit+crédit atomiques · Double
+                    dépense impossible · Rollback auto
+                  </div>
+                </div>
+                <span
+                  class="pill"
+                  style="
+                    background: rgba(13, 148, 136, 0.15);
+                    color: var(--tealL);
+                    border: 1px solid rgba(13, 148, 136, 0.3);
+                    flex-shrink: 0;
+                    margin-left: 8px;
+                  "
+                  >Impl.</span
+                >
+              </div>
+            </div>
+            <div class="card" style="border-left: 3px solid var(--coral)">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: flex-start;
+                "
+              >
+                <div>
+                  <div class="card-title" style="color: var(--coralL)">
+                    ⑤ Chiffrement AES-GCM
+                  </div>
+                  <div class="card-body">
+                    Clé privée ECDSA → AES-GCM WebCrypto · Transit HTTPS ·
+                    Firebase SSL · Données sensibles masquées
+                  </div>
+                </div>
+                <span
+                  class="pill"
+                  style="
+                    background: rgba(217, 119, 6, 0.15);
+                    color: var(--amberL);
+                    border: 1px solid rgba(217, 119, 6, 0.3);
+                    flex-shrink: 0;
+                    margin-left: 8px;
+                  "
+                  >Partiel</span
+                >
+              </div>
+            </div>
+            <div class="card" style="border-left: 3px solid var(--coral)">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: flex-start;
+                "
+              >
+                <div>
+                  <div class="card-title" style="color: var(--coralL)">
+                    ⑥ Audit Trail write-only
+                  </div>
+                  <div class="card-body">
+                    userId · action · timestamp · hash chaîné · Règles Firestore
+                    : create ✓ / update ✗ / delete ✗
+                  </div>
+                </div>
+                <span
+                  class="pill"
+                  style="
+                    background: rgba(13, 148, 136, 0.15);
+                    color: var(--tealL);
+                    border: 1px solid rgba(13, 148, 136, 0.3);
+                    flex-shrink: 0;
+                    margin-left: 8px;
+                  "
+                  >Impl.</span
+                >
+              </div>
+            </div>
+          </div>
+          <!-- Matrix -->
+          <div
+            style="background: #060d16; border-radius: 8px; padding: 12px 16px"
+          >
+            <div
+              style="
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.35);
+                margin-bottom: 8px;
+              "
+            >
+              Couverture transversale
+            </div>
+            <table class="matrix">
+              <thead>
+                <tr>
+                  <th style="width: 30%">Couche</th>
+                  <th>Axe IA</th>
+                  <th>Blockchain</th>
+                  <th>AGC</th>
+                  <th>Auth</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="color: rgba(255, 255, 255, 0.7)">
+                    Ledger SHA-256
+                  </td>
+                  <td class="check">✓</td>
+                  <td class="check">✓</td>
+                  <td class="check">✓</td>
+                  <td class="check">✓</td>
+                </tr>
+                <tr>
+                  <td style="color: rgba(255, 255, 255, 0.7)">ECDSA P-256</td>
+                  <td class="dash">—</td>
+                  <td class="check">✓</td>
+                  <td class="check">✓</td>
+                  <td class="check">✓</td>
+                </tr>
+                <tr>
+                  <td style="color: rgba(255, 255, 255, 0.7)">Séquestre</td>
+                  <td class="dash">—</td>
+                  <td class="dash">—</td>
+                  <td class="check">✓</td>
+                  <td class="dash">—</td>
+                </tr>
+                <tr>
+                  <td style="color: rgba(255, 255, 255, 0.7)">Atomicité</td>
+                  <td class="dash">—</td>
+                  <td class="check">✓</td>
+                  <td class="check">✓</td>
+                  <td class="dash">—</td>
+                </tr>
+                <tr>
+                  <td style="color: rgba(255, 255, 255, 0.7)">AES-GCM</td>
+                  <td class="partial">⟳</td>
+                  <td class="check">✓</td>
+                  <td class="check">✓</td>
+                  <td class="check">✓</td>
+                </tr>
+                <tr>
+                  <td style="color: rgba(255, 255, 255, 0.7)">Audit Trail</td>
+                  <td class="check">✓</td>
+                  <td class="check">✓</td>
+                  <td class="check">✓</td>
+                  <td class="check">✓</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ═══ SLIDE 9 — STACK ═══ -->
+        <div class="slide" id="s9">
+          <div
+            class="sec-pill"
+            style="
+              background: rgba(255, 255, 255, 0.06);
+              border: 1px solid rgba(255, 255, 255, 0.12);
+              color: rgba(255, 255, 255, 0.6);
+            "
+          >
+            07 · Stack Technique
+          </div>
+          <div class="slide-title">Technologies utilisées</div>
+          <div class="slide-sub">
+            Angular 17 · Firebase · Ethereum · IA · Cryptographie
+          </div>
+          <div class="grid-4">
+            <div>
+              <div
+                class="stack-col-head"
+                style="background: rgba(124, 58, 237, 0.2); color: #afa9ec"
+              >
+                Frontend
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--purple)"></div>
+                Angular 17 Standalone
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--purple)"></div>
+                TypeScript
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--purple)"></div>
+                RxJS BehaviorSubject
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--purple)"></div>
+                TensorFlow.js
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--purple)"></div>
+                ethers.js v6
+              </div>
+            </div>
+            <div>
+              <div
+                class="stack-col-head"
+                style="background: rgba(30, 111, 191, 0.2); color: #85b7eb"
+              >
+                Backend &amp; BDD
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--blue)"></div>
+                Firebase Auth
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--blue)"></div>
+                Firestore OLTP
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--blue)"></div>
+                Cloud Functions
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--blue)"></div>
+                Firestore rules
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--blue)"></div>
+                Write-only audit
+              </div>
+            </div>
+            <div>
+              <div
+                class="stack-col-head"
+                style="background: rgba(13, 148, 136, 0.2); color: #5dcaa5"
+              >
+                Blockchain
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--teal)"></div>
+                Solidity ^0.8.19
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--teal)"></div>
+                Ethereum Sepolia
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--teal)"></div>
+                MetaMask Wallet
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--teal)"></div>
+                Alchemy RPC
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--teal)"></div>
+                IPFS Pinata CIDv1
+              </div>
+            </div>
+            <div>
+              <div
+                class="stack-col-head"
+                style="background: rgba(194, 65, 12, 0.2); color: #f0997b"
+              >
+                IA &amp; Crypto
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--coral)"></div>
+                Claude API Anthropic
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--coral)"></div>
+                Web Speech API
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--coral)"></div>
+                WebCrypto P-256
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--coral)"></div>
+                SHA-256 CryptoJS
+              </div>
+              <div class="stack-item">
+                <div class="stack-dot" style="background: var(--coral)"></div>
+                AES-GCM chiffrement
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ SLIDE 10 — BILAN ═══ -->
+        <div class="slide" id="s10">
+          <div
+            class="sec-pill"
+            style="
+              background: rgba(255, 255, 255, 0.06);
+              border: 1px solid rgba(255, 255, 255, 0.12);
+              color: rgba(255, 255, 255, 0.6);
+            "
+          >
+            07 · Bilan &amp; Perspectives
+          </div>
+          <div class="slide-title">Ce qui a été réalisé</div>
+          <div class="slide-sub">
+            Résultats du projet · Acquis techniques · Évolutions envisagées
+          </div>
+          <div class="grid-4" style="margin-bottom: 20px">
+            <div
+              style="
+                text-align: center;
+                padding: 18px 10px;
+                background: rgba(13, 148, 136, 0.1);
+                border: 1px solid rgba(13, 148, 136, 0.25);
+                border-radius: 10px;
+              "
+            >
+              <div class="stat-num" style="color: var(--teal)">22</div>
+              <div class="stat-label" style="color: var(--tealL)">Schémas</div>
+              <div class="stat-sub">architecture &amp; flux</div>
+            </div>
+            <div
+              style="
+                text-align: center;
+                padding: 18px 10px;
+                background: rgba(124, 58, 237, 0.1);
+                border: 1px solid rgba(124, 58, 237, 0.25);
+                border-radius: 10px;
+              "
+            >
+              <div class="stat-num" style="color: var(--purple)">4</div>
+              <div class="stat-label" style="color: #afa9ec">Axes tech.</div>
+              <div class="stat-sub">IA · BC · AGC · Sécu</div>
+            </div>
+            <div
+              style="
+                text-align: center;
+                padding: 18px 10px;
+                background: rgba(30, 111, 191, 0.1);
+                border: 1px solid rgba(30, 111, 191, 0.25);
+                border-radius: 10px;
+              "
+            >
+              <div class="stat-num" style="color: #85b7eb">7</div>
+              <div class="stat-label" style="color: #dbeafe">Checkpoints</div>
+              <div class="stat-sub">Bronze → Silver → Gold</div>
+            </div>
+            <div
+              style="
+                text-align: center;
+                padding: 18px 10px;
+                background: rgba(194, 65, 12, 0.1);
+                border: 1px solid rgba(194, 65, 12, 0.25);
+                border-radius: 10px;
+              "
+            >
+              <div class="stat-num" style="color: var(--coral)">6</div>
+              <div class="stat-label" style="color: var(--coralL)">
+                Couches sécu.
+              </div>
+              <div class="stat-sub">ECDSA · SHA-256 · AES</div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card" style="border-top: 2px solid var(--teal)">
+              <div
+                class="card-title"
+                style="color: var(--tealL); margin-bottom: 12px"
+              >
+                Acquis du projet
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Chatbot bilingue FR/Wolof (Claude API)</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Smart contract CertificationRegistry.sol déployé</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Certification blockchain Ethereum Sepolia</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Séquestre AGC avec signatures ECDSA P-256</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Datawarehouse agricole avec prévisions</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--teal)"></div>
+                <span>Audit trail write-only Firestore</span>
+              </div>
+            </div>
+            <div class="card" style="border-top: 2px solid var(--purple)">
+              <div
+                class="card-title"
+                style="color: #afa9ec; margin-bottom: 12px"
+              >
+                Perspectives d'évolution
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--purple)"></div>
+                <span>Support Pulaar, Sérère, Diola</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--purple)"></div>
+                <span>Layer 2 (Polygon) pour réduire les frais de tx</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--purple)"></div>
+                <span>Prévision météo intégrée au datawarehouse</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--purple)"></div>
+                <span>Application mobile Android/iOS native</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--purple)"></div>
+                <span>Déploiement mainnet + NFT de certification</span>
+              </div>
+              <div class="li-row">
+                <div class="li-dot" style="background: var(--purple)"></div>
+                <span>Intégration ministère Agriculture Sénégal</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ SLIDE 11 — FIN ═══ -->
+        <div class="slide" id="s11">
+          <div style="display: flex; height: 100%; min-height: 500px">
+            <div class="s11-left">
+              <div class="s11-logo">Jokko<br />Agro</div>
+              <div class="s11-tagline">
+                Connexion · Agriculture<br />Innovation
+              </div>
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: 8px;
+                  margin-top: 32px;
+                "
+              >
+                <span
+                  class="pill"
+                  style="
+                    background: rgba(13, 148, 136, 0.2);
+                    color: var(--tealL);
+                    border: 1px solid rgba(13, 148, 136, 0.35);
+                  "
+                  >IA</span
+                >
+                <span
+                  class="pill"
+                  style="
+                    background: rgba(30, 111, 191, 0.2);
+                    color: #dbeafe;
+                    border: 1px solid rgba(30, 111, 191, 0.35);
+                  "
+                  >Blockchain</span
+                >
+                <span
+                  class="pill"
+                  style="
+                    background: rgba(217, 119, 6, 0.2);
+                    color: var(--amberL);
+                    border: 1px solid rgba(217, 119, 6, 0.35);
+                  "
+                  >AGC</span
+                >
+                <span
+                  class="pill"
+                  style="
+                    background: rgba(194, 65, 12, 0.2);
+                    color: var(--coralL);
+                    border: 1px solid rgba(194, 65, 12, 0.35);
+                  "
+                  >Sécurité</span
+                >
+              </div>
+            </div>
+            <div class="s11-right">
+              <div class="s11-title">Merci pour votre attention</div>
+              <div class="s11-sub">Questions &amp; Discussion</div>
+              <div style="margin-bottom: 24px">
+                <div class="contact-row">
+                  <span>Étudiant</span><span>[Votre Nom]</span>
+                </div>
+                <div class="contact-row">
+                  <span>Directeur</span><span>[Directeur de Mémoire]</span>
+                </div>
+                <div class="contact-row">
+                  <span>Université</span><span>[Votre Université]</span>
+                </div>
+                <div class="contact-row">
+                  <span>Année</span><span>2024 – 2025</span>
+                </div>
+              </div>
+              <div
+                style="
+                  background: rgba(13, 148, 136, 0.1);
+                  border: 1px solid rgba(13, 148, 136, 0.25);
+                  border-radius: 8px;
+                  padding: 14px 16px;
+                "
+              >
+                <div
+                  style="
+                    font-size: 11px;
+                    color: rgba(255, 255, 255, 0.35);
+                    margin-bottom: 6px;
+                  "
+                >
+                  Code source
+                </div>
+                <div
+                  style="
+                    font-family: &quot;Consolas&quot;, monospace;
+                    font-size: 12px;
+                    color: var(--tealL);
+                  "
+                >
+                  Angular 17 · Solidity · Firebase · Claude API
+                </div>
+                <div
+                  style="
+                    font-size: 11px;
+                    color: rgba(255, 255, 255, 0.4);
+                    margin-top: 4px;
+                  "
+                >
+                  Contract : 0x4020e67078c8ca3f6d27d698c036a57b4a278fde
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const SLIDES = [
+        { id: "s1", label: "Titre", color: "#0D9488" },
+        { id: "s2", label: "Plan", color: "#7C3AED" },
+        { id: "s3", label: "Contexte", color: "#64748B" },
+        { id: "s4", label: "Architecture", color: "#7C3AED" },
+        { id: "s5", label: "Axe IA", color: "#0D9488" },
+        { id: "s6", label: "Blockchain", color: "#1E6FBF" },
+        { id: "s7", label: "AGC & DW", color: "#D97706" },
+        { id: "s8", label: "Sécurité", color: "#C2410C" },
+        { id: "s9", label: "Stack", color: "#64748B" },
+        { id: "s10", label: "Bilan", color: "#7C3AED" },
+        { id: "s11", label: "Fin", color: "#0D9488" },
+      ];
+
+      let current = 0;
+
+      const sidebar = document.getElementById("sidebar");
+      const dotsWrap = document.getElementById("nav-dots");
+      const counter = document.getElementById("slide-counter");
+      const prevBtn = document.getElementById("nav-prev");
+      const nextBtn = document.getElementById("nav-next");
+
+      function buildSidebar() {
+        SLIDES.forEach((sl, i) => {
+          const div = document.createElement("div");
+          div.className = "sb-item";
+          div.dataset.i = i;
+          div.innerHTML = `<div class="sb-bar" style="background:${sl.color};"></div><span class="sb-num">${String(i + 1).padStart(2, "0")}</span><span class="sb-label">${sl.label}</span>`;
+          div.onclick = () => goTo(i);
+          sidebar.appendChild(div);
+        });
+      }
+
+      function buildDots() {
+        SLIDES.forEach((_, i) => {
+          const btn = document.createElement("button");
+          btn.className = "dot";
+          btn.onclick = () => goTo(i);
+          dotsWrap.appendChild(btn);
+        });
+      }
+
+      function goTo(i) {
+        const prev = document.getElementById(SLIDES[current].id);
+        prev.classList.remove("active");
+        current = Math.max(0, Math.min(i, SLIDES.length - 1));
+        const next = document.getElementById(SLIDES[current].id);
+        next.style.display = "block";
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            next.classList.add("active");
+          });
+        });
+        updateUI();
+      }
+
+      function updateUI() {
+        document.querySelectorAll(".sb-item").forEach((el, i) => {
+          el.classList.toggle("active", i === current);
+        });
+        document.querySelectorAll(".dot").forEach((el, i) => {
+          el.classList.toggle("active", i === current);
+        });
+        counter.textContent = `${current + 1} / ${SLIDES.length}`;
+        prevBtn.disabled = current === 0;
+        nextBtn.disabled = current === SLIDES.length - 1;
+      }
+
+      prevBtn.onclick = () => {
+        if (current > 0) goTo(current - 1);
+      };
+      nextBtn.onclick = () => {
+        if (current < SLIDES.length - 1) goTo(current + 1);
+      };
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+          e.preventDefault();
+          if (current < SLIDES.length - 1) goTo(current + 1);
+        }
+        if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+          e.preventDefault();
+          if (current > 0) goTo(current - 1);
+        }
+      });
+
+      buildSidebar();
+      buildDots();
+      goTo(0);
+    </script>
+  </body>
+</html>

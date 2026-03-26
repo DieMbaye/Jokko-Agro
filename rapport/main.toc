@@ -1,0 +1,78 @@
+\babel@toc {french}{}\relax 
+\contentsline {chapter}{Table des Figures}{iv}{Doc-Start}%
+\contentsline {chapter}{Liste des Abréviations}{v}{chapter*.1}%
+\contentsline {chapter}{Introduction Générale}{1}{chapter*.2}%
+\contentsline {chapter}{\numberline {1}Présentation Générale du Projet}{2}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Contexte et état des lieux du secteur agricole sénégalais}{2}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}Caractéristiques structurelles des exploitations}{2}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}Fragilités de l'environnement numérique et financier}{3}{subsection.1.1.2}%
+\contentsline {section}{\numberline {1.2}Problématique et question centrale}{3}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Objectifs du projet}{4}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}Objectif général}{4}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}Objectifs spécifiques}{4}{subsection.1.3.2}%
+\contentsline {section}{\numberline {1.4}Approche de solution : architecture en quatre axes}{4}{section.1.4}%
+\contentsline {section}{\numberline {1.5}Présentation synthétique de la plateforme Jokko Agro}{5}{section.1.5}%
+\contentsline {subsection}{\numberline {1.5.1}Acteurs de la plateforme}{5}{subsection.1.5.1}%
+\contentsline {subsection}{\numberline {1.5.2}Architecture technique}{6}{subsection.1.5.2}%
+\contentsline {chapter}{\numberline {2}Étude de l'Existant}{8}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Analyse des solutions existantes}{8}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Limites des systèmes actuels}{9}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Positionnement de Jokko Agro}{9}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Valeur ajoutée du projet}{10}{section.2.4}%
+\contentsline {chapter}{\numberline {3}Technologies et Outils Utilisés}{11}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Architecture technique globale}{11}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Frontend : Angular 17}{11}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Backend : Firebase / Firestore}{12}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Blockchain : Ethereum \& Smart Contracts}{13}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Wallet : MetaMask}{14}{section.3.5}%
+\contentsline {section}{\numberline {3.6}Stockage décentralisé : IPFS}{15}{section.3.6}%
+\contentsline {section}{\numberline {3.7}Intelligence Artificielle}{15}{section.3.7}%
+\contentsline {section}{\numberline {3.8}Services externes}{15}{section.3.8}%
+\contentsline {section}{\numberline {3.9}Outils de développement}{16}{section.3.9}%
+\contentsline {chapter}{\numberline {4}Conception et Architecture du Système}{17}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Architecture globale du système}{17}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Architecture modulaire}{17}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Diagramme de classes UML}{18}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Diagrammes de séquence}{19}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Séquence Blockchain}{19}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Séquence IA}{19}{subsection.4.4.2}%
+\contentsline {section}{\numberline {4.5}Flux de données}{20}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Scalabilité et déploiement}{21}{section.4.6}%
+\contentsline {chapter}{\numberline {5}Axe Intelligence Artificielle}{22}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Présentation de l'axe IA}{22}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Chatbot agricole intelligent}{22}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Reconnaissance vocale (Wolof)}{23}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Analyse d'images}{24}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Géolocalisation intelligente}{24}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Apports de l'IA dans le système}{25}{section.5.6}%
+\contentsline {chapter}{\numberline {6}Axe Blockchain et Certification}{26}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Concept de blockchain}{26}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Smart Contract de certification}{26}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Enregistrement des preuves}{27}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Interaction avec Ethereum}{27}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Stockage IPFS}{28}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Traçabilité et transparence}{28}{section.6.6}%
+\contentsline {chapter}{\numberline {7}Système Agricoins (AGC) et Datawarehouse}{29}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Présentation des Agricoins}{29}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Mécanisme d'émission}{30}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Paiement hybride (AGC + Mobile Money)}{31}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Gestion des transactions}{31}{section.7.4}%
+\contentsline {section}{\numberline {7.5}Commerce et marketplace}{31}{section.7.5}%
+\contentsline {section}{\numberline {7.6}Datawarehouse agricole}{32}{section.7.6}%
+\contentsline {section}{\numberline {7.7}Analyse et prévisions}{32}{section.7.7}%
+\contentsline {chapter}{\numberline {8}Sécurité et Cryptographie}{34}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Architecture de sécurité}{34}{section.8.1}%
+\contentsline {section}{\numberline {8.2}Ledger immuable (Couche 1)}{35}{section.8.2}%
+\contentsline {section}{\numberline {8.3}Signatures numériques ECDSA (Couche 2)}{35}{section.8.3}%
+\contentsline {section}{\numberline {8.4}Système de séquestre (Escrow) (Couche 3)}{36}{section.8.4}%
+\contentsline {section}{\numberline {8.5}Atomicité transactionnelle (Couche 4)}{37}{section.8.5}%
+\contentsline {section}{\numberline {8.6}Rate limiting adaptatif (Couche 5)}{37}{section.8.6}%
+\contentsline {section}{\numberline {8.7}Détection d'anomalies comportementales (Couche 6)}{38}{section.8.7}%
+\contentsline {section}{\numberline {8.8}Authentification forte (2FA) (Couche 7)}{39}{section.8.8}%
+\contentsline {section}{\numberline {8.9}Chiffrement des données sensibles (Couche 8)}{40}{section.8.9}%
+\contentsline {section}{\numberline {8.10}Journalisation et Audit Trail (Couche 9)}{41}{section.8.10}%
+\contentsline {section}{\numberline {8.11}Tests d'intrusion (Couche 10)}{42}{section.8.11}%
+\contentsline {section}{\numberline {8.12}Tableau récapitulatif des étapes d'implémentation}{43}{section.8.12}%
+\contentsline {section}{\numberline {8.13}Synthèse de l'axe Sécurité}{44}{section.8.13}%
+\contentsline {chapter}{Conclusion Générale}{45}{chapter*.29}%
+\contentsline {chapter}{Bibliographie}{47}{chapter*.30}%

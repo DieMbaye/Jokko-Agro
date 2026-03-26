@@ -401,13 +401,17 @@
           </div>
 
           <!-- Résultat de validation IA amélioré -->
+          <!-- ════════════════════════════════════════════════════════════════════
+     REMPLACER le bloc "validation-result-enhanced" dans le template
+     (ligne ~403 à ~557 de certification-track.component.html)
+     ════════════════════════════════════════════════════════════════════ -->
+
           <div
             class="validation-result-enhanced"
             *ngIf="imageValidationResult"
             [class]="'validation-' + imageValidationResult.action"
-            [style.animation]="'resultPopIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)'"
           >
-            <!-- En-tête du résultat -->
+            <!-- En-tête : icône + titre + score global -->
             <div class="result-header">
               <div class="result-icon-wrapper">
                 <div
@@ -423,52 +427,226 @@
                   }}
                 </div>
               </div>
-
               <div class="result-title">
                 <h4>{{ getValidationTitle() }}</h4>
-                <div class="result-similarity">
-                  <span class="similarity-value"
-                    >{{ imageValidationResult.similarity.toFixed(1) }}%</span
+                <!-- Raison lisible (nouveau champ actionReason) -->
+                <p class="action-reason">
+                  {{ imageValidationResult.actionReason }}
+                </p>
+              </div>
+            </div>
+
+            <!-- ── BLOC 1 : Analyse de la plante (Claude Vision) ────────────────── -->
+            <div class="analysis-block">
+              <div class="analysis-block-title">🌱 Analyse de la plante</div>
+              <div class="analysis-grid">
+                <!-- Stade végétatif -->
+                <div class="analysis-cell">
+                  <span class="cell-label">Stade détecté</span>
+                  <span
+                    class="cell-value"
+                    [class.cell-ok]="
+                      imageValidationResult.plantAnalysis.stageCoherent
+                    "
+                    [class.cell-warn]="
+                      !imageValidationResult.plantAnalysis.stageCoherent
+                    "
                   >
-                  <span class="similarity-label">de similarité</span>
+                    {{ imageValidationResult.plantAnalysis.stageLabel }}
+                    {{
+                      imageValidationResult.plantAnalysis.stageCoherent
+                        ? "✓"
+                        : "⚠"
+                    }}
+                  </span>
+                  <span class="cell-note">{{
+                    imageValidationResult.plantAnalysis.stageNotes
+                  }}</span>
+                </div>
+
+                <!-- Score stade -->
+                <div class="analysis-cell">
+                  <span class="cell-label">Cohérence stade</span>
+                  <div class="mini-bar-wrap">
+                    <div class="mini-bar-track">
+                      <div
+                        class="mini-bar-fill"
+                        [style.width.%]="
+                          imageValidationResult.plantAnalysis.stageScore
+                        "
+                        [style.background]="
+                          getSimilarityGradient(
+                            imageValidationResult.plantAnalysis.stageScore
+                          )
+                        "
+                      ></div>
+                    </div>
+                    <span class="mini-bar-value"
+                      >{{
+                        imageValidationResult.plantAnalysis.stageScore
+                      }}%</span
+                    >
+                  </div>
+                </div>
+
+                <!-- Santé -->
+                <div class="analysis-cell">
+                  <span class="cell-label">État sanitaire</span>
+                  <div class="mini-bar-wrap">
+                    <div class="mini-bar-track">
+                      <div
+                        class="mini-bar-fill"
+                        [style.width.%]="
+                          imageValidationResult.plantAnalysis.healthScore
+                        "
+                        [style.background]="
+                          getSimilarityGradient(
+                            imageValidationResult.plantAnalysis.healthScore
+                          )
+                        "
+                      ></div>
+                    </div>
+                    <span class="mini-bar-value"
+                      >{{
+                        imageValidationResult.plantAnalysis.healthScore
+                      }}%</span
+                    >
+                  </div>
+                  <span class="cell-note">{{
+                    imageValidationResult.plantAnalysis.healthNotes
+                  }}</span>
+                </div>
+
+                <!-- Authenticité -->
+                <div class="analysis-cell">
+                  <span class="cell-label">Photo authentique</span>
+                  <span
+                    class="cell-value"
+                    [class.cell-ok]="
+                      imageValidationResult.plantAnalysis.isAuthentic
+                    "
+                    [class.cell-error]="
+                      !imageValidationResult.plantAnalysis.isAuthentic
+                    "
+                  >
+                    {{
+                      imageValidationResult.plantAnalysis.isAuthentic
+                        ? "✓ Originale"
+                        : "✗ Suspecte"
+                    }}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <!-- Barre de similarité animée -->
-            <div class="similarity-meter">
-              <div class="meter-track">
-                <div
-                  class="meter-fill"
-                  [style.width.%]="imageValidationResult.similarity"
-                  [style.background]="
-                    getSimilarityGradient(imageValidationResult.similarity)
-                  "
-                ></div>
-              </div>
-              <div class="meter-markers">
-                <span
-                  class="marker"
-                  [class.active]="imageValidationResult.similarity >= 85"
-                  >✅ Excellent</span
-                >
-                <span
-                  class="marker"
-                  [class.active]="
-                    imageValidationResult.similarity >= 70 &&
-                    imageValidationResult.similarity < 85
-                  "
-                  >⚠️ Bon</span
-                >
-                <span
-                  class="marker"
-                  [class.active]="imageValidationResult.similarity < 70"
-                  >❌ À revoir</span
-                >
+            <!-- ── BLOC 2 : Cohérence terrain (vs checkpoint précédent) ─────────── -->
+            <div class="analysis-block" *ngIf="hasPreviousCheckpoint">
+              <div class="analysis-block-title">📍 Cohérence du terrain</div>
+              <div class="analysis-grid">
+                <!-- Même parcelle -->
+                <div class="analysis-cell">
+                  <span class="cell-label">Même parcelle</span>
+                  <div class="mini-bar-wrap">
+                    <div class="mini-bar-track">
+                      <div
+                        class="mini-bar-fill"
+                        [style.width.%]="
+                          imageValidationResult.terrainAnalysis.locationScore
+                        "
+                        [style.background]="
+                          getSimilarityGradient(
+                            imageValidationResult.terrainAnalysis.locationScore
+                          )
+                        "
+                      ></div>
+                    </div>
+                    <span class="mini-bar-value"
+                      >{{
+                        imageValidationResult.terrainAnalysis.locationScore
+                      }}%</span
+                    >
+                  </div>
+                  <span class="cell-note">
+                    {{
+                      imageValidationResult.terrainAnalysis.sameLocation
+                        ? "✓ Fond similaire au checkpoint précédent"
+                        : "⚠ Environnement différent détecté"
+                    }}
+                  </span>
+                </div>
+
+                <!-- Progression -->
+                <div class="analysis-cell">
+                  <span class="cell-label">Progression plante</span>
+                  <div class="mini-bar-wrap">
+                    <div class="mini-bar-track">
+                      <div
+                        class="mini-bar-fill"
+                        [style.width.%]="
+                          imageValidationResult.terrainAnalysis.progressionScore
+                        "
+                        [style.background]="
+                          getSimilarityGradient(
+                            imageValidationResult.terrainAnalysis
+                              .progressionScore
+                          )
+                        "
+                      ></div>
+                    </div>
+                    <span class="mini-bar-value"
+                      >{{
+                        imageValidationResult.terrainAnalysis.progressionScore
+                      }}%</span
+                    >
+                  </div>
+                  <span class="cell-note">
+                    {{
+                      imageValidationResult.terrainAnalysis.progressionLogical
+                        ? "✓ Évolution normale"
+                        : "⚠ Progression anormale"
+                    }}
+                  </span>
+                </div>
+
+                <!-- Éclairage -->
+                <div class="analysis-cell">
+                  <span class="cell-label">Conditions lumière</span>
+                  <span
+                    class="cell-value"
+                    [class.cell-ok]="
+                      imageValidationResult.details.lightingConsistent
+                    "
+                    [class.cell-warn]="
+                      !imageValidationResult.details.lightingConsistent
+                    "
+                  >
+                    {{
+                      imageValidationResult.details.lightingConsistent
+                        ? "✓ Cohérent"
+                        : "⚠ Différent"
+                    }}
+                  </span>
+                </div>
+
+                <!-- EXIF -->
+                <div class="analysis-cell">
+                  <span class="cell-label">Métadonnées EXIF</span>
+                  <span
+                    class="cell-value"
+                    [class.cell-ok]="imageValidationResult.details.exifValid"
+                    [class.cell-warn]="!imageValidationResult.details.exifValid"
+                  >
+                    {{
+                      imageValidationResult.details.exifValid
+                        ? "✓ Présentes"
+                        : "⚠ Manquantes"
+                    }}
+                  </span>
+                </div>
               </div>
             </div>
 
-            <!-- Liste des avertissements -->
+            <!-- ── Avertissements ───────────────────────────────────────────────── -->
             <div
               class="warnings-list"
               *ngIf="imageValidationResult.warnings.length > 0"
@@ -482,70 +660,7 @@
               </div>
             </div>
 
-            <!-- Détails techniques -->
-            <div class="technical-details">
-              <details>
-                <summary>🔬 Détails de l'analyse</summary>
-                <div class="details-grid">
-                  <div class="detail-cell">
-                    <span class="detail-label">Similarité cosinus</span>
-                    <span class="detail-value">
-                      {{
-                        (
-                          imageValidationResult.details.structuralSimilarity *
-                          100
-                        ).toFixed(1)
-                      }}%
-                    </span>
-                  </div>
-                  <div class="detail-cell">
-                    <span class="detail-label">Métadonnées EXIF</span>
-                    <span
-                      class="detail-value"
-                      [class.valid]="imageValidationResult.details.exifValid"
-                    >
-                      {{
-                        imageValidationResult.details.exifValid
-                          ? "✓ Valides"
-                          : "⚠️ Manquantes"
-                      }}
-                    </span>
-                  </div>
-                  <div class="detail-cell">
-                    <span class="detail-label">Source de l'image</span>
-                    <span
-                      class="detail-value"
-                      [class.warning]="
-                        imageValidationResult.details.isDownloadedImage
-                      "
-                    >
-                      {{
-                        imageValidationResult.details.isDownloadedImage
-                          ? "⚠️ Téléchargée"
-                          : "✓ Originale"
-                      }}
-                    </span>
-                  </div>
-                  <div class="detail-cell">
-                    <span class="detail-label">Éclairage</span>
-                    <span
-                      class="detail-value"
-                      [class.valid]="
-                        imageValidationResult.details.lightingConsistent
-                      "
-                    >
-                      {{
-                        imageValidationResult.details.lightingConsistent
-                          ? "✓ Cohérent"
-                          : "⚠️ Différent"
-                      }}
-                    </span>
-                  </div>
-                </div>
-              </details>
-            </div>
-
-            <!-- Badge blockchain -->
+            <!-- ── Badge blockchain (si accepté) ───────────────────────────────── -->
             <div
               class="blockchain-badge"
               *ngIf="imageValidationResult.action === 'accept'"

@@ -1,0 +1,1336 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jokko Agro — Présentation Mémoire</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      :root {
+        --g-deep: #081c0f;
+        --g-mid: #1a5c35;
+        --g-bright: #2dba6f;
+        --g-neon: #3effa0;
+        --gold: #f5c842;
+        --amber: #ff9f1c;
+        --cream: #f0ece0;
+        --ink: #060e09;
+        --glass: rgba(255, 255, 255, 0.05);
+        --border: rgba(62, 255, 160, 0.15);
+        --b-deep: #0a1628;
+        --b-bright: #3b82f6;
+        --b-neon: #60b4ff;
+        --b-border: rgba(96, 180, 255, 0.18);
+        --teal: #0d9488;
+        --tealL: #ccfbf1;
+        --blue: #1e6fbf;
+        --blueL: #dbeafe;
+        --amberL: #fef3c7;
+        --coral: #c2410c;
+        --coralL: #ffedd5;
+        --sec-red: #ff7070;
+        --purple: #a99fff;
+        --pink: #ff9dc0;
+        --agc: #f5c842;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--ink);
+        font-family: "DM Sans", sans-serif;
+        color: var(--cream);
+        user-select: none;
+      }
+      #topnav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 52px;
+        background: rgba(6, 14, 9, 0.92);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2.5rem;
+        z-index: 999;
+      }
+      .nav-logo {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 1.4rem;
+        letter-spacing: 0.1em;
+        color: var(--g-neon);
+      }
+      .nav-logo span {
+        color: var(--gold);
+      }
+      .nav-axes {
+        display: flex;
+        gap: 0.3rem;
+      }
+      .nav-btn {
+        padding: 0.3rem 1rem;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        border: 1px solid transparent;
+        background: transparent;
+        color: rgba(240, 236, 224, 0.45);
+        transition: all 0.2s;
+        font-family: "DM Mono", monospace;
+      }
+      .nav-btn:hover {
+        color: var(--cream);
+        border-color: var(--border);
+      }
+      .nav-btn.active {
+        background: rgba(62, 255, 160, 0.1);
+        border-color: var(--g-neon);
+        color: var(--g-neon);
+      }
+      #deck {
+        width: 100%;
+        height: 100vh;
+        position: relative;
+        overflow: hidden;
+      }
+      .slide {
+        position: absolute;
+        inset: 0;
+        padding: 5.5rem 6vw 4.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        opacity: 0;
+        transform: translateX(60px);
+        transition:
+          opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+          transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+        will-change: transform, opacity;
+        overflow-y: auto;
+      }
+      .slide.active {
+        opacity: 1;
+        transform: translateX(0);
+        pointer-events: all;
+      }
+      .slide::-webkit-scrollbar {
+        width: 4px;
+      }
+      .slide::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .slide::-webkit-scrollbar-thumb {
+        background: var(--g-neon);
+        border-radius: 4px;
+      }
+      .slide-tag {
+        font-family: "DM Mono", monospace;
+        font-size: 0.65rem;
+        color: var(--g-neon);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin-bottom: 1.2rem;
+        opacity: 0.8;
+      }
+      .slide-tag::before {
+        content: "";
+        width: 30px;
+        height: 1px;
+        background: var(--g-neon);
+      }
+      .slide-tag.bc {
+        color: var(--b-neon);
+      }
+      .slide-tag.bc::before {
+        background: var(--b-neon);
+      }
+      .slide-tag.agc {
+        color: var(--agc);
+      }
+      .slide-tag.agc::before {
+        background: var(--agc);
+      }
+      .slide-tag.sec {
+        color: var(--sec-red);
+      }
+      .slide-tag.sec::before {
+        background: var(--sec-red);
+      }
+      .slide-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+        line-height: 1;
+        letter-spacing: 0.02em;
+        margin-bottom: 1rem;
+      }
+      .slide-title .g {
+        color: var(--g-neon);
+      }
+      .slide-title .y {
+        color: var(--gold);
+      }
+      .slide-title .b {
+        color: var(--b-neon);
+      }
+      .slide-title .r {
+        color: var(--sec-red);
+      }
+      .slide-lead {
+        font-size: 0.9rem;
+        color: rgba(240, 236, 224, 0.6);
+        line-height: 1.6;
+        max-width: 650px;
+        margin-bottom: 1.5rem;
+      }
+      .divider {
+        width: 50px;
+        height: 2px;
+        background: linear-gradient(to right, var(--g-neon), transparent);
+        margin-bottom: 1.5rem;
+      }
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: start;
+      }
+      .three-col {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.2rem;
+      }
+      .card {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.2rem;
+        transition: border-color 0.3s;
+      }
+      .card:hover {
+        border-color: rgba(62, 255, 160, 0.3);
+      }
+      .card-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+      .card-text {
+        font-size: 0.75rem;
+        color: rgba(240, 236, 224, 0.55);
+        line-height: 1.5;
+      }
+      .card-icon {
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+      }
+      .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.8rem;
+      }
+      .chip {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 5px;
+        padding: 0.2rem 0.6rem;
+        font-size: 0.65rem;
+        font-family: "DM Mono", monospace;
+      }
+      .mlabel {
+        font-family: "DM Mono", monospace;
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.5rem;
+        color: var(--g-neon);
+      }
+      .flow {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .fstep {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.8rem;
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
+      }
+      .fnum {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--g-neon);
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "DM Mono", monospace;
+        font-size: 0.6rem;
+        font-weight: 500;
+        flex-shrink: 0;
+      }
+      .fstep h4 {
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 0.1rem;
+      }
+      .fstep p {
+        font-size: 0.7rem;
+        color: rgba(240, 236, 224, 0.5);
+      }
+      .diagram-box {
+        background: rgba(62, 255, 160, 0.03);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 1.2rem;
+        margin-top: 1rem;
+      }
+      .uml-class {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        padding: 1rem;
+        border-left: 3px solid var(--g-neon);
+      }
+      .uml-title {
+        font-family: "DM Mono", monospace;
+        font-size: 0.7rem;
+        color: var(--g-neon);
+        margin-bottom: 0.5rem;
+      }
+      .uml-attrs {
+        font-size: 0.7rem;
+        color: rgba(240, 236, 224, 0.6);
+        margin-left: 1rem;
+        list-style: none;
+      }
+      .uml-attrs li {
+        padding: 0.1rem 0;
+        font-family: "DM Mono", monospace;
+        font-size: 0.65rem;
+      }
+      .seq-step {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem;
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+      }
+      .seq-actor {
+        width: 100px;
+        font-family: "DM Mono", monospace;
+        font-size: 0.7rem;
+        color: var(--g-neon);
+      }
+      .seq-arrow {
+        color: var(--gold);
+        font-size: 0.9rem;
+      }
+      .seq-message {
+        flex: 1;
+        font-size: 0.7rem;
+        color: rgba(240, 236, 224, 0.7);
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.6rem;
+        font-family: "DM Mono", monospace;
+      }
+      .badge.g {
+        background: rgba(62, 255, 160, 0.1);
+        color: var(--g-neon);
+      }
+      .stats-row {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1.5rem;
+      }
+      .stat-num {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 2.5rem;
+        color: var(--g-neon);
+        line-height: 1;
+      }
+      .stat-label {
+        font-size: 0.65rem;
+        color: rgba(240, 236, 224, 0.45);
+      }
+      #nav-left,
+      #nav-right {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(62, 255, 160, 0.08);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 999;
+        transition: all 0.2s;
+        color: rgba(240, 236, 224, 0.5);
+      }
+      #nav-left {
+        left: 1rem;
+      }
+      #nav-right {
+        right: 1rem;
+      }
+      #nav-left:hover,
+      #nav-right:hover {
+        background: rgba(62, 255, 160, 0.15);
+        border-color: var(--g-neon);
+        color: var(--g-neon);
+      }
+      #dots {
+        position: fixed;
+        bottom: 1.2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 0.5rem;
+        z-index: 999;
+      }
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(62, 255, 160, 0.2);
+        cursor: pointer;
+      }
+      .dot.active {
+        background: var(--g-neon);
+        transform: scale(1.5);
+      }
+      .disabled {
+        opacity: 0.2;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <nav id="topnav">
+      <div class="nav-logo">Jokko<span>Agro</span></div>
+      <div class="nav-axes">
+        <button class="nav-btn" data-slide="0">Accueil</button>
+        <button class="nav-btn" data-slide="1">Application</button>
+        <button class="nav-btn" data-slide="3">Diagrammes</button>
+        <button class="nav-btn" data-slide="6">IA</button>
+        <button class="nav-btn" data-slide="9">Blockchain</button>
+        <button class="nav-btn" data-slide="12">Agricoins</button>
+        <button class="nav-btn" data-slide="15">Sécurité</button>
+        <button class="nav-btn" data-slide="17">Conclusion</button>
+      </div>
+      <div class="nav-counter" id="counter">01 / 18</div>
+    </nav>
+    <div id="deck">
+      <!-- SLIDE 1 - COUVERTURE -->
+      <div class="slide active" id="s1">
+        <div class="slide-tag">MÉMOIRE DE FIN D'ÉTUDES</div>
+        <h1 class="slide-title">
+          Jokko Agro<br /><span class="g">Agriculture Intelligente</span>
+        </h1>
+        <div class="divider"></div>
+        <p class="slide-lead">
+          Plateforme connectée combinant IA conversationnelle en Wolof,
+          certification blockchain et paiement hybride pour les agriculteurs
+          sénégalais.
+        </p>
+        <div class="stats-row">
+          <div>
+            <div class="stat-num">4</div>
+            <div class="stat-label">Axes technologiques</div>
+          </div>
+          <div>
+            <div class="stat-num">7</div>
+            <div class="stat-label">Checkpoints certification</div>
+          </div>
+          <div>
+            <div class="stat-num">3</div>
+            <div class="stat-label">Niveaux de qualité</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 2 - PRÉSENTATION DE L'APPLICATION (USER FLOW) -->
+      <div class="slide" id="s2">
+        <div class="slide-tag">01 · Présentation de l'application</div>
+        <h1 class="slide-title">
+          Comment <span class="g">Jokko Agro</span><br />accompagne ses
+          utilisateurs
+        </h1>
+        <div class="divider"></div>
+        <div class="two-col">
+          <div>
+            <div class="mlabel">👥 Acteurs de la plateforme</div>
+            <div class="card" style="margin-bottom: 1rem">
+              <div class="card-title">
+                <span class="card-icon">👨‍🌾</span> Producteur
+              </div>
+              <p class="card-text">
+                Inscription, certification des cultures, gestion de stock, vente
+                de produits certifiés, réception des paiements en AGC.
+              </p>
+              <div class="chip">Certification Blockchain</div>
+              <div class="chip">Gestion stock</div>
+            </div>
+            <div class="card">
+              <div class="card-title">
+                <span class="card-icon">🛒</span> Acheteur
+              </div>
+              <p class="card-text">
+                Recherche de produits certifiés, commande sécurisée, paiement
+                hybride (AGC + Mobile Money), suivi livraison, notation
+                producteur.
+              </p>
+              <div class="chip">Paiement séquestre</div>
+              <div class="chip">Traçabilité</div>
+            </div>
+          </div>
+          <div>
+            <div class="mlabel">🔄 Parcours utilisateur type</div>
+            <div class="flow">
+              <div class="fstep">
+                <div class="fnum">1</div>
+                <div>
+                  <h4>Connexion / Inscription</h4>
+                  <p>
+                    Email, téléphone ou wallet MetaMask — authentification
+                    Firebase
+                  </p>
+                </div>
+              </div>
+              <div class="fstep">
+                <div class="fnum">2</div>
+                <div>
+                  <h4>Recherche de produits</h4>
+                  <p>
+                    Filtres par catégorie, badge de certification
+                    (Bronze/Silver/Gold), localisation
+                  </p>
+                </div>
+              </div>
+              <div class="fstep">
+                <div class="fnum">3</div>
+                <div>
+                  <h4>Commande & paiement</h4>
+                  <p>
+                    Choix du mode : AGC (monnaie interne) ou Wave/Orange Money —
+                    séquestre automatique
+                  </p>
+                </div>
+              </div>
+              <div class="fstep">
+                <div class="fnum">4</div>
+                <div>
+                  <h4>Suivi & livraison</h4>
+                  <p>
+                    Notifications temps réel, confirmation réception → déblocage
+                    AGC au producteur
+                  </p>
+                </div>
+              </div>
+              <div class="fstep">
+                <div class="fnum">5</div>
+                <div>
+                  <h4>Évaluation & certification</h4>
+                  <p>
+                    Le producteur peut enrichir ses preuves de certification à
+                    chaque étape
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="diagram-box" style="margin-top: 1rem">
+          <div
+            style="
+              display: flex;
+              gap: 0.8rem;
+              flex-wrap: wrap;
+              justify-content: center;
+            "
+          >
+            <div class="badge g">📱 Angular 17</div>
+            <div class="badge g">🔥 Firebase Auth</div>
+            <div class="badge g">⛓️ MetaMask</div>
+            <div class="badge g">💳 Wave/Orange</div>
+            <div class="badge g">🤖 Claude API</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 3 - DIAGRAMME DE CLASSES UML (schéma textuel) -->
+      <div class="slide" id="s3">
+        <div class="slide-tag">02 · Modélisation UML</div>
+        <h1 class="slide-title">
+          Diagramme de <span class="g">classes</span><br />de la plateforme
+        </h1>
+        <div class="divider"></div>
+        <div class="two-col" style="gap: 1.2rem">
+          <div class="uml-class">
+            <div class="uml-title">📦 Utilisateur (abstrait)</div>
+            <ul class="uml-attrs">
+              <li>- id: String</li>
+              <li>- nom: String</li>
+              <li>- email: String</li>
+              <li>- motDePasse: String</li>
+              <li>- role: String</li>
+              <li>+ seConnecter(): void</li>
+              <li>+ seDeconnecter(): void</li>
+            </ul>
+            <div
+              style="
+                margin-top: 0.5rem;
+                padding-left: 1rem;
+                border-left: 2px solid var(--g-neon);
+              "
+            >
+              <div class="uml-title" style="font-size: 0.6rem">△ étend</div>
+              <div style="display: flex; gap: 0.8rem; margin-top: 0.3rem">
+                <div>
+                  <span class="badge g">Acheteur</span><br /><span
+                    style="font-size: 0.6rem"
+                    >+ commander()</span
+                  >
+                </div>
+                <div>
+                  <span class="badge g">Producteur</span><br /><span
+                    style="font-size: 0.6rem"
+                    >+ certifier()</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="uml-class">
+            <div class="uml-title">📦 Produit</div>
+            <ul class="uml-attrs">
+              <li>- id: String</li>
+              <li>- nom: String</li>
+              <li>- prix: Number</li>
+              <li>- quantite: Number</li>
+              <li>- categorie: String</li>
+              <li>- statut: String</li>
+            </ul>
+            <div class="uml-title" style="margin-top: 0.5rem">📦 Commande</div>
+            <ul class="uml-attrs">
+              <li>- id: String</li>
+              <li>- date: Date</li>
+              <li>- montant: Number</li>
+              <li>- statut: Enum</li>
+            </ul>
+          </div>
+        </div>
+        <div class="uml-class" style="margin-top: 1rem">
+          <div class="uml-title">⛓️ Certification & Blockchain</div>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 0.5rem;
+              margin-top: 0.5rem;
+            "
+          >
+            <div>
+              <span class="badge g">SmartContract</span><br /><span
+                style="font-size: 0.6rem"
+                >+ registerProof()</span
+              >
+            </div>
+            <div>
+              <span class="badge g">Certification</span><br /><span
+                style="font-size: 0.6rem"
+                >+ valider()</span
+              >
+            </div>
+            <div>
+              <span class="badge g">ImagePreuve</span><br /><span
+                style="font-size: 0.6rem"
+                >+ verifierGPS()</span
+              >
+            </div>
+          </div>
+          <p
+            style="
+              font-size: 0.65rem;
+              color: rgba(240, 236, 224, 0.5);
+              margin-top: 0.6rem;
+            "
+          >
+            ← relation 1..* : un produit peut avoir plusieurs preuves de
+            certification
+          </p>
+        </div>
+      </div>
+
+      <!-- SLIDE 4 - DIAGRAMME DE SÉQUENCE (COMMANDE) -->
+      <div class="slide" id="s4">
+        <div class="slide-tag">03 · Diagramme de séquence</div>
+        <h1 class="slide-title">
+          Flux de <span class="g">commande sécurisée</span>
+        </h1>
+        <div class="divider"></div>
+        <div class="diagram-box">
+          <div class="seq-step">
+            <div class="seq-actor">👤 Acheteur</div>
+            <div class="seq-arrow">→</div>
+            <div class="seq-message">commandeProduit(produit, quantité)</div>
+          </div>
+          <div class="seq-step">
+            <div class="seq-actor">🛒 Système</div>
+            <div class="seq-arrow">→</div>
+            <div class="seq-message">vérifierStock() → disponible</div>
+          </div>
+          <div class="seq-step">
+            <div class="seq-actor">🛒 Système</div>
+            <div class="seq-arrow">→</div>
+            <div class="seq-message">
+              calculerPrix() → montant total (AGC + FCFA)
+            </div>
+          </div>
+          <div class="seq-step">
+            <div class="seq-actor">💳 Paiement</div>
+            <div class="seq-arrow">→</div>
+            <div class="seq-message">lockAGCFonds() [séquestre]</div>
+          </div>
+          <div class="seq-step">
+            <div class="seq-actor">⛓️ Blockchain</div>
+            <div class="seq-arrow">→</div>
+            <div class="seq-message">
+              enregistrerPreuveCommande() → hash on-chain
+            </div>
+          </div>
+          <div class="seq-step">
+            <div class="seq-actor">📦 Livreur</div>
+            <div class="seq-arrow">→</div>
+            <div class="seq-message">mettreÀJourStatut(livré)</div>
+          </div>
+          <div class="seq-step">
+            <div class="seq-actor">💳 Paiement</div>
+            <div class="seq-arrow">→</div>
+            <div class="seq-message">releaseAGCFonds(producteur)</div>
+          </div>
+          <div class="seq-step">
+            <div class="seq-actor">📊 Ledger</div>
+            <div class="seq-arrow">→</div>
+            <div class="seq-message">enregistrerTransaction()</div>
+          </div>
+        </div>
+        <p class="slide-lead" style="margin-top: 1rem; font-size: 0.7rem">
+          → Séquestre AGC : les fonds sont bloqués jusqu'à confirmation de
+          livraison, garantissant sécurité pour l'acheteur et le producteur.
+        </p>
+      </div>
+
+      <!-- SLIDE 5 - DIAGRAMME DE SÉQUENCE (CERTIFICATION IA + BLOCKCHAIN) -->
+      <div class="slide" id="s5">
+        <div class="slide-tag">04 · Certification intelligente</div>
+        <h1 class="slide-title">
+          IA + Blockchain :<br /><span class="g">preuve immuable</span>
+        </h1>
+        <div class="divider"></div>
+        <div class="two-col">
+          <div>
+            <div class="mlabel">🤖 Vérification IA</div>
+            <div class="flow">
+              <div class="fstep">
+                <div class="fnum">1</div>
+                <div>
+                  <h4>Producteur prend photo</h4>
+                  <p>Géolocalisation + image champ</p>
+                </div>
+              </div>
+              <div class="fstep">
+                <div class="fnum">2</div>
+                <div>
+                  <h4>TensorFlow.js analyse</h4>
+                  <p>
+                    MSE · Cosinus · HSV · Variance · EXIF → score de confiance
+                  </p>
+                </div>
+              </div>
+              <div class="fstep">
+                <div class="fnum">3</div>
+                <div>
+                  <h4>SHA-256 hash image</h4>
+                  <p>Calculé localement → envoyé à IPFS</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="mlabel">⛓️ Enregistrement blockchain</div>
+            <div class="flow">
+              <div class="fstep">
+                <div class="fnum">4</div>
+                <div>
+                  <h4>Upload IPFS Pinata</h4>
+                  <p>CIDv1 retourné</p>
+                </div>
+              </div>
+              <div class="fstep">
+                <div class="fnum">5</div>
+                <div>
+                  <h4>Signature ECDSA</h4>
+                  <p>Wallet MetaMask signe la preuve</p>
+                </div>
+              </div>
+              <div class="fstep">
+                <div class="fnum">6</div>
+                <div>
+                  <h4>Smart Contract registerProof()</h4>
+                  <p>Ethereum Sepolia → transaction immuable</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="diagram-box" style="margin-top: 1rem; text-align: center">
+          <span class="badge g">🌱 Certification Bronze</span>
+          <span class="badge g">🥈 Silver</span>
+          <span class="badge g">🥇 Gold</span>
+          <span style="margin-left: 1rem; font-size: 0.7rem"
+            >← score qualité = ∑(checkpoints validés × poids)</span
+          >
+        </div>
+      </div>
+
+      <!-- SLIDE 6 - IA HERO -->
+      <div class="slide" id="s6">
+        <div class="slide-tag">Axe I · Intelligence Artificielle</div>
+        <h1 class="slide-title">
+          L'IA au service<br />du <span class="g">terrain</span>
+        </h1>
+        <div class="divider"></div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title">🤖 Chatbot bilingue</div>
+            <p class="card-text">
+              Claude API — conseils agronomiques en français et Wolof,
+              historique conversationnel.
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-title">🎙️ Voix Wolof</div>
+            <p class="card-text">
+              Web Speech API + post-traitement phonologique pour les sons
+              aspirés.
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-title">👁️ Vision anti-fraude</div>
+            <p class="card-text">
+              TensorFlow.js analyse 5 métriques (MSE, cosinus, HSV, variance,
+              EXIF).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 7 - VISION + GÉOLOCALISATION -->
+      <div class="slide" id="s7">
+        <div class="slide-tag">05 · Services IA avancés</div>
+        <h1 class="slide-title">
+          Vision & <span class="g">géolocalisation</span>
+        </h1>
+        <div class="divider"></div>
+        <div class="two-col">
+          <div>
+            <div class="mlabel">📸 Score anti-fraude</div>
+            <div class="card">
+              <p class="card-text">
+                score = (MSE × 0.3) + (cosinus × 0.4) + (couleurs × 0.2) +
+                (éclairage × 0.1)
+              </p>
+              <div class="chip">Accept</div>
+              <div class="chip">Review</div>
+              <div class="chip">Reject</div>
+            </div>
+          </div>
+          <div>
+            <div class="mlabel">📍 Validation GPS</div>
+            <div class="card">
+              <p class="card-text">
+                Distance ≤ 500m → terrain validé. Anti-spoofing : timestamp et
+                coordonnées croisées.
+              </p>
+              <div class="chip">Précision < 10m</div>
+              <div class="chip">Rayon 500m</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 8 - BLOCKCHAIN HERO -->
+      <div class="slide" id="s8">
+        <div class="slide-tag bc">Axe II · Blockchain & Certification</div>
+        <h1 class="slide-title">
+          Confiance <span class="b">décentralisée</span><br />sur Ethereum
+        </h1>
+        <div class="divider"></div>
+        <p class="slide-lead">
+          Smart contract Solidity sur Sepolia — chaque preuve de certification
+          est immuable et vérifiable publiquement.
+        </p>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">📜 CertificationRegistry.sol</div>
+            <p class="card-text">registerProof() · verifyProof() · events</p>
+          </div>
+          <div class="card">
+            <div class="card-title">📦 IPFS Pinata</div>
+            <p class="card-text">
+              Stockage décentralisé des images preuve, CIDv1 lié à la
+              blockchain.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 9 - 7 CHECKPOINTS + BADGES -->
+      <div class="slide" id="s9">
+        <div class="slide-tag bc">06 · Parcours de certification</div>
+        <h1 class="slide-title">
+          7 <span class="b">checkpoints</span><br />3
+          <span class="y">badges qualité</span>
+        </h1>
+        <div class="divider"></div>
+        <div
+          style="
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+          "
+        >
+          <div class="chip">🌱 Préparation sol</div>
+          <div class="chip">🌾 Semis</div>
+          <div class="chip">💧 Irrigation</div>
+          <div class="chip">🧪 Traitements</div>
+          <div class="chip">👁️ Surveillance</div>
+          <div class="chip">🌿 Récolte</div>
+          <div class="chip">📦 Stockage</div>
+        </div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title">🥉 Bronze</div>
+            <p class="card-text">Score 0-40 · Certification basique</p>
+          </div>
+          <div class="card">
+            <div class="card-title">🥈 Silver</div>
+            <p class="card-text">Score 41-70 · Bonnes pratiques</p>
+          </div>
+          <div class="card">
+            <div class="card-title">🥇 Gold</div>
+            <p class="card-text">Score 71-100 · Excellence agricole</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 10 - AGRICOINS HERO -->
+      <div class="slide" id="s10">
+        <div class="slide-tag agc">Axe III · Agricoins (AGC)</div>
+        <h1 class="slide-title">
+          Monnaie <span class="y">agricole</span><br />et paiement hybride
+        </h1>
+        <div class="divider"></div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title">🪙 1 AGC = 100 FCFA</div>
+            <p class="card-text">
+              Conversion fixe, recharge via Wave/Orange Money
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-title">🔒 Séquestre automatique</div>
+            <p class="card-text">
+              AGC bloqués à la commande, libérés à la livraison
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-title">📊 Datawarehouse</div>
+            <p class="card-text">
+              Prévisions de revenus par moyenne mobile, tendances de vente
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 11 - PAIEMENT + ESCROW -->
+      <div class="slide" id="s11">
+        <div class="slide-tag agc">07 · Séquestre et atomicité</div>
+        <h1 class="slide-title">
+          Transactions <span class="y">sécurisées</span>
+        </h1>
+        <div class="divider"></div>
+        <div class="flow">
+          <div class="fstep">
+            <div class="fnum">1</div>
+            <div>
+              <h4>Commande créée</h4>
+              <p>runTransaction() Firestore → lock AGC</p>
+            </div>
+          </div>
+          <div class="fstep">
+            <div class="fnum">2</div>
+            <div>
+              <h4>Paiement complété</h4>
+              <p>Wave/Orange ou solde AGC</p>
+            </div>
+          </div>
+          <div class="fstep">
+            <div class="fnum">3</div>
+            <div>
+              <h4>Livraison confirmée</h4>
+              <p>Signature acheteur → release AGC producteur</p>
+            </div>
+          </div>
+          <div class="fstep">
+            <div class="fnum">4</div>
+            <div>
+              <h4>Litige</h4>
+              <p>AGC maintenus en séquestre, médiation</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 12 - DATAWAREHOUSE -->
+      <div class="slide" id="s12">
+        <div class="slide-tag agc">08 · Datawarehouse agricole</div>
+        <h1 class="slide-title">Données → <span class="g">insights</span></h1>
+        <div class="divider"></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">📈 Revenus mensuels</div>
+            <p class="card-text">Suivi AGC + FCFA, évolution sur 12 mois</p>
+          </div>
+          <div class="card">
+            <div class="card-title">🔮 Prévision moyenne mobile</div>
+            <p class="card-text">
+              predictedRevenue = avg(4 dernières semaines)
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-title">🏆 Top produits</div>
+            <p class="card-text">
+              Volume vendu par catégorie, meilleur jour de vente
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-title">⏱️ Pic d'activité</div>
+            <p class="card-text">
+              Horaire le plus actif pour optimiser disponibilité
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 13 - SÉCURITÉ HERO -->
+      <div class="slide" id="s13">
+        <div class="slide-tag sec">Axe IV · Sécurité multicouche</div>
+        <h1 class="slide-title">
+          10 couches de <span class="r">protection</span>
+        </h1>
+        <div class="divider"></div>
+        <div class="grid-4">
+          <div class="card">
+            <div class="card-title">🔐 IndexedDB non extractable</div>
+            <p class="card-text">CryptoKey P-256, extractable: false</p>
+          </div>
+          <div class="card">
+            <div class="card-title">✍️ ECDSA P-256</div>
+            <p class="card-text">Signatures toutes transactions</p>
+          </div>
+          <div class="card">
+            <div class="card-title">🎲 Nonce anti-rejeu</div>
+            <p class="card-text">UUID + timestamp, consommé Firestore</p>
+          </div>
+          <div class="card">
+            <div class="card-title">📋 Audit Trail immuable</div>
+            <p class="card-text">Write-only, SHA-256 chaîné</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 14 - COUCHES SÉCURITÉ -->
+      <div class="slide" id="s14">
+        <div class="slide-tag sec">09 · Cryptographie appliquée</div>
+        <h1 class="slide-title">
+          AES-GCM · <span class="r">PBKDF2</span><br />· Security Rules
+        </h1>
+        <div class="divider"></div>
+        <div class="two-col">
+          <div>
+            <div class="mlabel">🔒 Chiffrement clés privées</div>
+            <div class="card">
+              <p class="card-text">
+                PBKDF2 (310 000 itérations) + AES-GCM pour stockage sécurisé.
+              </p>
+              <div class="chip">OWASP 2024 compliant</div>
+            </div>
+          </div>
+          <div>
+            <div class="mlabel">🛡️ Firestore Rules</div>
+            <div class="card">
+              <p class="card-text">
+                allow delete: if false — write-only logs. Rate limiting 5
+                op/min.
+              </p>
+              <div class="chip">Append-only</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 15 - SCHÉMA DE SÉQUENCE BLOCKCHAIN + CERTIFICATION (IMAGE SCHEMA) -->
+      <div class="slide" id="s15">
+        <div class="slide-tag bc">10 · Séquence Blockchain</div>
+        <h1 class="slide-title">
+          Transaction <span class="b">sécurisée</span><br />avec Agricoin
+        </h1>
+        <div class="divider"></div>
+        <div class="diagram-box">
+          <div class="seq-step">
+            <div class="seq-actor">👤 Acheteur</div>
+            <div class="seq-arrow">→</div>
+            <div class="seq-message">confirmerCommande()</div>
+          </div>
+          <div class="seq-step">
+            <div class="seq-actor">🛒 E-commerce</div>
+            <div class="seq-arrow">→</div>
+            <div class="seq-message">vérifierCertification(produit)</div>
+          </div>
+          <div class="seq-step">
+            <div class="seq-actor">⛓️ Smart Contract</div>
+            <div class="seq-arrow">→</div>
+            <div class="seq-message">vérifierPreuveImage() + localisation</div>
+          </div>
+          <div class="seq-step">
+            <div class="seq-actor">💳 Paiement</div>
+            <div class="seq-arrow">→</div>
+            <div class="seq-message">effectuerPaiement(AGC + MobileMoney)</div>
+          </div>
+          <div class="seq-step">
+            <div class="seq-actor">📊 Transaction Ledger</div>
+            <div class="seq-arrow">→</div>
+            <div class="seq-message">débit(acheteur) · crédit(producteur)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 16 - CONCLUSION -->
+      <div class="slide" id="s16">
+        <div class="slide-tag">Conclusion</div>
+        <h1 class="slide-title">
+          Jokko Agro :<br /><span class="g">une solution complète</span>
+        </h1>
+        <div class="divider"></div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title">🌱 Impact terrain</div>
+            <p class="card-text">
+              Accès à l'expertise en Wolof, traçabilité immuable, paiement
+              adapté au mobile money.
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-title">⛓️ Innovation technique</div>
+            <p class="card-text">
+              Angular 17 · Ethereum Sepolia · IPFS Pinata · Claude API ·
+              TensorFlow.js
+            </p>
+          </div>
+          <div class="card">
+            <div class="card-title">🔮 Perspectives</div>
+            <p class="card-text">
+              Extension à d'autres cultures, intégration IoT capteurs, expansion
+              régionale.
+            </p>
+          </div>
+        </div>
+        <div style="margin-top: 1.5rem; text-align: center">
+          <div class="badge g">🔐 Sécurité multicouche</div>
+          <div class="badge g">🤖 IA inclusive</div>
+          <div class="badge g">⛓️ Blockchain de confiance</div>
+          <div class="badge g">🪙 Économie circulaire</div>
+        </div>
+      </div>
+
+      <!-- SLIDE 17 - RÉFÉRENCES TECHNIQUES -->
+      <div class="slide" id="s17">
+        <div class="slide-tag">Références</div>
+        <h1 class="slide-title">Stack <span class="g">technologique</span></h1>
+        <div class="divider"></div>
+        <div class="grid-2">
+          <div>
+            <div class="mlabel">Frontend</div>
+            <div class="chip">Angular 17</div>
+            <div class="chip">RxJS</div>
+            <div class="chip">TensorFlow.js</div>
+            <div class="chip">Web Speech API</div>
+          </div>
+          <div>
+            <div class="mlabel">Backend & Storage</div>
+            <div class="chip">Firebase Auth</div>
+            <div class="chip">Firestore</div>
+            <div class="chip">Cloud Functions</div>
+            <div class="chip">IPFS Pinata</div>
+          </div>
+          <div>
+            <div class="mlabel">Blockchain</div>
+            <div class="chip">Solidity ^0.8.19</div>
+            <div class="chip">Ethers.js v6</div>
+            <div class="chip">Sepolia Testnet</div>
+            <div class="chip">MetaMask</div>
+          </div>
+          <div>
+            <div class="mlabel">IA & Sécurité</div>
+            <div class="chip">Claude API</div>
+            <div class="chip">WebCrypto API</div>
+            <div class="chip">ECDSA P-256</div>
+            <div class="chip">AES-GCM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="nav-left" onclick="prevSlide()">‹</div>
+    <div id="nav-right" onclick="nextSlide()">›</div>
+    <div id="dots"></div>
+
+    <script>
+      const slides = document.querySelectorAll(".slide");
+      const dotsCont = document.getElementById("dots");
+      const navBtns = document.querySelectorAll(".nav-btn");
+      const counter = document.getElementById("counter");
+      const TOTAL = slides.length;
+      let cur = 0,
+        busy = false;
+
+      const sectionMap = [0, 1, 3, 6, 8, 10, 13, 16, 17];
+
+      function sectionOf(i) {
+        if (i === 0) return 0;
+        if (i === 1) return 1;
+        if (i === 2) return 2;
+        if (i <= 5) return 3;
+        if (i <= 7) return 4;
+        if (i <= 9) return 5;
+        if (i <= 12) return 6;
+        if (i <= 14) return 7;
+        return 8;
+      }
+
+      slides.forEach((_, i) => {
+        const d = document.createElement("div");
+        d.className = "dot" + (i === 0 ? " active" : "");
+        d.addEventListener("click", () => goTo(i));
+        dotsCont.appendChild(d);
+      });
+
+      function goTo(idx) {
+        if (busy || idx === cur || idx < 0 || idx >= TOTAL) return;
+        busy = true;
+        const dir = idx > cur ? 1 : -1;
+        const old = slides[cur];
+        const nxt = slides[idx];
+        old.style.transition = "opacity .4s ease,transform .4s ease";
+        old.style.transform = `translateX(${-dir * 60}px)`;
+        old.style.opacity = "0";
+        old.classList.remove("active");
+        nxt.style.transition = "none";
+        nxt.style.transform = `translateX(${dir * 60}px)`;
+        nxt.style.opacity = "0";
+        nxt.classList.add("active");
+        void nxt.offsetHeight;
+        nxt.style.transition = "opacity .4s ease,transform .4s ease";
+        nxt.style.transform = "translateX(0)";
+        nxt.style.opacity = "1";
+        cur = idx;
+        updateUI();
+        setTimeout(() => {
+          old.style.transform = old.style.opacity = "";
+          nxt.style.transform = nxt.style.opacity = "";
+          busy = false;
+        }, 450);
+      }
+
+      function updateUI() {
+        document
+          .querySelectorAll(".dot")
+          .forEach((d, i) => d.classList.toggle("active", i === cur));
+        const sec = sectionOf(cur);
+        navBtns.forEach((b, i) => b.classList.toggle("active", i === sec));
+        counter.textContent = `${String(cur + 1).padStart(2, "0")} / ${String(TOTAL).padStart(2, "0")}`;
+        document
+          .getElementById("nav-left")
+          .classList.toggle("disabled", cur === 0);
+        document
+          .getElementById("nav-right")
+          .classList.toggle("disabled", cur === TOTAL - 1);
+      }
+
+      function nextSlide() {
+        goTo(cur + 1);
+      }
+      function prevSlide() {
+        goTo(cur - 1);
+      }
+
+      navBtns.forEach((b, i) => {
+        b.addEventListener("click", () => {
+          if (sectionMap[i] !== undefined) goTo(sectionMap[i]);
+        });
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight" || e.key === " ") {
+          e.preventDefault();
+          nextSlide();
+        }
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          prevSlide();
+        }
+      });
+      updateUI();
+    </script>
+  </body>
+</html>

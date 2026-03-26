@@ -24,13 +24,14 @@ import { CryptoECDAService } from 'src/secure/services/crypto-ecdsa.service';
 import { CryptoService } from 'src/secure/services/crypto.service';
 import { UserKeysService } from 'src/secure/services/user-keys.service';
 import { AuditTrailService } from 'src/secure/services/audit-trail.service';
+import { SecureKeyService } from 'src/secure/services/secure-key.service';
 
 // ==================== INTERFACES ====================
 
 export interface AGCBalance {
   userId: string;
-  balance: number;        // AGC disponibles (1 AGC = 100 FCFA)
-  lockedBalance: number;  // AGC bloqués en séquestre
+  balance: number; // AGC disponibles (1 AGC = 100 FCFA)
+  lockedBalance: number; // AGC bloqués en séquestre
   lastUpdated: Date;
   totalEarned: number;
   totalSpent: number;
@@ -142,6 +143,8 @@ export class AGCService {
   private cryptoECDSA = inject(CryptoECDAService);
   private userKeys = inject(UserKeysService);
   private auditTrail = inject(AuditTrailService);
+  // ✅ COUCHE 1 — Clé privée dans IndexedDB (non extractable)
+  private secureKey = inject(SecureKeyService);
 
   private readonly CONVERSION_RATE = 100; // 1 AGC = 100 FCFA
   private readonly WELCOME_BONUS = 10;
@@ -149,7 +152,9 @@ export class AGCService {
   private balanceSubject = new BehaviorSubject<number>(0);
   public balance$: Observable<number> = this.balanceSubject.asObservable();
 
-  private pendingTransactionsSubject = new BehaviorSubject<AGCTransaction[]>([]);
+  private pendingTransactionsSubject = new BehaviorSubject<AGCTransaction[]>(
+    [],
+  );
   public pendingTransactions$ = this.pendingTransactionsSubject.asObservable();
 
   constructor() {
@@ -219,17 +224,7 @@ export class AGCService {
       blockHeight: 0,
     });
   }
-// À ajouter dans la classe AGCService (vers la fin, avec les autres méthodes publiques)
 
-/**
- * Rafraîchir le solde de l'utilisateur courant
- */
-async refreshBalance(): Promise<void> {
-  const user = this.auth.currentUser;
-  if (user) {
-    await this.loadUserBalance(user.uid);
-  }
-}
   async getBalance(userId: string): Promise<number> {
     try {
       const balanceRef = doc(this.firestore, 'agc_balances', userId);
@@ -241,7 +236,9 @@ async refreshBalance(): Promise<void> {
     }
   }
 
-  async getFullBalance(userId: string): Promise<{ available: number; locked: number; total: number }> {
+  async getFullBalance(
+    userId: string,
+  ): Promise<{ available: number; locked: number; total: number }> {
     try {
       const balanceRef = doc(this.firestore, 'agc_balances', userId);
       const balanceDoc = await getDoc(balanceRef);
@@ -410,7 +407,11 @@ async refreshBalance(): Promise<void> {
           });
           result.isValid = false;
           // Audit trail
-          await this.auditTrail.logSignatureInvalid('system', block.blockHeight, block.signerId);
+          await this.auditTrail.logSignatureInvalid(
+            'system',
+            block.blockHeight,
+            block.signerId,
+          );
         }
       } catch (sigError) {
         result.errors.push({
@@ -467,7 +468,8 @@ async refreshBalance(): Promise<void> {
       if (date instanceof Date) return date.getTime();
       if (typeof date === 'number') return date;
       if (typeof date === 'string') return new Date(date).getTime();
-      if (typeof date === 'object' && 'seconds' in date) return date.seconds * 1000;
+      if (typeof date === 'object' && 'seconds' in date)
+        return date.seconds * 1000;
       return Date.now();
     } catch {
       return Date.now();
@@ -492,11 +494,28 @@ async refreshBalance(): Promise<void> {
     >,
     userId: string,
   ): Promise<AGCTransaction> {
-    const privateKey = this.userKeys.getPrivateKey(userId);
-    if (!privateKey) {
-      throw new Error('Clé privée non trouvée — Veuillez vous reconnecter');
+    // ✅ COUCHE 1 — Signature via SecureKeyService (clé dans IndexedDB, jamais exposée)
+    // Vérifier que la clé existe en IndexedDB
+    const hasKey = await this.secureKey.hasKeyPair(userId);
+    if (!hasKey) {
+      // Tentative de migration depuis sessionStorage (ancienne architecture)
+      const migrated = await this.secureKey.migrateFromSessionStorage(userId);
+      if (!migrated) {
+        // Dernière chance : régénérer les clés si possible
+        const hasFirestoreKey = await this.userKeys.getPublicKey(userId);
+        if (!hasFirestoreKey) {
+          throw new Error(
+            'Clé privée non trouvée — Veuillez vous déconnecter et vous reconnecter',
+          );
+        }
+        // Régénérer une nouvelle paire propre
+        await this.userKeys.generateAndSaveUserKeys(userId);
+      }
     }
-    const publicKey = await this.userKeys.getPublicKey(userId);
+
+    const publicKey =
+      (await this.secureKey.getPublicKey(userId)) ??
+      (await this.userKeys.getPublicKey(userId));
     if (!publicKey) {
       throw new Error('Clé publique non trouvée');
     }
@@ -516,7 +535,9 @@ async refreshBalance(): Promise<void> {
       metadata: transactionData.metadata || {},
     };
 
-    const signature = await this.cryptoECDSA.signTransaction(dataToSign, privateKey);
+    // ✅ SecureKeyService.sign() — la clé privée ne sort jamais de IndexedDB
+    const canonicalMessage = JSON.stringify(dataToSign);
+    const signature = await this.secureKey.sign(userId, canonicalMessage);
 
     return {
       ...transactionData,
@@ -532,7 +553,9 @@ async refreshBalance(): Promise<void> {
     };
   }
 
-  async verifyTransactionSignature(transaction: AGCTransaction): Promise<boolean> {
+  async verifyTransactionSignature(
+    transaction: AGCTransaction,
+  ): Promise<boolean> {
     try {
       // ── 1. SIGNATURES SYSTÈME — vérification par convention ──────────────
       // Ces signatures ne sont PAS du Base64 ECDSA, ne pas appeler atob() dessus.
@@ -540,10 +563,12 @@ async refreshBalance(): Promise<void> {
         transaction.signerId === 'system' ||
         transaction.signerPublicKey === 'system' ||
         (typeof transaction.signature === 'string' &&
-         transaction.signature.startsWith('system_'))
+          transaction.signature.startsWith('system_'))
       ) {
-        return typeof transaction.signature === 'string' &&
-               transaction.signature.startsWith('system_');
+        return (
+          typeof transaction.signature === 'string' &&
+          transaction.signature.startsWith('system_')
+        );
       }
 
       // ── 2. BLOCS SANS SIGNATURE — marqués valides (blocs genesis / legacy) ─
@@ -558,7 +583,9 @@ async refreshBalance(): Promise<void> {
       // on la considère comme un bloc legacy non vérifiable → true (bénéfice du doute).
       const isValidBase64 = /^[A-Za-z0-9+/]+=*$/.test(transaction.signature);
       if (!isValidBase64 || transaction.signature.length < 80) {
-        console.warn(`Bloc #${transaction.blockHeight} : signature legacy non vérifiable (format pré-ECDSA)`);
+        console.warn(
+          `Bloc #${transaction.blockHeight} : signature legacy non vérifiable (format pré-ECDSA)`,
+        );
         return true; // bénéfice du doute pour les données historiques
       }
 
@@ -568,17 +595,31 @@ async refreshBalance(): Promise<void> {
       }
 
       const signedData = {
-        fromUserId:  transaction.fromUserId,
-        toUserId:    transaction.toUserId,
-        amount:      transaction.amount,
-        type:        transaction.type,
+        fromUserId: transaction.fromUserId,
+        toUserId: transaction.toUserId,
+        amount: transaction.amount,
+        type: transaction.type,
         referenceId: transaction.referenceId,
         description: transaction.description,
-        timestamp:   transaction.signatureTimestamp,
-        nonce:       transaction.signatureNonce,
-        metadata:    transaction.metadata || {},
+        timestamp: transaction.signatureTimestamp,
+        nonce: transaction.signatureNonce,
+        metadata: transaction.metadata || {},
       };
 
+      // ✅ COUCHE 1 — Vérification compatible avec les deux systèmes de signature
+      // Nouveau système (SecureKeyService) : signature sur JSON.stringify(signedData)
+      const canonicalMessage = JSON.stringify(signedData);
+      const verifiedByNew = await this.secureKey
+        .verifyLocally(
+          transaction.signerId,
+          canonicalMessage,
+          transaction.signature,
+        )
+        .catch(() => false);
+
+      if (verifiedByNew) return true;
+
+      // Ancien système (CryptoECDAService) : fallback pour blocs existants
       return await this.cryptoECDSA.verifySignature(
         signedData,
         transaction.signature,
@@ -601,13 +642,21 @@ async refreshBalance(): Promise<void> {
       valid: 0,
       invalid: 0,
       total: snapshot.size,
-      details: [] as Array<{ blockHeight: number; valid: boolean; signerId: string }>,
+      details: [] as Array<{
+        blockHeight: number;
+        valid: boolean;
+        signerId: string;
+      }>,
     };
 
     for (const docSnap of snapshot.docs) {
       const block = docSnap.data() as AGCTransaction;
       const isValid = await this.verifyTransactionSignature(block);
-      result.details.push({ blockHeight: block.blockHeight, valid: isValid, signerId: block.signerId });
+      result.details.push({
+        blockHeight: block.blockHeight,
+        valid: isValid,
+        signerId: block.signerId,
+      });
       if (isValid) result.valid++;
       else result.invalid++;
     }
@@ -631,15 +680,20 @@ async refreshBalance(): Promise<void> {
     >,
     userId: string,
   ): Promise<string> {
-    const signedTransaction = await this.createSignedTransaction(transactionData, userId);
+    const signedTransaction = await this.createSignedTransaction(
+      transactionData,
+      userId,
+    );
     const isValid = await this.verifyTransactionSignature(signedTransaction);
-    if (!isValid) throw new Error('🚫 SIGNATURE INVALIDE — Transaction rejetée');
+    if (!isValid)
+      throw new Error('🚫 SIGNATURE INVALIDE — Transaction rejetée');
     return this.addToLedger(signedTransaction);
   }
 
   private async addToLedger(transaction: AGCTransaction): Promise<string> {
     const isValid = await this.verifyTransactionSignature(transaction);
-    if (!isValid) throw new Error('Transaction non autorisée — Signature invalide');
+    if (!isValid)
+      throw new Error('Transaction non autorisée — Signature invalide');
 
     const ledgerCollection = collection(this.firestore, 'agc_ledger');
 
@@ -667,9 +721,10 @@ async refreshBalance(): Promise<void> {
         toUserId: transaction.toUserId,
         amount: transaction.amount,
         type: transaction.type,
-        timestamp: transaction.createdAt instanceof Date
-          ? transaction.createdAt.getTime()
-          : this.convertToTimestamp(transaction.createdAt),
+        timestamp:
+          transaction.createdAt instanceof Date
+            ? transaction.createdAt.getTime()
+            : this.convertToTimestamp(transaction.createdAt),
         nonce: transaction.nonce || 0,
       });
 
@@ -748,11 +803,17 @@ async refreshBalance(): Promise<void> {
       return { success: true, agcAmount };
     } catch (error: any) {
       console.error('Erreur achat AGC:', error);
-      return { success: false, error: error.message || "Erreur lors de l'achat" };
+      return {
+        success: false,
+        error: error.message || "Erreur lors de l'achat",
+      };
     }
   }
 
-  private async completePurchase(userId: string, agcAmount: number): Promise<void> {
+  private async completePurchase(
+    userId: string,
+    agcAmount: number,
+  ): Promise<void> {
     try {
       const balanceRef = doc(this.firestore, 'agc_balances', userId);
       const balanceDoc = await getDoc(balanceRef);
@@ -803,10 +864,22 @@ async refreshBalance(): Promise<void> {
 
       if (balance < agcAmount) {
         if (options?.forceAGCPayment) {
-          return { success: false, fiatPaid: 0, agcPaid: 0, agcUsed: 0, error: `Solde AGC insuffisant. Besoin de ${agcAmount} AGC` };
+          return {
+            success: false,
+            fiatPaid: 0,
+            agcPaid: 0,
+            agcUsed: 0,
+            error: `Solde AGC insuffisant. Besoin de ${agcAmount} AGC`,
+          };
         }
         if (!options?.allowPartialAGC) {
-          return { success: false, fiatPaid: 0, agcPaid: 0, agcUsed: 0, error: `Solde insuffisant: ${balance}/${agcAmount} AGC` };
+          return {
+            success: false,
+            fiatPaid: 0,
+            agcPaid: 0,
+            agcUsed: 0,
+            error: `Solde insuffisant: ${balance}/${agcAmount} AGC`,
+          };
         }
       }
 
@@ -820,7 +893,13 @@ async refreshBalance(): Promise<void> {
       );
 
       if (!lockResult.success) {
-        return { success: false, fiatPaid: 0, agcPaid: 0, agcUsed: 0, error: lockResult.error };
+        return {
+          success: false,
+          fiatPaid: 0,
+          agcPaid: 0,
+          agcUsed: 0,
+          error: lockResult.error,
+        };
       }
 
       return {
@@ -833,7 +912,13 @@ async refreshBalance(): Promise<void> {
       };
     } catch (error: any) {
       console.error('❌ Erreur paiement hybride:', error);
-      return { success: false, fiatPaid: 0, agcPaid: 0, agcUsed: 0, error: error.message };
+      return {
+        success: false,
+        fiatPaid: 0,
+        agcPaid: 0,
+        agcUsed: 0,
+        error: error.message,
+      };
     }
   }
 
@@ -883,21 +968,28 @@ async refreshBalance(): Promise<void> {
       // ── Firestore ACID : balance + agc_locked + Sale ──
       await runTransaction(this.firestore, async (tx) => {
         const balanceRef = doc(this.firestore, 'agc_balances', buyerId);
-        const lockRef    = doc(this.firestore, 'agc_locked', lockId);
-        const saleRef    = doc(this.firestore, 'sales', saleId);
+        const lockRef = doc(this.firestore, 'agc_locked', lockId);
+        const saleRef = doc(this.firestore, 'sales', saleId);
 
         // ── PHASE 1 : TOUS LES READS D'ABORD ──
         const balanceDoc = await tx.get(balanceRef);
-        const saleDoc    = await tx.get(saleRef);
+        const saleDoc = await tx.get(saleRef);
 
-        if (!balanceDoc.exists()) throw new Error('Compte acheteur introuvable');
+        if (!balanceDoc.exists())
+          throw new Error('Compte acheteur introuvable');
 
         // Double-check DANS la transaction (protection double-dépense)
         const currentBalance = balanceDoc.data()['balance'] ?? 0;
         if (currentBalance < amount) {
           // Audit trail — tentative de double-dépense
-          await this.auditTrail.logDoubleSpendAttempt(buyerId, amount, currentBalance);
-          throw new Error(`Solde insuffisant (race condition détectée) : ${currentBalance} AGC`);
+          await this.auditTrail.logDoubleSpendAttempt(
+            buyerId,
+            amount,
+            currentBalance,
+          );
+          throw new Error(
+            `Solde insuffisant (race condition détectée) : ${currentBalance} AGC`,
+          );
         }
 
         // ── PHASE 2 : TOUS LES WRITES ENSUITE ──
@@ -910,18 +1002,21 @@ async refreshBalance(): Promise<void> {
         });
 
         // Document lock avec ID stable
-        tx.set(lockRef, this.sanitizeForFirestore({
-          id: lockId,
-          userId: buyerId,
-          amount,
-          orderNumber: saleId,
-          description,
-          status: 'locked',
-          lockedAt: new Date(),
-          saleId,
-          producerId,
-          ledgerBlockId,
-        } as LockedAGC & { ledgerBlockId: string }));
+        tx.set(
+          lockRef,
+          this.sanitizeForFirestore({
+            id: lockId,
+            userId: buyerId,
+            amount,
+            orderNumber: saleId,
+            description,
+            status: 'locked',
+            lockedAt: new Date(),
+            saleId,
+            producerId,
+            ledgerBlockId,
+          } as LockedAGC & { ledgerBlockId: string }),
+        );
 
         // Mise à jour de la Sale si elle existe
         if (saleDoc.exists()) {
@@ -979,7 +1074,13 @@ async refreshBalance(): Promise<void> {
         };
       }
 
-      const { amount, userId: buyerId, producerId, saleId, orderNumber } = lockData;
+      const {
+        amount,
+        userId: buyerId,
+        producerId,
+        saleId,
+        orderNumber,
+      } = lockData;
 
       if (!producerId) {
         return { success: false, error: 'Producteur non défini dans le lock' };
@@ -1010,21 +1111,23 @@ async refreshBalance(): Promise<void> {
 
       // ── Firestore ACID : acheteur + producteur + lock + Sale ──
       await runTransaction(this.firestore, async (tx) => {
-        const buyerRef    = doc(this.firestore, 'agc_balances', buyerId);
+        const buyerRef = doc(this.firestore, 'agc_balances', buyerId);
         const producerRef = doc(this.firestore, 'agc_balances', producerId);
-        const saleRef     = saleId ? doc(this.firestore, 'sales', saleId) : null;
+        const saleRef = saleId ? doc(this.firestore, 'sales', saleId) : null;
 
         // ── PHASE 1 : TOUS LES READS D'ABORD ──
-        const buyerDoc    = await tx.get(buyerRef);
+        const buyerDoc = await tx.get(buyerRef);
         const producerDoc = await tx.get(producerRef);
-        const saleDoc     = saleRef ? await tx.get(saleRef) : null;
+        const saleDoc = saleRef ? await tx.get(saleRef) : null;
 
         if (!buyerDoc.exists()) throw new Error('Compte acheteur introuvable');
 
         // Vérification cohérence (protection double-release)
         const lockedBalance = buyerDoc.data()['lockedBalance'] ?? 0;
         if (lockedBalance < amount) {
-          throw new Error(`lockedBalance insuffisant (${lockedBalance} < ${amount}) — données incohérentes`);
+          throw new Error(
+            `lockedBalance insuffisant (${lockedBalance} < ${amount}) — données incohérentes`,
+          );
         }
 
         // ── PHASE 2 : TOUS LES WRITES ENSUITE ──
@@ -1079,7 +1182,13 @@ async refreshBalance(): Promise<void> {
       });
 
       // Audit trail
-      await this.auditTrail.logEscrowRelease(confirmedBy, lockId, saleId ?? lockId, amount, producerId);
+      await this.auditTrail.logEscrowRelease(
+        confirmedBy,
+        lockId,
+        saleId ?? lockId,
+        amount,
+        producerId,
+      );
 
       await this.loadUserBalance(buyerId);
       await this.loadUserBalance(producerId);
@@ -1145,11 +1254,11 @@ async refreshBalance(): Promise<void> {
       // ── Firestore ACID : remboursement + lock + Sale ──
       await runTransaction(this.firestore, async (tx) => {
         const buyerRef = doc(this.firestore, 'agc_balances', buyerId);
-        const saleRef  = saleId ? doc(this.firestore, 'sales', saleId) : null;
+        const saleRef = saleId ? doc(this.firestore, 'sales', saleId) : null;
 
         // ── PHASE 1 : TOUS LES READS D'ABORD ──
         const buyerDoc = await tx.get(buyerRef);
-        const saleDoc  = saleRef ? await tx.get(saleRef) : null;
+        const saleDoc = saleRef ? await tx.get(saleRef) : null;
 
         if (!buyerDoc.exists()) throw new Error('Compte acheteur introuvable');
 
@@ -1184,7 +1293,13 @@ async refreshBalance(): Promise<void> {
       });
 
       // Audit trail
-      await this.auditTrail.logEscrowCancel(cancelledBy, lockId, saleId ?? lockId, amount, reason);
+      await this.auditTrail.logEscrowCancel(
+        cancelledBy,
+        lockId,
+        saleId ?? lockId,
+        amount,
+        reason,
+      );
 
       await this.loadUserBalance(buyerId);
 
@@ -1241,7 +1356,7 @@ async refreshBalance(): Promise<void> {
         orderBy('lockedAt', 'desc'),
       );
       const snapshot = await getDocs(q);
-      return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as LockedAGC));
+      return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }) as LockedAGC);
     } catch (error) {
       console.error('Erreur getUserActiveLocks:', error);
       return [];
@@ -1252,7 +1367,9 @@ async refreshBalance(): Promise<void> {
    * Piste d'audit escrow — write-only (supression interdite via Firestore Rules).
    * Appelée en interne, ne fait pas échouer la transaction principale si elle plante.
    */
-  private async recordEscrowEvent(event: Omit<EscrowEvent, 'id'>): Promise<void> {
+  private async recordEscrowEvent(
+    event: Omit<EscrowEvent, 'id'>,
+  ): Promise<void> {
     try {
       await addDoc(
         collection(this.firestore, 'escrow_events'),
@@ -1291,23 +1408,30 @@ async refreshBalance(): Promise<void> {
 
   // ==================== HISTORIQUE ET STATISTIQUES ====================
 
-  async getTransactionHistory(userId: string, limitCount: number = 50): Promise<AGCTransaction[]> {
+  async getTransactionHistory(
+    userId: string,
+    limitCount: number = 50,
+  ): Promise<AGCTransaction[]> {
     try {
       const ledgerCollection = collection(this.firestore, 'agc_ledger');
 
       const [snapshot1, snapshot2] = await Promise.all([
-        getDocs(query(
-          ledgerCollection,
-          where('fromUserId', 'in', [userId, 'system']),
-          orderBy('blockHeight', 'desc'),
-          limit(limitCount),
-        )),
-        getDocs(query(
-          ledgerCollection,
-          where('toUserId', '==', userId),
-          orderBy('blockHeight', 'desc'),
-          limit(limitCount),
-        )),
+        getDocs(
+          query(
+            ledgerCollection,
+            where('fromUserId', 'in', [userId, 'system']),
+            orderBy('blockHeight', 'desc'),
+            limit(limitCount),
+          ),
+        ),
+        getDocs(
+          query(
+            ledgerCollection,
+            where('toUserId', '==', userId),
+            orderBy('blockHeight', 'desc'),
+            limit(limitCount),
+          ),
+        ),
       ]);
 
       const seenIds = new Set<string>();
@@ -1316,7 +1440,9 @@ async refreshBalance(): Promise<void> {
       const addIfNew = (docSnap: any) => {
         if (!seenIds.has(docSnap.id)) {
           seenIds.add(docSnap.id);
-          transactions.push(this.mapFirestoreToTransaction(docSnap.id, docSnap.data()));
+          transactions.push(
+            this.mapFirestoreToTransaction(docSnap.id, docSnap.data()),
+          );
         }
       };
 
@@ -1345,7 +1471,16 @@ async refreshBalance(): Promise<void> {
       const balanceDoc = await getDoc(balanceRef);
 
       if (!balanceDoc.exists()) {
-        return { totalEarned: 0, totalSpent: 0, currentBalance: 0, lockedBalance: 0, purchaseCount: 0, transactionCount: 0, averageTransaction: 0, signatureCount: 0 };
+        return {
+          totalEarned: 0,
+          totalSpent: 0,
+          currentBalance: 0,
+          lockedBalance: 0,
+          purchaseCount: 0,
+          transactionCount: 0,
+          averageTransaction: 0,
+          signatureCount: 0,
+        };
       }
 
       const data = balanceDoc.data();
@@ -1359,12 +1494,23 @@ async refreshBalance(): Promise<void> {
         lockedBalance: data['lockedBalance'] || 0,
         purchaseCount: transactions.filter((t) => t.type === 'purchase').length,
         transactionCount: transactions.length,
-        averageTransaction: transactions.length > 0 ? totalAmount / transactions.length : 0,
-        signatureCount: transactions.filter((t) => t.signerId === userId).length,
+        averageTransaction:
+          transactions.length > 0 ? totalAmount / transactions.length : 0,
+        signatureCount: transactions.filter((t) => t.signerId === userId)
+          .length,
       };
     } catch (error) {
       console.error('Erreur calcul stats utilisateur:', error);
-      return { totalEarned: 0, totalSpent: 0, currentBalance: 0, lockedBalance: 0, purchaseCount: 0, transactionCount: 0, averageTransaction: 0, signatureCount: 0 };
+      return {
+        totalEarned: 0,
+        totalSpent: 0,
+        currentBalance: 0,
+        lockedBalance: 0,
+        purchaseCount: 0,
+        transactionCount: 0,
+        averageTransaction: 0,
+        signatureCount: 0,
+      };
     }
   }
 
@@ -1381,7 +1527,9 @@ async refreshBalance(): Promise<void> {
     signaturesInvalid: number;
   }> {
     try {
-      const balancesSnapshot = await getDocs(collection(this.firestore, 'agc_balances'));
+      const balancesSnapshot = await getDocs(
+        collection(this.firestore, 'agc_balances'),
+      );
 
       let totalBalance = 0;
       let totalLocked = 0;
@@ -1391,19 +1539,26 @@ async refreshBalance(): Promise<void> {
       balancesSnapshot.forEach((d) => {
         const data = d.data();
         totalBalance += data['balance'] || 0;
-        totalLocked  += data['lockedBalance'] || 0;
-        totalEarned  += data['totalEarned'] || 0;
-        totalSpent   += data['totalSpent'] || 0;
+        totalLocked += data['lockedBalance'] || 0;
+        totalEarned += data['totalEarned'] || 0;
+        totalSpent += data['totalSpent'] || 0;
       });
 
-      const ledgerSnapshot = await getDocs(collection(this.firestore, 'agc_ledger'));
+      const ledgerSnapshot = await getDocs(
+        collection(this.firestore, 'agc_ledger'),
+      );
       const totalTransactions = ledgerSnapshot.size;
 
       let ledgerHeight = 0;
       if (!ledgerSnapshot.empty) {
-        const lastQ = query(collection(this.firestore, 'agc_ledger'), orderBy('blockHeight', 'desc'), limit(1));
+        const lastQ = query(
+          collection(this.firestore, 'agc_ledger'),
+          orderBy('blockHeight', 'desc'),
+          limit(1),
+        );
         const lastSnap = await getDocs(lastQ);
-        if (!lastSnap.empty) ledgerHeight = lastSnap.docs[0].data()['blockHeight'] || 0;
+        if (!lastSnap.empty)
+          ledgerHeight = lastSnap.docs[0].data()['blockHeight'] || 0;
       }
 
       const [integrityResult, sigResult] = await Promise.all([
@@ -1425,7 +1580,18 @@ async refreshBalance(): Promise<void> {
       };
     } catch (error) {
       console.error('Erreur résumé système AGC:', error);
-      return { totalUsers: 0, totalBalance: 0, totalLocked: 0, totalEarned: 0, totalSpent: 0, totalTransactions: 0, ledgerHeight: 0, ledgerValid: false, signaturesValid: 0, signaturesInvalid: 0 };
+      return {
+        totalUsers: 0,
+        totalBalance: 0,
+        totalLocked: 0,
+        totalEarned: 0,
+        totalSpent: 0,
+        totalTransactions: 0,
+        ledgerHeight: 0,
+        ledgerValid: false,
+        signaturesValid: 0,
+        signaturesInvalid: 0,
+      };
     }
   }
 
@@ -1442,7 +1608,9 @@ async refreshBalance(): Promise<void> {
       );
       const snapshot = await getDocs(q);
       const transactions: AGCTransaction[] = [];
-      snapshot.forEach((d) => transactions.push(this.mapFirestoreToTransaction(d.id, d.data())));
+      snapshot.forEach((d) =>
+        transactions.push(this.mapFirestoreToTransaction(d.id, d.data())),
+      );
       this.pendingTransactionsSubject.next(transactions);
     } catch (error) {
       console.error('Erreur chargement transactions en attente:', error);
@@ -1459,8 +1627,12 @@ async refreshBalance(): Promise<void> {
       referenceId: data['referenceId'],
       description: data['description'] || '',
       status: data['status'] || 'pending',
-      createdAt: data['createdAt']?.toDate ? data['createdAt'].toDate() : new Date(data['createdAt']),
-      completedAt: data['completedAt']?.toDate ? data['completedAt'].toDate() : data['completedAt'],
+      createdAt: data['createdAt']?.toDate
+        ? data['createdAt'].toDate()
+        : new Date(data['createdAt']),
+      completedAt: data['completedAt']?.toDate
+        ? data['completedAt'].toDate()
+        : data['completedAt'],
       metadata: data['metadata'],
       previousHash: data['previousHash'] || '0'.repeat(64),
       hash: data['hash'] || '',
@@ -1481,23 +1653,37 @@ async refreshBalance(): Promise<void> {
     if (value instanceof Date) return value;
     if (typeof value === 'number') return new Date(value);
     if (typeof value === 'string') return new Date(value);
-    if (typeof value === 'object' && 'seconds' in value) return new Date(value.seconds * 1000);
+    if (typeof value === 'object' && 'seconds' in value)
+      return new Date(value.seconds * 1000);
     return new Date();
   }
 
   private sanitizeForFirestore(data: any): any {
     if (data === null || data === undefined) return null;
     if (data instanceof Date) return Timestamp.fromDate(data);
-    if (Array.isArray(data)) return data.map((item) => this.sanitizeForFirestore(item));
+    if (Array.isArray(data))
+      return data.map((item) => this.sanitizeForFirestore(item));
     if (typeof data === 'object') {
       const sanitized: any = {};
       for (const key in data) {
-        if (Object.prototype.hasOwnProperty.call(data, key) && data[key] !== undefined) {
+        if (
+          Object.prototype.hasOwnProperty.call(data, key) &&
+          data[key] !== undefined
+        ) {
           sanitized[key] = this.sanitizeForFirestore(data[key]);
         }
       }
       return sanitized;
     }
     return data;
+  }
+  /**
+   * Rafraîchir le solde de l'utilisateur courant
+   */
+  async refreshBalance(): Promise<void> {
+    const user = this.auth.currentUser;
+    if (user) {
+      await this.loadUserBalance(user.uid);
+    }
   }
 }

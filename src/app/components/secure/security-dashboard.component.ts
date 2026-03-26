@@ -21,6 +21,7 @@ import {
   AuditTrailService,
   AuditLog,
 } from 'src/secure/services/audit-trail.service';
+import { SecureKeyService } from 'src/secure/services/secure-key.service';
 
 // ── Types internes ──────────────────────────────────────────────────────────
 
@@ -62,6 +63,7 @@ export class SecurityDashboardComponent implements OnInit {
   private cryptoService = inject(CryptoService);
   private userKeys = inject(UserKeysService);
   private auditTrail = inject(AuditTrailService);
+  private secureKey = inject(SecureKeyService); // ✅ AJOUTER ICI
 
   // ── État global ─────────────────────────────────────────────────────────
   userEmail = '';
@@ -470,16 +472,21 @@ export class SecurityDashboardComponent implements OnInit {
   // ══════════════════════════════════════════════════════════════════════════
 
   private async runEcdsaTest(test: TestResult) {
+    // ❌ NE PAS FAIRE CECI DANS UNE MÉTHODE :
+    // const secureKey = inject(SecureKeyService);
+
+    // ✅ UTILISER CELLE DÉJÀ INJECTÉE DANS LE COMPOSANT :
+    // this.secureKey est déjà disponible
+
     switch (test.id) {
       case 'key_generate': {
         const status = await this.userKeys.hasKeysReady(this.userUid);
-        if (status.publicKeyInFirestore && status.privateKeyInSession) {
+        if (status.publicKeyInFirestore && status.privateKeyInIndexedDB) {
           test.status = 'pass';
           test.detail =
-            'Clés ECDSA P-256 présentes — Publique dans Firestore ✓ — Privée en session ✓';
+            'Clés ECDSA P-256 présentes — Publique dans Firestore ✓ — Privée en IndexedDB (non extractable) ✓';
           break;
         }
-        // Générer si absent (mot de passe par défaut pour les tests)
         const pwd = this.keyPassword || 'TestPassword123!';
         const res = await this.userKeys.generateAndSaveUserKeys(
           this.userUid,
@@ -487,21 +494,24 @@ export class SecurityDashboardComponent implements OnInit {
         );
         test.status = res.success ? 'pass' : 'fail';
         test.detail = res.success
-          ? `Paire générée — ${res.publicKey.substring(0, 30)}…`
+          ? `Paire générée — ${res.publicKey.substring(0, 30)}… — Stockée en IndexedDB (non extractable) ✓`
           : `Erreur : ${res.error}`;
         test.data = { publicKeyPreview: res.publicKey.substring(0, 40) + '…' };
         break;
       }
 
       case 'sign_tx': {
-        const privKey = this.userKeys.getPrivateKey(this.userUid);
-        if (!privKey) {
+        // ✅ Vérifier la présence de la clé via secureKey (déjà injecté)
+        const hasKey = await this.secureKey.hasKeyPair(this.userUid);
+        if (!hasKey) {
           test.status = 'fail';
           test.detail =
-            'Clé privée absente de la session — exécutez d\'abord "Génération"';
+            'Aucune clé dans IndexedDB — lancez d\'abord "Génération"';
           break;
         }
-        const tx = await (this.agcService as any).createSignedTransaction(
+
+        // La signature se fait automatiquement via AGCService
+        const tx = await this.agcService.createSignedTransaction(
           {
             fromUserId: this.userUid,
             toUserId: 'test_recipient',
@@ -530,14 +540,15 @@ export class SecurityDashboardComponent implements OnInit {
       }
 
       case 'verify_valid': {
-        const privKey = this.userKeys.getPrivateKey(this.userUid);
-        if (!privKey) {
+        const hasKey = await this.secureKey.hasKeyPair(this.userUid);
+        if (!hasKey) {
           test.status = 'fail';
-          test.detail = 'Clé privée absente';
+          test.detail =
+            'Aucune clé dans IndexedDB — lancez d\'abord "Génération"';
           break;
         }
 
-        const tx = await (this.agcService as any).createSignedTransaction(
+        const tx = await this.agcService.createSignedTransaction(
           {
             fromUserId: this.userUid,
             toUserId: 'test_recipient',
@@ -562,14 +573,15 @@ export class SecurityDashboardComponent implements OnInit {
       }
 
       case 'verify_tamper': {
-        const privKey = this.userKeys.getPrivateKey(this.userUid);
-        if (!privKey) {
+        const hasKey = await this.secureKey.hasKeyPair(this.userUid);
+        if (!hasKey) {
           test.status = 'fail';
-          test.detail = 'Clé privée absente';
+          test.detail =
+            'Aucune clé dans IndexedDB — lancez d\'abord "Génération"';
           break;
         }
 
-        const tx = await (this.agcService as any).createSignedTransaction(
+        const tx = await this.agcService.createSignedTransaction(
           {
             fromUserId: this.userUid,
             toUserId: 'victime',
@@ -584,12 +596,11 @@ export class SecurityDashboardComponent implements OnInit {
           this.userUid,
         );
 
-        // Falsification : modifier le montant APRÈS signature
+        // Falsifier le montant
         const tamperedTx = { ...tx, amount: 99999 };
         const isStillValid =
           await this.agcService.verifyTransactionSignature(tamperedTx);
 
-        // Le résultat attendu est FALSE (signature cassée)
         test.status = !isStillValid ? 'pass' : 'fail';
         test.detail = !isStillValid
           ? `Montant falsifié (10 → 99 999 AGC) — Signature rejetée ✓ — Attaque bloquée`
@@ -793,19 +804,45 @@ export class SecurityDashboardComponent implements OnInit {
       }
 
       case 'aes_unlock': {
-        // Simuler rechargement : effacer la session puis déverrouiller
-        sessionStorage.removeItem(`private_key_${this.userUid}`);
-        const before = this.userKeys.getPrivateKey(this.userUid);
+        // ✅ Avec la nouvelle architecture, on vérifie la présence dans IndexedDB
+        // et non plus une clé en sessionStorage
 
+        // 1. Vérifier que la clé existe dans IndexedDB avant effacement
+        const hadKeyBefore = await this.secureKey.hasKeyPair(this.userUid);
+
+        // 2. Supprimer la clé (simule une déconnexion / perte de session)
+        await this.secureKey.deleteKeyPair(this.userUid);
+
+        // 3. Vérifier qu'elle n'est plus disponible
+        const hasKeyAfterDelete = await this.secureKey.hasKeyPair(this.userUid);
+
+        // 4. Tenter de déverrouiller (récupérer depuis Firestore et restaurer dans IndexedDB)
         const result = await this.userKeys.unlockPrivateKey(this.userUid, pwd);
-        const after = this.userKeys.getPrivateKey(this.userUid);
 
-        const ok = !before && result.success && !!after;
+        // 5. Vérifier que la clé a bien été restaurée dans IndexedDB
+        const hasKeyAfterUnlock = await this.secureKey.hasKeyPair(this.userUid);
+
+        // Le test réussit si :
+        // - la clé existait avant
+        // - elle a bien été supprimée
+        // - le déverrouillage a réussi
+        // - elle a bien été restaurée
+        const ok =
+          hadKeyBefore &&
+          !hasKeyAfterDelete &&
+          result.success &&
+          hasKeyAfterUnlock;
+
         test.status = ok ? 'pass' : 'fail';
         test.detail = ok
-          ? `Session restaurée depuis Firestore ✓ — Clé privée en mémoire sans transiter par le réseau`
-          : `Erreur : ${result.error ?? 'clé non restaurée'}`;
-        test.data = { hadKeyBefore: !!before, hasKeyAfter: !!after };
+          ? `Session restaurée depuis Firestore ✓ — Clé privée réimportée dans IndexedDB (non extractable)`
+          : `Erreur : ${result.error ?? 'clé non restaurée'} (hadBefore=${hadKeyBefore}, afterDelete=${hasKeyAfterDelete}, afterUnlock=${hasKeyAfterUnlock})`;
+        test.data = {
+          hadKeyBefore,
+          hasKeyAfterDelete,
+          unlockSuccess: result.success,
+          hasKeyAfterUnlock,
+        };
         break;
       }
     }
@@ -993,6 +1030,4 @@ export class SecurityDashboardComponent implements OnInit {
     const str = String(val);
     return str.length > 70 ? str.substring(0, 70) + '…' : str;
   }
-
-
 }

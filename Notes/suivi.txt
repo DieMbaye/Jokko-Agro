@@ -1,33 +1,81 @@
-ÉTAPES D'IMPLÉMENTATION DE LA SÉCURITÉ AGC
+C1 — ECDSA P-256 (cœur cryptographique)
+Description
+Le fondement de toute l'architecture de sécurité. ECDSA (Elliptic Curve Digital Signature Algorithm) sur la courbe P-256 (secp256r1) permet de garantir l'authenticité, la non-répudiation et l'intégrité des actions critiques : certification agricole, verrouillage/déverrouillage des Agricoins, validation des commandes.
 
-    Ledger immuable : Structure de données chaînée pour l'historique des transactions - OK
-
-    Signatures numériques (ECDSA) : Authentification et intégrité de chaque transaction - OK
-
-    Système de séquestre (Escrow) : Blocage des AGC pendant la livraison
-
-    Atomicité transactionnelle : Garantie "tout ou rien" avec rollback automatique
-
-    Rate limiting adaptatif : Limitation dynamique des requêtes par utilisateur
-
-    Détection d'anomalies comportementales : Analyse en temps réel des patterns suspects
-
-    Authentification forte (2FA) : Double vérification pour actions sensibles
-
-    Chiffrement des données sensibles : Protection des informations en base et en transit
-
-    Journalisation et audit trail : Traçabilité complète de toutes les actions
-
-    Tests d'intrusion : Validation de la robustesse face aux attaques simulées
+Chaque transaction sensible est signée par l'utilisateur avec sa clé privée, et seule la possession de cette clé permet d'initier l'action.
 
 
+C2 — IndexedDB non extractable (stockage sécurisé des clés)
+Description
+La clé privée générée par ECDSA est stockée dans IndexedDB avec le et non  extractable: . Cela garantit que même en cas d'attaque XSS, un script malveillant ne peut pas exporter les bytes de la clé privée. Le moteur cryptographique du navigateur ne permet que l'utilisation de la clé pour signer, jamais son extraction.
+
+C'est l'équivalent logiciel d'un Secure Enclave côté client.
+
+C3 — Validation serveur (Cloud Functions)
+Description
+Toute opération critique est re-vérifiée côté serveur (Firebase Cloud Functions) avant d'être exécutée. Le client Angular ne fait que présenter une signature ; le serveur :
+
+Vérifie la signature ECDSA avec la clé publique stockée
+
+Vérifie l'ownership du produit / de la commande
+
+Applique le rate limiting
+
+Vérifie le nonce (C4)
+
+Aucune logique métier sensible n'est exécutée uniquement côté client.
+
+
+
+C4 — Nonce anti-rejeu
+Description
+Chaque message signé contient un nonce unique (UUID v4) et un timestamp. Ce nonce est enregistré dans Firestore après utilisation et ne peut jamais être réutilisé. Toute tentative de rejouer une transaction (replay attack) échoue car le nonce existe déjà.
+
+Fenêtre de validité : ±5 minutes. Les nonces expirés sont automatiquement purgés (TTL 10 minutes).
+
+
+
+C5 — Hash image SHA-256 côté serveur
+Description
+Lors d'une certification, l'empreinte SHA-256 de la photo est calculée côté client puis recalculée côté serveur après téléchargement depuis IPFS. Si les deux hash ne correspondent pas, la certification est rejetée.
+
+Cette couche empêche toute manipulation : le score IA (TensorFlow.js) est exécuté dans le navigateur mais n'est que indicatif — la preuve ultime est l'intégrité cryptographique de l'image.
+
+
+
+C6 — Ledger SHA-256 chaîné (immuabilité)
+Description
+Un registre d'audit interne en chaîne de blocs (blockchain-like) : chaque entrée contient le hash de l'entrée précédente (previousHash), un nonce, et son propre hash. La modification d'un enregistrement casse toute la chaîne.
+
+Ce ledger est stocké dans Firestore et sert de preuve d'intégrité historique des transactions AGC et des certifications.
+
+
+C7 — AES-GCM + PBKDF2 (chiffrement)
+Description
+Les données sensibles (clés de session, informations de paiement, données personnelles) sont chiffrées en transit et au repos avec AES-GCM. La dérivation de clé utilise PBKDF2 avec 310 000 itérations, conforme aux recommandations OWASP 2024.
+
+
+
+C8 — Escrow AGC (séquestre atomique)
+Description
+Lors d'une commande, les Agricoins sont gelés et ne peuvent être ni dépensés par l'acheteur ni récupérés par le vendeur. Ce n'est qu'à la confirmation de livraison qu'ils sont libérés. En cas de litige ou d'annulation, le rollback est atomique via transaction Firestore.
+
+
+C9 — Audit Trail immuable
+Description
+Chaque action sensible (certification, paiement, lock/release AGC) est enregistrée dans une collection write-only. Les règles Firestore interdisent toute modification ou suppression (allow delete: if false, allow update: if false). Chaque entrée est chaînée cryptographiquement (C6).
 
 
 
 
+C10 — Firestore Security Rules
+Description
+La dernière couche est la barrière applicative finale : les règles Firestore contrôlent l'accès aux données au niveau de la base de données, indépendamment du code client. Elles garantissent :
 
-1. Séquestre (Escrow) — c'est le plus rapide à finir, les champs agcLockId, agcStatus existent déjà dans ton interface Sale. Il suffit de brancher la logique de blocage sur la signature ECDSA existante.
-2. Atomicité — une seule fonction runTransaction() de Firestore. Très court à coder, très fort à argumenter dans un mémoire (garantie ACID, double-dépense impossible).
-3. Audit trail — une collection audit_logs en write-only dans Firestore, avec une règle de sécurité qui interdit la suppression. Léger à coder, très valorisé académiquement car il complète le Ledger SHA-256.
-4. Chiffrement AES-GCM — remplace le btoa() dans user-keys_service par un vrai crypto.subtle.encrypt(). Tu as déjà la structure, c'est une amélioration ciblée.
+L'ownership : un utilisateur ne peut modifier que ses propres données
 
+Le rate limiting : 5 opérations par minute maximum par utilisateur
+
+L'intégrité : certains documents sont en write-only (logs, ledger)
+
+L'authentification : toute requête doit provenir d'un utilisateur authentifié

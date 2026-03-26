@@ -256,7 +256,6 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
   // AJOUTER l'injection du service
   private readonly imageComparisonService = inject(ImageComparisonService);
 
-  // CORRIGER la méthode scanImage
   async scanImage(): Promise<void> {
     if (!this.checkpointPhotoFile) return;
 
@@ -274,14 +273,33 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
     try {
       const previousCheckpoint = this.getPreviousCheckpoint();
 
-      if (!previousCheckpoint?.photoUrl) {
-        // Premier checkpoint
+      if (!previousCheckpoint?.photoUrl && !previousCheckpoint?.ipfsUrl) {
+        // Premier checkpoint - pas de comparaison possible
         await new Promise((resolve) => setTimeout(resolve, 1000));
         this.imageValidationResult = {
           similarity: 100,
           isValid: true,
           warnings: [],
-          action: 'accept',
+          plantAnalysis: {
+            cropType: this.certification?.productType || 'tomato',
+            dayOffset: this.currentCheckpoint?.daysFromStart || 0,
+            stageLabel: 'Premier checkpoint',
+            stageCoherent: true,
+            stageScore: 100,
+            stageNotes: 'Premier enregistrement - aucune comparaison possible',
+            healthScore: 100,
+            healthNotes: 'État sanitaire à suivre',
+            isAuthentic: true,
+            hasExpectedFeatures: true,
+          },
+          terrainAnalysis: {
+            sameLocation: true,
+            locationScore: 100,
+            progressionLogical: true,
+            progressionScore: 100,
+            backgroundMatch: 100,
+            lightingMatch: 100,
+          },
           details: {
             structuralSimilarity: 1,
             featureSimilarity: 1,
@@ -290,18 +308,24 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
             isDownloadedImage: false,
             lightingConsistent: true,
           },
+          action: 'accept',
+          actionReason: 'Premier checkpoint - pas de comparaison nécessaire',
         };
       } else {
-        // Utiliser le service de comparaison
+        // Utiliser le service de comparaison avec tous les paramètres
+        const previousImageUrl =
+          previousCheckpoint!.ipfsUrl || previousCheckpoint!.photoUrl!;
+
         const comparison = await this.imageComparisonService.compareImages(
           this.checkpointPhotoFile,
-          previousCheckpoint.photoUrl,
+          previousImageUrl,
           {
-            previousCheckpointDate: previousCheckpoint.completedAt,
-            expectedGrowthDays:
-              this.currentCheckpoint!.daysFromStart -
-              previousCheckpoint.daysFromStart,
-            location: previousCheckpoint.location,
+            cropType: this.certification?.productType || 'tomato',
+            currentDayOffset: this.currentCheckpoint?.daysFromStart || 0,
+            previousDayOffset: previousCheckpoint?.daysFromStart || 0,
+            previousCheckpointDate: previousCheckpoint?.completedAt,
+            location: this.currentLocation || undefined,
+            zone: this.getProducerZone(),
           },
         );
 
@@ -322,6 +346,24 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
     }
   }
 
+  get hasPreviousCheckpoint(): boolean {
+    return this.getPreviousCheckpoint() !== null;
+  }
+  // Ajoutez cette méthode dans la classe CertificationTrackComponent
+  private getProducerZone(): 'sahel' | 'coastal' | 'highland' | 'default' {
+    // À adapter selon vos données utilisateur/profil
+    // Exemple simple basé sur la localisation
+    if (!this.currentLocation) return 'default';
+
+    const lat = this.currentLocation.lat;
+
+    // Règles géographiques simplifiées
+    if (lat >= 13 && lat <= 17) return 'sahel'; // Zone sahélienne
+    if (lat >= 6 && lat <= 12) return 'coastal'; // Zone côtière
+    if (lat >= 18 && lat <= 27) return 'highland'; // Zone de montagne
+
+    return 'default';
+  }
   private simulateScanProgress(): void {
     const interval = setInterval(() => {
       if (this.scanProgress < 90) {
@@ -647,67 +689,43 @@ export class CertificationTrackComponent implements OnInit, OnDestroy {
     if (!this.currentCheckpoint || !this.canSubmitCheckpoint()) return;
 
     this.setSubmitting(true);
-    this.imageValidationResult = null;
 
     try {
-      // ÉTAPE 1: Valider l'image avec IA (sauf premier checkpoint)
-
-      // CORRIGER la méthode submitCheckpoint (partie validation)
+      // Vérifier si la comparaison d'image a déjà été faite dans scanImage()
       if (
         this.currentCheckpoint.photoRequired &&
         this.checkpointPhotoFile &&
-        this.currentCheckpointIndex > 0
+        this.currentCheckpointIndex > 0 &&
+        !this.imageValidationResult
       ) {
-        const validation =
-          await this.certificationService.validateCheckpointImage(
-            this.certificationId,
-            this.currentCheckpointIndex,
-            this.checkpointPhotoFile,
-          );
+        // Si pas encore scanné, faire le scan maintenant
+        await this.scanImage();
+      }
 
-        this.imageValidationResult = {
-          similarity: validation.similarity,
-          isValid: validation.valid,
-          warnings: validation.warnings,
-          action: validation.action,
-          details: {
-            structuralSimilarity: validation.similarity / 100,
-            featureSimilarity: validation.similarity / 100,
-            colorConsistency: validation.similarity / 100,
-            exifValid: validation.warnings.length === 0,
-            isDownloadedImage: validation.warnings.some((w) =>
-              w.includes('téléchargée'),
-            ),
-            lightingConsistent: validation.warnings.length < 2,
-          },
-        };
+      // Si après le scan, le résultat est rejeté
+      if (this.imageValidationResult?.action === 'reject') {
+        this.showNotification(
+          'error',
+          `❌ Image rejetée: ${this.imageValidationResult.actionReason}`,
+        );
+        this.setSubmitting(false);
+        return;
+      }
 
-        // Afficher les résultats
-        if (validation.warnings.length > 0) {
-          validation.warnings.forEach((w) => this.addValidationError(w));
-        }
-
-        // Bloquer si rejeté
-        if (validation.action === 'reject') {
-          this.showNotification(
-            'error',
-            `❌ Image trop différente du checkpoint précédent (${validation.similarity.toFixed(1)}% de similarité)`,
-          );
+      // Si révision, demander confirmation
+      if (this.imageValidationResult?.action === 'review') {
+        const confirmed = await this.confirmReviewSubmission({
+          similarity: this.imageValidationResult.similarity,
+          warnings: this.imageValidationResult.warnings,
+          action: this.imageValidationResult.action,
+        });
+        if (!confirmed) {
           this.setSubmitting(false);
           return;
         }
-
-        // Demander confirmation si révision
-        if (validation.action === 'review') {
-          const confirmed = await this.confirmReviewSubmission(validation);
-          if (!confirmed) {
-            this.setSubmitting(false);
-            return;
-          }
-        }
       }
 
-      // ÉTAPE 2: Continuer avec la soumission normale
+      // Continuer avec la soumission normale
       const result = await this.certificationService.uploadCheckpointProof(
         this.certificationId,
         this.currentCheckpointIndex,

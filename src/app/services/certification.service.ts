@@ -57,6 +57,7 @@ export interface Certification {
   productName: string;
   producerId: string;
   producerName: string;
+  productType?: string;
 
   // Configuration
   durationDays: 30 | 45 | 60 | 90;
@@ -82,7 +83,7 @@ export interface Certification {
   totalCheckpoints: number;
   completedCheckpoints: number;
   verificationScore: number;
-
+  dayOffset?: number;
   // Blockchain
   rootHash?: string;
   blockchainVerified: boolean;
@@ -155,8 +156,15 @@ export interface CheckpointSubmissionResult {
   error?: string;
   transactionHash?: string;
   ipfsHash?: string;
+  imageValidation?: {
+    similarity: number;
+    warnings: string[];
+    action: 'accept' | 'review' | 'reject';
+    plantStage?: string;
+    stageCoherent?: boolean;
+    sameLocation?: boolean;
+  };
 }
-
 interface ProductFormData {
   name: string;
   category: string;
@@ -191,7 +199,7 @@ export class CertificationService {
       description: 'Suivi de culture sur 30 jours avec vérification régulière',
       durationDays: 30,
       certificationType: 'standard',
-      price: 5000,
+      price: 5,
       checkpoints: [
         {
           title: 'Semence initiale',
@@ -259,7 +267,7 @@ export class CertificationService {
       description: 'Suivi approfondi sur 45 jours avec validation renforcée',
       durationDays: 45,
       certificationType: 'premium',
-      price: 8000,
+      price: 10,
       checkpoints: [
         {
           title: 'Semence initiale',
@@ -1114,7 +1122,36 @@ export class CertificationService {
           }
         }
       }
+      // Après avoir validé la photo
+      if (checkpointIndex > 0 && photoFile) {
+        const validation = await this.validateCheckpointImage(
+          certificationId,
+          checkpointIndex,
+          photoFile,
+        );
 
+        if (validation.action === 'reject') {
+          return {
+            success: false,
+            error: `Image rejetée: ${validation.warnings.join(', ')}`,
+          };
+        }
+
+        // Vous pouvez stocker le résultat de validation
+        const validationMetadata = {
+          similarity: validation.similarity,
+          warnings: validation.warnings,
+          validationAction: validation.action,
+          validatedAt: new Date(),
+        };
+
+        // Stocker dans les métadonnées du checkpoint
+        // (ajoutez cette propriété à votre interface si nécessaire)
+        checkpoint.metadata = {
+          ...checkpoint.metadata,
+          imageValidation: validationMetadata,
+        };
+      }
       // Création preuve blockchain
       const proofResult = await this.blockchainService.createCertificationProof(
         certification.productId,
@@ -1776,86 +1813,226 @@ export class CertificationService {
     }
   }
 
-  // services/certification.service.ts
-  // Ajouter dans le service existant
+async validateCheckpointImage(
+  certificationId: string,
+  checkpointIndex: number,
+  currentImage: File,
+): Promise<{
+  valid: boolean;
+  similarity: number;
+  warnings: string[];
+  action: 'accept' | 'review' | 'reject';
+}> {
+  try {
+    // Récupérer la certification
+    const certification = await this.getCertificationById(certificationId);
+    if (!certification) {
+      throw new Error('Certification non trouvée');
+    }
 
-  async validateCheckpointImage(
-    certificationId: string,
-    checkpointIndex: number,
-    currentImage: File,
-  ): Promise<{
-    valid: boolean;
-    similarity: number;
-    warnings: string[];
-    action: 'accept' | 'review' | 'reject';
-  }> {
-    try {
-      // Récupérer la certification
-      const certification = await this.getCertificationById(certificationId);
-      if (!certification) {
-        throw new Error('Certification non trouvée');
-      }
+    // Récupérer le checkpoint actuel et précédent
+    const currentCheckpoint = certification.checkpoints[checkpointIndex];
+    const previousCheckpoint = checkpointIndex > 0
+      ? certification.checkpoints[checkpointIndex - 1]
+      : null;
 
-      // Si c'est le premier checkpoint, pas de comparaison
-      if (checkpointIndex === 0) {
-        return {
-          valid: true,
-          similarity: 100,
-          warnings: [],
-          action: 'accept',
-        };
-      }
-
-      // Récupérer l'image du checkpoint précédent
-      const previousCheckpoint = certification.checkpoints[checkpointIndex - 1];
-      if (!previousCheckpoint?.ipfsUrl) {
-        return {
-          valid: true,
-          similarity: 100,
-          warnings: [],
-          action: 'accept',
-        };
-      }
-
-      // Comparer les images
-      const comparison = await this.imageComparisonService.compareImages(
-        currentImage,
-        previousCheckpoint.ipfsUrl,
-        {
-          previousCheckpointDate: previousCheckpoint.completedAt,
-          expectedGrowthDays:
-            certification.checkpoints[checkpointIndex].daysFromStart -
-            previousCheckpoint.daysFromStart,
-          location: previousCheckpoint.location,
-        },
-      );
-
-      // Journaliser sur blockchain si incohérence
-      if (comparison.action === 'reject' || comparison.warnings.length > 2) {
-        await this.blockchainService.logInconsistency({
-          certificationId,
-          checkpointIndex,
-          similarity: comparison.similarity,
-          warnings: comparison.warnings,
-          timestamp: new Date(),
-        });
-      }
-
+    // Si c'est le premier checkpoint, pas de comparaison
+    if (!previousCheckpoint) {
       return {
-        valid: comparison.isValid,
+        valid: true,
+        similarity: 100,
+        warnings: [],
+        action: 'accept',
+      };
+    }
+
+    // Récupérer l'URL de l'image précédente
+    const previousImageUrl = previousCheckpoint.ipfsUrl || previousCheckpoint.photoUrl;
+
+    // Vérifier que l'image précédente existe
+    if (!previousImageUrl) {
+      console.warn('Aucune image précédente disponible pour la comparaison');
+      return {
+        valid: true,
+        similarity: 100,
+        warnings: ['⚠️ Image de référence non disponible pour la comparaison'],
+        action: 'review',
+      };
+    }
+
+    // Préparer les options pour la comparaison
+    const comparisonOptions = {
+      cropType: this.extractCropType(certification.productData),
+      currentDayOffset: currentCheckpoint.daysFromStart,
+      previousDayOffset: previousCheckpoint.daysFromStart,
+      previousCheckpointDate: previousCheckpoint.completedAt,
+      location: certification.productData?.location
+        ? { lat: 0, lng: 0 } // À remplacer par la vraie localisation si disponible
+        : undefined,
+      zone: this.determineZone(certification.productData?.location || ''),
+    };
+
+    // Comparer les images
+    const comparison = await this.imageComparisonService.compareImages(
+      currentImage,
+      previousImageUrl, // Maintenant garanti d'être string
+      comparisonOptions,
+    );
+
+    // Journaliser sur blockchain si incohérence
+    if (comparison.action === 'reject' || comparison.warnings.length > 2) {
+      await this.logImageInconsistency({
+        certificationId,
+        checkpointIndex,
         similarity: comparison.similarity,
         warnings: comparison.warnings,
         action: comparison.action,
-      };
+        plantAnalysis: comparison.plantAnalysis,
+        terrainAnalysis: comparison.terrainAnalysis,
+        timestamp: new Date(),
+      });
+    }
+
+    return {
+      valid: comparison.isValid,
+      similarity: comparison.similarity,
+      warnings: comparison.warnings,
+      action: comparison.action,
+    };
+  } catch (error) {
+    console.error('Erreur validation image:', error);
+    return {
+      valid: true, // Bénéfice du doute en cas d'erreur
+      similarity: 0,
+      warnings: [`⚠️ Erreur technique: ${error instanceof Error ? error.message : 'Erreur inconnue'}`],
+      action: 'review',
+    };
+  }
+}
+  /**
+   * Extraire le type de culture des données produit
+   */
+  private extractCropType(productData: any): string {
+    if (!productData) return 'tomato';
+
+    // Adapter selon votre structure de données
+    const cropMapping: Record<string, string> = {
+      tomate: 'tomato',
+      tomatoes: 'tomato',
+      mil: 'millet',
+      millet: 'millet',
+      oignon: 'onion',
+      onion: 'onion',
+      riz: 'rice',
+      rice: 'rice',
+      maïs: 'corn',
+      corn: 'corn',
+      manioc: 'cassava',
+      cassava: 'cassava',
+      arachide: 'groundnut',
+      groundnut: 'groundnut',
+      piment: 'pepper',
+      pepper: 'pepper',
+    };
+
+    const productName = productData.name?.toLowerCase() || '';
+    const productCategory = productData.category?.toLowerCase() || '';
+
+    // Chercher dans le nom
+    for (const [key, value] of Object.entries(cropMapping)) {
+      if (productName.includes(key) || productCategory.includes(key)) {
+        return value;
+      }
+    }
+
+    return 'tomato'; // Valeur par défaut
+  }
+
+  /**
+   * Déterminer la zone géographique
+   */
+  private determineZone(
+    location: string,
+  ): 'sahel' | 'coastal' | 'highland' | 'default' {
+    if (!location) return 'default';
+
+    const locationLower = location.toLowerCase();
+
+    // Zones sahéliennes
+    const sahelRegions = ['sahel', 'tillabéri', 'tahoua', 'diffa', 'zinder'];
+    if (sahelRegions.some((region) => locationLower.includes(region))) {
+      return 'sahel';
+    }
+
+    // Zones côtières
+    const coastalRegions = [
+      'côte',
+      'coastal',
+      'littoral',
+      'atlantique',
+      'dakar',
+      'thiès',
+    ];
+    if (coastalRegions.some((region) => locationLower.includes(region))) {
+      return 'coastal';
+    }
+
+    // Zones de montagne
+    const highlandRegions = [
+      'montagne',
+      'highland',
+      'fouta',
+      'djalon',
+      'koundara',
+    ];
+    if (highlandRegions.some((region) => locationLower.includes(region))) {
+      return 'highland';
+    }
+
+    return 'default';
+  }
+
+  /**
+   * Journaliser une incohérence d'image sur la blockchain
+   */
+  private async logImageInconsistency(data: {
+    certificationId: string;
+    checkpointIndex: number;
+    similarity: number;
+    warnings: string[];
+    action: string;
+    plantAnalysis: any;
+    terrainAnalysis: any;
+    timestamp: Date;
+  }): Promise<void> {
+    try {
+      // Utiliser le service blockchain si disponible
+      if (
+        this.blockchainService &&
+        typeof this.blockchainService.logInconsistency === 'function'
+      ) {
+        await this.blockchainService.logInconsistency(data);
+      } else {
+        // Fallback: journaliser localement
+        console.warn('Incohérence détectée:', data);
+
+        // Ajouter un log d'audit
+        await this.addAuditLog(
+          data.certificationId,
+          'IMAGE_INCONSISTENCY_DETECTED',
+          {
+            checkpointIndex: data.checkpointIndex,
+            similarity: data.similarity,
+            warnings: data.warnings,
+            action: data.action,
+            plantStage: data.plantAnalysis?.stageLabel,
+            plantCoherent: data.plantAnalysis?.stageCoherent,
+            sameLocation: data.terrainAnalysis?.sameLocation,
+          },
+        );
+      }
     } catch (error) {
-      console.error('Erreur validation image:', error);
-      // En cas d'erreur, on laisse passer mais on log
-      return {
-        valid: true, // Bénéfice du doute
-        similarity: 0,
-        warnings: [`⚠️ Erreur technique: ${error}`],
-        action: 'review',
-      };
+      console.error('Erreur journalisation incohérence:', error);
     }
   }
 }
