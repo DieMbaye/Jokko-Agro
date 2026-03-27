@@ -29,7 +29,9 @@
 \usepackage{pifont}
 \usetikzlibrary{shapes.geometric,arrows.meta,positioning,fit,backgrounds,
                 decorations.pathreplacing,shadows.blur,calc}
-
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
 % ================== COULEURS ==================
 \definecolor{bleuUniv}{RGB}{0,60,130}
 \definecolor{bleuClair}{RGB}{0,102,204}
@@ -2835,6 +2837,9 @@ Le module commerce gère le cycle complet d'une vente avec \textbf{7 états de c
 \label{fig:etats_commande}
 \end{figure}
 
+% =========================================================
+%  CHAPITRE 8 — AXE SÉCURITÉ ET CRYPTOGRAPHIE
+% =========================================================
 \chapter{Axe Sécurité et Cryptographie}
 
 \begin{tcolorbox}[chapterbox,title={Vue d'ensemble du chapitre}]
@@ -2856,66 +2861,10 @@ en profondeur garantit que la compromission d'une couche n'entraîne pas celle d
 l'ensemble du système.
 
 \vspace{0.4cm}
-\begin{comment}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\textwidth]{images/2fa-setup.png}
-\caption{Configuration de l'authentification à deux facteurs (2FA TOTP)}
-\label{fig:2fa-setup}
-\end{figure}
-\end{comment}
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.6\textwidth]{images/audit-log.png}
-\caption{Capture des logs d'audit immuables de la plateforme}
-\label{fig:audit-log}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.6\textwidth]{images/security-rules.png}
-\caption{Extrait des règles de sécurité Firestore}
-\label{fig:security-rules}
-\end{figure}
-\begin{comment}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{images/signature-flow.png}
-\caption{Flux de signature ECDSA P-256 pour les transactions}
-\label{fig:signature-flow}
-\end{figure}
-\end{comment}
-\vspace{0.4cm}
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small,
-  couche/.style={rectangle,rounded corners=4pt,minimum width=12cm,minimum height=0.9cm,
-                 text centered,draw=bleuUniv,line width=0.8pt,font=\footnotesize}]
-
-  \node[couche,fill=bleuUniv,text=white]     at (0,7.2)
-    {Couche 10 --- Firestore Security Rules --- Ownership \& rate limiting};
-  \node[couche,fill=bleuUniv!90,text=white]  at (0,6.3)
-    {Couche 9 --- Audit Trail immuable --- Journalisation write-only};
-  \node[couche,fill=bleuUniv!80,text=white]  at (0,5.4)
-    {Couche 8 --- Chiffrement AES-GCM + PBKDF2 --- Protection des clés};
-  \node[couche,fill=bleuUniv!70,text=white]  at (0,4.5)
-    {Couche 7 --- Escrow AGC --- Séquestre atomique};
-  \node[couche,fill=bleuUniv!60,text=white]  at (0,3.6)
-    {Couche 6 --- Signatures ECDSA P-256 --- Non-répudiation};
-  \node[couche,fill=bleuUniv!50,text=white]  at (0,2.7)
-    {Couche 5 --- Ledger immuable --- SHA-256 chaîné};
-  \node[couche,fill=bleuMoyen,text=white]    at (0,1.8)
-    {Couche 4 --- Hash image SHA-256 --- Vérification IPFS serveur};
-  \node[couche,fill=bleuClair,text=white]    at (0,0.9)
-    {Couche 3 --- Nonce anti-rejeu --- UUID + timestamp};
-  \node[couche,fill=bleuUniv!40,text=white]  at (0,0)
-    {Couche 2 --- Validation serveur --- Cloud Functions};
-  \node[couche,fill=bleuUniv!30,text=white]  at (0,-0.9)
-    {Couche 1 --- Clé privée IndexedDB --- Non extractable};
-\end{tikzpicture}
+\includegraphics[width=0.7\textwidth]{images/secure-couche.png}
 \caption{Architecture de sécurité en dix couches de Jokko Agro}
 \label{fig:securite_couches}
 \end{figure}
@@ -2937,18 +2886,18 @@ l'ensemble du système.
 \multicolumn{1}{>{\bfseries\color{white}\small}p{3.5cm}}{Couche} &
 \multicolumn{1}{>{\bfseries\color{white}\small}p{3cm}}{Menace adressée} &
 \multicolumn{1}{>{\bfseries\color{white}\small}X}{Technologies} \\
-C1 & Clé privée IndexedDB (non extractable) & Vol de clé par injection XSS & WebCrypto API · IndexedDB Extractable: false \\
+C1 & Signatures ECDSA P-256 & Répudiation de transaction & ECDSA P-256 · WebCrypto API · JSON canonique \\
 \rowcolor{bleuTresClair}
-C2 & Validation serveur (Cloud Functions) & Contournement des règles client & Firebase Cloud Functions · runTransaction \\
-C3 & Nonce anti-rejeu (UUID + timestamp) & Replay attack & crypto.randomUUID() · Firestore used\_nonces · TTL \\
+C2 & IndexedDB non extractable & Vol de clé par injection XSS & WebCrypto API · IndexedDB Extractable: false \\
+C3 & Validation serveur (Cloud Functions) & Contournement des règles client & Firebase Cloud Functions · runTransaction \\
 \rowcolor{bleuTresClair}
-C4 & Hash image SHA-256 (vérification IPFS) & Manipulation du score IA & WebCrypto SHA-256 · IPFS Pinata Gateway \\
-C5 & Ledger immuable (SHA-256 chaîné) & Falsification rétroactive & SHA-256 · Firestore chaînage previousHash \\
+C4 & Nonce anti-rejeu (UUID + timestamp) & Replay attack & crypto.randomUUID() · Firestore used\_nonces · TTL \\
+C5 & Hash image SHA-256 (vérification IPFS) & Manipulation du score IA & WebCrypto SHA-256 · IPFS Pinata Gateway \\
 \rowcolor{bleuTresClair}
-C6 & Signatures ECDSA P-256 & Répudiation de transaction & ECDSA P-256 · WebCrypto API · JSON canonique \\
-C7 & Escrow AGC (séquestre atomique) & Double-dépense & Firestore runTransaction · Lock/Release/Cancel \\
+C6 & Ledger immuable (SHA-256 chaîné) & Falsification rétroactive & SHA-256 · Firestore chaînage previousHash \\
+C7 & Chiffrement AES-GCM + PBKDF2 & Vol de clé privée par accès Firestore & AES-GCM-256 · PBKDF2-SHA256 310k iter. \\
 \rowcolor{bleuTresClair}
-C8 & Chiffrement AES-GCM + PBKDF2 & Vol de clé privée par accès Firestore & AES-GCM-256 · PBKDF2-SHA256 310k iter. \\
+C8 & Escrow AGC (séquestre atomique) & Double-dépense & Firestore runTransaction · Lock/Release/Cancel \\
 C9 & Audit Trail immuable & Effacement de preuves post-compromission & Firestore write-only Rules · serverTimestamp \\
 \rowcolor{bleuTresClair}
 C10 & Firestore Security Rules & Accès non autorisé aux données & Ownership Rules · Admin SDK only \\
@@ -2959,9 +2908,28 @@ C10 & Firestore Security Rules & Accès non autorisé aux données & Ownership R
 
 \section{Description détaillée des couches}
 
-\subsection{C1 — Clé privée IndexedDB (non extractable)}
+\subsection{C1 — Signatures ECDSA P-256 (Web Crypto API)}
 
-\begin{tcolorbox}[definbox,title={Couche C1 --- Clé privée IndexedDB non extractable}]
+\begin{tcolorbox}[definbox,title={Couche C1 --- Signatures ECDSA P-256}]
+\begin{itemize}[itemsep=5pt]
+  \item \textbf{Composant:} \texttt{CryptoECDAService} (\texttt{crypto-ecdsa.service.ts})
+  \item \textbf{Menace adressée:} Répudiation de transaction --- « je n'ai pas signé ça »
+  \item \textbf{Technologies:} ECDSA P-256 · WebCrypto API · Signature JSON canonique
+\end{itemize}
+\vspace{0.3cm}f
+Toutes les transactions financières (lock AGC, release, transfer) sont signées avec la
+courbe elliptique P-256 via l'API WebCrypto native du navigateur, sans dépendance externe.
+La signature couvre le payload JSON canonique de la transaction --- toute modification
+du contenu invalide la signature. La clé publique est stockée dans Firestore (collection
+\texttt{user\_keys}) et utilisée pour la vérification. La vérification est également
+effectuée côté serveur via Cloud Function (C3).
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\subsection{C2 — IndexedDB non extractable}
+
+\begin{tcolorbox}[definbox,title={Couche C2 --- IndexedDB non extractable}]
 \begin{itemize}[itemsep=5pt]
   \item \textbf{Composant:} \texttt{SecureKeyService} (\texttt{secure-key.service.ts})
   \item \textbf{Menace adressée:} Vol de clé par injection XSS (Cross-Site Scripting)
@@ -2979,9 +2947,9 @@ ou HSM (Hardware Security Module).
 
 \vspace{0.3cm}
 
-\subsection{C2 — Validation serveur (Cloud Functions)}
+\subsection{C3 — Validation serveur (Cloud Functions)}
 
-\begin{tcolorbox}[definbox,title={Couche C2 --- Validation serveur Cloud Functions}]
+\begin{tcolorbox}[definbox,title={Couche C3 --- Validation serveur Cloud Functions}]
 \begin{itemize}[itemsep=5pt]
   \item \textbf{Composant:} \texttt{certify-checkpoint.ts} (\texttt{functions/src/})
   \item \textbf{Menace adressée:} Contournement des règles client Angular via API directe
@@ -3000,9 +2968,9 @@ avec audit trail immuable.
 
 \vspace{0.3cm}
 
-\subsection{C3 — Nonce anti-rejeu (UUID + timestamp)}
+\subsection{C4 — Nonce anti-rejeu (UUID + timestamp)}
 
-\begin{tcolorbox}[definbox,title={Couche C3 --- Nonce anti-rejeu}]
+\begin{tcolorbox}[definbox,title={Couche C4 --- Nonce anti-rejeu}]
 \begin{itemize}[itemsep=5pt]
   \item \textbf{Composant:} \texttt{SignedMessageService} (\texttt{signed-message.service.ts})
   \item \textbf{Menace adressée:} Replay attack --- rejeu d'une signature interceptée
@@ -3020,9 +2988,9 @@ timestamp rend toute attaque par rejeu impossible même sur un réseau intercept
 
 \vspace{0.3cm}
 
-\subsection{C4 — Hash image SHA-256 (vérification IPFS serveur)}
+\subsection{C5 — Hash image SHA-256 (vérification IPFS serveur)}
 
-\begin{tcolorbox}[definbox,title={Couche C4 --- Hash image SHA-256}]
+\begin{tcolorbox}[definbox,title={Couche C5 --- Hash image SHA-256}]
 \begin{itemize}[itemsep=5pt]
   \item \textbf{Composant:} \texttt{ImageIntegrityService} (\texttt{image-integrity.service.ts})
   \item \textbf{Menace adressée:} Manipulation du score TensorFlow.js avant envoi au serveur
@@ -3041,9 +3009,9 @@ dans le payload) mais l'intégrité de l'image est prouvée cryptographiquement.
 
 \vspace{0.3cm}
 
-\subsection{C5 — Ledger immuable (SHA-256 chaîné)}
+\subsection{C6 — Ledger immuable (SHA-256 chaîné)}
 
-\begin{tcolorbox}[definbox,title={Couche C5 --- Ledger immuable SHA-256}]
+\begin{tcolorbox}[definbox,title={Couche C6 --- Ledger immuable SHA-256}]
 \begin{itemize}[itemsep=5pt]
   \item \textbf{Composant:} \texttt{BlockchainService} (\texttt{ledger-service.ts})
   \item \textbf{Menace adressée:} Falsification rétroactive des transactions AGC
@@ -3064,61 +3032,31 @@ ledger et alerte en cas d'incohérence de hash, avec journalisation critique dan
 
 \vspace{0.3cm}
 
-\subsection{C6 — Signatures ECDSA P-256 (Web Crypto API)}
+\subsection{C7 — Chiffrement AES-GCM + PBKDF2 (310 000 itérations)}
 
-\begin{tcolorbox}[definbox,title={Couche C6 --- Signatures ECDSA P-256}]
+\begin{tcolorbox}[definbox,title={Couche C7 --- Chiffrement AES-GCM + PBKDF2}]
 \begin{itemize}[itemsep=5pt]
-  \item \textbf{Composant:} \texttt{CryptoECDAService} (\texttt{crypto-ecdsa.service.ts})
-  \item \textbf{Menace adressée:} Répudiation de transaction --- « je n'ai pas signé ça »
-  \item \textbf{Technologies:} ECDSA P-256 · WebCrypto API · Signature JSON canonique
+  \item \textbf{Composant:} \texttt{UserKeysService} (\texttt{user-keys.service.ts})
+  \item \textbf{Menace adressée:} Vol de clé privée par accès à Firestore
+  \item \textbf{Technologies:} AES-GCM-256 · PBKDF2-SHA256 310k iter. · OWASP 2024
 \end{itemize}
 \vspace{0.3cm}
-Toutes les transactions financières (lock AGC, release, transfer) sont signées avec la
-courbe elliptique P-256 via l'API WebCrypto native du navigateur, sans dépendance externe.
-La signature couvre le payload JSON canonique de la transaction --- toute modification
-du contenu invalide la signature. La clé publique est stockée dans Firestore (collection
-\texttt{user\_keys}) et utilisée pour la vérification. La clé privée est stockée dans
-IndexedDB avec \texttt{extractable: false} (C1), renforçant cette couche avec une
-protection matérielle logicielle. La vérification est également effectuée côté serveur
-via Cloud Function (C2).
+La clé privée ECDSA est chiffrée avec AES-GCM 256 bits avant tout stockage dans Firestore.
+La clé de chiffrement est dérivée du mot de passe utilisateur via PBKDF2 avec 310 000
+itérations SHA-256 et un salt aléatoire de 16 octets --- recommandation OWASP 2024.
+AES-GCM offre un chiffrement authentifié: toute modification du chiffré (même 1 bit) fait
+échouer le déchiffrement (authentication tag invalide). Le format stocké est:
+\[
+\text{base64}(\text{salt}[16] \parallel \text{IV}[12] \parallel \text{ciphertext})
+\]
+Cette couche protège la clé privée chiffrée en transit et en stockage.
 \end{tcolorbox}
 
 \vspace{0.3cm}
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small]
+\subsection{C8 — Escrow AGC (séquestre atomique)}
 
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (-6,2.5) rectangle (-1,3.5);
-\node[align=center, text width=4.7cm] at (-3.5,3) {Génération de paire de clés\\(courbe P-256 / secp256r1)};
-
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (1,2.5) rectangle (6,3.5);
-\node[align=center, text width=4.7cm] at (3.5,3) {Signature de la transaction\\ECDSA(data, privateKey)};
-
-\draw[fill=bleuMoyen, draw=bleuUniv, rounded corners=4pt, text=white] (-2.5,0) rectangle (2.5,1);
-\node[align=center, text width=4.7cm, text=white] at (0,0.5) {Vérification\\verify(data, signature, publicKey)};
-
-\draw[fill=bleuPale, draw=bleuUniv, rounded corners=4pt] (-6,-0.5) rectangle (-1,0.5);
-\node[align=center, text width=4.7cm] at (-3.5,0) {Clé privée chiffrée\\AES-GCM $\rightarrow$ IndexedDB};
-
-\draw[->, bleuUniv, thick] (-3.5,2.5) -- (-3.5,1);
-\draw[->, bleuUniv, thick] (3.5,2.5) -- (0,1);
-\draw[->, bleuUniv, thick] (-3.5,-0.5) -- (-3.5,0);
-\draw[<->, bleuUniv, thick, dashed] (-1,0.5) -- (0,0.5);
-
-\node[font=\tiny, bleuUniv] at (-2.2,2) {publicKey envoyée};
-\node[font=\tiny, bleuUniv, sloped] at (-4.8,0.2) {jamais transmise};
-
-\end{tikzpicture}
-\caption{Cycle de vie des signatures ECDSA P-256}
-\label{fig:ecdsa_cycle}
-\end{figure}
-
-\vspace{0.5cm}
-
-\subsection{C7 — Escrow AGC (séquestre atomique)}
-
-\begin{tcolorbox}[definbox,title={Couche C7 --- Escrow AGC}]
+\begin{tcolorbox}[definbox,title={Couche C8 --- Escrow AGC}]
 \begin{itemize}[itemsep=5pt]
   \item \textbf{Composant:} \texttt{AgcService} · \texttt{SalesService} (\texttt{escrow-lock.ts})
   \item \textbf{Menace adressée:} Double-dépense · fonds non reversés en cas de litige
@@ -3135,31 +3073,52 @@ séquestre Firestore dès la confirmation de commande. Quatre états sont possib
 \end{itemize}
 Toutes les opérations utilisent \texttt{runTransaction()} Firestore pour garantir
 l'atomicité --- une coupure réseau en cours de transaction ne laisse jamais les fonds
-dans un état incohérent. La couche C3 (nonce) protège les opérations de lock contre les
+dans un état incohérent. La couche C4 (nonce) protège les opérations de lock contre les
 rejeux. Délai maximum: 7 jours pour confirmation, 48h pour résolution de litige.
 \end{tcolorbox}
 
 \vspace{0.3cm}
 
-\subsection{C8 — Chiffrement AES-GCM + PBKDF2 (310 000 itérations)}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[font=\small,
+  etape/.style={rectangle,rounded corners=4pt,minimum width=4.5cm,minimum height=1cm,
+                text centered,text width=4.2cm,draw=bleuUniv,line width=0.8pt},
+  arr/.style={-{Stealth},bleuUniv,thick}]
 
-\begin{tcolorbox}[definbox,title={Couche C8 --- Chiffrement AES-GCM + PBKDF2}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Composant:} \texttt{UserKeysService} (\texttt{user-keys.service.ts})
-  \item \textbf{Menace adressée:} Vol de clé privée par accès à Firestore
-  \item \textbf{Technologies:} AES-GCM-256 · PBKDF2-SHA256 310k iter. · OWASP 2024
-\end{itemize}
-\vspace{0.3cm}
-La clé privée ECDSA est chiffrée avec AES-GCM 256 bits avant tout stockage dans Firestore.
-La clé de chiffrement est dérivée du mot de passe utilisateur via PBKDF2 avec 310 000
-itérations SHA-256 et un salt aléatoire de 16 octets --- recommandation OWASP 2024.
-AES-GCM offre un chiffrement authentifié: toute modification du chiffré (même 1 bit) fait
-échouer le déchiffrement (authentication tag invalide). Le format stocké est:
-\[
-\text{base64}(\text{salt}[16] \parallel \text{IV}[12] \parallel \text{ciphertext})
-\]
-Cette couche protège la clé publique chiffrée en transit et en stockage.
-\end{tcolorbox}
+  \node[etape,fill=bleuUniv,text=white] (E1) at (0,5.5)
+    {1. Acheteur passe commande};
+  \node[etape,fill=bleuMoyen,text=white] (E2) at (0,4.2)
+    {2. Lock AGC (séquestre)};
+  \node[etape,fill=bleuTresClair] (E3) at (0,2.9)
+    {3. Livraison en cours};
+  \node[etape,fill=bleuTresClair] (E4a) at (-3,1.6)
+    {4a. Livraison confirmée};
+  \node[etape,fill=bleuTresClair] (E4b) at (3,1.6)
+    {4b. Litige déclaré};
+  \node[etape,fill=bleuPale] (E5a) at (-3,0.3)
+    {Release AGC $\rightarrow$ Producteur};
+  \node[etape,fill=bleuPale] (E5b) at (3,0.3)
+    {Rollback $\rightarrow$ Acheteur};
+  \node[etape,fill=bleuUniv!20] (E6) at (0,-1.0)
+    {5. DW mis à jour};
+
+  \draw[arr] (E1.south)--(E2.north);
+  \draw[arr] (E2.south)--(E3.north);
+  \draw[arr] (E3.south west)--(E4a.north);
+  \draw[arr] (E3.south east)--(E4b.north);
+  \draw[arr] (E4a.south)--(E5a.north);
+  \draw[arr] (E4b.south)--(E5b.north);
+  \draw[arr] (E5a.south east)--(E6.north west);
+  \draw[arr] (E5b.south west)--(E6.north east);
+
+  % Escrow box
+  \draw[bleuMoyen,dashed,rounded corners] (-2.7,1.3) rectangle (2.7,4.6);
+  \node[font=\tiny\itshape,bleuMoyen] at (0,4.45) {Zone Séquestre};
+\end{tikzpicture}
+\caption{Cycle de vie d'un paiement AGC avec escrow}
+\label{fig:agc_escrow}
+\end{figure}
 
 \vspace{0.3cm}
 
@@ -3188,6 +3147,7 @@ Même un administrateur ne peut pas supprimer un log. Les entrées critiques inc
 \texttt{blockHeight} et \texttt{blockHash} du ledger pour une traçabilité croisée.
 \end{tcolorbox}
 
+
 \vspace{0.3cm}
 
 \subsection{C10 — Firestore Security Rules (ownership + rate limiting)}
@@ -3204,15 +3164,38 @@ collection est protégée par des règles d'ownership: un utilisateur ne peut li
 que ses propres documents (\texttt{request.auth.uid == resource.data.userId}). Les produits
 et certifications vérifient l'appartenance au producteur. Les AGC et transactions
 financières n'autorisent l'écriture que via les Cloud Functions (Admin SDK), jamais
-directement depuis le client. La couche C2 complète ces règles avec un rate limiting
+directement depuis le client. La couche C3 complète ces règles avec un rate limiting
 applicatif (1 checkpoint/60s) et une validation métier approfondie impossible à
 implémenter dans les Security Rules seules. Les règles sont versionées et auditées à
 chaque déploiement.
 \end{tcolorbox}
 
-\vspace{0.5cm}
+\vspace{0.3cm}
 
-\section{Synthèse et complémentarité des couches}
+
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{images/security-rules.png}
+\caption{Extrait des règles de sécurité Firestore}
+\label{fig:security-rules}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{images/security-rules.png}
+\caption{Extrait des règles de sécurité Firestore}
+\label{fig:security-rules}
+\end{minipage}
+\end{figure}
+
+
+
+\vspace{0.1cm}
+
+\section{Scénarios d'attaque et complémentarité des couches}
 
 \noindent
 Les dix couches forment un système défensif en profondeur (Defence in Depth). Aucune
@@ -3228,20 +3211,225 @@ contourne une couche se heurte immédiatement à la suivante.
 \rowcolor{bleuUniv}
 \multicolumn{1}{>{\bfseries\color{white}\small}p{4.5cm}}{Scénario d'attaque} &
 \multicolumn{1}{>{\bfseries\color{white}\small}X}{Couches qui s'activent} \\
-\textbf{XSS --- Injection JavaScript} & C1 (clé non extractable) + C6 (signature requise) + C2 (vérif. serveur) \\
+\textbf{XSS --- Injection JavaScript} & C2 (IndexedDB non extractable) + C1 (signature requise) + C3 (vérif. serveur) \\
 \rowcolor{bleuTresClair}
-\textbf{Replay attack} & C3 (nonce UUID + timestamp) + C2 (vérif. Firestore used\_nonces) \\
-\textbf{Manipulation image IA} & C4 (hash SHA-256 IPFS) + C2 (recalcul serveur indépendant) \\
+\textbf{Replay attack} & C4 (nonce UUID + timestamp) + C3 (vérif. Firestore used\_nonces) \\
+\textbf{Manipulation image IA} & C5 (hash SHA-256 IPFS) + C3 (recalcul serveur indépendant) \\
 \rowcolor{bleuTresClair}
-\textbf{Double-dépense AGC} & C7 (escrow atomique) + C5 (ledger chaîné) + C9 (audit trail) \\
-\textbf{Accès API directe (bypass Angular)} & C2 (Cloud Functions) + C10 (Firestore Rules) + C6 (ECDSA obligatoire) \\
+\textbf{Double-dépense AGC} & C8 (escrow atomique) + C6 (ledger chaîné) + C9 (audit trail) \\
+\textbf{Accès API directe (bypass Angular)} & C3 (Cloud Functions) + C10 (Firestore Rules) + C1 (ECDSA obligatoire) \\
 \rowcolor{bleuTresClair}
-\textbf{Falsification de transaction} & C5 (ledger SHA-256 chaîné) + C6 (signature) + C9 (audit) + C2 (vérif. serveur) \\
+\textbf{Falsification de transaction} & C6 (ledger SHA-256 chaîné) + C1 (signature) + C9 (audit) + C3 (vérif. serveur) \\
 \textbf{Effacement de preuves} & C9 (write-only Firestore Rules: allow delete: if false) \\
+\rowcolor{bleuTresClair}
+\textbf{Vol de clé Firestore} & C7 (AES-GCM chiffrement) + C2 (clé privée jamais stockée en clair) \\
 \end{tabularx}
 \end{tcolorbox}
 
 \vspace{0.5cm}
+
+\section{Tests de sécurité automatisés}
+
+\noindent
+Pour valider l'implémentation des dix couches de sécurité, un \textbf{tableau de bord de test}
+a été développé. Il exécute automatiquement 25 tests couvrant l'ensemble des mécanismes
+cryptographiques et métier de la plateforme.
+
+\subsection{Architecture du tableau de bord}
+
+\noindent
+Le tableau de bord est un composant Angular autonome (\texttt{SecurityDashboardComponent})
+qui orchestre l'exécution séquentielle des tests. Chaque test est isolé et produit des
+résultats détaillés avec métriques de performance.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{images/secure-test-dashboard.png}
+\caption{Tableau de bord des tests de sécurité --- Vue d'ensemble}
+\label{fig:security-dashboard}
+\end{figure}
+
+\subsection{Jeu de tests implémentés}
+
+\noindent
+Les 25 tests sont organisés en 5 catégories correspondant aux couches de sécurité:
+
+\begin{tcolorbox}[infobox,title={Tests des signatures ECDSA (Couche C1)}]
+\begin{itemize}[itemsep=3pt]
+  \item \textbf{Génération paire P-256:} Création clé privée/publique avec WebCrypto
+  \item \textbf{Signature transaction:} Génération de signature ECDSA
+  \item \textbf{Vérification valide:} Validation d'une signature authentique
+  \item \textbf{Rejet falsification:} Détection de modification de transaction
+  \item \textbf{Audit complet:} Vérification de toutes les signatures du ledger
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[infobox,title={Tests du stockage IndexedDB (Couche C2)}]
+\begin{itemize}[itemsep=3pt]
+  \item \textbf{Génération clé non extractable:} Vérification extractable: false
+  \item \textbf{Stockage IndexedDB:} Persistance des clés entre sessions
+  \item \textbf{Restaurationsession:} Récupération clé après fermeture navigateur
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[infobox,title={Tests du Ledger immuable (Couche C6)}]
+\begin{itemize}[itemsep=3pt]
+  \item \textbf{Hash SHA-256:} Vérification du déterminisme et de l'effet avalanche
+  \item \textbf{Chaînage previousHash:} Validation de la liaison cryptographique
+  \item \textbf{Intégrité complète:} Parcours et validation de l'ensemble du ledger
+  \item \textbf{Détection falsification:} Modification d'un bloc et vérification d'invalidation
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[infobox,title={Tests du séquestre AGC (Couche C8)}]
+\begin{itemize}[itemsep=3pt]
+  \item \textbf{Lecture solde:} Consultation des AGC disponibles et bloqués
+  \item \textbf{Blocage (lock):} Gel atomique des fonds en Firestore
+  \item \textbf{Vérification statut:} Confirmation de l'état "locked"
+  \item \textbf{Annulation (cancel):} Remboursement atomique des fonds
+  \item \textbf{Double-dépense:} Tentative de blocage supérieur au solde
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[infobox,title={Tests du chiffrement AES-GCM (Couche C7)}]
+\begin{itemize}[itemsep=3pt]
+  \item \textbf{Chiffrement:} AES-GCM-256 avec PBKDF2 (310k itérations)
+  \item \textbf{Déchiffrement correct:} Récupération exacte des données
+  \item \textbf{Rejet mauvais mot de passe:} Authentication tag invalide
+  \item \textbf{Déverrouillage session:} Restauration clé depuis Firestore
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[infobox,title={Tests de l'Audit Trail (Couche C9)}]
+\begin{itemize}[itemsep=3pt]
+  \item \textbf{Écriture événement:} Création de log avec serverTimestamp()
+  \item \textbf{Lecture logs:} Filtrage par utilisateur
+  \item \textbf{Événement critique:} Détection de falsification
+  \item \textbf{Tracé achat AGC:} Vérification de la journalisation
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Résultats des tests}
+
+\noindent
+L'exécution complète des tests produit les résultats suivants:
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{images/test1.png}
+\caption{Résultats des tests de sécurité sur la couche Ledger}
+\label{fig:security-test-results-1}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{images/test2.png}
+\caption{Résultats détaillés des tests sur la signature ECDSA}
+\label{fig:security-test-results-2}
+\end{minipage}
+\end{figure}
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{images/test3.png}
+\caption{Résultats des tests de sécurité sur le Chiffrement AEES}
+\label{fig:security-test-results-3}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{images/test_result.png}
+\caption{Résultats des tests de sécurité synthétisés}
+\label{fig:security-test-results}
+\end{minipage}
+\end{figure}
+
+
+\noindent
+Le tableau ci-dessous synthétise les résultats par catégorie:
+
+\vspace{0.3cm}
+\renewcommand{\arraystretch}{1.5}
+\begin{tcolorbox}[tablebox,title={Synthèse des tests de sécurité}]
+\begin{tabularx}{\textwidth}{
+  >{\bfseries\small\color{bleuUniv}}p{4cm}
+  >{\small\bfseries}p{2cm}
+  >{\small\bfseries}p{2cm}
+  >{\small\bfseries}p{2cm}
+  >{\small}X}
+\rowcolor{bleuUniv}
+\multicolumn{1}{>{\bfseries\color{white}\small}p{4cm}}{Catégorie} &
+\multicolumn{1}{>{\bfseries\color{white}\small}p{2cm}}{Tests} &
+\multicolumn{1}{>{\bfseries\color{white}\small}p{2cm}}{Pass} &
+\multicolumn{1}{>{\bfseries\color{white}\small}p{2cm}}{Fail} &
+\multicolumn{1}{>{\bfseries\color{white}\small}X}{Statut} \\
+Signatures ECDSA (C1) & 5 & 5 & 0 & \textcolor{green}{\checkmark Validé} \\
+\rowcolor{bleuTresClair}
+Stockage IndexedDB (C2) & 3 & 3 & 0 & \textcolor{green}{\checkmark Validé} \\
+Ledger immuable (C6) & 4 & 4 & 0 & \textcolor{green}{\checkmark Validé} \\
+\rowcolor{bleuTresClair}
+Séquestre AGC (C8) & 5 & 5 & 0 & \textcolor{green}{\checkmark Validé} \\
+Chiffrement AES-GCM (C7) & 4 & 4 & 0 & \textcolor{green}{\checkmark Validé} \\
+\rowcolor{bleuTresClair}
+Audit Trail (C9) & 4 & 4 & 0 & \textcolor{green}{\checkmark Validé} \\
+\hline
+\textbf{Total} & \textbf{25} & \textbf{25} & \textbf{0} & \textbf{100\% succès} \\
+\end{tabularx}
+\end{tcolorbox}
+
+\subsection{Extraits de code du tableau de bord}
+
+\noindent
+Le composant de test implémente des fonctions de validation spécifiques pour chaque
+mécanisme de sécurité:
+
+\begin{tcolorbox}[infobox,title={Extrait — Test d'intégrité du ledger}]
+\begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Typescript]
+case 'tamper_detect': {
+// Modifier le dernier bloc puis verifier la detection
+  const lastDoc = snap.docs[0];
+  const originalAmt = lastDoc.data()['amount'];
+  const blockRef = doc(firestore, 'agc_ledger', lastDoc.id);
+
+  // Falsification
+  await updateDoc(blockRef, { amount: 99999 });
+  const afterTamper = await this.agcService.verifyLedgerIntegrity();
+
+  // Restauration
+  await updateDoc(blockRef, { amount: originalAmt });
+
+  const detected = !afterTamper.isValid;
+  test.status = detected ? 'pass' : 'fail';
+  test.detail = detected
+    ? 'Falsification detectee OK'
+    : '[CRITIQUE] falsification non detectee !';
+  break;
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{tcolorbox}[infobox,title={Extrait — Test de signature ECDSA avec falsification}]
+\begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Typescript]
+case 'verify_tamper': {
+  const tx = await this.agcService.createSignedTransaction(...);
+
+  // Falsifier le montant
+  const tamperedTx = { ...tx, amount: 99999 };
+  const isStillValid = await this.agcService.verifyTransactionSignature(tamperedTx);
+
+  test.status = !isStillValid ? 'pass' : 'fail';
+  test.detail = !isStillValid
+    ? 'Signature rejetee apres falsification Ok'
+    : ''[CRITIQUE] falsification non detectee !';
+  break;
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+\vspace{0.2cm}
 
 \section{Bonnes pratiques de sécurité implémentées}
 
@@ -3266,10 +3454,10 @@ contourne une couche se heurte immédiatement à la suivante.
 \textbf{Synthèse de l'axe Sécurité --- Défense en profondeur}\\[6pt]
 Les dix couches de sécurité de Jokko Agro forment un système défensif complet:
 \begin{itemize}[leftmargin=*,itemsep=2pt]
-  \item \textbf{Couches 1-2:} Clé privée non extractable + Validation serveur --- Protection des clés et logique métier
-  \item \textbf{Couches 3-4:} Nonce anti-rejeu + Hash image SHA-256 --- Intégrité des messages et des preuves visuelles
-  \item \textbf{Couches 5-6:} Ledger immuable + Signatures ECDSA --- Intégrité historique et non-répudiation
-  \item \textbf{Couches 7-8:} Escrow atomique + Chiffrement AES --- Protection des paiements et confidentialité
+  \item \textbf{Couches 1-2:} ECDSA P-256 + IndexedDB non extractable --- Non-répudiation et protection des clés
+  \item \textbf{Couches 3-4:} Validation serveur + Nonce anti-rejeu --- Prévention contournement et replay attacks
+  \item \textbf{Couches 5-6:} Hash image SHA-256 + Ledger immuable --- Intégrité des preuves et historique
+  \item \textbf{Couches 7-8:} Chiffrement AES + Escrow atomique --- Confidentialité et protection des paiements
   \item \textbf{Couches 9-10:} Audit Trail immuable + Firestore Rules --- Traçabilité et contrôle d'accès
 \end{itemize}
 Ensemble, ces mécanismes font de Jokko Agro un système résistant à la fraude, aux manipulations
@@ -3280,10 +3468,6 @@ et aux attaques extérieures, garantissant la confiance de tous les acteurs de l
 \begin{flushright}
 \textit{« La sécurité n'est pas un produit, c'est un processus continu d'amélioration. »}
 \end{flushright}
-
-% =========================================================
-%  CONCLUSION GÉNÉRALE
-% =========================================================
 \chapter*{Conclusion Générale}
 \addcontentsline{toc}{chapter}{Conclusion Générale}
 \markboth{Conclusion Générale}{Conclusion Générale}
@@ -3383,5 +3567,9 @@ Jokko Agro --- Connecter l'agriculture sénégalaise\\
   \item GSMA (2024). \textit{State of Mobile Money in Sub-Saharan Africa}.
         GSMA Intelligence Report.
 \end{enumerate}
+% =========================================================
+%  ANNEXES
+% =========================================================
+\appendix
 
 \end{document}

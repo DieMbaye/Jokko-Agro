@@ -25,7 +25,7 @@
 \pgfsyspdfmark {pgfid16}{4736286}{50644704}
 \@writefile{toc}{\contentsline {chapter}{Introduction Générale}{1}{chapter*.2}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{fig:app-home}{{\caption@xref {fig:app-home}{ on input line 565}}{1}{Introduction Générale}{figure.caption.3}{}}
+\newlabel{fig:app-home}{{\caption@xref {fig:app-home}{ on input line 567}}{1}{Introduction Générale}{figure.caption.3}{}}
 \pgfsyspdfmark {pgfid20}{4736286}{50644704}
 \@writefile{toc}{\contentsline {chapter}{\numberline {1}Présentation Générale du Projet}{2}{chapter.1}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
@@ -248,48 +248,68 @@
 \newlabel{fig:marketplace}{{7.6}{45}{Interface du marketplace avec produits certifiés}{figure.caption.51}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {7.7}{\ignorespaces Machine à états d'une commande Jokko Agro}}{45}{figure.caption.52}\protected@file@percent }
 \newlabel{fig:etats_commande}{{7.7}{45}{Machine à états d'une commande Jokko Agro}{figure.caption.52}{}}
-\pgfsyspdfmark {pgfid169}{4736286}{50644704}
+\pgfsyspdfmark {pgfid170}{4736286}{50644704}
 \@writefile{toc}{\contentsline {chapter}{\numberline {8}Axe Sécurité et Cryptographie}{46}{chapter.8}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
 \pgfsyspdfmark {pgfid166}{4661699}{49591086}
 \@writefile{toc}{\contentsline {section}{\numberline {8.1}Architecture de sécurité}{46}{section.8.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {8.1}{\ignorespaces Capture des logs d'audit immuables de la plateforme}}{46}{figure.caption.53}\protected@file@percent }
-\newlabel{fig:audit-log}{{8.1}{46}{Capture des logs d'audit immuables de la plateforme}{figure.caption.53}{}}
-\pgfsyspdfmark {pgfid172}{4736286}{50644704}
-\@writefile{lof}{\contentsline {figure}{\numberline {8.2}{\ignorespaces Extrait des règles de sécurité Firestore}}{47}{figure.caption.54}\protected@file@percent }
-\newlabel{fig:security-rules}{{8.2}{47}{Extrait des règles de sécurité Firestore}{figure.caption.54}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {8.3}{\ignorespaces Architecture de sécurité en dix couches de Jokko Agro}}{47}{figure.caption.55}\protected@file@percent }
-\newlabel{fig:securite_couches}{{8.3}{47}{Architecture de sécurité en dix couches de Jokko Agro}{figure.caption.55}{}}
-\pgfsyspdfmark {pgfid173}{4736286}{50644704}
-\@writefile{toc}{\contentsline {section}{\numberline {8.2}Tableau récapitulatif des dix couches}{48}{section.8.2}\protected@file@percent }
-\pgfsyspdfmark {pgfid177}{4736286}{50644704}
-\@writefile{toc}{\contentsline {section}{\numberline {8.3}Description détaillée des couches}{49}{section.8.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.1}C1 — Clé privée IndexedDB (non extractable)}{49}{subsection.8.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.2}C2 — Validation serveur (Cloud Functions)}{49}{subsection.8.3.2}\protected@file@percent }
-\pgfsyspdfmark {pgfid180}{4736286}{50644704}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.3}C3 — Nonce anti-rejeu (UUID + timestamp)}{50}{subsection.8.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.4}C4 — Hash image SHA-256 (vérification IPFS serveur)}{50}{subsection.8.3.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8.1}{\ignorespaces Architecture de sécurité en dix couches de Jokko Agro}}{46}{figure.caption.53}\protected@file@percent }
+\newlabel{fig:securite_couches}{{8.1}{46}{Architecture de sécurité en dix couches de Jokko Agro}{figure.caption.53}{}}
+\pgfsyspdfmark {pgfid171}{4736286}{50644704}
+\@writefile{toc}{\contentsline {section}{\numberline {8.2}Tableau récapitulatif des dix couches}{47}{section.8.2}\protected@file@percent }
+\pgfsyspdfmark {pgfid175}{4736286}{50644704}
+\@writefile{toc}{\contentsline {section}{\numberline {8.3}Description détaillée des couches}{48}{section.8.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.1}C1 — Signatures ECDSA P-256 (Web Crypto API)}{48}{subsection.8.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.2}C2 — IndexedDB non extractable}{48}{subsection.8.3.2}\protected@file@percent }
+\pgfsyspdfmark {pgfid178}{4736286}{50644704}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.3}C3 — Validation serveur (Cloud Functions)}{49}{subsection.8.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.4}C4 — Nonce anti-rejeu (UUID + timestamp)}{49}{subsection.8.3.4}\protected@file@percent }
+\pgfsyspdfmark {pgfid181}{4736286}{50644704}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.5}C5 — Hash image SHA-256 (vérification IPFS serveur)}{50}{subsection.8.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.6}C6 — Ledger immuable (SHA-256 chaîné)}{50}{subsection.8.3.6}\protected@file@percent }
 \pgfsyspdfmark {pgfid183}{4736286}{50644704}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.5}C5 — Ledger immuable (SHA-256 chaîné)}{51}{subsection.8.3.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.6}C6 — Signatures ECDSA P-256 (Web Crypto API)}{51}{subsection.8.3.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.7}C7 — Chiffrement AES-GCM + PBKDF2 (310 000 itérations)}{51}{subsection.8.3.7}\protected@file@percent }
 \pgfsyspdfmark {pgfid186}{4736286}{50644704}
-\@writefile{lof}{\contentsline {figure}{\numberline {8.4}{\ignorespaces Cycle de vie des signatures ECDSA P-256}}{52}{figure.caption.56}\protected@file@percent }
-\newlabel{fig:ecdsa_cycle}{{8.4}{52}{Cycle de vie des signatures ECDSA P-256}{figure.caption.56}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.7}C7 — Escrow AGC (séquestre atomique)}{52}{subsection.8.3.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.8}C8 — Escrow AGC (séquestre atomique)}{52}{subsection.8.3.8}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8.2}{\ignorespaces Cycle de vie d'un paiement AGC avec escrow}}{52}{figure.caption.54}\protected@file@percent }
+\newlabel{fig:agc_escrow}{{8.2}{52}{Cycle de vie d'un paiement AGC avec escrow}{figure.caption.54}{}}
 \pgfsyspdfmark {pgfid188}{4736286}{50644704}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.8}C8 — Chiffrement AES-GCM + PBKDF2 (310 000 itérations)}{53}{subsection.8.3.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {8.3.9}C9 — Audit Trail immuable (journalisation write-only)}{53}{subsection.8.3.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.10}C10 — Firestore Security Rules (ownership + rate limiting)}{53}{subsection.8.3.10}\protected@file@percent }
+\pgfsyspdfmark {pgfid191}{4736286}{50644704}
+\@writefile{lof}{\contentsline {figure}{\numberline {8.3}{\ignorespaces Extrait des règles de sécurité Firestore}}{54}{figure.caption.55}\protected@file@percent }
+\newlabel{fig:security-rules}{{8.3}{54}{Extrait des règles de sécurité Firestore}{figure.caption.55}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8.4}{\ignorespaces Extrait des règles de sécurité Firestore}}{54}{figure.caption.55}\protected@file@percent }
+\newlabel{fig:security-rules}{{8.4}{54}{Extrait des règles de sécurité Firestore}{figure.caption.55}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {8.4}Scénarios d'attaque et complémentarité des couches}{54}{section.8.4}\protected@file@percent }
 \pgfsyspdfmark {pgfid192}{4736286}{50644704}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.10}C10 — Firestore Security Rules (ownership + rate limiting)}{54}{subsection.8.3.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8.4}Synthèse et complémentarité des couches}{54}{section.8.4}\protected@file@percent }
-\pgfsyspdfmark {pgfid195}{4736286}{50644704}
-\pgfsyspdfmark {pgfid197}{4736286}{50644704}
-\@writefile{toc}{\contentsline {section}{\numberline {8.5}Bonnes pratiques de sécurité implémentées}{56}{section.8.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8.6}Synthèse de l'axe Sécurité}{56}{section.8.6}\protected@file@percent }
-\pgfsyspdfmark {pgfid198}{4736286}{50644704}
-\pgfsyspdfmark {pgfid202}{4736286}{50644704}
-\@writefile{toc}{\contentsline {chapter}{Conclusion Générale}{58}{chapter*.57}\protected@file@percent }
-\pgfsyspdfmark {pgfid204}{4736286}{50644704}
-\@writefile{toc}{\contentsline {chapter}{Bibliographie}{59}{chapter*.58}\protected@file@percent }
-\gdef \@abspage@last{70}
+\@writefile{toc}{\contentsline {section}{\numberline {8.5}Tests de sécurité automatisés}{55}{section.8.5}\protected@file@percent }
+\pgfsyspdfmark {pgfid199}{4736286}{50644704}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.5.1}Architecture du tableau de bord}{56}{subsection.8.5.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8.5}{\ignorespaces Tableau de bord des tests de sécurité --- Vue d'ensemble}}{56}{figure.caption.56}\protected@file@percent }
+\newlabel{fig:security-dashboard}{{8.5}{56}{Tableau de bord des tests de sécurité --- Vue d'ensemble}{figure.caption.56}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.5.2}Jeu de tests implémentés}{56}{subsection.8.5.2}\protected@file@percent }
+\pgfsyspdfmark {pgfid206}{4736286}{50644704}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.5.3}Résultats des tests}{57}{subsection.8.5.3}\protected@file@percent }
+\pgfsyspdfmark {pgfid208}{4736286}{50644704}
+\@writefile{lof}{\contentsline {figure}{\numberline {8.6}{\ignorespaces Résultats des tests de sécurité sur la couche Ledger}}{58}{figure.caption.57}\protected@file@percent }
+\newlabel{fig:security-test-results-1}{{8.6}{58}{Résultats des tests de sécurité sur la couche Ledger}{figure.caption.57}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8.7}{\ignorespaces Résultats détaillés des tests sur la signature ECDSA}}{58}{figure.caption.57}\protected@file@percent }
+\newlabel{fig:security-test-results-2}{{8.7}{58}{Résultats détaillés des tests sur la signature ECDSA}{figure.caption.57}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8.8}{\ignorespaces Résultats des tests de sécurité sur le Chiffrement AEES}}{58}{figure.caption.58}\protected@file@percent }
+\newlabel{fig:security-test-results-3}{{8.8}{58}{Résultats des tests de sécurité sur le Chiffrement AEES}{figure.caption.58}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8.9}{\ignorespaces Résultats des tests de sécurité synthétisés}}{58}{figure.caption.58}\protected@file@percent }
+\newlabel{fig:security-test-results}{{8.9}{58}{Résultats des tests de sécurité synthétisés}{figure.caption.58}{}}
+\pgfsyspdfmark {pgfid211}{4736286}{50644704}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.5.4}Extraits de code du tableau de bord}{59}{subsection.8.5.4}\protected@file@percent }
+\pgfsyspdfmark {pgfid216}{4736286}{50644704}
+\pgfsyspdfmark {pgfid218}{4736286}{50644704}
+\@writefile{toc}{\contentsline {section}{\numberline {8.6}Bonnes pratiques de sécurité implémentées}{61}{section.8.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8.7}Synthèse de l'axe Sécurité}{61}{section.8.7}\protected@file@percent }
+\pgfsyspdfmark {pgfid219}{4736286}{50644704}
+\pgfsyspdfmark {pgfid223}{4736286}{50644704}
+\@writefile{toc}{\contentsline {chapter}{Conclusion Générale}{63}{chapter*.59}\protected@file@percent }
+\pgfsyspdfmark {pgfid225}{4736286}{50644704}
+\@writefile{toc}{\contentsline {chapter}{Bibliographie}{64}{chapter*.60}\protected@file@percent }
+\gdef \@abspage@last{75}

@@ -49,7 +49,12 @@
 \contentsline {figure}{\numberline {7.6}{\ignorespaces Interface du marketplace avec produits certifiés}}{45}{figure.caption.51}%
 \contentsline {figure}{\numberline {7.7}{\ignorespaces Machine à états d'une commande Jokko Agro}}{45}{figure.caption.52}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {8.1}{\ignorespaces Capture des logs d'audit immuables de la plateforme}}{46}{figure.caption.53}%
-\contentsline {figure}{\numberline {8.2}{\ignorespaces Extrait des règles de sécurité Firestore}}{47}{figure.caption.54}%
-\contentsline {figure}{\numberline {8.3}{\ignorespaces Architecture de sécurité en dix couches de Jokko Agro}}{47}{figure.caption.55}%
-\contentsline {figure}{\numberline {8.4}{\ignorespaces Cycle de vie des signatures ECDSA P-256}}{52}{figure.caption.56}%
+\contentsline {figure}{\numberline {8.1}{\ignorespaces Architecture de sécurité en dix couches de Jokko Agro}}{46}{figure.caption.53}%
+\contentsline {figure}{\numberline {8.2}{\ignorespaces Cycle de vie d'un paiement AGC avec escrow}}{52}{figure.caption.54}%
+\contentsline {figure}{\numberline {8.3}{\ignorespaces Extrait des règles de sécurité Firestore}}{54}{figure.caption.55}%
+\contentsline {figure}{\numberline {8.4}{\ignorespaces Extrait des règles de sécurité Firestore}}{54}{figure.caption.55}%
+\contentsline {figure}{\numberline {8.5}{\ignorespaces Tableau de bord des tests de sécurité --- Vue d'ensemble}}{56}{figure.caption.56}%
+\contentsline {figure}{\numberline {8.6}{\ignorespaces Résultats des tests de sécurité sur la couche Ledger}}{58}{figure.caption.57}%
+\contentsline {figure}{\numberline {8.7}{\ignorespaces Résultats détaillés des tests sur la signature ECDSA}}{58}{figure.caption.57}%
+\contentsline {figure}{\numberline {8.8}{\ignorespaces Résultats des tests de sécurité sur le Chiffrement AEES}}{58}{figure.caption.58}%
+\contentsline {figure}{\numberline {8.9}{\ignorespaces Résultats des tests de sécurité synthétisés}}{58}{figure.caption.58}%

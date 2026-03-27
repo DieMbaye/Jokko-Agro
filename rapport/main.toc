@@ -77,20 +77,25 @@
 \contentsline {section}{\numberline {7.5}Commerce et marketplace}{44}{section.7.5}%
 \contentsline {chapter}{\numberline {8}Axe Sécurité et Cryptographie}{46}{chapter.8}%
 \contentsline {section}{\numberline {8.1}Architecture de sécurité}{46}{section.8.1}%
-\contentsline {section}{\numberline {8.2}Tableau récapitulatif des dix couches}{48}{section.8.2}%
-\contentsline {section}{\numberline {8.3}Description détaillée des couches}{49}{section.8.3}%
-\contentsline {subsection}{\numberline {8.3.1}C1 — Clé privée IndexedDB (non extractable)}{49}{subsection.8.3.1}%
-\contentsline {subsection}{\numberline {8.3.2}C2 — Validation serveur (Cloud Functions)}{49}{subsection.8.3.2}%
-\contentsline {subsection}{\numberline {8.3.3}C3 — Nonce anti-rejeu (UUID + timestamp)}{50}{subsection.8.3.3}%
-\contentsline {subsection}{\numberline {8.3.4}C4 — Hash image SHA-256 (vérification IPFS serveur)}{50}{subsection.8.3.4}%
-\contentsline {subsection}{\numberline {8.3.5}C5 — Ledger immuable (SHA-256 chaîné)}{51}{subsection.8.3.5}%
-\contentsline {subsection}{\numberline {8.3.6}C6 — Signatures ECDSA P-256 (Web Crypto API)}{51}{subsection.8.3.6}%
-\contentsline {subsection}{\numberline {8.3.7}C7 — Escrow AGC (séquestre atomique)}{52}{subsection.8.3.7}%
-\contentsline {subsection}{\numberline {8.3.8}C8 — Chiffrement AES-GCM + PBKDF2 (310 000 itérations)}{53}{subsection.8.3.8}%
+\contentsline {section}{\numberline {8.2}Tableau récapitulatif des dix couches}{47}{section.8.2}%
+\contentsline {section}{\numberline {8.3}Description détaillée des couches}{48}{section.8.3}%
+\contentsline {subsection}{\numberline {8.3.1}C1 — Signatures ECDSA P-256 (Web Crypto API)}{48}{subsection.8.3.1}%
+\contentsline {subsection}{\numberline {8.3.2}C2 — IndexedDB non extractable}{48}{subsection.8.3.2}%
+\contentsline {subsection}{\numberline {8.3.3}C3 — Validation serveur (Cloud Functions)}{49}{subsection.8.3.3}%
+\contentsline {subsection}{\numberline {8.3.4}C4 — Nonce anti-rejeu (UUID + timestamp)}{49}{subsection.8.3.4}%
+\contentsline {subsection}{\numberline {8.3.5}C5 — Hash image SHA-256 (vérification IPFS serveur)}{50}{subsection.8.3.5}%
+\contentsline {subsection}{\numberline {8.3.6}C6 — Ledger immuable (SHA-256 chaîné)}{50}{subsection.8.3.6}%
+\contentsline {subsection}{\numberline {8.3.7}C7 — Chiffrement AES-GCM + PBKDF2 (310 000 itérations)}{51}{subsection.8.3.7}%
+\contentsline {subsection}{\numberline {8.3.8}C8 — Escrow AGC (séquestre atomique)}{52}{subsection.8.3.8}%
 \contentsline {subsection}{\numberline {8.3.9}C9 — Audit Trail immuable (journalisation write-only)}{53}{subsection.8.3.9}%
-\contentsline {subsection}{\numberline {8.3.10}C10 — Firestore Security Rules (ownership + rate limiting)}{54}{subsection.8.3.10}%
-\contentsline {section}{\numberline {8.4}Synthèse et complémentarité des couches}{54}{section.8.4}%
-\contentsline {section}{\numberline {8.5}Bonnes pratiques de sécurité implémentées}{56}{section.8.5}%
-\contentsline {section}{\numberline {8.6}Synthèse de l'axe Sécurité}{56}{section.8.6}%
-\contentsline {chapter}{Conclusion Générale}{58}{chapter*.57}%
-\contentsline {chapter}{Bibliographie}{59}{chapter*.58}%
+\contentsline {subsection}{\numberline {8.3.10}C10 — Firestore Security Rules (ownership + rate limiting)}{53}{subsection.8.3.10}%
+\contentsline {section}{\numberline {8.4}Scénarios d'attaque et complémentarité des couches}{54}{section.8.4}%
+\contentsline {section}{\numberline {8.5}Tests de sécurité automatisés}{55}{section.8.5}%
+\contentsline {subsection}{\numberline {8.5.1}Architecture du tableau de bord}{56}{subsection.8.5.1}%
+\contentsline {subsection}{\numberline {8.5.2}Jeu de tests implémentés}{56}{subsection.8.5.2}%
+\contentsline {subsection}{\numberline {8.5.3}Résultats des tests}{57}{subsection.8.5.3}%
+\contentsline {subsection}{\numberline {8.5.4}Extraits de code du tableau de bord}{59}{subsection.8.5.4}%
+\contentsline {section}{\numberline {8.6}Bonnes pratiques de sécurité implémentées}{61}{section.8.6}%
+\contentsline {section}{\numberline {8.7}Synthèse de l'axe Sécurité}{61}{section.8.7}%
+\contentsline {chapter}{Conclusion Générale}{63}{chapter*.59}%
+\contentsline {chapter}{Bibliographie}{64}{chapter*.60}%
