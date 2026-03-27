@@ -22,7 +22,8 @@
           "border-color: color-mix(in srgb, var(--lc) 50%, transparent)",
           "border: 1px solid color-mix(in srgb,var(--lc) 25%,transparent)",
           "border-color: color-mix(in srgb,var(--lc) 50%,transparent)",
-          "color: color-mix(in srgb,var(--lc) 80%,#fff)"
+          "color: color-mix(in srgb,var(--lc) 80%,#fff)",
+          "mask-image"
         ]
       }
     ],

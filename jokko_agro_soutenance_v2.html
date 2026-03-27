@@ -38,20 +38,8 @@ body::after{
   padding:0 2rem
 }
 .logo{font-family:"Syne",sans-serif;font-size:1.1rem;font-weight:800;
-  letter-spacing:.05em;color:var(--neon);display:flex;align-items:center;gap:.7rem}
+  letter-spacing:.05em;color:var(--neon)}
 .logo em{color:var(--gold);font-style:normal}
-
-/* ── LOGO TOPBAR SLOT ── */
-.logo-img-slot{
-  width:32px;height:32px;border-radius:6px;
-  border:1px dashed rgba(74,222,128,.4);
-  background:rgba(74,222,128,.05);
-  display:flex;align-items:center;justify-content:center;
-  overflow:hidden;flex-shrink:0;cursor:pointer
-}
-.logo-img-slot img{width:100%;height:100%;object-fit:contain}
-.logo-img-slot .slot-hint{font-size:.42rem;color:rgba(74,222,128,.5);text-align:center;line-height:1.3;padding:2px;pointer-events:none}
-
 .nav-pills{display:flex;gap:.25rem}
 .pill{
   font-family:"IBM Plex Mono",monospace;font-size:.6rem;font-weight:500;
@@ -214,7 +202,7 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
   text-transform:uppercase;letter-spacing:.15em}
 .sh-name{font-family:"Syne",sans-serif;font-size:1rem;font-weight:700}
 
-/* ── AXIS WHEEL ── */
+/* ── AXIS WHEEL (slide 4) ── */
 .wheel{display:grid;grid-template-columns:1fr 1fr;gap:1rem;width:100%}
 .axbox{
   border-radius:16px;padding:1.4rem;
@@ -318,128 +306,135 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
 #s14 .bg{background:radial-gradient(ellipse 50% 50% at 15% 30%,rgba(248,113,113,.08) 0%,transparent 60%)}
 #s15 .bg{background:radial-gradient(ellipse 60% 55% at 50% -5%,rgba(248,113,113,.09) 0%,transparent 65%)}
 #s16 .bg{background:radial-gradient(ellipse 60% 55% at 85% 20%,rgba(74,222,128,.09) 0%,transparent 65%)}
+#s17 .bg{background:radial-gradient(ellipse 60% 55% at 50% -5%,rgba(74,222,128,.09) 0%,transparent 65%)}
 
 /* ── SECURITY SLIDES CUSTOM STYLES ── */
-.sec-layer-card{
-  background:rgba(6,16,10,.5);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:16px;
-  padding:.8rem .5rem;
-  text-align:center;
-  transition:all .2s ease;
-  backdrop-filter:blur(4px);
+.sec-layer-card {
+  background: rgba(6,16,10,.5);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  padding: .8rem .5rem;
+  text-align: center;
+  transition: all .2s ease;
+  backdrop-filter: blur(4px);
 }
-.sec-layer-card:hover{
-  transform:translateY(-3px);
-  border-color:var(--lc,var(--neon));
-  box-shadow:0 8px 20px rgba(0,0,0,.3);
+.sec-layer-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--lc, var(--neon));
+  box-shadow: 0 8px 20px rgba(0,0,0,.3);
 }
-.slc-num{font-family:"IBM Plex Mono",monospace;font-size:.7rem;font-weight:600;color:var(--lc,var(--neon));margin-bottom:.4rem}
-.slc-icon{font-size:1.4rem;margin-bottom:.3rem}
-.slc-title{font-family:"Syne",sans-serif;font-size:.7rem;font-weight:700;line-height:1.3;margin-bottom:.3rem}
-.slc-tech{font-family:"IBM Plex Mono",monospace;font-size:.5rem;color:var(--muted);margin-bottom:.3rem}
-.slc-desc{font-size:.55rem;color:var(--cream);opacity:.7}
-
-.sec-detail-card{
-  background:rgba(6,16,10,.5);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:14px;
-  transition:all .2s;
+.slc-num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .7rem;
+  font-weight: 600;
+  color: var(--lc, var(--neon));
+  margin-bottom: .4rem;
 }
-.sec-detail-card:hover{border-color:rgba(74,222,128,.3)}
-.sdc-header{display:flex;align-items:center;gap:.7rem;padding:.8rem 1rem .4rem 1rem;border-bottom:1px solid rgba(255,255,255,.05)}
-.sdc-badge{font-family:"IBM Plex Mono",monospace;font-size:.65rem;font-weight:700;padding:.2rem .6rem;border-radius:20px;background:var(--neon);color:#06100a}
-.sdc-title{font-family:"Syne",sans-serif;font-size:.85rem;font-weight:700}
-.sdc-sub{font-family:"IBM Plex Mono",monospace;font-size:.55rem;color:var(--muted);margin-left:auto}
-.sdc-body{padding:.8rem 1rem 1rem 1rem}
-.sdc-tech{font-family:"IBM Plex Mono",monospace;font-size:.6rem;color:var(--cyan);margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px dashed rgba(255,255,255,.1)}
-.sdc-label{font-size:.55rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-right:.5rem}
-.sdc-desc{font-size:.72rem;line-height:1.5;color:var(--cream);opacity:.85}
-.sdc-code{font-family:"IBM Plex Mono",monospace;font-size:.6rem;background:rgba(0,0,0,.4);padding:.5rem;border-radius:8px;margin-top:.6rem;color:var(--muted);overflow-x:auto}
-
-/* ══════════════════════════════════════
-   PHOTO PLACEHOLDER SYSTEM
-══════════════════════════════════════ */
-.photo-slot{
-  position:relative;
-  border-radius:12px;
-  border:1.5px dashed rgba(74,222,128,.35);
-  background:rgba(74,222,128,.04);
-  overflow:hidden;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  gap:.5rem;
-  min-height:120px;
-  transition:border-color .2s,background .2s;
+.slc-icon { font-size: 1.4rem; margin-bottom: .3rem; }
+.slc-title {
+  font-family: "Syne", sans-serif;
+  font-size: .7rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: .3rem;
 }
-.photo-slot:hover{border-color:rgba(74,222,128,.65);background:rgba(74,222,128,.07)}
-.photo-slot.bc-slot{border-color:rgba(34,211,238,.35);background:rgba(34,211,238,.04)}
-.photo-slot.bc-slot:hover{border-color:rgba(34,211,238,.65)}
-.photo-slot.y-slot{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.04)}
-.photo-slot.y-slot:hover{border-color:rgba(251,191,36,.65)}
-.photo-slot.r-slot{border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.04)}
-.photo-slot.r-slot:hover{border-color:rgba(248,113,113,.65)}
-.photo-slot.m-slot{border-color:rgba(192,132,252,.35);background:rgba(192,132,252,.04)}
-.photo-slot.m-slot:hover{border-color:rgba(192,132,252,.65)}
-
-.photo-slot img{
-  width:100%;height:100%;
-  object-fit:cover;
-  position:absolute;inset:0;
-  border-radius:11px;
+.slc-tech {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .5rem;
+  color: var(--muted);
+  margin-bottom: .3rem;
 }
-.slot-icon{font-size:1.5rem;opacity:.5}
-.slot-label{
-  font-family:"IBM Plex Mono",monospace;
-  font-size:.55rem;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  color:rgba(74,222,128,.6);
-  text-align:center;
-  padding:0 .8rem;
-  line-height:1.5;
-}
-.slot-label.bc{color:rgba(34,211,238,.6)}
-.slot-label.y{color:rgba(251,191,36,.6)}
-.slot-label.r{color:rgba(248,113,113,.6)}
-.slot-label.m{color:rgba(192,132,252,.6)}
-
-.slot-url{
-  font-family:"IBM Plex Mono",monospace;
-  font-size:.5rem;
-  color:rgba(74,222,128,.4);
-  padding:.2rem .6rem;
-  background:rgba(74,222,128,.06);
-  border:1px solid rgba(74,222,128,.2);
-  border-radius:4px;
-  margin-top:.2rem;
+.slc-desc {
+  font-size: .55rem;
+  color: var(--cream);
+  opacity: .7;
 }
 
-/* ── LOGO SLOT (slide 1 & 16) ── */
-.logo-slot{
-  width:80px;height:80px;border-radius:12px;
-  border:2px dashed rgba(74,222,128,.4);
-  background:rgba(74,222,128,.05);
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  gap:.3rem;overflow:hidden;flex-shrink:0;
+.sec-detail-card {
+  background: rgba(6,16,10,.5);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  transition: all .2s;
 }
-.logo-slot img{width:100%;height:100%;object-fit:contain}
-.logo-slot .slot-hint{font-family:"IBM Plex Mono",monospace;font-size:.45rem;color:rgba(74,222,128,.5);text-align:center;line-height:1.4;padding:4px}
+.sec-detail-card:hover {
+  border-color: rgba(74,222,128,.3);
+}
+.sdc-header {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .8rem 1rem .4rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.sdc-badge {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .65rem;
+  font-weight: 700;
+  padding: .2rem .6rem;
+  border-radius: 20px;
+  background: var(--neon);
+  color: #06100a;
+}
+.sdc-title {
+  font-family: "Syne", sans-serif;
+  font-size: .85rem;
+  font-weight: 700;
+}
+.sdc-sub {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .55rem;
+  color: var(--muted);
+  margin-left: auto;
+}
+.sdc-body {
+  padding: .8rem 1rem 1rem 1rem;
+}
+.sdc-tech {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .6rem;
+  color: var(--cyan);
+  margin-bottom: .6rem;
+  padding-bottom: .4rem;
+  border-bottom: 1px dashed rgba(255,255,255,.1);
+}
+.sdc-label {
+  font-size: .55rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+  margin-right: .5rem;
+}
+.sdc-desc {
+  font-size: .72rem;
+  line-height: 1.5;
+  color: var(--cream);
+  opacity: .85;
+}
+.sdc-code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .6rem;
+  background: rgba(0,0,0,.4);
+  padding: .5rem;
+  border-radius: 8px;
+  margin-top: .6rem;
+  color: var(--muted);
+  overflow-x: auto;
+}
+.sec-section-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .6rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: .6rem;
+  color: var(--muted);
+}
 </style>
 </head>
 <body>
 
 <!-- TOPBAR -->
 <div id="topbar">
-  <div class="logo">
-    <!-- ═══ LOGO TOPBAR — remplacer src="" par l'URL de votre logo ═══ -->
-<div class="logo-img-slot" title="Logo Jokko Agro">
-  <img src="src/assets/logo/JK.png" alt="Logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-  <span class="slot-hint" style="display:none">LOGO<br>32px</span>
-</div>
-    JOKKO <em>AGRO</em>
-  </div>
+  <div class="logo">JOKKO <em>AGRO</em></div>
   <div class="nav-pills" id="pills">
     <div class="pill" data-idx="0">Intro</div>
     <div class="pill" data-idx="1">Existant</div>
@@ -450,61 +445,42 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
     <div class="pill" data-idx="13">Sécurité</div>
     <div class="pill" data-idx="16">Conclusion</div>
   </div>
-  <div id="ctr">01 / 17</div>
+  <div id="ctr">01 / 18</div>
 </div>
 
 <div id="deck">
 
-<!-- ════════════════════════════════════════════
-     SLIDE 01 — COVER
-     Pas de capture nécessaire, impact visuel conservé
-     Logo principal : remplacer src="" par l'URL du logo
-════════════════════════════════════════════ -->
+<!-- SLIDE 01 — COVER -->
 <div class="slide active" id="s1">
   <div class="bg"></div>
   <div class="cover-glow"></div>
   <div class="cover-ring"></div>
   <div class="cover-ring2"></div>
   <div class="cover-dot-grid"></div>
-  <div style="max-width:720px;display:flex;gap:2.5rem;align-items:center">
-    <div style="flex:1">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:2rem">
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.2em;text-transform:uppercase">UCAD · Licence 3 TDSI · 2024–2025</span>
-      </div>
-      <div style="margin-bottom:1.2rem">
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--neon);letter-spacing:.18em;text-transform:uppercase">Mémoire de Soutenance</span>
-      </div>
-      <h1 class="big" style="font-size:clamp(3.5rem,7vw,6.5rem);margin-bottom:.6rem">JOKKO<br><span class="g">AGRO</span></h1>
-      <p style="font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--cyan);letter-spacing:.04em;margin-bottom:2rem">Plateforme Blockchain-IA pour la certification<br>et la monétisation des produits agricoles</p>
-      <div class="bar"></div>
-      <div style="display:flex;gap:3rem;margin-bottom:2.5rem">
-        <div><div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Présenté par</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem">Die Mbaye</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem">Mouhamad Al Amine Ba</div></div>
-        <div><div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Sous la direction de</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem">Mme Ba Aminata</div></div>
-      </div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap">
-        <span class="pbadge">🤖 IA Bilingue FR/Wolof</span>
-        <span class="pbadge bc">⛓️ Blockchain Ethereum</span>
-        <span class="pbadge y">🪙 Agricoins AGC</span>
-        <span class="pbadge r">🔐 Sécurité 10 couches</span>
-      </div>
+  <div style="max-width:720px">
+    <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:2rem">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.2em;text-transform:uppercase">UCAD · Licence 3 TDSI · 2024–2025</span>
     </div>
-    <!-- ═══ LOGO PRINCIPAL COVER — remplacer src="" par l'URL du logo ═══ -->
-<div style="display:flex;flex-direction:column;align-items:center;gap:.5rem;flex-shrink:0">
-  <div class="logo-slot" title="Logo principal Jokko Agro">
-    <img src="src/assets/logo/JK.png" alt="Logo Jokko Agro" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-    <span class="slot-hint" style="display:none">LOGO<br>JOKKO AGRO<br>non chargé</span>
-  </div>
-  <span style="font-family:'IBM Plex Mono',monospace;font-size:.45rem;color:rgba(74,222,128,.35);text-align:center">logo principal</span>
-</div>
+    <div style="margin-bottom:1.2rem">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--neon);letter-spacing:.18em;text-transform:uppercase">Mémoire de Soutenance</span>
+    </div>
+    <h1 class="big" style="font-size:clamp(3.5rem,7vw,6.5rem);margin-bottom:.6rem">JOKKO<br><span class="g">AGRO</span></h1>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--cyan);letter-spacing:.04em;margin-bottom:2rem">Plateforme Blockchain-IA pour la certification<br>et la monétisation des produits agricoles</p>
+    <div class="bar"></div>
+    <div style="display:flex;gap:3rem;margin-bottom:2.5rem">
+      <div><div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Présenté par</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem">Die Mbaye</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem">Mouhamad Al Amine Ba</div></div>
+      <div><div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Sous la direction de</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem">Mme Ba Aminata</div></div>
+    </div>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+      <span class="pbadge">🤖 IA Bilingue FR/Wolof</span>
+      <span class="pbadge bc">⛓️ Blockchain Ethereum</span>
+      <span class="pbadge y">🪙 Agricoins AGC</span>
+      <span class="pbadge r">🔐 Sécurité 10 couches</span>
+    </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 02 — CONTEXTE & PROBLÉMATIQUE
-     📸 PHOTO : Carte du Sénégal / infographie
-     Emplacement : colonne droite, à côté du "triple problème"
-     → Remplacer src="" dans .photo-slot par l'URL
-════════════════════════════════════════════ -->
+<!-- SLIDE 02 — CONTEXTE & PROBLÉMATIQUE -->
 <div class="slide" id="s2">
   <div class="bg"></div>
   <div class="tag">01 — Introduction</div>
@@ -520,16 +496,7 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
           <div><div class="snum">7.5M</div><div class="slbl">personnes rurales</div></div>
         </div>
       </div>
-      <!-- ═══ PHOTO S2 — Carte Sénégal / zones agricoles ═══
-           Remplacer src="" par l'URL de votre image
-           Exemple : src="https://monserveur.com/carte-senegal.png" -->
-      <div class="photo-slot" style="height:120px;margin-top:.8rem" title="Photo Slide 2 — Carte Sénégal / infographie chiffres clés">
-        <img src="" alt="Carte Sénégal zones agricoles" onerror="this.style.display='none'"/>
-        <span class="slot-icon">🗺️</span>
-        <span class="slot-label">Carte Sénégal / Infographie<br>chiffres clés agricoles</span>
-        <span class="slot-url">↑ src="" → coller l'URL photo ici</span>
-      </div>
-      <div class="card" style="margin-top:.8rem">
+      <div class="card" style="margin-top:1.2rem">
         <div class="clabel">Contexte numérique favorable</div>
         <ul class="ilist" style="margin-top:.5rem"><li>Couverture mobile &gt;95% urbain, 70% rural</li><li>8M+ utilisateurs Wave / Orange Money actifs</li><li>Mais agriculture reste <strong style="color:var(--cream)">sous-numérisée</strong></li></ul>
       </div>
@@ -545,12 +512,7 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 03 — ÉTAT DE L'EXISTANT
-     📸 PHOTOS : 4 captures interfaces (Esoko, Farmcrowdy, M-Farm, Agri-Wallet)
-     Emplacement : grille 4 miniatures côte à côte, au-dessus des cards
-     → Remplacer chaque src="" par l'URL de la capture correspondante
-════════════════════════════════════════════ -->
+<!-- SLIDE 03 — ÉTAT DE L'EXISTANT -->
 <div class="slide" id="s3">
   <div class="bg"></div>
   <div class="tag">02 — État de l'existant</div>
@@ -558,27 +520,7 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
   <div class="bar"></div>
   <div class="g2">
     <div>
-      <div class="clabel" style="margin-bottom:.6rem">Plateformes africaines existantes</div>
-      <!-- ═══ PHOTOS S3 — 4 captures d'interfaces concurrentes ═══
-           Remplacer chaque src="" par l'URL de la capture correspondante -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:.8rem">
-        <div class="photo-slot" style="height:72px" title="Capture Esoko — remplacer src">
-          <img src="" alt="Esoko interface" onerror="this.style.display='none'"/>
-          <span class="slot-label" style="font-size:.48rem">Esoko<br>🇬🇭 Ghana</span>
-        </div>
-        <div class="photo-slot" style="height:72px" title="Capture Farmcrowdy — remplacer src">
-          <img src="" alt="Farmcrowdy interface" onerror="this.style.display='none'"/>
-          <span class="slot-label" style="font-size:.48rem">Farmcrowdy<br>🇳🇬 Nigeria</span>
-        </div>
-        <div class="photo-slot" style="height:72px" title="Capture M-Farm / DigiFarm — remplacer src">
-          <img src="" alt="M-Farm interface" onerror="this.style.display='none'"/>
-          <span class="slot-label" style="font-size:.48rem">M-Farm<br>🇰🇪 Kenya</span>
-        </div>
-        <div class="photo-slot" style="height:72px" title="Capture Agri-Wallet — remplacer src">
-          <img src="" alt="Agri-Wallet interface" onerror="this.style.display='none'"/>
-          <span class="slot-label" style="font-size:.48rem">Agri-Wallet<br>🇰🇪 Kenya</span>
-        </div>
-      </div>
+      <div class="clabel" style="margin-bottom:.8rem">Plateformes africaines existantes</div>
       <div class="gcol">
         <div class="card" style="display:flex;gap:1rem;align-items:center"><div style="font-size:1.2rem">🇬🇭</div><div><div class="ctitle" style="font-size:.8rem">Esoko (Ghana)</div><div class="ctext">Prix de marchés par SMS — pas de traçabilité ni d'IA</div></div></div>
         <div class="card" style="display:flex;gap:1rem;align-items:center"><div style="font-size:1.2rem">🇳🇬</div><div><div class="ctitle" style="font-size:.8rem">Farmcrowdy (Nigeria)</div><div class="ctext">Financement participatif — pas de certification blockchain</div></div></div>
@@ -599,12 +541,7 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 04 — ARCHITECTURE GLOBALE
-     📸 PHOTO / SCHÉMA : Diagramme d'architecture technique (4 axes)
-     Emplacement : colonne droite, remplaçant ou complétant les "Interactions clés"
-     → Remplacer src="" par l'URL de votre schéma vectoriel
-════════════════════════════════════════════ -->
+<!-- SLIDE 04 — ARCHITECTURE GLOBALE -->
 <div class="slide" id="s4">
   <div class="bg"></div>
   <div class="tag">03 — Architecture</div>
@@ -620,31 +557,18 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
       </div>
     </div>
     <div>
-      <!-- ═══ PHOTO S4 — Diagramme d'architecture technique ═══
-           Remplacer src="" par l'URL du schéma vectoriel (PNG/SVG)
-           avec flèches d'interconnexion entre les 4 axes -->
-      <div class="photo-slot" style="height:160px;margin-bottom:1rem" title="Diagramme architecture technique — remplacer src">
-        <img src="" alt="Diagramme architecture Jokko Agro" onerror="this.style.display='none'"/>
-        <span class="slot-icon">🏗️</span>
-        <span class="slot-label">Diagramme d'architecture<br>Schéma vectoriel 4 axes<br>avec flèches d'interconnexion</span>
-        <span class="slot-url">↑ src="" → coller l'URL du schéma</span>
-      </div>
       <div class="clabel" style="margin-bottom:.8rem">Interactions clés entre axes</div>
       <div class="gcol">
         <div class="card" style="border-color:rgba(74,222,128,.2)"><div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.3rem"><span style="font-size:.9rem">🤖</span><span style="font-size:.6rem;color:var(--neon)">→</span><span style="font-size:.9rem">⛓️</span></div><div class="ctitle" style="font-size:.78rem">IA valide avant Blockchain</div><div class="ctext">La vision anti-fraude (TensorFlow.js) valide la photo + GPS <em>avant</em> que le hash soit enregistré on-chain.</div></div>
         <div class="card" style="border-color:rgba(34,211,238,.2)"><div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.3rem"><span style="font-size:.9rem">⛓️</span><span style="font-size:.6rem;color:var(--cyan)">→</span><span style="font-size:.9rem">🪙</span></div><div class="ctitle" style="font-size:.78rem">Blockchain déclenche AGC</div><div class="ctext">Une certification blockchain validée déclenche automatiquement un bonus Agricoins au producteur.</div></div>
         <div class="card" style="border-color:rgba(248,113,113,.2)"><div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.3rem"><span style="font-size:.9rem">🔐</span><span style="font-size:.6rem;color:var(--red)">↔</span><span style="font-size:.9rem">Tous</span></div><div class="ctitle" style="font-size:.78rem">Sécurité est transversale</div><div class="ctext">Chaque action (certification, paiement AGC, connexion) est signée ECDSA et journalisée dans l'Audit Trail.</div></div>
+        <div class="card" style="border-color:rgba(251,191,36,.2)"><div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.3rem"><span style="font-size:.9rem">🪙</span><span style="font-size:.6rem;color:var(--gold)">→</span><span style="font-size:.9rem">⛓️</span></div><div class="ctitle" style="font-size:.78rem">Escrow AGC sur Blockchain</div><div class="ctext">Le cycle lock/release du séquestre AGC est enregistré dans le Ledger SHA-256 pour traçabilité totale.</div></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 05 — STACK TECHNIQUE
-     📸 PHOTO : Capture code Angular/Firebase ou structure des services
-     Emplacement : colonne droite, sous les "Acteurs"
-     → Remplacer src="" par l'URL de la capture code TypeScript / Firebase
-════════════════════════════════════════════ -->
+<!-- SLIDE 05 — STACK TECHNIQUE -->
 <div class="slide" id="s5">
   <div class="bg"></div>
   <div class="tag">03 — Technologies</div>
@@ -667,26 +591,12 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
         <div class="card" style="border-color:rgba(74,222,128,.25)"><div style="font-size:2rem;margin-bottom:.5rem">👨‍🌾</div><div class="ctitle">Producteur</div><ul class="ilist" style="margin-top:.4rem"><li style="font-size:.7rem">Ajoute et certifie ses produits</li><li style="font-size:.7rem">Reçoit des Agricoins (récompenses)</li><li style="font-size:.7rem">Vend sur la marketplace</li><li style="font-size:.7rem">Consulte le chatbot Wolof</li></ul></div>
         <div class="card bc"><div style="font-size:2rem;margin-bottom:.5rem">🛒</div><div class="ctitle">Acheteur</div><ul class="ilist bc" style="margin-top:.4rem"><li style="font-size:.7rem">Achète et vérifie la certification</li><li style="font-size:.7rem">Paie en AGC ou mobile money</li><li style="font-size:.7rem">Bénéficie de l'escrow sécurisé</li><li style="font-size:.7rem">Accès au chatbot agronomique</li></ul></div>
       </div>
-      <!-- ═══ PHOTO S5 — Capture code Angular / Firebase ═══
-           Remplacer src="" par l'URL de la capture TypeScript ou structure Firebase -->
-      <div class="photo-slot" style="height:110px;margin-top:.8rem" title="Capture code Angular/Firebase — remplacer src">
-        <img src="" alt="Code Angular TypeScript ou Firebase structure" onerror="this.style.display='none'"/>
-        <span class="slot-icon">💻</span>
-        <span class="slot-label">Capture code TypeScript Angular<br>ou structure des services Firebase</span>
-        <span class="slot-url">↑ src="" → coller l'URL capture code</span>
-      </div>
-      <div class="card" style="margin-top:.8rem;background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.2)"><div class="clabel">Socle commun</div><div class="chips" style="margin-top:.4rem"><span class="chip">Angular 17</span><span class="chip">Firebase</span><span class="chip">Firestore</span><span class="chip">TypeScript</span><span class="chip">PWA</span><span class="chip">Remix IDE</span><span class="chip">GitHub</span></div></div>
+      <div class="card" style="margin-top:1rem;background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.2)"><div class="clabel">Socle commun</div><div class="chips" style="margin-top:.4rem"><span class="chip">Angular 17</span><span class="chip">Firebase</span><span class="chip">Firestore</span><span class="chip">TypeScript</span><span class="chip">PWA</span><span class="chip">Remix IDE</span><span class="chip">GitHub</span></div></div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 06 — AXE IA : CHATBOT & VOIX
-     📸 PHOTOS :
-       - Capture interface chatbot FR/Wolof (colonne gauche, sous le flux)
-       - Capture interface reconnaissance vocale (colonne droite, sous le flux)
-     → Remplacer chaque src="" par l'URL correspondante
-════════════════════════════════════════════ -->
+<!-- SLIDE 06 — AXE IA : CHATBOT & VOIX -->
 <div class="slide" id="s6">
   <div class="bg"></div>
   <div class="tag">04 — Axe Intelligence Artificielle</div>
@@ -695,50 +605,18 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
   <div class="g2">
     <div>
       <div class="clabel" style="margin-bottom:.7rem">Chatbot agronomique — flux complet</div>
-      <div class="flow">
-        <div class="fs"><div class="fn">1</div><div><h4>Question agriculteur</h4><p>En français ou Wolof, depuis le texte ou par la voix</p></div></div>
-        <div class="fs"><div class="fn">2</div><div><h4>Historique + Prompt système</h4><p>Contexte sénégalais : cultures locales, sols, saisons, parasites</p></div></div>
-        <div class="fs"><div class="fn y">3</div><div><h4>Claude API — claude-sonnet</h4><p>LLM Anthropic · compréhension contextuelle · gestion native Wolof</p></div></div>
-        <div class="fs"><div class="fn">4</div><div><h4>Conseil agronomique personnalisé</h4><p>Réponse en FR ou Wolof selon la langue de l'utilisateur</p></div></div>
-      </div>
+      <div class="flow"><div class="fs"><div class="fn">1</div><div><h4>Question agriculteur</h4><p>En français ou Wolof, depuis le texte ou par la voix</p></div></div><div class="fs"><div class="fn">2</div><div><h4>Historique + Prompt système</h4><p>Contexte sénégalais : cultures locales, sols, saisons, parasites</p></div></div><div class="fs"><div class="fn y">3</div><div><h4>Claude API — claude-sonnet</h4><p>LLM Anthropic · compréhension contextuelle · gestion native Wolof</p></div></div><div class="fs"><div class="fn">4</div><div><h4>Conseil agronomique personnalisé</h4><p>Réponse en FR ou Wolof selon la langue de l'utilisateur</p></div></div></div>
       <div style="background:rgba(74,222,128,.04);border:1px solid rgba(74,222,128,.15);border-radius:10px;padding:.9rem 1.1rem;margin-top:.8rem;font-family:'IBM Plex Mono',monospace;font-size:.7rem;line-height:1.7"><div style="font-size:.55rem;color:var(--neon);text-transform:uppercase;letter-spacing:.15em;margin-bottom:.4rem">Exemple réel</div><span style="color:var(--neon)">Agriculteur :</span> "Ndax mango bi dafa am problème?"<br><span style="color:var(--cyan)">Claude :</span> <span style="color:var(--muted)">Conseil Wolof sur les parasites de la mangue</span></div>
-      <!-- ═══ PHOTO S6a — Interface chatbot FR/Wolof ═══
-           Remplacer src="" par l'URL du mockup chatbot -->
-      <div class="photo-slot" style="height:100px;margin-top:.7rem" title="Interface chatbot FR/Wolof — remplacer src">
-        <img src="" alt="Interface chatbot Wolof" onerror="this.style.display='none'"/>
-        <span class="slot-icon">💬</span>
-        <span class="slot-label">Mockup interface chatbot<br>Conversation FR / Wolof</span>
-        <span class="slot-url">↑ src="" → coller l'URL capture chatbot</span>
-      </div>
     </div>
     <div>
       <div class="clabel" style="color:var(--amber);margin-bottom:.7rem">Voix Wolof — défi technique résolu</div>
       <div class="card" style="border-color:rgba(245,158,11,.2);margin-bottom:.9rem"><div class="clabel" style="color:var(--amber)">⚡ Le problème</div><p class="ctext" style="margin-top:.4rem">La Web Speech API <strong style="color:var(--cream)">ne supporte pas le Wolof nativement.</strong> Une couche de post-traitement phonologique propriétaire corrige les sons aspirés et tons spécifiques.</p></div>
-      <div class="flow">
-        <div class="fs"><div class="fn y">1</div><div><h4>Capture audio</h4><p>getUserMedia · SpeechRecognition · 44.1 kHz</p></div></div>
-        <div class="fs"><div class="fn y">2</div><div><h4>Transcription brute</h4><p>Web Speech API → texte approximatif en "pseudo-français"</p></div></div>
-        <div class="fs"><div class="fn y">3</div><div><h4>Post-traitement phonologique</h4><p>Normalisation sons aspirés, tons Wolof → texte corrigé</p></div></div>
-        <div class="fs"><div class="fn y">4</div><div><h4>Envoi au chatbot</h4><p>Texte normalisé transmis à Claude comme saisie texte standard</p></div></div>
-      </div>
-      <!-- ═══ PHOTO S6b — Interface reconnaissance vocale ═══
-           Remplacer src="" par l'URL du mockup voix -->
-      <div class="photo-slot y-slot" style="height:80px;margin-top:.7rem" title="Interface reconnaissance vocale — remplacer src">
-        <img src="" alt="Interface reconnaissance vocale Wolof" onerror="this.style.display='none'"/>
-        <span class="slot-icon">🎙️</span>
-        <span class="slot-label y">Mockup interface reconnaissance vocale<br>Wolof</span>
-        <span class="slot-url" style="color:rgba(251,191,36,.4)">↑ src="" → coller l'URL capture voix</span>
-      </div>
+      <div class="flow"><div class="fs"><div class="fn y">1</div><div><h4>Capture audio</h4><p>getUserMedia · SpeechRecognition · 44.1 kHz</p></div></div><div class="fs"><div class="fn y">2</div><div><h4>Transcription brute</h4><p>Web Speech API → texte approximatif en "pseudo-français"</p></div></div><div class="fs"><div class="fn y">3</div><div><h4>Post-traitement phonologique</h4><p>Normalisation sons aspirés, tons Wolof → texte corrigé</p></div></div><div class="fs"><div class="fn y">4</div><div><h4>Envoi au chatbot</h4><p>Texte normalisé transmis à Claude comme saisie texte standard</p></div></div></div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 07 — AXE IA : VISION & GPS
-     📸 PHOTOS :
-       - Capture validation image TensorFlow.js (colonne gauche)
-       - Capture validation GPS avec carte (colonne droite)
-     → Remplacer chaque src="" par l'URL correspondante
-════════════════════════════════════════════ -->
+<!-- SLIDE 07 — AXE IA : VISION & GPS -->
 <div class="slide" id="s7">
   <div class="bg"></div>
   <div class="tag">04 — Axe IA (suite)</div>
@@ -747,303 +625,80 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
   <div class="g2">
     <div>
       <div class="clabel" style="color:#c084fc;margin-bottom:.7rem">Vision — TensorFlow.js côté navigateur</div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin-bottom:.9rem">
-        <div class="card" style="text-align:center;padding:.8rem .5rem"><div style="font-size:1.2rem;margin-bottom:.3rem">🔲</div><div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#c084fc">MSE</div><div style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:var(--neon)">×0.3</div></div>
-        <div class="card" style="text-align:center;padding:.8rem .5rem"><div style="font-size:1.2rem;margin-bottom:.3rem">📐</div><div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#c084fc">Cosinus</div><div style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:var(--neon)">×0.4</div></div>
-        <div class="card" style="text-align:center;padding:.8rem .5rem"><div style="font-size:1.2rem;margin-bottom:.3rem">🎨</div><div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#c084fc">HSV</div><div style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:var(--neon)">×0.2</div></div>
-        <div class="card" style="text-align:center;padding:.8rem .5rem"><div style="font-size:1.2rem;margin-bottom:.3rem">💡</div><div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#c084fc">Variance</div><div style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:var(--neon)">×0.1</div></div>
-        <div class="card" style="text-align:center;padding:.8rem .5rem"><div style="font-size:1.2rem;margin-bottom:.3rem">🔍</div><div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#c084fc">EXIF</div><div style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:var(--amber)">+</div></div>
-      </div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin-bottom:.9rem"><div class="card" style="text-align:center;padding:.8rem .5rem"><div style="font-size:1.2rem;margin-bottom:.3rem">🔲</div><div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#c084fc">MSE</div><div style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:var(--neon)">×0.3</div></div><div class="card" style="text-align:center;padding:.8rem .5rem"><div style="font-size:1.2rem;margin-bottom:.3rem">📐</div><div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#c084fc">Cosinus</div><div style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:var(--neon)">×0.4</div></div><div class="card" style="text-align:center;padding:.8rem .5rem"><div style="font-size:1.2rem;margin-bottom:.3rem">🎨</div><div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#c084fc">HSV</div><div style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:var(--neon)">×0.2</div></div><div class="card" style="text-align:center;padding:.8rem .5rem"><div style="font-size:1.2rem;margin-bottom:.3rem">💡</div><div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#c084fc">Variance</div><div style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:var(--neon)">×0.1</div></div><div class="card" style="text-align:center;padding:.8rem .5rem"><div style="font-size:1.2rem;margin-bottom:.3rem">🔍</div><div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#c084fc">EXIF</div><div style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:var(--amber)">+</div></div></div>
       <div class="formula">score = (MSE × 0.3) + (cosinus × 0.4) + (HSV × 0.2) + (variance × 0.1)</div>
-      <div style="display:flex;gap:.5rem;margin-top:.7rem">
-        <div style="flex:1;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.25);border-radius:6px;padding:.5rem;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--neon)">✓ Accept</div>
-        <div style="flex:1;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:.5rem;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--amber)">⚑ Review</div>
-        <div style="flex:1;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:6px;padding:.5rem;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--red)">✗ Reject</div>
-      </div>
-      <!-- ═══ PHOTO S7a — Capture validation image TensorFlow.js ═══
-           Remplacer src="" par l'URL de la capture (prise de photo + overlay de validation) -->
-      <div class="photo-slot m-slot" style="height:90px;margin-top:.7rem" title="Capture validation TensorFlow.js — remplacer src">
-        <img src="" alt="Interface validation image TensorFlow.js" onerror="this.style.display='none'"/>
-        <span class="slot-icon">📸</span>
-        <span class="slot-label m">Interface prise de photo<br>avec overlay validation TensorFlow.js</span>
-        <span class="slot-url" style="color:rgba(192,132,252,.4)">↑ src="" → coller l'URL capture vision</span>
-      </div>
+      <div style="display:flex;gap:.5rem;margin-top:.7rem"><div style="flex:1;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.25);border-radius:6px;padding:.5rem;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--neon)">✓ Accept</div><div style="flex:1;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:.5rem;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--amber)">⚑ Review</div><div style="flex:1;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:6px;padding:.5rem;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--red)">✗ Reject</div></div>
       <div class="card" style="margin-top:.8rem;border-color:rgba(192,132,252,.2)"><div class="clabel" style="color:#c084fc">Lien avec la Blockchain</div><p class="ctext" style="margin-top:.3rem">La photo n'est uploadée sur IPFS et enregistrée on-chain <strong style="color:var(--cream)">que si le score vision est ≥ seuil Accept.</strong> La validation GPS est incluse dans le proofHash.</p></div>
     </div>
     <div>
       <div class="clabel" style="color:var(--cyan);margin-bottom:.7rem">Géolocalisation — 4 validations anti-spoofing</div>
-      <div class="gcol">
-        <div class="card bc"><div style="display:flex;gap:.7rem;align-items:flex-start"><div style="width:24px;height:24px;border-radius:6px;background:rgba(34,211,238,.12);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--cyan);flex-shrink:0">V1</div><div><div class="ctitle" style="font-size:.78rem">Cohérence de position</div><div class="ctext">Distance position actuelle ↔ terrain enregistré ≤ 500 m</div></div></div></div>
-        <div class="card bc"><div style="display:flex;gap:.7rem;align-items:flex-start"><div style="width:24px;height:24px;border-radius:6px;background:rgba(34,211,238,.12);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--cyan);flex-shrink:0">V2</div><div><div class="ctitle" style="font-size:.78rem">Précision GPS</div><div class="ctext">Signal accuracy ≤ 100 m — signal faible → avertissement</div></div></div></div>
-        <div class="card bc"><div style="display:flex;gap:.7rem;align-items:flex-start"><div style="width:24px;height:24px;border-radius:6px;background:rgba(34,211,238,.12);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--cyan);flex-shrink:0">V3</div><div><div class="ctitle" style="font-size:.78rem">Anti-spoofing temporel</div><div class="ctext">Cohérence timestamp GPS ↔ heure système — coordonnées figées ou rejouées → rejet</div></div></div></div>
-        <div class="card" style="background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.2)"><div class="clabel">Impact global de l'axe IA</div><ul class="ilist" style="margin-top:.4rem"><li style="font-size:.7rem">Chatbot supprime la barrière de l'expertise</li><li style="font-size:.7rem">Voix élimine la barrière de l'alphabétisation</li><li style="font-size:.7rem">Vision renforce l'intégrité de certification</li><li style="font-size:.7rem">GPS garantit l'authenticité terrain</li></ul></div>
-      </div>
-      <!-- ═══ PHOTO S7b — Capture validation GPS avec carte ═══
-           Remplacer src="" par l'URL de la capture GPS/carte -->
-      <div class="photo-slot bc-slot" style="height:100px;margin-top:.7rem" title="Capture validation GPS avec carte — remplacer src">
-        <img src="" alt="Interface validation GPS avec carte" onerror="this.style.display='none'"/>
-        <span class="slot-icon">🗺️</span>
-        <span class="slot-label bc">Capture validation GPS<br>avec carte et overlay de zone</span>
-        <span class="slot-url" style="color:rgba(34,211,238,.4)">↑ src="" → coller l'URL capture GPS</span>
-      </div>
+      <div class="gcol"><div class="card bc"><div style="display:flex;gap:.7rem;align-items:flex-start"><div style="width:24px;height:24px;border-radius:6px;background:rgba(34,211,238,.12);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--cyan);flex-shrink:0">V1</div><div><div class="ctitle" style="font-size:.78rem">Cohérence de position</div><div class="ctext">Distance position actuelle ↔ terrain enregistré ≤ 500 m</div></div></div></div><div class="card bc"><div style="display:flex;gap:.7rem;align-items:flex-start"><div style="width:24px;height:24px;border-radius:6px;background:rgba(34,211,238,.12);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--cyan);flex-shrink:0">V2</div><div><div class="ctitle" style="font-size:.78rem">Précision GPS</div><div class="ctext">Signal accuracy ≤ 100 m — signal faible → avertissement</div></div></div></div><div class="card bc"><div style="display:flex;gap:.7rem;align-items:flex-start"><div style="width:24px;height:24px;border-radius:6px;background:rgba(34,211,238,.12);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--cyan);flex-shrink:0">V3</div><div><div class="ctitle" style="font-size:.78rem">Anti-spoofing temporel</div><div class="ctext">Cohérence timestamp GPS ↔ heure système — coordonnées figées ou rejouées → rejet</div></div></div></div><div class="card" style="background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.2)"><div class="clabel">Impact global de l'axe IA</div><ul class="ilist" style="margin-top:.4rem"><li style="font-size:.7rem">Chatbot supprime la barrière de l'expertise</li><li style="font-size:.7rem">Voix élimine la barrière de l'alphabétisation</li><li style="font-size:.7rem">Vision renforce l'intégrité de certification</li><li style="font-size:.7rem">GPS garantit l'authenticité terrain</li></ul></div></div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 08 — BLOCKCHAIN : SMART CONTRACT
-     📸 PHOTOS :
-       - Capture Remix IDE avec le smart contract (droite, sous le code Solidity)
-       - Capture transaction Etherscan Sepolia (droite, sous Remix)
-     → Remplacer chaque src="" par l'URL correspondante
-════════════════════════════════════════════ -->
+<!-- SLIDE 08 — AXE BLOCKCHAIN : INTRO -->
 <div class="slide" id="s8">
   <div class="bg"></div>
   <div class="tag bc">05 — Axe Blockchain &amp; Certification</div>
   <h2 class="big">Confiance<br><span class="b">décentralisée</span><br>sur <span class="y">Ethereum</span></h2>
   <div class="bar bc"></div>
   <div class="g2">
-    <div>
-      <p class="lead" style="max-width:100%">Un smart contract déployé sur <strong style="color:var(--cream)">Ethereum Sepolia</strong> enregistre de façon immuable chaque preuve de certification agricole — du semis à la récolte.</p>
-      <div class="srow">
-        <div><div class="snum" style="color:var(--cyan)">7</div><div class="slbl">Checkpoints de certification</div></div>
-        <div><div class="snum" style="color:var(--cyan)">3</div><div class="slbl">Niveaux de badges</div></div>
-        <div><div class="snum" style="color:var(--cyan)">∞</div><div class="slbl">Immuabilité on-chain</div></div>
-      </div>
-      <div class="card bc" style="margin-top:1.5rem"><div class="clabel bc">Garanties du Smart Contract</div><ul class="ilist bc" style="margin-top:.5rem"><li>Immuabilité : une preuve enregistrée ne peut jamais être modifiée</li><li>Non-répudiation : <code style="color:var(--cyan)">msg.sender</code> lie chaque certification à son auteur</li><li>Horodatage réseau : <code style="color:var(--cyan)">block.timestamp</code> fourni par Ethereum — infalsifiable</li><li>Indexation par <code style="color:var(--cyan)">productId</code> : recherches rapides sans parcourir la chaîne</li></ul></div>
-    </div>
-    <div>
-      <div class="clabel bc" style="margin-bottom:.7rem">Smart Contract déployé</div>
-      <div class="code"><span class="kw">pragma solidity</span> ^0.8.19;<br><br><span class="kw">contract</span> <span class="fn2" style="color:var(--neon)">CertificationRegistry</span> {<br>&nbsp;&nbsp;<span class="kw">struct</span> CertificationProof {<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">string</span> productId;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">string</span> proofHash; <span class="cm">// SHA-256</span><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">string</span> ipfsCID; <span class="cm">// Photo décentralisée</span><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">string</span> step; <span class="cm">// INIT|HARVEST|...</span><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">uint256</span> timestamp; <span class="cm">// Infalsifiable</span><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">address</span> certifiedBy;<br>&nbsp;&nbsp;}<br>}</div>
-      <div style="margin-top:.8rem;padding:.7rem 1rem;background:rgba(34,211,238,.05);border:1px solid rgba(34,211,238,.2);border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:.63rem"><span style="color:var(--muted)">Adresse déployée :</span><br><span style="color:var(--cyan)">0x4020e67078c8ca3f6d27d698c036a57b4a278fde</span></div>
-      <!-- ═══ PHOTO S8a — Capture Remix IDE ═══
-           Remplacer src="" par l'URL de la capture Remix IDE -->
-      <div class="photo-slot bc-slot" style="height:80px;margin-top:.7rem" title="Capture Remix IDE — remplacer src">
-        <img src="" alt="Smart contract dans Remix IDE" onerror="this.style.display='none'"/>
-        <span class="slot-icon">🔧</span>
-        <span class="slot-label bc">Capture Remix IDE<br>Smart contract déployé</span>
-        <span class="slot-url" style="color:rgba(34,211,238,.4)">↑ src="" → coller l'URL capture Remix</span>
-      </div>
-      <!-- ═══ PHOTO S8b — Capture Etherscan Sepolia ═══
-           Remplacer src="" par l'URL de la capture Etherscan -->
-      <div class="photo-slot bc-slot" style="height:80px;margin-top:.5rem" title="Capture Etherscan Sepolia — remplacer src">
-        <img src="" alt="Transaction sur Etherscan Sepolia" onerror="this.style.display='none'"/>
-        <span class="slot-icon">🔗</span>
-        <span class="slot-label bc">Capture transaction<br>Etherscan Sepolia</span>
-        <span class="slot-url" style="color:rgba(34,211,238,.4)">↑ src="" → coller l'URL capture Etherscan</span>
-      </div>
-    </div>
+    <div><p class="lead" style="max-width:100%">Un smart contract déployé sur <strong style="color:var(--cream)">Ethereum Sepolia</strong> enregistre de façon immuable chaque preuve de certification agricole — du semis à la récolte.</p><div class="srow"><div><div class="snum" style="color:var(--cyan)">7</div><div class="slbl">Checkpoints de certification</div></div><div><div class="snum" style="color:var(--cyan)">3</div><div class="slbl">Niveaux de badges</div></div><div><div class="snum" style="color:var(--cyan)">∞</div><div class="slbl">Immuabilité on-chain</div></div></div><div class="card bc" style="margin-top:1.5rem"><div class="clabel bc">Garanties du Smart Contract</div><ul class="ilist bc" style="margin-top:.5rem"><li>Immuabilité : une preuve enregistrée ne peut jamais être modifiée</li><li>Non-répudiation : <code style="color:var(--cyan)">msg.sender</code> lie chaque certification à son auteur</li><li>Horodatage réseau : <code style="color:var(--cyan)">block.timestamp</code> fourni par Ethereum — infalsifiable</li><li>Indexation par <code style="color:var(--cyan)">productId</code> : recherches rapides sans parcourir la chaîne</li></ul></div></div>
+    <div><div class="clabel bc" style="margin-bottom:.7rem">Smart Contract déployé</div><div class="code"><span class="kw">pragma solidity</span> ^0.8.19;<br><br><span class="kw">contract</span> <span class="fn">CertificationRegistry</span> {<br>&nbsp;&nbsp;<span class="kw">struct</span> CertificationProof {<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">string</span> productId;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">string</span> proofHash; <span class="cm">// SHA-256</span><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">string</span> ipfsCID; <span class="cm">// Photo décentralisée</span><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">string</span> step; <span class="cm">// INIT|HARVEST|...</span><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">uint256</span> timestamp; <span class="cm">// Infalsifiable</span><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">address</span> certifiedBy;<br>&nbsp;&nbsp;}<br>}</div><div style="margin-top:.8rem;padding:.7rem 1rem;background:rgba(34,211,238,.05);border:1px solid rgba(34,211,238,.2);border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:.63rem"><span style="color:var(--muted)">Adresse déployée :</span><br><span style="color:var(--cyan)">0x4020e67078c8ca3f6d27d698c036a57b4a278fde</span></div></div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 09 — BLOCKCHAIN : FLUX & CHECKPOINTS
-     📸 PHOTOS :
-       - Capture processus d'enregistrement MetaMask (sous les badges)
-       - Capture badges de certification Bronze/Silver/Gold
-     → Remplacer chaque src="" par l'URL correspondante
-════════════════════════════════════════════ -->
+<!-- SLIDE 09 — BLOCKCHAIN : FLUX & CHECKPOINTS -->
 <div class="slide" id="s9">
   <div class="bg"></div>
   <div class="tag bc">05 — Blockchain (suite)</div>
   <h2 class="big">Flux de <span class="b">certification</span><br>&amp; 7 <span class="y">checkpoints</span></h2>
   <div class="bar bc"></div>
   <div class="g2">
-    <div>
-      <div class="clabel bc" style="margin-bottom:.7rem">Flux en 6 étapes — de la photo à la blockchain</div>
-      <div class="flow">
-        <div class="fs"><div class="fn b">1</div><div><h4>Photo + validation GPS</h4><p>Prise sur le terrain déclaré · coordonnées dans le hash</p></div></div>
-        <div class="fs"><div class="fn b">2</div><div><h4>Calcul Hash SHA-256</h4><p>CryptoJS.SHA256(photoBuffer) → empreinte unique de l'image</p></div></div>
-        <div class="fs"><div class="fn b">3</div><div><h4>Upload IPFS via Pinata</h4><p>Photo → CIDv1 immuable · <em>contenu adressable</em></p></div></div>
-        <div class="fs"><div class="fn b">4</div><div><h4>Objet canonique + proofHash</h4><p>SHA256({productId, hash, lat, lng, step}) → hash final</p></div></div>
-        <div class="fs"><div class="fn b">5</div><div><h4>Transaction Ethereum signée MetaMask</h4><p>registerProof() → txHash enregistré on-chain</p></div></div>
-        <div class="fs"><div class="fn b">6</div><div><h4>Résultat stocké dans Firestore</h4><p>txHash + CID + proofHash sauvegardés pour l'interface</p></div></div>
-      </div>
-      <!-- ═══ PHOTO S9a — Capture processus MetaMask ═══
-           Remplacer src="" par l'URL de la capture MetaMask -->
-      <div class="photo-slot bc-slot" style="height:75px;margin-top:.7rem" title="Capture MetaMask enregistrement — remplacer src">
-        <img src="" alt="Processus enregistrement MetaMask" onerror="this.style.display='none'"/>
-        <span class="slot-icon">🦊</span>
-        <span class="slot-label bc">Interface MetaMask<br>Confirmation transaction</span>
-        <span class="slot-url" style="color:rgba(34,211,238,.4)">↑ src="" → coller l'URL capture MetaMask</span>
-      </div>
-    </div>
-    <div>
-      <div class="clabel y" style="margin-bottom:.7rem">Les 7 checkpoints de certification</div>
-      <div class="cp-row">
-        <div class="cp"><div class="cp-c">🌱</div><div class="cp-l">Prépa. sol</div></div><div class="cp-a">›</div>
-        <div class="cp"><div class="cp-c">🌾</div><div class="cp-l">Semis</div></div><div class="cp-a">›</div>
-        <div class="cp"><div class="cp-c">💧</div><div class="cp-l">Irrigation</div></div><div class="cp-a">›</div>
-        <div class="cp"><div class="cp-c">🌿</div><div class="cp-l">Traitements</div></div><div class="cp-a">›</div>
-        <div class="cp"><div class="cp-c">👀</div><div class="cp-l">Surveillance</div></div><div class="cp-a">›</div>
-        <div class="cp"><div class="cp-c">🌾</div><div class="cp-l">Récolte</div></div><div class="cp-a">›</div>
-        <div class="cp"><div class="cp-c">📦</div><div class="cp-l">Stockage</div></div>
-      </div>
-      <div class="bdg-row">
-        <div class="bdg bronze"><div class="bdg-ico">🥉</div><div class="bdg-n">Bronze</div><div class="bdg-s">0–40 pts</div></div>
-        <div class="bdg silver"><div class="bdg-ico">🥈</div><div class="bdg-n">Silver</div><div class="bdg-s">41–70 pts</div></div>
-        <div class="bdg gold"><div class="bdg-ico">🥇</div><div class="bdg-n">Gold</div><div class="bdg-s">71–100 pts</div></div>
-      </div>
-      <!-- ═══ PHOTO S9b — Captures badges de certification ═══
-           Remplacer src="" par l'URL de la capture des badges Bronze/Silver/Gold -->
-      <div class="photo-slot y-slot" style="height:80px;margin-top:.7rem" title="Capture badges Bronze/Silver/Gold — remplacer src">
-        <img src="" alt="Badges de certification Bronze Silver Gold" onerror="this.style.display='none'"/>
-        <span class="slot-icon">🏅</span>
-        <span class="slot-label y">Captures badges certification<br>Bronze / Silver / Gold</span>
-        <span class="slot-url" style="color:rgba(251,191,36,.4)">↑ src="" → coller l'URL captures badges</span>
-      </div>
-      <div class="card bc" style="margin-top:.8rem"><div class="clabel bc">Stockage décentralisé IPFS</div><p class="ctext" style="margin-top:.3rem">Pinata Cloud · CIDv1 — si le fichier est modifié, le CID change. Impossible de remplacer une photo sans invalider la preuve on-chain.</p></div>
-    </div>
+    <div><div class="clabel bc" style="margin-bottom:.7rem">Flux en 6 étapes — de la photo à la blockchain</div><div class="flow"><div class="fs"><div class="fn b">1</div><div><h4>Photo + validation GPS</h4><p>Prise sur le terrain déclaré · coordonnées dans le hash</p></div></div><div class="fs"><div class="fn b">2</div><div><h4>Calcul Hash SHA-256</h4><p>CryptoJS.SHA256(photoBuffer) → empreinte unique de l'image</p></div></div><div class="fs"><div class="fn b">3</div><div><h4>Upload IPFS via Pinata</h4><p>Photo → CIDv1 immuable · <em>contenu adressable</em></p></div></div><div class="fs"><div class="fn b">4</div><div><h4>Objet canonique + proofHash</h4><p>SHA256({productId, hash, lat, lng, step}) → hash final</p></div></div><div class="fs"><div class="fn b">5</div><div><h4>Transaction Ethereum signée MetaMask</h4><p>registerProof() → txHash enregistré on-chain</p></div></div><div class="fs"><div class="fn b">6</div><div><h4>Résultat stocké dans Firestore</h4><p>txHash + CID + proofHash sauvegardés pour l'interface</p></div></div></div></div>
+    <div><div class="clabel y" style="margin-bottom:.7rem">Les 7 checkpoints de certification</div><div class="cp-row"><div class="cp"><div class="cp-c">🌱</div><div class="cp-l">Prépa. sol</div></div><div class="cp-a">›</div><div class="cp"><div class="cp-c">🌾</div><div class="cp-l">Semis</div></div><div class="cp-a">›</div><div class="cp"><div class="cp-c">💧</div><div class="cp-l">Irrigation</div></div><div class="cp-a">›</div><div class="cp"><div class="cp-c">🌿</div><div class="cp-l">Traitements</div></div><div class="cp-a">›</div><div class="cp"><div class="cp-c">👀</div><div class="cp-l">Surveillance</div></div><div class="cp-a">›</div><div class="cp"><div class="cp-c">🌾</div><div class="cp-l">Récolte</div></div><div class="cp-a">›</div><div class="cp"><div class="cp-c">📦</div><div class="cp-l">Stockage</div></div></div><div class="bdg-row"><div class="bdg bronze"><div class="bdg-ico">🥉</div><div class="bdg-n">Bronze</div><div class="bdg-s">0–40 pts</div></div><div class="bdg silver"><div class="bdg-ico">🥈</div><div class="bdg-n">Silver</div><div class="bdg-s">41–70 pts</div></div><div class="bdg gold"><div class="bdg-ico">🥇</div><div class="bdg-n">Gold</div><div class="bdg-s">71–100 pts</div></div></div><div class="card bc" style="margin-top:.8rem"><div class="clabel bc">Stockage décentralisé IPFS</div><p class="ctext" style="margin-top:.3rem">Pinata Cloud · CIDv1 — si le fichier est modifié, le CID change. Impossible de remplacer une photo sans invalider la preuve on-chain.</p></div></div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 10 — BLOCKCHAIN : LIENS IA & SÉCURITÉ
-     📸 PHOTO / SCHÉMA : Diagramme de flux IA → Blockchain → Agricoins
-     Emplacement : remplace ou complète les 3 cards existantes
-     → Remplacer src="" par l'URL du diagramme vectoriel
-════════════════════════════════════════════ -->
+<!-- SLIDE 10 — BLOCKCHAIN : LIEN AVEC IA & SÉCURITÉ -->
 <div class="slide" id="s10">
   <div class="bg"></div>
   <div class="tag bc">05 — Blockchain (relations)</div>
   <h2 class="big">Blockchain :<br>point de <span class="b">convergence</span></h2>
   <div class="bar bc"></div>
-  <!-- ═══ PHOTO S10 — Diagramme flux IA → Blockchain → Agricoins ═══
-       Remplacer src="" par l'URL du diagramme vectoriel complet -->
-  <div class="photo-slot" style="height:90px;margin-bottom:1rem;border-color:rgba(34,211,238,.35)" title="Diagramme flux IA → Blockchain → Agricoins — remplacer src">
-    <img src="" alt="Diagramme flux IA Blockchain Agricoins" onerror="this.style.display='none'"/>
-    <span class="slot-icon">🔀</span>
-    <span class="slot-label bc">Diagramme vectoriel complet<br>IA → Blockchain → Agricoins</span>
-    <span class="slot-url" style="color:rgba(34,211,238,.4)">↑ src="" → coller l'URL du diagramme de flux</span>
-  </div>
   <div class="g3">
-    <div class="gcol">
-      <div class="card" style="border-color:rgba(74,222,128,.25)"><div class="clabel">🤖 IA → Blockchain</div><div class="ctitle" style="margin-top:.5rem">Pré-validation intelligente</div><ul class="ilist" style="margin-top:.5rem"><li style="font-size:.7rem">Vision anti-fraude valide la photo <em>avant</em> tout upload IPFS</li><li style="font-size:.7rem">GPS vérifie la localisation terrain</li><li style="font-size:.7rem">Résultat : zéro fausse certification on-chain</li></ul></div>
-      <div class="card" style="border-color:rgba(74,222,128,.2);background:rgba(74,222,128,.03)"><div class="clabel">Flux de données</div><div style="font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--muted);line-height:2;margin-top:.4rem">image → TensorFlow.js<br><span style="color:var(--neon)">score ≥ seuil</span> → IPFS upload<br>CID + GPS → proofHash<br><span style="color:var(--cyan)">registerProof()</span> → Ethereum</div></div>
-    </div>
-    <div class="gcol">
-      <div class="card bc"><div class="clabel bc">⛓️ Blockchain → Agricoins</div><div class="ctitle" style="margin-top:.5rem">Récompense automatique</div><ul class="ilist bc" style="margin-top:.5rem"><li style="font-size:.7rem">Certification validée → bonus AGC crédité automatiquement</li><li style="font-size:.7rem">Chaque checkpoint = points de badge</li><li style="font-size:.7rem">Badge Gold → récompense maximale</li></ul></div>
-      <div class="card bc" style="background:rgba(34,211,238,.03)"><div class="clabel bc">Cycle vertueux</div><div style="font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--muted);line-height:2;margin-top:.4rem">certification réussie<br><span style="color:var(--cyan)">→ txHash enregistré</span><br><span style="color:var(--gold)">→ AGC bonus crédité</span><br>→ datawarehouse mis à jour</div></div>
-    </div>
-    <div class="gcol">
-      <div class="card r"><div class="clabel r">🔐 Sécurité → Blockchain</div><div class="ctitle" style="margin-top:.5rem">Chaque action signée &amp; tracée</div><ul class="ilist r" style="margin-top:.5rem"><li style="font-size:.7rem">Signature ECDSA P-256 avant chaque transaction</li><li style="font-size:.7rem">Audit Trail Firestore : log inaltérable</li><li style="font-size:.7rem">Ledger SHA-256 local chaîne tous les états</li></ul></div>
-      <div class="card r" style="background:rgba(248,113,113,.03)"><div class="clabel r">Propriétés garanties</div><ul class="ilist r" style="margin-top:.4rem"><li style="font-size:.7rem">Non-répudiation cryptographique</li><li style="font-size:.7rem">Intégrité historique complète</li><li style="font-size:.7rem">Traçabilité bout en bout</li></ul></div>
-    </div>
+    <div class="gcol"><div class="card" style="border-color:rgba(74,222,128,.25)"><div class="clabel">🤖 IA → Blockchain</div><div class="ctitle" style="margin-top:.5rem">Pré-validation intelligente</div><ul class="ilist" style="margin-top:.5rem"><li style="font-size:.7rem">Vision anti-fraude valide la photo <em>avant</em> tout upload IPFS</li><li style="font-size:.7rem">GPS vérifie la localisation terrain</li><li style="font-size:.7rem">Résultat : zéro fausse certification on-chain</li></ul></div><div class="card" style="border-color:rgba(74,222,128,.2);background:rgba(74,222,128,.03)"><div class="clabel">Flux de données</div><div style="font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--muted);line-height:2;margin-top:.4rem">image → TensorFlow.js<br><span style="color:var(--neon)">score ≥ seuil</span> → IPFS upload<br>CID + GPS → proofHash<br><span style="color:var(--cyan)">registerProof()</span> → Ethereum</div></div></div>
+    <div class="gcol"><div class="card bc"><div class="clabel bc">⛓️ Blockchain → Agricoins</div><div class="ctitle" style="margin-top:.5rem">Récompense automatique</div><ul class="ilist bc" style="margin-top:.5rem"><li style="font-size:.7rem">Certification validée → bonus AGC crédité automatiquement</li><li style="font-size:.7rem">Chaque checkpoint = points de badge</li><li style="font-size:.7rem">Badge Gold → récompense maximale</li></ul></div><div class="card bc" style="background:rgba(34,211,238,.03)"><div class="clabel bc">Cycle vertueux</div><div style="font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--muted);line-height:2;margin-top:.4rem">certification réussie<br><span style="color:var(--cyan)">→ txHash enregistré</span><br><span style="color:var(--gold)">→ AGC bonus crédité</span><br>→ datawarehouse mis à jour</div></div></div>
+    <div class="gcol"><div class="card r"><div class="clabel r">🔐 Sécurité → Blockchain</div><div class="ctitle" style="margin-top:.5rem">Chaque action signée &amp; tracée</div><ul class="ilist r" style="margin-top:.5rem"><li style="font-size:.7rem">Signature ECDSA P-256 avant chaque transaction</li><li style="font-size:.7rem">Audit Trail Firestore : log inaltérable</li><li style="font-size:.7rem">Ledger SHA-256 local chaîne tous les états</li></ul></div><div class="card r" style="background:rgba(248,113,113,.03)"><div class="clabel r">Propriétés garanties</div><ul class="ilist r" style="margin-top:.4rem"><li style="font-size:.7rem">Non-répudiation cryptographique</li><li style="font-size:.7rem">Intégrité historique complète</li><li style="font-size:.7rem">Traçabilité bout en bout</li></ul></div></div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 11 — AGRICOINS & PAIEMENT
-     📸 PHOTOS :
-       - Capture interface d'achat AGC (Wave/Orange Money)
-       - Capture séquestre escrow avec statut Lock/Release
-     Emplacement : colonne droite, sous ou en remplacement du flux escrow
-     → Remplacer chaque src="" par l'URL correspondante
-════════════════════════════════════════════ -->
+<!-- SLIDE 11 — AGRICOINS & PAIEMENT -->
 <div class="slide" id="s11">
   <div class="bg"></div>
   <div class="tag agc">06 — Axe Agricoins &amp; Datawarehouse</div>
   <h2 class="big">Agricoins <span class="y">AGC</span> :<br>l'économie <span class="g">agricole</span></h2>
   <div class="bar y"></div>
   <div class="g2">
-    <div>
-      <div class="card y" style="margin-bottom:1rem"><div class="clabel y">Parité fixe</div><div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--gold);margin:.4rem 0">1 AGC = 100 FCFA</div><p class="ctext">Convertible via Wave, Orange Money, Free · ou carte bancaire</p></div>
-      <div class="clabel" style="margin-bottom:.7rem">Sources d'Agricoins</div>
-      <div class="gcol">
-        <div class="card" style="display:flex;gap:.8rem;align-items:center"><span style="font-size:1.3rem">💳</span><div><div class="ctitle" style="font-size:.8rem">Achat direct</div><div class="ctext">Via Wave / Orange Money / Free · taux fixe</div></div></div>
-        <div class="card" style="display:flex;gap:.8rem;align-items:center"><span style="font-size:1.3rem">⛓️</span><div><div class="ctitle" style="font-size:.8rem">Récompense blockchain</div><div class="ctext">Bonus AGC auto à chaque checkpoint validé</div></div></div>
-        <div class="card" style="display:flex;gap:.8rem;align-items:center"><span style="font-size:1.3rem">🎁</span><div><div class="ctitle" style="font-size:.8rem">Solde initial</div><div class="ctext">Émission à l'inscription pour onboarding</div></div></div>
-      </div>
-    </div>
-    <div>
-      <!-- ═══ PHOTO S11a — Interface achat AGC Wave/Orange Money ═══
-           Remplacer src="" par l'URL de la capture d'interface de paiement -->
-      <div class="photo-slot y-slot" style="height:100px;margin-bottom:.7rem" title="Interface achat AGC Wave/Orange Money — remplacer src">
-        <img src="" alt="Interface achat AGC Wave Orange Money" onerror="this.style.display='none'"/>
-        <span class="slot-icon">💳</span>
-        <span class="slot-label y">Interface achat AGC<br>Wave / Orange Money</span>
-        <span class="slot-url" style="color:rgba(251,191,36,.4)">↑ src="" → coller l'URL capture paiement</span>
-      </div>
-      <div class="clabel y" style="margin-bottom:.7rem">Paiement avec Escrow sécurisé</div>
-      <div class="escrow">
-        <div class="es"><div class="es-icon">🛒</div><div class="es-text"><strong>Acheteur confirme la commande</strong></div></div>
-        <div class="es" style="border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.04)"><div class="es-icon">🔒</div><div class="es-text"><strong style="color:var(--gold)">AGC gelés dans le séquestre</strong> — ni acheteur ni vendeur n'y a accès</div></div>
-        <div class="es"><div class="es-icon">🚚</div><div class="es-text"><strong>Livraison en cours</strong></div></div>
-        <div class="es-branch">
-          <div class="es" style="border-color:rgba(74,222,128,.25);background:rgba(74,222,128,.04)"><div class="es-icon">✅</div><div class="es-text"><strong style="color:var(--neon)">Livraison confirmée</strong><br><span style="font-size:.7rem;color:var(--muted)">AGC → Producteur</span></div></div>
-          <div class="es" style="border-color:rgba(248,113,113,.25);background:rgba(248,113,113,.04)"><div class="es-icon">⚠️</div><div class="es-text"><strong style="color:var(--red)">Litige déclaré</strong><br><span style="font-size:.7rem;color:var(--muted)">Rollback → Acheteur</span></div></div>
-        </div>
-        <div class="es" style="border-color:rgba(34,211,238,.2)"><div class="es-icon">📊</div><div class="es-text"><strong>Datawarehouse mis à jour</strong></div></div>
-      </div>
-      <!-- ═══ PHOTO S11b — Capture escrow Lock/Release ═══
-           Remplacer src="" par l'URL de la capture du séquestre -->
-      <div class="photo-slot y-slot" style="height:80px;margin-top:.6rem" title="Capture escrow Lock/Release — remplacer src">
-        <img src="" alt="Interface escrow statut Lock Release" onerror="this.style.display='none'"/>
-        <span class="slot-icon">🔒</span>
-        <span class="slot-label y">Interface séquestre (escrow)<br>Statut Lock / Release</span>
-        <span class="slot-url" style="color:rgba(251,191,36,.4)">↑ src="" → coller l'URL capture escrow</span>
-      </div>
-    </div>
+    <div><div class="card y" style="margin-bottom:1rem"><div class="clabel y">Parité fixe</div><div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--gold);margin:.4rem 0">1 AGC = 100 FCFA</div><p class="ctext">Convertible via Wave, Orange Money, Free · ou carte bancaire</p></div><div class="clabel" style="margin-bottom:.7rem">Sources d'Agricoins</div><div class="gcol"><div class="card" style="display:flex;gap:.8rem;align-items:center"><span style="font-size:1.3rem">💳</span><div><div class="ctitle" style="font-size:.8rem">Achat direct</div><div class="ctext">Via Wave / Orange Money / Free · taux fixe</div></div></div><div class="card" style="display:flex;gap:.8rem;align-items:center"><span style="font-size:1.3rem">⛓️</span><div><div class="ctitle" style="font-size:.8rem">Récompense blockchain</div><div class="ctext">Bonus AGC auto à chaque checkpoint validé</div></div></div><div class="card" style="display:flex;gap:.8rem;align-items:center"><span style="font-size:1.3rem">🎁</span><div><div class="ctitle" style="font-size:.8rem">Solde initial</div><div class="ctext">Émission à l'inscription pour onboarding</div></div></div></div></div>
+    <div><div class="clabel y" style="margin-bottom:.7rem">Paiement avec Escrow sécurisé</div><div class="escrow"><div class="es"><div class="es-icon">🛒</div><div class="es-text"><strong>Acheteur confirme la commande</strong></div></div><div class="es" style="border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.04)"><div class="es-icon">🔒</div><div class="es-text"><strong style="color:var(--gold)">AGC gelés dans le séquestre</strong> — ni acheteur ni vendeur n'y a accès</div></div><div class="es"><div class="es-icon">🚚</div><div class="es-text"><strong>Livraison en cours</strong></div></div><div class="es-branch"><div class="es" style="border-color:rgba(74,222,128,.25);background:rgba(74,222,128,.04)"><div class="es-icon">✅</div><div class="es-text"><strong style="color:var(--neon)">Livraison confirmée</strong><br><span style="font-size:.7rem;color:var(--muted)">AGC → Producteur</span></div></div><div class="es" style="border-color:rgba(248,113,113,.25);background:rgba(248,113,113,.04)"><div class="es-icon">⚠️</div><div class="es-text"><strong style="color:var(--red)">Litige déclaré</strong><br><span style="font-size:.7rem;color:var(--muted)">Rollback → Acheteur</span></div></div></div><div class="es" style="border-color:rgba(34,211,238,.2)"><div class="es-icon">📊</div><div class="es-text"><strong>Datawarehouse mis à jour</strong></div></div></div></div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 12 — DATAWAREHOUSE
-     📸 PHOTOS :
-       - Capture graphiques revenus et prévisions
-       - Capture tableau de bord administration
-     Emplacement : colonne gauche, sous les indicateurs (et ACID)
-     → Remplacer chaque src="" par l'URL correspondante
-════════════════════════════════════════════ -->
+<!-- SLIDE 12 — DATAWAREHOUSE -->
 <div class="slide" id="s12">
   <div class="bg"></div>
   <div class="tag agc">06 — Agricoins (Datawarehouse)</div>
   <h2 class="big">Datawarehouse<br><span class="y">agricole</span></h2>
   <div class="bar y"></div>
   <div class="g2">
-    <div>
-      <div class="clabel y" style="margin-bottom:.8rem">Indicateurs agrégés par Firestore</div>
-      <div class="g2" style="gap:.8rem">
-        <div class="card y"><div style="font-size:1.3rem;margin-bottom:.4rem">💰</div><div class="ctitle">Revenus</div><div class="ctext">Mensuel · Annuel · monthlyRevenue[]</div></div>
-        <div class="card y"><div style="font-size:1.3rem;margin-bottom:.4rem">🏆</div><div class="ctitle">Performance</div><div class="ctext">Top produits · Top acheteurs · dailyStats[]</div></div>
-        <div class="card y"><div style="font-size:1.3rem;margin-bottom:.4rem">⭐</div><div class="ctitle">Qualité</div><div class="ctext">Taux complétion · Note moyenne · weeklyTrend</div></div>
-        <div class="card y"><div style="font-size:1.3rem;margin-bottom:.4rem">🔮</div><div class="ctitle">Prévision</div><div class="ctext">Moyenne mobile 12 mois · predictedRevenue</div></div>
-      </div>
-      <!-- ═══ PHOTO S12a — Graphiques revenus et prévisions ═══
-           Remplacer src="" par l'URL de la capture du dashboard analytics -->
-      <div class="photo-slot y-slot" style="height:90px;margin-top:.8rem" title="Capture graphiques revenus/prévisions — remplacer src">
-        <img src="" alt="Graphiques revenus et prévisions" onerror="this.style.display='none'"/>
-        <span class="slot-icon">📊</span>
-        <span class="slot-label y">Graphiques revenus<br>et prévisions analytics</span>
-        <span class="slot-url" style="color:rgba(251,191,36,.4)">↑ src="" → coller l'URL capture graphiques</span>
-      </div>
-      <!-- ═══ PHOTO S12b — Tableau de bord administration ═══
-           Remplacer src="" par l'URL de la capture du dashboard admin -->
-      <div class="photo-slot y-slot" style="height:80px;margin-top:.5rem" title="Capture dashboard administration — remplacer src">
-        <img src="" alt="Tableau de bord administration" onerror="this.style.display='none'"/>
-        <span class="slot-icon">🖥️</span>
-        <span class="slot-label y">Dashboard administration<br>Vue analytique complète</span>
-        <span class="slot-url" style="color:rgba(251,191,36,.4)">↑ src="" → coller l'URL capture dashboard admin</span>
-      </div>
-      <div class="card" style="margin-top:.8rem;border-color:rgba(34,211,238,.2)"><div class="clabel bc">Machine à états d'une commande</div><div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.5rem;align-items:center"><span style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:.2rem .5rem;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.2);border-radius:4px;color:var(--cyan)">pending</span><span style="color:var(--muted);font-size:.8rem">→</span><span style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:.2rem .5rem;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:4px;color:var(--neon)">confirmed</span><span style="color:var(--muted);font-size:.8rem">→</span><span style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:.2rem .5rem;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:4px;color:var(--neon)">preparing</span><span style="color:var(--muted);font-size:.8rem">→</span><span style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:.2rem .5rem;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:4px;color:var(--neon)">ready</span><span style="color:var(--muted);font-size:.8rem">→</span><span style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:.2rem .5rem;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:4px;color:var(--gold)">delivery</span><span style="color:var(--muted);font-size:.8rem">→</span><span style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:.2rem .5rem;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);border-radius:4px;color:var(--neon)">completed</span></div></div>
-    </div>
-    <div>
-      <div class="clabel y" style="margin-bottom:.8rem">Propriétés ACID — Transactions atomiques Firestore</div>
-      <div class="gcol">
-        <div class="card y" style="display:flex;gap:.8rem"><div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--gold);flex-shrink:0">A</div><div><div class="ctitle" style="font-size:.8rem">Atomicité</div><div class="ctext">Débit + crédit simultanés — tout ou rien</div></div></div>
-        <div class="card y" style="display:flex;gap:.8rem"><div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--gold);flex-shrink:0">C</div><div><div class="ctitle" style="font-size:.8rem">Cohérence</div><div class="ctext">Double dépense impossible — balance vérifiée atomiquement</div></div></div>
-        <div class="card y" style="display:flex;gap:.8rem"><div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--gold);flex-shrink:0">I</div><div><div class="ctitle" style="font-size:.8rem">Isolement</div><div class="ctext">Transactions concurrentes sans interférence</div></div></div>
-        <div class="card y" style="display:flex;gap:.8rem"><div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--gold);flex-shrink:0">D</div><div><div class="ctitle" style="font-size:.8rem">Durabilité</div><div class="ctext">Rollback automatique — état précédent restauré en cas d'erreur réseau</div></div></div>
-      </div>
-    </div>
+    <div><div class="clabel y" style="margin-bottom:.8rem">Indicateurs agrégés par Firestore</div><div class="g2" style="gap:.8rem"><div class="card y"><div style="font-size:1.3rem;margin-bottom:.4rem">💰</div><div class="ctitle">Revenus</div><div class="ctext">Mensuel · Annuel · monthlyRevenue[]</div></div><div class="card y"><div style="font-size:1.3rem;margin-bottom:.4rem">🏆</div><div class="ctitle">Performance</div><div class="ctext">Top produits · Top acheteurs · dailyStats[]</div></div><div class="card y"><div style="font-size:1.3rem;margin-bottom:.4rem">⭐</div><div class="ctitle">Qualité</div><div class="ctext">Taux complétion · Note moyenne · weeklyTrend</div></div><div class="card y"><div style="font-size:1.3rem;margin-bottom:.4rem">🔮</div><div class="ctitle">Prévision</div><div class="ctext">Moyenne mobile 12 mois · predictedRevenue</div></div></div><div class="card" style="margin-top:1rem;border-color:rgba(34,211,238,.2)"><div class="clabel bc">Machine à états d'une commande</div><div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.5rem;align-items:center"><span style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:.2rem .5rem;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.2);border-radius:4px;color:var(--cyan)">pending</span><span style="color:var(--muted);font-size:.8rem">→</span><span style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:.2rem .5rem;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:4px;color:var(--neon)">confirmed</span><span style="color:var(--muted);font-size:.8rem">→</span><span style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:.2rem .5rem;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:4px;color:var(--neon)">preparing</span><span style="color:var(--muted);font-size:.8rem">→</span><span style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:.2rem .5rem;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:4px;color:var(--neon)">ready</span><span style="color:var(--muted);font-size:.8rem">→</span><span style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:.2rem .5rem;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:4px;color:var(--gold)">delivery</span><span style="color:var(--muted);font-size:.8rem">→</span><span style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:.2rem .5rem;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);border-radius:4px;color:var(--neon)">completed</span></div></div></div>
+    <div><div class="clabel y" style="margin-bottom:.8rem">Propriétés ACID — Transactions atomiques Firestore</div><div class="gcol"><div class="card y" style="display:flex;gap:.8rem"><div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--gold);flex-shrink:0">A</div><div><div class="ctitle" style="font-size:.8rem">Atomicité</div><div class="ctext">Débit + crédit simultanés — tout ou rien</div></div></div><div class="card y" style="display:flex;gap:.8rem"><div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--gold);flex-shrink:0">C</div><div><div class="ctitle" style="font-size:.8rem">Cohérence</div><div class="ctext">Double dépense impossible — balance vérifiée atomiquement</div></div></div><div class="card y" style="display:flex;gap:.8rem"><div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--gold);flex-shrink:0">I</div><div><div class="ctitle" style="font-size:.8rem">Isolement</div><div class="ctext">Transactions concurrentes sans interférence</div></div></div><div class="card y" style="display:flex;gap:.8rem"><div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--gold);flex-shrink:0">D</div><div><div class="ctitle" style="font-size:.8rem">Durabilité</div><div class="ctext">Rollback automatique — état précédent restauré en cas d'erreur réseau</div></div></div></div></div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 13 — SÉCURITÉ : 10 COUCHES (VUE GLOBALE)
-     Pas de capture supplémentaire nécessaire
-     Le diagramme des 10 couches est déjà intégré
-════════════════════════════════════════════ -->
+<!-- SLIDE 13 — SÉCURITÉ : 10 COUCHES (VUE GLOBALE) -->
 <div class="slide" id="s13">
   <div class="bg"></div>
   <div class="tag sec">07 — Axe Sécurité &amp; Cryptographie</div>
@@ -1063,13 +718,7 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 14 — SÉCURITÉ : C1–C5 (DÉTAIL)
-     📸 PHOTOS :
-       - Capture code WebCrypto (ECDSA) — IndexedDB (card C1/C2)
-       - Capture règles Firestore Security Rules (card C3/C4)
-     → Remplacer chaque src="" par l'URL correspondante
-════════════════════════════════════════════ -->
+<!-- SLIDE 14 — COUCHES C1–C5 (DÉTAIL) -->
 <div class="slide" id="s14">
   <div class="bg"></div>
   <div class="tag sec">07 — Sécurité (détail)</div>
@@ -1077,59 +726,18 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
   <div class="bar r"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.6rem">
     <div style="display:flex;flex-direction:column;gap:.75rem">
-      <div class="sec-detail-card">
-        <div class="sdc-header"><span class="sdc-badge" style="background:#a99fff">C1</span><span class="sdc-title">ECDSA P-256</span><span class="sdc-sub">Signature des transactions</span></div>
-        <div class="sdc-body">
-          <div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> Web Crypto API · courbe secp256r1</div>
-          <div class="sdc-desc">Chaque transaction sensible (certification, paiement, escrow) est signée avec la clé privée de l'utilisateur. La signature est vérifiée côté serveur avant exécution.</div>
-          <!-- ═══ PHOTO S14a — Code WebCrypto ECDSA ═══
-               Remplacer src="" par l'URL de la capture code -->
-          <div class="photo-slot r-slot" style="height:70px;margin-top:.6rem" title="Capture code WebCrypto ECDSA — remplacer src">
-            <img src="" alt="Code WebCrypto ECDSA" onerror="this.style.display='none'"/>
-            <span class="slot-label r" style="font-size:.5rem">Extrait code WebCrypto ECDSA</span>
-            <span class="slot-url" style="color:rgba(248,113,113,.4);font-size:.45rem">↑ src="" → URL capture code</span>
-          </div>
-        </div>
-      </div>
-      <div class="sec-detail-card">
-        <div class="sdc-header"><span class="sdc-badge" style="background:#ff7070">C2</span><span class="sdc-title">IndexedDB non extractable</span><span class="sdc-sub">Stockage sécurisé des clés</span></div>
-        <div class="sdc-body"><div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> extractable: false · IndexedDB</div><div class="sdc-desc">Les clés privées sont stockées dans IndexedDB avec le flag <code>extractable: false</code>. La clé ne peut jamais être exportée en bytes, même en cas de XSS — seul le moteur crypto peut l'utiliser pour signer.</div></div>
-      </div>
-      <div class="sec-detail-card">
-        <div class="sdc-header"><span class="sdc-badge" style="background:#ff8c42">C3</span><span class="sdc-title">Validation serveur</span><span class="sdc-sub">Re-vérification ECDSA + ownership</span></div>
-        <div class="sdc-body"><div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> Firebase Cloud Functions · Node.js</div><div class="sdc-desc">Toute opération critique est relayée via une Cloud Function qui re-vérifie la signature ECDSA, valide l'ownership du produit, et applique les règles métier. Le client Angular est une simple interface — jamais une source de vérité.</div></div>
-      </div>
+      <div class="sec-detail-card"><div class="sdc-header"><span class="sdc-badge" style="background:#a99fff">C1</span><span class="sdc-title">ECDSA P-256</span><span class="sdc-sub">Signature des transactions</span></div><div class="sdc-body"><div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> Web Crypto API · courbe secp256r1</div><div class="sdc-desc">Chaque transaction sensible (certification, paiement, escrow) est signée avec la clé privée de l'utilisateur. La signature est vérifiée côté serveur avant exécution.</div></div></div>
+      <div class="sec-detail-card"><div class="sdc-header"><span class="sdc-badge" style="background:#ff7070">C2</span><span class="sdc-title">IndexedDB non extractable</span><span class="sdc-sub">Stockage sécurisé des clés</span></div><div class="sdc-body"><div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> extractable: false · IndexedDB</div><div class="sdc-desc">Les clés privées sont stockées dans IndexedDB avec le flag <code>extractable: false</code>. La clé ne peut jamais être exportée en bytes, même en cas de XSS — seul le moteur crypto peut l'utiliser pour signer.</div></div></div>
+      <div class="sec-detail-card"><div class="sdc-header"><span class="sdc-badge" style="background:#ff8c42">C3</span><span class="sdc-title">Validation serveur</span><span class="sdc-sub">Re-vérification ECDSA + ownership</span></div><div class="sdc-body"><div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> Firebase Cloud Functions · Node.js</div><div class="sdc-desc">Toute opération critique est relayée via une Cloud Function qui re-vérifie la signature ECDSA, valide l'ownership du produit, et applique les règles métier. Le client Angular est une simple interface — jamais une source de vérité.</div></div></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:.75rem">
-      <div class="sec-detail-card">
-        <div class="sdc-header"><span class="sdc-badge" style="background:#f5c842">C4</span><span class="sdc-title">Nonce anti-rejeu</span><span class="sdc-sub">Prévention replay attacks</span></div>
-        <div class="sdc-body"><div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> UUID v4 · Firestore TTL 10 min</div><div class="sdc-desc">Chaque message contient un UUID v4 unique (nonce) associé à un timestamp. Le nonce est consommé dans Firestore avec une TTL de 10 minutes. Toute tentative de rejeu échoue avec <code>already-exists</code>.</div></div>
-      </div>
-      <div class="sec-detail-card">
-        <div class="sdc-header"><span class="sdc-badge" style="background:#3effa0">C5</span><span class="sdc-title">Hash image SHA-256</span><span class="sdc-sub">Intégrité des preuves visuelles</span></div>
-        <div class="sdc-body">
-          <div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> Double calcul client/serveur · CryptoJS</div>
-          <div class="sdc-desc">Le hash SHA-256 de l'image est calculé côté client avant envoi à IPFS. La Cloud Function re-télécharge l'image depuis IPFS et recalcule le hash. En cas de divergence, la certification est immédiatement rejetée.</div>
-          <!-- ═══ PHOTO S14b — Règles Firestore Security Rules ═══
-               Remplacer src="" par l'URL de la capture Firestore rules -->
-          <div class="photo-slot r-slot" style="height:70px;margin-top:.6rem" title="Capture Firestore Security Rules — remplacer src">
-            <img src="" alt="Firestore Security Rules" onerror="this.style.display='none'"/>
-            <span class="slot-label r" style="font-size:.5rem">Capture Firestore Security Rules</span>
-            <span class="slot-url" style="color:rgba(248,113,113,.4);font-size:.45rem">↑ src="" → URL capture Firestore Rules</span>
-          </div>
-        </div>
-      </div>
+      <div class="sec-detail-card"><div class="sdc-header"><span class="sdc-badge" style="background:#f5c842">C4</span><span class="sdc-title">Nonce anti-rejeu</span><span class="sdc-sub">Prévention replay attacks</span></div><div class="sdc-body"><div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> UUID v4 · Firestore TTL 10 min</div><div class="sdc-desc">Chaque message contient un UUID v4 unique (nonce) associé à un timestamp. Le nonce est consommé dans Firestore avec une TTL de 10 minutes. Toute tentative de rejeu échoue avec <code>already-exists</code>.</div></div></div>
+      <div class="sec-detail-card"><div class="sdc-header"><span class="sdc-badge" style="background:#3effa0">C5</span><span class="sdc-title">Hash image SHA-256</span><span class="sdc-sub">Intégrité des preuves visuelles</span></div><div class="sdc-body"><div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> Double calcul client/serveur · CryptoJS</div><div class="sdc-desc">Le hash SHA-256 de l'image est calculé côté client avant envoi à IPFS. La Cloud Function re-télécharge l'image depuis IPFS et recalcule le hash. En cas de divergence, la certification est immédiatement rejetée.</div></div></div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 15 — SÉCURITÉ : C6–C10 (DÉTAIL)
-     📸 PHOTOS :
-       - Capture ledger SHA-256 (structure des blocs) — card C6
-       - Capture Audit Trail Firestore Console — card C9
-     → Remplacer chaque src="" par l'URL correspondante
-════════════════════════════════════════════ -->
+<!-- SLIDE 15 — COUCHES C6–C10 (DÉTAIL) -->
 <div class="slide" id="s15">
   <div class="bg"></div>
   <div class="tag sec">07 — Sécurité (suite)</div>
@@ -1137,53 +745,18 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
   <div class="bar r"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.6rem">
     <div style="display:flex;flex-direction:column;gap:.75rem">
-      <div class="sec-detail-card">
-        <div class="sdc-header"><span class="sdc-badge" style="background:#60b4ff">C6</span><span class="sdc-title">Ledger chaîné</span><span class="sdc-sub">Immutabilité historique</span></div>
-        <div class="sdc-body">
-          <div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> SHA-256 chaîné · nonce · preuve de travail</div>
-          <div class="sdc-desc">Chaque événement (certification, paiement, escrow) est enregistré dans un ledger local. Chaque bloc contient le hash du bloc précédent, créant une chaîne immuable. Modifier un bloc casse toute la chaîne qui suit.</div>
-          <div class="sdc-code">Block { previousHash, data, timestamp, nonce, hash: SHA256(prev+data+ts+nonce) }</div>
-          <!-- ═══ PHOTO S15a — Structure Ledger SHA-256 ═══
-               Remplacer src="" par l'URL de la capture (structure des blocs chaînés) -->
-          <div class="photo-slot r-slot" style="height:70px;margin-top:.6rem" title="Capture ledger SHA-256 — remplacer src">
-            <img src="" alt="Structure ledger SHA-256 blocs chaînés" onerror="this.style.display='none'"/>
-            <span class="slot-label r" style="font-size:.5rem">Capture structure ledger SHA-256<br>Blocs chaînés</span>
-            <span class="slot-url" style="color:rgba(248,113,113,.4);font-size:.45rem">↑ src="" → URL capture ledger</span>
-          </div>
-        </div>
-      </div>
+      <div class="sec-detail-card"><div class="sdc-header"><span class="sdc-badge" style="background:#60b4ff">C6</span><span class="sdc-title">Ledger chaîné</span><span class="sdc-sub">Immutabilité historique</span></div><div class="sdc-body"><div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> SHA-256 chaîné · nonce · preuve de travail</div><div class="sdc-desc">Chaque événement (certification, paiement, escrow) est enregistré dans un ledger local. Chaque bloc contient le hash du bloc précédent, créant une chaîne immuable. Modifier un bloc casse toute la chaîne qui suit.</div><div class="sdc-code">Block { previousHash, data, timestamp, nonce, hash: SHA256(prev+data+ts+nonce) }</div></div></div>
       <div class="sec-detail-card"><div class="sdc-header"><span class="sdc-badge" style="background:#ff9f1c">C7</span><span class="sdc-title">AES-GCM + PBKDF2</span><span class="sdc-sub">Confidentialité des données</span></div><div class="sdc-body"><div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> 310 000 itérations · chiffrement symétrique</div><div class="sdc-desc">Les données sensibles sont chiffrées avec AES-GCM. La clé est dérivée via PBKDF2 avec 310 000 itérations (conforme OWASP 2024). Le chiffrement protège les données en transit et au repos.</div></div></div>
       <div class="sec-detail-card"><div class="sdc-header"><span class="sdc-badge" style="background:#ff7070">C8</span><span class="sdc-title">Escrow AGC</span><span class="sdc-sub">Séquestre atomique</span></div><div class="sdc-body"><div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> Transaction Firestore · lock/release</div><div class="sdc-desc">Les paiements en AGC sont gelés dans un séquestre jusqu'à confirmation de livraison. La transaction est atomique : débit et crédit sont exécutés ensemble. En cas de litige, rollback automatique vers l'acheteur.</div></div></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:.75rem">
-      <div class="sec-detail-card">
-        <div class="sdc-header"><span class="sdc-badge" style="background:#3effa0">C9</span><span class="sdc-title">Audit Trail immuable</span><span class="sdc-sub">Traçabilité write-only</span></div>
-        <div class="sdc-body">
-          <div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> Write-only Firestore · hash chaîné</div>
-          <div class="sdc-desc">Chaque action critique est journalisée dans une collection Firestore en write-only. Les règles de sécurité interdisent toute modification ou suppression. Les logs sont chaînés via SHA-256 pour garantir l'intégrité.</div>
-          <div class="sdc-code">allow create: if request.auth != null;<br>allow update, delete: if false;</div>
-          <!-- ═══ PHOTO S15b — Audit Trail Firestore Console ═══
-               Remplacer src="" par l'URL de la capture Firestore Console -->
-          <div class="photo-slot r-slot" style="height:70px;margin-top:.6rem" title="Capture Audit Trail Firestore Console — remplacer src">
-            <img src="" alt="Audit Trail Firestore Console" onerror="this.style.display='none'"/>
-            <span class="slot-label r" style="font-size:.5rem">Capture Audit Trail<br>Firestore Console</span>
-            <span class="slot-url" style="color:rgba(248,113,113,.4);font-size:.45rem">↑ src="" → URL capture Firestore console</span>
-          </div>
-        </div>
-      </div>
+      <div class="sec-detail-card"><div class="sdc-header"><span class="sdc-badge" style="background:#3effa0">C9</span><span class="sdc-title">Audit Trail immuable</span><span class="sdc-sub">Traçabilité write-only</span></div><div class="sdc-body"><div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> Write-only Firestore · hash chaîné</div><div class="sdc-desc">Chaque action critique est journalisée dans une collection Firestore en write-only. Les règles de sécurité interdisent toute modification ou suppression. Les logs sont chaînés via SHA-256 pour garantir l'intégrité.</div><div class="sdc-code">allow create: if request.auth != null;<br>allow update, delete: if false;</div></div></div>
       <div class="sec-detail-card"><div class="sdc-header"><span class="sdc-badge" style="background:#60b4ff">C10</span><span class="sdc-title">Firestore Security Rules</span><span class="sdc-sub">Périmètre applicatif</span></div><div class="sdc-body"><div class="sdc-tech"><span class="sdc-label">🔧 Implémentation</span> Ownership · rate limiting · immutabilité</div><div class="sdc-desc">Les règles Firestore garantissent qu'un utilisateur ne peut accéder qu'à ses propres données. Le rate limiting (5 opérations/minute) protège contre les abus. Les logs d'audit sont protégés en write-only.</div></div></div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SLIDE 16 — CONCLUSION & PERSPECTIVES
-     📸 PHOTOS :
-       - Montage photo de l'équipe (colonne droite, en haut)
-       - Capture de l'interface finale (colonne droite, en bas)
-       - Logo Jokko Agro (en bas à droite)
-     → Remplacer chaque src="" par l'URL correspondante
-════════════════════════════════════════════ -->
+<!-- SLIDE 16 — CONCLUSION & PERSPECTIVES -->
 <div class="slide" id="s16">
   <div class="bg"></div>
   <div class="g2" style="gap:3rem;align-items:center;height:100%">
@@ -1196,22 +769,6 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
       <div style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--muted);letter-spacing:.05em;border-left:2px solid var(--neon);padding-left:1rem;line-height:2">Angular 17 · Firebase · Ethereum Sepolia<br>IPFS Pinata · Claude API · Wave / Orange Money<br>WebCrypto · ECDSA P-256 · AES-GCM · SHA-256</div>
     </div>
     <div>
-      <!-- ═══ PHOTO S16a — Montage photo équipe ═══
-           Remplacer src="" par l'URL de la photo de l'équipe -->
-      <div class="photo-slot" style="height:120px;margin-bottom:.8rem" title="Photo équipe — remplacer src">
-        <img src="" alt="Photo équipe Jokko Agro" onerror="this.style.display='none'"/>
-        <span class="slot-icon">👥</span>
-        <span class="slot-label">Montage photo de l'équipe<br>Die Mbaye · Mouhamad Al Amine Ba</span>
-        <span class="slot-url">↑ src="" → coller l'URL photo équipe</span>
-      </div>
-      <!-- ═══ PHOTO S16b — Capture interface finale ═══
-           Remplacer src="" par l'URL de la capture de l'interface finale -->
-      <div class="photo-slot" style="height:100px;margin-bottom:.8rem" title="Capture interface finale — remplacer src">
-        <img src="" alt="Interface finale Jokko Agro" onerror="this.style.display='none'"/>
-        <span class="slot-icon">📱</span>
-        <span class="slot-label">Capture interface finale<br>de l'application Jokko Agro</span>
-        <span class="slot-url">↑ src="" → coller l'URL capture interface</span>
-      </div>
       <div class="clabel" style="margin-bottom:1rem">Réalisations principales</div>
       <div class="gcol">
         <div class="card" style="border-color:rgba(74,222,128,.25)"><div style="display:flex;gap:.7rem;align-items:flex-start"><span style="font-size:1.2rem">🤖</span><div><div class="ctitle">Axe IA — opérationnel</div><div class="ctext">Chatbot FR/Wolof · Voix · Vision TF.js · GPS anti-spoofing</div></div></div></div>
@@ -1220,19 +777,7 @@ h2.big{font-family:"Syne",sans-serif;font-size:clamp(2.2rem,4vw,3.6rem);
         <div class="card r"><div style="display:flex;gap:.7rem;align-items:flex-start"><span style="font-size:1.2rem">🔐</span><div><div class="ctitle">Sécurité — 10 couches</div><div class="ctext">ECDSA · Ledger SHA-256 · AES-GCM · Atomicité · Audit Trail</div></div></div></div>
       </div>
       <div class="clabel" style="margin:1rem 0 .7rem">Perspectives d'évolution</div>
-      <ul class="ilist"><li>Extension linguistique : <strong style="color:var(--cream)">Pulaar &amp; Sérère</strong></li><li>Migration <strong style="color:var(--cyan)">Polygon Layer 2</strong> — réduction des gas fees pour production</li><li>Module <strong style="color:var(--neon)">météo prédictif</strong> croisé avec le datawarehouse</li></ul>
-      <!-- ═══ LOGO FINAL + PHOTO ═══
-           Remplacer src="" par l'URL du logo pour la slide de conclusion -->
-      <div style="display:flex;align-items:center;gap:1rem;margin-top:1rem;padding:.8rem 1rem;background:rgba(74,222,128,.04);border:1px solid rgba(74,222,128,.15);border-radius:10px">
-        <div class="logo-slot" style="width:52px;height:52px" title="Logo conclusion — remplacer src">
-          <img src="" alt="Logo Jokko Agro" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="display:none"/>
-          <span class="slot-hint">LOGO<br>URL ici</span>
-        </div>
-        <div>
-          <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--neon)">JOKKO AGRO</div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--muted)">UCAD · Licence 3 TDSI · 2024–2025</div>
-        </div>
-      </div>
+      <ul class="ilist"><li>Extension linguistique : <strong style="color:var(--cream)">Pulaar & Sérère</strong></li><li>Migration <strong style="color:var(--cyan)">Polygon Layer 2</strong> — réduction des gas fees pour production</li><li>Module <strong style="color:var(--neon)">météo prédictif</strong> croisé avec le datawarehouse</li></ul>
     </div>
   </div>
 </div>
@@ -1304,6 +849,7 @@ function updateUI(){
     if(cur >= pillIdx[i]) activePillIdx = i;
   }
   pills.forEach((p,i) => {
+    p.classList.toggle('on', i===activePillIdx);
     const sectionLabels = ['','','','','bc','bc','bc','sec','sec','agc','agc','sec','sec','','',''];
     p.className = 'pill' + (i===activePillIdx ? ' on' : '');
     if(i===activePillIdx && sectionLabels[i]){

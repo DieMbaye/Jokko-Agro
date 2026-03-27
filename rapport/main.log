@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.1.4)  26 MAR 2026 17:41
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.1.4)  27 MAR 2026 02:02
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -775,42 +775,38 @@ Package pdfcol Info: New color stack `tcb@breakable' = 1 on input line 23.
 )
 Package french3.ldf Info: Setting StandardItemizeEnv=true for
 (french3.ldf)             compatibility with enumitem package,
-(french3.ldf)             reported on input line 248.
+(french3.ldf)             reported on input line 256.
 Package french3.ldf Info: Setting StandardEnumerateEnv=true for
 (french3.ldf)             compatibility with enumitem package,
-(french3.ldf)             reported on input line 248.
+(french3.ldf)             reported on input line 256.
  (C:\Users\Mentalist\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdftex.def
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count367
 ) (main.aux
 Package babel Info: 'french' activates 'french' shorthands.
 (babel)             Reported on input line 12.
-
-
-LaTeX Warning: Label `fig:escrow' multiply defined.
-
 )
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 248.
-LaTeX Font Info:    ... okay on input line 248.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 248.
-LaTeX Font Info:    ... okay on input line 248.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 248.
-LaTeX Font Info:    ... okay on input line 248.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 248.
-LaTeX Font Info:    ... okay on input line 248.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 248.
-LaTeX Font Info:    ... okay on input line 248.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 248.
-LaTeX Font Info:    ... okay on input line 248.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 248.
-LaTeX Font Info:    ... okay on input line 248.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 248.
-LaTeX Font Info:    ... okay on input line 248.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 248.
-LaTeX Font Info:    ... okay on input line 248.
-LaTeX Info: Redefining \degres on input line 248.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 256.
+LaTeX Font Info:    ... okay on input line 256.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 256.
+LaTeX Font Info:    ... okay on input line 256.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 256.
+LaTeX Font Info:    ... okay on input line 256.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 256.
+LaTeX Font Info:    ... okay on input line 256.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 256.
+LaTeX Font Info:    ... okay on input line 256.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 256.
+LaTeX Font Info:    ... okay on input line 256.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 256.
+LaTeX Font Info:    ... okay on input line 256.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 256.
+LaTeX Font Info:    ... okay on input line 256.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 256.
+LaTeX Font Info:    ... okay on input line 256.
+LaTeX Info: Redefining \degres on input line 256.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -865,7 +861,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
  (C:\Users\Mentalist\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-Package hyperref Info: Link coloring ON on input line 248.
+Package hyperref Info: Link coloring ON on input line 256.
  (main.out) (main.out)
 \@outlinefile=\write4
 \openout4 = `main.out'.
@@ -875,63 +871,63 @@ Package caption Info: float package is loaded.
 Package caption Info: listings package is loaded.
 Package caption Info: End \AtBeginDocument code.
 \c@lstlisting=\count374
-<images/logo-ucad.png, id=338, 220.825pt x 220.825pt>
+<images/logo-ucad.png, id=410, 220.825pt x 220.825pt>
 File: images/logo-ucad.png Graphic file (type png)
 <use images/logo-ucad.png>
-Package pdftex.def Info: images/logo-ucad.png  used on input line 260.
+Package pdftex.def Info: images/logo-ucad.png  used on input line 268.
 (pdftex.def)             Requested size: 73.97766pt x 73.97733pt.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 261.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 269.
  (C:\Users\Mentalist\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 261.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 269.
  (C:\Users\Mentalist\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-<images/logo-lacgaa.jpeg, id=339, 130.4875pt x 113.42375pt>
+<images/logo-lacgaa.jpeg, id=411, 130.4875pt x 113.42375pt>
 File: images/logo-lacgaa.jpeg Graphic file (type jpg)
 <use images/logo-lacgaa.jpeg>
-Package pdftex.def Info: images/logo-lacgaa.jpeg  used on input line 265.
+Package pdftex.def Info: images/logo-lacgaa.jpeg  used on input line 273.
 (pdftex.def)             Requested size: 85.10655pt x 73.97733pt.
 
-Overfull \hbox (2.02162pt too wide) in paragraph at lines 270--287
+Overfull \hbox (2.02162pt too wide) in paragraph at lines 278--295
 []$[]$  $[]$ 
  []
 
 
 LaTeX Font Warning: Font shape `T1/cmr/m/n' in size <28> not available
-(Font)              size <29.86> substituted on input line 305.
+(Font)              size <29.86> substituted on input line 312.
 
 
 LaTeX Font Warning: Font shape `T1/cmr/bx/n' in size <28> not available
-(Font)              size <29.86> substituted on input line 305.
+(Font)              size <29.86> substituted on input line 312.
 
 
 LaTeX Font Warning: Font shape `T1/cmr/m/n' in size <16> not available
-(Font)              size <17.28> substituted on input line 315.
+(Font)              size <17.28> substituted on input line 320.
 
 
 LaTeX Font Warning: Font shape `T1/cmr/m/sc' in size <16> not available
-(Font)              size <17.28> substituted on input line 315.
+(Font)              size <17.28> substituted on input line 320.
 
 [1
 
 {C:/Users/Mentalist/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map} <./images/logo-ucad.png (PNG copy)> <./images/logo-lacgaa.jpeg>]
-<images/Dedicace.png, id=351, 200.75pt x 200.75pt>
+<images/Dedicace.png, id=423, 200.75pt x 200.75pt>
 File: images/Dedicace.png Graphic file (type png)
 <use images/Dedicace.png>
-Package pdftex.def Info: images/Dedicace.png  used on input line 377.
+Package pdftex.def Info: images/Dedicace.png  used on input line 382.
 (pdftex.def)             Requested size: 136.57462pt x 136.58476pt.
-<images/merci.png, id=353, 1204.5pt x 361.35pt>
+<images/merci.png, id=425, 1204.5pt x 361.35pt>
 File: images/merci.png Graphic file (type png)
 <use images/merci.png>
-Package pdftex.def Info: images/merci.png  used on input line 402.
+Package pdftex.def Info: images/merci.png  used on input line 407.
 (pdftex.def)             Requested size: 163.88815pt x 49.1661pt.
 
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.407 \clearpage
+l.412 \clearpage
                  [1
 
  <./images/Dedicace.png> <./images/merci.png (PNG copy)>] [2
@@ -940,325 +936,497 @@ l.407 \clearpage
 
 ] (main.toc [1
 
-] [2])
+] [2] [3])
 \tf@toc=\write5
 \openout5 = `main.toc'.
 
- [3] (main.lof)
+ [4] (main.lof [5
+
+])
 \tf@lof=\write6
 \openout6 = `main.lof'.
 
- [4
-
-] [5
+ [6] [7
 
 
 ]
+<images/logo-JK.png, id=662, 376.40625pt x 132.495pt>
+File: images/logo-JK.png Graphic file (type png)
+<use images/logo-JK.png>
+Package pdftex.def Info: images/logo-JK.png  used on input line 564.
+(pdftex.def)             Requested size: 227.62206pt x 80.12433pt.
+
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.557 \chapter
+l.571 \chapter
               {PrÃ©sentation GÃ©nÃ©rale du Projet} [1
 
 
-]
+ <./images/logo-JK.png>]
 Chapitre 1.
+<images/app-home.jpeg, id=669, 902.37125pt x 968.61874pt>
+File: images/app-home.jpeg Graphic file (type jpg)
+<use images/app-home.jpeg>
+Package pdftex.def Info: images/app-home.jpeg  used on input line 583.
+(pdftex.def)             Requested size: 318.66948pt x 342.0663pt.
 
 pdfTeX warning (ext4): destination with the same identifier (name{page.2}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.599 
+l.590 
        [2
 
-]
+ <./images/app-home.jpeg>]
 pdfTeX warning (ext4): destination with the same identifier (name{page.3}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.655 
-       [3] [4] [5]
-Underfull \hbox (badness 10000) in paragraph at lines 824--824
-[]|\T1/cmr/bx/n/10.95 Claude API (An-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 824--824
-[]|\T1/cmr/bx/n/10.95 Alchemy / Me-ta-
- []
-
-[6] [7]
+l.638 
+       [3] [4]
+<images/axes.png, id=683, 618.05907pt x 338.76563pt>
+File: images/axes.png Graphic file (type png)
+<use images/axes.png>
+Package pdftex.def Info: images/axes.png  used on input line 727.
+(pdftex.def)             Requested size: 364.19667pt x 199.62703pt.
+ [5 <./images/axes.png>] [6]
 Chapitre 2.
 
-Underfull \hbox (badness 10000) in paragraph at lines 877--877
-[]|\T1/cmr/bx/n/10.95 Fonctionnalité
- []
+LaTeX Warning: Reference `tab:solutions' on page 7 undefined on input line 842.
 
-
-Underfull \hbox (badness 3792) in paragraph at lines 877--877
-[]|\T1/cmr/m/n/10.95 Ghana, Afrique
- []
-
-
-Underfull \hbox (badness 1917) in paragraph at lines 877--877
-[]|\T1/cmr/m/n/10.95 Prix des mar-chés
- []
-
-
-Underfull \hbox (badness 1490) in paragraph at lines 877--877
-[]|\T1/cmr/m/n/10.95 Location de trac-
- []
-
-
-Underfull \hbox (badness 6332) in paragraph at lines 877--877
-[]|\T1/cmr/m/n/10.95 Mise en re-la-tion
- []
-
-
-Underfull \hbox (badness 1533) in paragraph at lines 877--877
-[]|\T1/cmr/m/n/10.95 Langue an-glaise uni-que-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 877--877
-[]|\T1/cmr/m/n/10.95 Kenya (Sa-fa-ri-
- []
-
-[8
+<images/solutions-comparison.png, id=698, 1284.8pt x 856.19875pt>
+File: images/solutions-comparison.png Graphic file (type png)
+<use images/solutions-comparison.png>
+Package pdftex.def Info: images/solutions-comparison.png  used on input line 848.
+(pdftex.def)             Requested size: 318.66948pt x 212.36383pt.
+[7
 
 ]
-Overfull \hbox (6.22185pt too wide) in paragraph at lines 920--920
- []\T1/cmr/bx/n/10.95 linguistique[] 
+Underfull \hbox (badness 2726) in paragraph at lines 881--881
+[]|\T1/cmr/m/n/10.95 Pas de cer-ti-fi-ca-tion
  []
 
-[9] [10]
+
+Underfull \hbox (badness 10000) in paragraph at lines 881--881
+[]|\T1/cmr/bx/n/10.95 Hello Trac-
+ []
+
+
+Overfull \hbox (17.62482pt too wide) in paragraph at lines 881--882
+[][] 
+ []
+
+<images/gap-analysis.png, id=703, 1082.54437pt x 478.78876pt>
+File: images/gap-analysis.png Graphic file (type png)
+<use images/gap-analysis.png>
+Package pdftex.def Info: images/gap-analysis.png  used on input line 893.
+(pdftex.def)             Requested size: 364.19667pt x 161.07648pt.
+[8 <./images/solutions-comparison.png (PNG copy)>] [9 <./images/gap-analysis.png>] [10]
 Chapitre 3.
-<images/angular.png, id=573, 259.97125pt x 194.7275pt>
-File: images/angular.png Graphic file (type png)
-<use images/angular.png>
-Package pdftex.def Info: images/angular.png  used on input line 1046.
-(pdftex.def)             Requested size: 91.04915pt x 68.19724pt.
+<images/app-login.png, id=726, 922.94812pt x 694.09312pt>
+File: images/app-login.png Graphic file (type png)
+<use images/app-login.png>
+Package pdftex.def Info: images/app-login.png  used on input line 1023.
+(pdftex.def)             Requested size: 364.19667pt x 273.88312pt.
 [11
 
-]
-<images/firebase.png, id=579, 288.07625pt x 176.66pt>
-File: images/firebase.png Graphic file (type png)
-<use images/firebase.png>
-Package pdftex.def Info: images/firebase.png  used on input line 1086.
-(pdftex.def)             Requested size: 91.04915pt x 55.83418pt.
+ <./images/app-login.png>]
+<images/angular.png, id=732, 259.97125pt x 194.7275pt>
+File: images/angular.png Graphic file (type png)
+<use images/angular.png>
+Package pdftex.def Info: images/angular.png  used on input line 1060.
+(pdftex.def)             Requested size: 81.94212pt x 61.37514pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 1093--1094
-[]\T1/cmr/bx/n/12 Authentication : \T1/cmr/m/n/12 ges-tion des uti-li-sa-teurs
+Underfull \hbox (badness 1490) in paragraph at lines 1075--1077
+[]\T1/cmr/bx/n/12 RxJS in-té-gré : \T1/cmr/m/n/12 ges-tion ré-ac-tive des états (wal-let, solde AGC) via
  []
 
+<images/firebase.png, id=733, 288.07625pt x 176.66pt>
+File: images/firebase.png Graphic file (type png)
+<use images/firebase.png>
+Package pdftex.def Info: images/firebase.png  used on input line 1091.
+(pdftex.def)             Requested size: 81.94212pt x 50.24887pt.
 [12 <./images/angular.png> <./images/firebase.png>]
-<images/etheureum.jpeg, id=590, 277.035pt x 183.68625pt>
-File: images/etheureum.jpeg Graphic file (type jpg)
-<use images/etheureum.jpeg>
-Package pdftex.def Info: images/etheureum.jpeg  used on input line 1153.
-(pdftex.def)             Requested size: 91.04915pt x 60.36998pt.
- [13 <./images/etheureum.jpeg>]
-<images/metamask.png, id=597, 311.1625pt x 163.61125pt>
-File: images/metamask.png Graphic file (type png)
-<use images/metamask.png>
-Package pdftex.def Info: images/metamask.png  used on input line 1226.
-(pdftex.def)             Requested size: 68.2873pt x 35.90471pt.
- [14 <./images/metamask.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 1295--1295
+<images/tensorflow.png, id=744, 216.81pt x 233.87375pt>
+File: images/tensorflow.png Graphic file (type png)
+<use images/tensorflow.png>
+Package pdftex.def Info: images/tensorflow.png  used on input line 1163.
+(pdftex.def)             Requested size: 81.94212pt x 88.39117pt.
+ [13 <./images/tensorflow.png (PNG copy)>]
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <6> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1202.
+<images/claude.png, id=751, 351.3125pt x 351.3125pt>
+File: images/claude.png Graphic file (type png)
+<use images/claude.png>
+Package pdftex.def Info: images/claude.png  used on input line 1242.
+(pdftex.def)             Requested size: 81.94212pt x 81.94197pt.
+ [14 <./images/claude.png>] [15]
+<images/speech-api.png, id=829, 513.92pt x 514.92375pt>
+File: images/speech-api.png Graphic file (type png)
+<use images/speech-api.png>
+Package pdftex.def Info: images/speech-api.png  used on input line 1362.
+(pdftex.def)             Requested size: 81.94212pt x 82.09877pt.
+ [16 <./images/speech-api.png>] [17]
+Underfull \hbox (badness 10000) in paragraph at lines 1494--1494
+[]|\T1/cmr/bx/n/10.95 Vision anti-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1494--1494
+[]|\T1/cmr/m/n/10.95 Navigateur
+ []
+
+
+Underfull \hbox (badness 5548) in paragraph at lines 1494--1494
+[]|\T1/cmr/bx/n/10.95 Chatbot agro-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1494--1494
+[]|\T1/cmr/bx/n/10.95 Analyse de
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1494--1494
+[]|\T1/cmr/bx/n/10.95 Web Speech
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1494--1494
 []|\T1/cmr/bx/n/10.95 Reconnaissance
  []
 
-[15] [16]
-Chapitre 4.
-[17
 
-]
-<images/diagramme_uml.png, id=654, 1541.76pt x 1027.84pt>
+Underfull \hbox (badness 10000) in paragraph at lines 1494--1494
+[]|\T1/cmr/m/n/10.95 Navigateur
+ []
+
+<images/etheureum.jpeg, id=900, 277.035pt x 183.68625pt>
+File: images/etheureum.jpeg Graphic file (type jpg)
+<use images/etheureum.jpeg>
+Package pdftex.def Info: images/etheureum.jpeg  used on input line 1505.
+(pdftex.def)             Requested size: 81.94212pt x 54.32991pt.
+<images/ipfs.png, id=901, 501.875pt x 499.8675pt>
+File: images/ipfs.png Graphic file (type png)
+<use images/ipfs.png>
+Package pdftex.def Info: images/ipfs.png  used on input line 1520.
+(pdftex.def)             Requested size: 81.94212pt x 81.61269pt.
+<images/metamask.png, id=902, 311.1625pt x 163.61125pt>
+File: images/metamask.png Graphic file (type png)
+<use images/metamask.png>
+Package pdftex.def Info: images/metamask.png  used on input line 1533.
+(pdftex.def)             Requested size: 81.94212pt x 43.08464pt.
+[18 <./images/etheureum.jpeg> <./images/ipfs.png> <./images/metamask.png>]
+Overfull \hbox (15.22617pt too wide) in paragraph at lines 1576--1577
+ [][] 
+ []
+
+(C:\Users\Mentalist\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
+File: lstlang1.sty 2025/11/14 1.11b listings language file
+) [19]
+<images/others_services.png, id=948, 1685.29625pt x 363.3575pt>
+File: images/others_services.png Graphic file (type png)
+<use images/others_services.png>
+Package pdftex.def Info: images/others_services.png  used on input line 1638.
+(pdftex.def)             Requested size: 318.66948pt x 68.70596pt.
+<images/stack.png, id=949, 618.05907pt x 264.23718pt>
+File: images/stack.png Graphic file (type png)
+<use images/stack.png>
+Package pdftex.def Info: images/stack.png  used on input line 1661.
+(pdftex.def)             Requested size: 364.19667pt x 155.70908pt.
+ [20 <./images/others_services.png> <./images/stack.png>]
+Chapitre 4.
+<images/architecture_service.png, id=957, 618.05907pt x 316.93407pt>
+File: images/architecture_service.png Graphic file (type png)
+<use images/architecture_service.png>
+Package pdftex.def Info: images/architecture_service.png  used on input line 1698.
+(pdftex.def)             Requested size: 364.19667pt x 186.76218pt.
+[21
+
+ <./images/architecture_service.png>]
+<images/architecture-services.png, id=963, 1156.32pt x 665.48625pt>
+File: images/architecture-services.png Graphic file (type png)
+<use images/architecture-services.png>
+Package pdftex.def Info: images/architecture-services.png  used on input line 1731.
+(pdftex.def)             Requested size: 409.71692pt x 235.7974pt.
+<images/diagramme_uml.png, id=964, 1541.76pt x 1027.84pt>
 File: images/diagramme_uml.png Graphic file (type png)
 <use images/diagramme_uml.png>
-Package pdftex.def Info: images/diagramme_uml.png  used on input line 1438.
+Package pdftex.def Info: images/diagramme_uml.png  used on input line 1748.
 (pdftex.def)             Requested size: 455.24411pt x 303.49248pt.
- [18 <./images/diagramme_uml.png (PNG copy)>]
-<images/diagramme_sequence_blockchain.jpeg, id=659, 1284.8pt x 1023.825pt>
+ [22 <./images/architecture-services.png>]
+Underfull \hbox (badness 1189) in paragraph at lines 1763--1766
+[]\T1/cmr/bx/n/12 Certification \T1/cmr/m/n/12 : preuve de tra-ça-bi-lité. At-tri-buts : \T1/cmtt/m/n/12 certId\T1/cmr/m/n/12 , \T1/cmtt/m/n/12 productId\T1/cmr/m/n/12 ,
+ []
+
+[23 <./images/diagramme_uml.png (PNG copy)>]
+<images/diagramme_sequence_blockchain.jpeg, id=974, 1284.8pt x 1023.825pt>
 File: images/diagramme_sequence_blockchain.jpeg Graphic file (type jpg)
 <use images/diagramme_sequence_blockchain.jpeg>
-Package pdftex.def Info: images/diagramme_sequence_blockchain.jpeg  used on input line 1457.
+Package pdftex.def Info: images/diagramme_sequence_blockchain.jpeg  used on input line 1789.
 (pdftex.def)             Requested size: 455.24411pt x 362.76523pt.
-<images/diagramme_sequence_ia.jpeg, id=660, 1284.8pt x 856.19875pt>
+ [24 <./images/diagramme_sequence_blockchain.jpeg>]
+<images/diagramme_sequence_ia.jpeg, id=984, 1284.8pt x 856.19875pt>
 File: images/diagramme_sequence_ia.jpeg Graphic file (type jpg)
 <use images/diagramme_sequence_ia.jpeg>
-Package pdftex.def Info: images/diagramme_sequence_ia.jpeg  used on input line 1482.
+Package pdftex.def Info: images/diagramme_sequence_ia.jpeg  used on input line 1826.
 (pdftex.def)             Requested size: 455.24411pt x 303.3713pt.
- [19 <./images/diagramme_sequence_blockchain.jpeg>] [20 <./images/diagramme_sequence_ia.jpeg>] [21]
+ [25 <./images/diagramme_sequence_ia.jpeg>] [26] [27] [28] [29]
 Chapitre 5.
 
-Overfull \hbox (19.67064pt too wide) in paragraph at lines 1573--1573
+Overfull \hbox (19.67064pt too wide) in paragraph at lines 2106--2106
  [][]\T1/cmr/bx/n/10.95 image_comparison_service 
  []
 
 
-Overfull \hbox (18.62997pt too wide) in paragraph at lines 1577--1577
+Overfull \hbox (18.62997pt too wide) in paragraph at lines 2110--2110
  [][]\T1/cmr/bx/n/10.95 smart_geolocation_service 
  []
 
-[22
+<images/chatbot-interface.png, id=1018, 868.24374pt x 900.36375pt>
+File: images/chatbot-interface.png Graphic file (type png)
+<use images/chatbot-interface.png>
+Package pdftex.def Info: images/chatbot-interface.png  used on input line 2136.
+(pdftex.def)             Requested size: 227.62206pt x 236.0399pt.
+[30
 
-] [23]
-Underfull \hbox (badness 5924) in paragraph at lines 1699--1699
+] [31 <./images/chatbot-interface.png (PNG copy)>]
+<images/image-comparison.png, id=1027, 496.85625pt x 625.58719pt>
+File: images/image-comparison.png Graphic file (type png)
+<use images/image-comparison.png>
+Package pdftex.def Info: images/image-comparison.png  used on input line 2241.
+(pdftex.def)             Requested size: 227.62206pt x 286.59947pt.
+
+Underfull \hbox (badness 5924) in paragraph at lines 2266--2266
 []|\T1/cmr/bx/n/10.95 Cosinus (em-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1699--1699
+Underfull \hbox (badness 10000) in paragraph at lines 2266--2266
 []|\T1/cmr/bx/n/10.95 Cohérence cou-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1699--1699
+Underfull \hbox (badness 10000) in paragraph at lines 2266--2266
 []|\T1/cmr/bx/n/10.95 Histogramme
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1699--1699
+Underfull \hbox (badness 10000) in paragraph at lines 2266--2266
 []|\T1/cmr/bx/n/10.95 Cohérence éclai-
  []
 
+[32 <./images/image-comparison.png>]
+<images/gps-validation.png, id=1037, 272.51813pt x 174.6525pt>
+File: images/gps-validation.png Graphic file (type png)
+<use images/gps-validation.png>
+Package pdftex.def Info: images/gps-validation.png  used on input line 2289.
+(pdftex.def)             Requested size: 273.14923pt x 175.0678pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 1726--1729
+Underfull \hbox (badness 10000) in paragraph at lines 2300--2303
 []\T1/cmr/bx/n/12 Anti-spoofing tem-po-rel : \T1/cmr/m/n/12 co-hé-rence entre l'ho-ro-da-tage GPS
  []
 
 
-Underfull \hbox (badness 1867) in paragraph at lines 1726--1729
+Underfull \hbox (badness 1867) in paragraph at lines 2300--2303
 \T1/cmr/m/n/12 (\T1/cmtt/m/n/12 position.timestamp\T1/cmr/m/n/12 ) et l'heure réelle du sys-tème pour dé-tec-ter les
  []
 
-[24] [25]
+[33 <./images/gps-validation.png>] [34]
 Chapitre 6.
-[26
+[35
 
-] [27] [28]
+]
+<images/certification-flow.png, id=1056, 796.9775pt x 927.465pt>
+File: images/certification-flow.png Graphic file (type png)
+<use images/certification-flow.png>
+Package pdftex.def Info: images/certification-flow.png  used on input line 2425.
+(pdftex.def)             Requested size: 318.66948pt x 370.8379pt.
+<images/metamask-sign.png, id=1057, 1284.8pt x 1075.01625pt>
+File: images/metamask-sign.png Graphic file (type png)
+<use images/metamask-sign.png>
+Package pdftex.def Info: images/metamask-sign.png  used on input line 2432.
+(pdftex.def)             Requested size: 318.66948pt x 266.63736pt.
+ [36 <./images/certification-flow.png (PNG copy)>] [37 <./images/metamask-sign.png (PNG copy)>]
+<images/ipfs-upload.png, id=1068, 846.16125pt x 570.63188pt>
+File: images/ipfs-upload.png Graphic file (type png)
+<use images/ipfs-upload.png>
+Package pdftex.def Info: images/ipfs-upload.png  used on input line 2514.
+(pdftex.def)             Requested size: 364.19667pt x 245.60202pt.
+ [38 <./images/ipfs-upload.png>]
+<images/badge-system.png, id=1075, 855.195pt x 575.14874pt>
+File: images/badge-system.png Graphic file (type png)
+<use images/badge-system.png>
+Package pdftex.def Info: images/badge-system.png  used on input line 2538.
+(pdftex.def)             Requested size: 409.71692pt x 275.55048pt.
+<images/certificate-detail.png, id=1076, 1189.44376pt x 898.35625pt>
+File: images/certificate-detail.png Graphic file (type png)
+<use images/certificate-detail.png>
+Package pdftex.def Info: images/certificate-detail.png  used on input line 2545.
+(pdftex.def)             Requested size: 364.19667pt x 275.06061pt.
+<images/qrcode-certification.png, id=1077, 628.59843pt x 722.7pt>
+File: images/qrcode-certification.png Graphic file (type png)
+<use images/qrcode-certification.png>
+Package pdftex.def Info: images/qrcode-certification.png  used on input line 2552.
+(pdftex.def)             Requested size: 364.19667pt x 418.71416pt.
+ [39 <./images/badge-system.png (PNG copy)> <./images/certificate-detail.png (PNG copy)>] [40 <./images/qrcode-certification.png>]
 Chapitre 7.
-<images/agc1.jpeg, id=714, 906.38625pt x 921.4425pt>
+<images/card_agc.png, id=1088, 618.05907pt x 316.93407pt>
+File: images/card_agc.png Graphic file (type png)
+<use images/card_agc.png>
+Package pdftex.def Info: images/card_agc.png  used on input line 2637.
+(pdftex.def)             Requested size: 273.14923pt x 140.07042pt.
+<images/agc1.jpeg, id=1089, 906.38625pt x 921.4425pt>
 File: images/agc1.jpeg Graphic file (type jpg)
 <use images/agc1.jpeg>
-Package pdftex.def Info: images/agc1.jpeg  used on input line 2032.
+Package pdftex.def Info: images/agc1.jpeg  used on input line 2663.
 (pdftex.def)             Requested size: 218.51521pt x 222.13492pt.
-<images/agc2.jpeg, id=715, 943.525pt x 791.95876pt>
+<images/agc2.jpeg, id=1090, 943.525pt x 791.95876pt>
 File: images/agc2.jpeg Graphic file (type jpg)
 <use images/agc2.jpeg>
-Package pdftex.def Info: images/agc2.jpeg  used on input line 2039.
+Package pdftex.def Info: images/agc2.jpeg  used on input line 2670.
 (pdftex.def)             Requested size: 218.51521pt x 183.40344pt.
-[29
+[41
 
-] [30 <./images/agc1.jpeg> <./images/agc2.jpeg>]
-Underfull \hbox (badness 2662) in paragraph at lines 2131--2135
+ <./images/card_agc.png>]
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 2696.
+<images/payment.png, id=1096, 202.50656pt x 345.54094pt>
+File: images/payment.png Graphic file (type png)
+<use images/payment.png>
+Package pdftex.def Info: images/payment.png  used on input line 2717.
+(pdftex.def)             Requested size: 273.14923pt x 466.09105pt.
+ [42 <./images/agc1.jpeg> <./images/agc2.jpeg>] [43 <./images/payment.png>]
+Underfull \hbox (badness 2662) in paragraph at lines 2778--2782
 \T1/cmr/m/n/12 Toutes les tran-sac-tions AGC uti-lisent les \T1/cmr/bx/n/12 tran-sac-tions ato-miques Fi-res-tore
  []
 
-[31]
-Underfull \hbox (badness 10000) in paragraph at lines 2213--2213
-[]|\T1/cmr/m/n/10.95 Taux com-plé-tion,
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 2213--2213
-[]|\T1/cmr/m/n/10.95 Tendance re-ve-nus
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 2213--2213
-[]|\T1/cmr/m/n/10.95 Pic d'heure /
- []
-
-[32] [33]
+<images/marketplace.png, id=1116, 900.36375pt x 670.505pt>
+File: images/marketplace.png Graphic file (type png)
+<use images/marketplace.png>
+Package pdftex.def Info: images/marketplace.png  used on input line 2801.
+(pdftex.def)             Requested size: 273.14923pt x 203.41412pt.
+[44] [45 <./images/marketplace.png (PNG copy)>]
 Chapitre 8.
-[34
+<images/audit-log.png, id=1126, 552.56438pt x 497.60907pt>
+File: images/audit-log.png Graphic file (type png)
+<use images/audit-log.png>
+Package pdftex.def Info: images/audit-log.png  used on input line 2870.
+(pdftex.def)             Requested size: 273.14923pt x 245.97935pt.
+<images/security-rules.png, id=1127, 671.50874pt x 735.74875pt>
+File: images/security-rules.png Graphic file (type png)
+<use images/security-rules.png>
+Package pdftex.def Info: images/security-rules.png  used on input line 2877.
+(pdftex.def)             Requested size: 273.14923pt x 299.2789pt.
+[46
 
-] [35] [36] [37]
-Underfull \hbox (badness 10000) in paragraph at lines 2572--2572
-[]|\T1/cmr/bx/n/10.95 Transactions anor-
+ <./images/audit-log.png>]
+Underfull \hbox (badness 2781) in paragraph at lines 2955--2955
+[]|\T1/cmr/bx/n/10.95 Menace adres-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2572--2572
-[]|\T1/cmr/m/n/10.95 Montant $\OML/cmm/m/it/10.95 >$ \T1/cmr/m/n/10.95 3$\OML/cmm/m/it/10.95 ^^[$
+Underfull \hbox (badness 10000) in paragraph at lines 2955--2955
+[]|\T1/cmr/bx/n/10.95 Clé pri-vée In-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2572--2572
-[]|\T1/cmr/m/n/10.95 Transactions 00h-
+Underfull \hbox (badness 10000) in paragraph at lines 2955--2955
+\T1/cmr/bx/n/10.95 dexedDB (non
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2572--2572
-[]|\T1/cmr/m/n/10.95 Pics sou-dains de
- []
-
-[38] [39]
-Underfull \hbox (badness 10000) in paragraph at lines 2644--2644
-[]|\T1/cmr/bx/n/10.95 Clé pri-vée
+Underfull \hbox (badness 1521) in paragraph at lines 2955--2955
+[]|\T1/cmr/m/n/10.95 WebCrypto API \TS1/cmr/m/n/10.95 · \T1/cmr/m/n/10.95 In-dexedDB
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2644--2644
-[]|\T1/cmr/bx/n/10.95 AES-GCM (256
- []
-
-[40] [41]
-Underfull \hbox (badness 10000) in paragraph at lines 2731--2731
-[]|\T1/cmr/m/n/10.95 Custom ECDSA
+Underfull \hbox (badness 7081) in paragraph at lines 2955--2955
+[]|\T1/cmr/bx/n/10.95 Nonce anti-rejeu
  []
 
 
-Underfull \hbox (badness 5105) in paragraph at lines 2731--2731
-[]|\T1/cmr/m/n/10.95 SonarQube, ES-Lint
+Underfull \hbox (badness 1215) in paragraph at lines 2955--2955
+\T1/cmr/bx/n/10.95 (UUID + ti-mes-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2767--2767
-[]|\T1/cmr/bx/n/12 Signatures nu-mé-
+Underfull \hbox (badness 2662) in paragraph at lines 2955--2955
+[]|\T1/cmr/m/n/10.95 crypto.randomUUID() \TS1/cmr/m/n/10.95 · \T1/cmr/m/n/10.95 Fi-res-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2767--2767
-[]|\T1/cmr/bx/n/12 Système de sé-
+Underfull \hbox (badness 10000) in paragraph at lines 2955--2955
+\T1/cmr/bx/n/10.95 256 (vé-ri-fi-ca-tion
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2767--2767
-[]|\T1/cmr/bx/n/12 Détection d'ano-
+Underfull \hbox (badness 10000) in paragraph at lines 2955--2955
+[]|\T1/cmr/bx/n/10.95 Manipulation
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2767--2767
-\T1/cmr/bx/n/12 ma-lies com-por-te-
+Underfull \hbox (badness 1365) in paragraph at lines 2955--2955
+[]|\T1/cmr/bx/n/10.95 Ledger im-muable
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2767--2767
-[]|\T1/cmr/bx/n/12 Authentification
+Underfull \hbox (badness 2452) in paragraph at lines 2955--2955
+[]|\T1/cmr/m/n/10.95 SHA-256 \TS1/cmr/m/n/10.95 · \T1/cmr/m/n/10.95 Fi-res-tore chaî-nage
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2767--2767
-[]|\T1/cmr/bx/n/12 Chiffrement des
+Underfull \hbox (badness 10000) in paragraph at lines 2955--2955
+[]|\T1/cmr/bx/n/10.95 Signatures
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2767--2767
-[]|\T1/cmr/bx/n/12 Journalisation et
+Underfull \hbox (badness 10000) in paragraph at lines 2955--2955
+[]|\T1/cmr/bx/n/10.95 Double-
  []
 
-[42]
-Overfull \vbox (38.60239pt too high) has occurred while \output is active []
 
- [43] [44] [45
+Underfull \hbox (badness 10000) in paragraph at lines 2955--2955
+[]|\T1/cmr/m/n/10.95 Firestore run-Tran-sac-tion \TS1/cmr/m/n/10.95 ·
+ []
 
-] [46]
-Overfull \hbox (2.7707pt too wide) in paragraph at lines 2893--2895
+
+Underfull \hbox (badness 3250) in paragraph at lines 2955--2955
+\T1/cmr/bx/n/10.95 vée par ac-cès
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2955--2955
+[]|\T1/cmr/m/n/10.95 AES-GCM-256 \TS1/cmr/m/n/10.95 · \T1/cmr/m/n/10.95 PBKDF2-
+ []
+
+
+Underfull \hbox (badness 5302) in paragraph at lines 2955--2955
+[]|\T1/cmr/bx/n/10.95 Audit Trail im-
+ []
+
+
+Underfull \hbox (badness 5726) in paragraph at lines 2955--2955
+[]|\T1/cmr/bx/n/10.95 Effacement de
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2955--2955
+\T1/cmr/bx/n/10.95 preuves post-
+ []
+
+[47 <./images/security-rules.png (PNG copy)>] [48]
+Underfull \hbox (badness 1158) in paragraph at lines 3012--3019
+\T1/cmr/m/n/12 Chaque mes-sage si-gné em-barque un UUID v4 aléa-toire (nonce) gé-néré via
+ []
+
+[49] [50] [51] [52] [53] [54] [55] [56] [57] [58
+
+]
+Overfull \hbox (2.7707pt too wide) in paragraph at lines 3379--3381
 []\T1/cmr/m/n/12 TensorFlow.js Team (2023). \T1/cmr/m/it/12 Ten-sor-Flow.js Do-cu-men-ta-tion\T1/cmr/m/n/12 . [][]$\T1/cmtt/m/n/12 https : / / www . tensorflow .
  []
 
-[47
+[59
 
 
 ] (main.aux)
@@ -1272,23 +1440,23 @@ LaTeX Font Warning: Size substitutions with differences
 (Font)              up to 1.86pt have occurred.
 
 
-LaTeX Warning: There were multiply-defined labels.
+LaTeX Warning: There were undefined references.
 
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 3B53D23F303A76089A594D7CD515DCB5;15997.
+(rerunfilecheck)             Checksum: 3C68C5FB3D335D294C911F2715FA3A68;21202.
  ) 
 Here is how much of TeX's memory you used:
- 34078 strings out of 467871
- 672748 string characters out of 5416441
- 1267316 words of memory out of 5000000
- 62147 multiletter control sequences out of 15000+600000
- 659032 words of font info for 113 fonts, out of 8000000 for 9000
+ 34856 strings out of 467871
+ 686906 string characters out of 5416441
+ 1507152 words of memory out of 5000000
+ 62753 multiletter control sequences out of 15000+600000
+ 657937 words of font info for 111 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 88i,14n,94p,715b,1426s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0800.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1095.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti0600.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi450\ecit0800.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1000.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1000.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi450\ectt0800.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1000.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1200.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1200.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcbx1200.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx0600.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0600.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1000.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1095.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\eccc1200.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecxc1728.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1200.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1095.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1440.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1440.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1728.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1728.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2488.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1728.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1200.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\eccc1728.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2986.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1095.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1095.pk><C:/Users/Mentalist/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/Mentalist/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/Mentalist/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/Mentalist/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/Mentalist/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/Mentalist/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/Mentalist/AppData/Local/Programs/MiKTeX/fonts/type1/urw/zapfding/uzdr.pfb>
-Output written on main.pdf (56 pages, 3268617 bytes).
+ 88i,13n,94p,714b,1588s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1095.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1000.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti0600.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1000.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi450\ecit0800.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1200.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi450\ectt0800.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1000.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1200.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcbx1200.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1000.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0600.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\eccc1200.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecxc1728.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1200.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1095.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1440.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1440.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1728.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1728.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2488.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1728.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1200.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\eccc1728.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2986.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1095.pk> <C:\Users\Mentalist\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1095.pk><C:/Users/Mentalist/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/Mentalist/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/Mentalist/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/Mentalist/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb>
+Output written on main.pdf (70 pages, 12963991 bytes).
 PDF statistics:
- 2284 PDF objects out of 2487 (max. 8388607)
- 259 named destinations out of 1000 (max. 500000)
- 790 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 2614 PDF objects out of 2984 (max. 8388607)
+ 430 named destinations out of 1000 (max. 500000)
+ 1074 words of extra memory for PDF output out of 10000 (max. 10000000)
 
