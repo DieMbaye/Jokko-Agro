@@ -11,7 +11,7 @@
 \contentsline {figure}{\numberline {3.1}{\ignorespaces Écran de connexion / inscription de Jokko Agro}}{11}{figure.caption.10}%
 \contentsline {figure}{\numberline {3.2}{\ignorespaces Architecture en couches de Jokko Agro}}{12}{figure.caption.11}%
 \contentsline {figure}{\numberline {3.3}{\ignorespaces Schéma simplifié des collections Firestore de Jokko Agro}}{13}{figure.caption.14}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Interaction des services d'intelligence artificielle}}{17}{figure.caption.18}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Interaction des services d'intelligence artificielle}}{18}{figure.caption.18}%
 \contentsline {figure}{\numberline {3.5}{\ignorespaces Flux de certification avec IPFS et Ethereum}}{19}{figure.caption.22}%
 \contentsline {figure}{\numberline {3.6}{\ignorespaces Autres services externes intégrés dans Jokko Agro}}{20}{figure.caption.23}%
 \contentsline {figure}{\numberline {3.7}{\ignorespaces Outils et technologies utilisés dans le développement de Jokko Agro}}{20}{figure.caption.24}%
@@ -25,36 +25,36 @@
 \contentsline {figure}{\numberline {4.7}{\ignorespaces Flux de données entre les quatre axes technologiques}}{26}{figure.caption.31}%
 \contentsline {figure}{\numberline {4.8}{\ignorespaces Couches de sécurité de Jokko Agro}}{28}{figure.caption.32}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {5.1}{\ignorespaces Les quatre services de l'axe IA}}{30}{figure.caption.33}%
-\contentsline {figure}{\numberline {5.2}{\ignorespaces Interface du chatbot agricole avec Claude API}}{31}{figure.caption.34}%
-\contentsline {figure}{\numberline {5.3}{\ignorespaces Flux de traitement du chatbot agricole}}{31}{figure.caption.35}%
-\contentsline {figure}{\numberline {5.4}{\ignorespaces Exemple de comparaison d'images anti-fraude avec TensorFlow.js}}{32}{figure.caption.36}%
-\contentsline {figure}{\numberline {5.5}{\ignorespaces Validation GPS des points de certification}}{33}{figure.caption.37}%
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Les quatre services de l'axe IA}}{29}{figure.caption.33}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Interface du chatbot agricole avec Claude API}}{30}{figure.caption.34}%
+\contentsline {figure}{\numberline {5.3}{\ignorespaces Flux de traitement du chatbot agricole}}{30}{figure.caption.35}%
+\contentsline {figure}{\numberline {5.4}{\ignorespaces Exemple de comparaison d'images anti-fraude avec TensorFlow.js}}{31}{figure.caption.36}%
+\contentsline {figure}{\numberline {5.5}{\ignorespaces Validation GPS des points de certification}}{32}{figure.caption.37}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {6.1}{\ignorespaces Structure d'une blockchain --- principe de chaînage par hash}}{35}{figure.caption.38}%
-\contentsline {figure}{\numberline {6.2}{\ignorespaces Interface de certification avec upload d'image}}{36}{figure.caption.39}%
-\contentsline {figure}{\numberline {6.3}{\ignorespaces Popup MetaMask pour signature de la transaction}}{37}{figure.caption.40}%
-\contentsline {figure}{\numberline {6.4}{\ignorespaces Flux complet de création d'une preuve de certification}}{37}{figure.caption.41}%
-\contentsline {figure}{\numberline {6.5}{\ignorespaces Confirmation d'upload IPFS avec CID généré}}{38}{figure.caption.42}%
-\contentsline {figure}{\numberline {6.6}{\ignorespaces Système de badges (Bronze/Silver/Gold) selon le niveau de certification}}{39}{figure.caption.43}%
-\contentsline {figure}{\numberline {6.7}{\ignorespaces Détail d'un certificat blockchain avec QR code de vérification}}{39}{figure.caption.44}%
-\contentsline {figure}{\numberline {6.8}{\ignorespaces QR code permettant la vérification instantanée de la certification}}{40}{figure.caption.45}%
-\contentsline {figure}{\numberline {6.9}{\ignorespaces Les 7 checkpoints de certification et le système de badges}}{40}{figure.caption.46}%
+\contentsline {figure}{\numberline {6.1}{\ignorespaces Structure d'une blockchain --- principe de chaînage par hash}}{34}{figure.caption.38}%
+\contentsline {figure}{\numberline {6.2}{\ignorespaces Interface de certification avec upload d'image}}{35}{figure.caption.39}%
+\contentsline {figure}{\numberline {6.3}{\ignorespaces Popup MetaMask pour signature de la transaction}}{35}{figure.caption.39}%
+\contentsline {figure}{\numberline {6.4}{\ignorespaces Flux complet de création d'une preuve de certification}}{36}{figure.caption.40}%
+\contentsline {figure}{\numberline {6.5}{\ignorespaces Confirmation d'upload IPFS avec CID généré}}{37}{figure.caption.41}%
+\contentsline {figure}{\numberline {6.6}{\ignorespaces Système de badges (Bronze/Silver/Gold) selon le niveau de certification}}{37}{figure.caption.42}%
+\contentsline {figure}{\numberline {6.7}{\ignorespaces Détail de la verification d'un certificat blockchain }}{38}{figure.caption.43}%
+\contentsline {figure}{\numberline {6.8}{\ignorespaces Certificat blockchain }}{38}{figure.caption.43}%
+\contentsline {figure}{\numberline {6.9}{\ignorespaces Enregistrement signature dans etherscan }}{38}{figure.caption.44}%
+\contentsline {figure}{\numberline {6.10}{\ignorespaces Les 7 checkpoints de certification et le système de badges}}{38}{figure.caption.44}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {7.1}{\ignorespaces Portefeuille AGC }}{41}{figure.caption.47}%
-\contentsline {figure}{\numberline {7.2}{\ignorespaces Interface d'achat des Agricoins (AGC)}}{42}{figure.caption.48}%
-\contentsline {figure}{\numberline {7.3}{\ignorespaces Historique des transactions AGC}}{42}{figure.caption.48}%
-\contentsline {figure}{\numberline {7.4}{\ignorespaces Interface de paiement avec Wave / Orange Money}}{43}{figure.caption.49}%
-\contentsline {figure}{\numberline {7.5}{\ignorespaces Cycle de vie d'un paiement AGC avec escrow}}{44}{figure.caption.50}%
-\contentsline {figure}{\numberline {7.6}{\ignorespaces Interface du marketplace avec produits certifiés}}{45}{figure.caption.51}%
-\contentsline {figure}{\numberline {7.7}{\ignorespaces Machine à états d'une commande Jokko Agro}}{45}{figure.caption.52}%
+\contentsline {figure}{\numberline {7.1}{\ignorespaces Portefeuille AGC }}{39}{figure.caption.45}%
+\contentsline {figure}{\numberline {7.2}{\ignorespaces Interface d'achat des Agricoins (AGC)}}{40}{figure.caption.46}%
+\contentsline {figure}{\numberline {7.3}{\ignorespaces Historique des transactions AGC}}{40}{figure.caption.46}%
+\contentsline {figure}{\numberline {7.4}{\ignorespaces Interface de paiement avec Wave / Orange Money}}{41}{figure.caption.47}%
+\contentsline {figure}{\numberline {7.5}{\ignorespaces Cycle de vie d'un paiement AGC avec escrow}}{41}{figure.caption.48}%
+\contentsline {figure}{\numberline {7.6}{\ignorespaces Interface du marketplace avec produits certifiés}}{42}{figure.caption.49}%
+\contentsline {figure}{\numberline {7.7}{\ignorespaces Machine à états d'une commande Jokko Agro}}{42}{figure.caption.50}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {8.1}{\ignorespaces Architecture de sécurité en dix couches de Jokko Agro}}{46}{figure.caption.53}%
-\contentsline {figure}{\numberline {8.2}{\ignorespaces Cycle de vie d'un paiement AGC avec escrow}}{52}{figure.caption.54}%
-\contentsline {figure}{\numberline {8.3}{\ignorespaces Extrait des règles de sécurité Firestore}}{54}{figure.caption.55}%
-\contentsline {figure}{\numberline {8.4}{\ignorespaces Extrait des règles de sécurité Firestore}}{54}{figure.caption.55}%
-\contentsline {figure}{\numberline {8.5}{\ignorespaces Tableau de bord des tests de sécurité --- Vue d'ensemble}}{56}{figure.caption.56}%
-\contentsline {figure}{\numberline {8.6}{\ignorespaces Résultats des tests de sécurité sur la couche Ledger}}{58}{figure.caption.57}%
-\contentsline {figure}{\numberline {8.7}{\ignorespaces Résultats détaillés des tests sur la signature ECDSA}}{58}{figure.caption.57}%
-\contentsline {figure}{\numberline {8.8}{\ignorespaces Résultats des tests de sécurité sur le Chiffrement AEES}}{58}{figure.caption.58}%
-\contentsline {figure}{\numberline {8.9}{\ignorespaces Résultats des tests de sécurité synthétisés}}{58}{figure.caption.58}%
+\contentsline {figure}{\numberline {8.1}{\ignorespaces Architecture de sécurité en dix couches de Jokko Agro}}{43}{figure.caption.51}%
+\contentsline {figure}{\numberline {8.2}{\ignorespaces Extrait des règles de sécurité Firestore}}{50}{figure.caption.52}%
+\contentsline {figure}{\numberline {8.3}{\ignorespaces Extrait des règles de sécurité Firestore}}{50}{figure.caption.52}%
+\contentsline {figure}{\numberline {8.4}{\ignorespaces Tableau de bord des tests de sécurité --- Vue d'ensemble}}{51}{figure.caption.53}%
+\contentsline {figure}{\numberline {8.5}{\ignorespaces Résultats des tests de sécurité sur la couche Ledger}}{53}{figure.caption.54}%
+\contentsline {figure}{\numberline {8.6}{\ignorespaces Résultats détaillés des tests sur la signature ECDSA}}{53}{figure.caption.54}%
+\contentsline {figure}{\numberline {8.7}{\ignorespaces Résultats des tests de sécurité sur le Chiffrement AES}}{53}{figure.caption.55}%
+\contentsline {figure}{\numberline {8.8}{\ignorespaces Résultats des tests de sécurité synthétisés}}{53}{figure.caption.55}%

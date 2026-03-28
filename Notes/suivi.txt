@@ -7,7 +7,7 @@ Chaque transaction sensible est signée par l'utilisateur avec sa clé privée, 
 
 C2 — IndexedDB non extractable (stockage sécurisé des clés)
 Description
-La clé privée générée par ECDSA est stockée dans IndexedDB avec le et non  extractable: . Cela garantit que même en cas d'attaque XSS, un script malveillant ne peut pas exporter les bytes de la clé privée. Le moteur cryptographique du navigateur ne permet que l'utilisation de la clé pour signer, jamais son extraction.
+La clé privée générée par ECDSA est stockée dans IndexedDB qui est non  extractable: . Cela garantit que même en cas d'attaque XSS, un script malveillant ne peut pas exporter les bytes de la clé privée. Le moteur cryptographique du navigateur ne permet que l'utilisation de la clé pour signer, jamais son extraction.
 
 C'est l'équivalent logiciel d'un Secure Enclave côté client.
 

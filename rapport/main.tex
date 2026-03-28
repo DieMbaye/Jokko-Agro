@@ -52,7 +52,7 @@
     urlcolor=bleuMoyen,
     citecolor=bleuUniv,
     pdfauthor={Die Mbaye, Mouhamad Al Amine Ba},
-    pdftitle={Jokko Agro: une plateforme blockchain-IA pour la certification et la monétisation des produits agricoles},
+    pdftitle={Jokko Agro: une plateforme blockchain-IA \\ pour la certification et la monétisation des produits agricoles},
     pdfsubject={De la reconnaissance vocale Wolof à la certification on-chain: un écosystème numérique complet pour l'agriculture sénégalaise}
 }
 
@@ -263,115 +263,132 @@
 %                      PAGE DE GARDE
 % =========================================================
 \begin{titlepage}
-\thispagestyle{empty}
-
-\begin{minipage}{0.45\textwidth}
-\raggedright
-\includegraphics[height=2.6cm]{images/logo-ucad.png}
-\end{minipage}
-\hfill
-\begin{minipage}{0.45\textwidth}
-\raggedleft
-\includegraphics[height=2.6cm]{images/logo-lacgaa.jpeg}
-\end{minipage}
-
-\vspace{0.8cm}
-
-\begin{minipage}{0.48\textwidth}
-\raggedright
-{\color{bleuUniv}\small
-Université Cheikh Anta Diop de Dakar\\
-Faculté des Sciences et Techniques\\
-Département Mathématiques et Informatique
-}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-\raggedleft
-{\color{bleuUniv}\small
-Laboratoire d'Algèbre, de Cryptographie,\\
-de Géométrie Algébrique et Applications\\
-\textbf{LACGAA}
-}
-\end{minipage}
-
-\vspace{1cm}
-
-\begin{center}
-{\normalsize\bfseries Licence 3 --- Transmission de Données et Sécurité de l'Information}
-\end{center}
-
-\vspace{1.5cm}
-
-% ================== TITRE STYLISÉ ==================
-\begin{center}
-\begin{tikzpicture}
-\node[inner sep=0pt] (box) {
-  \begin{minipage}{0.85\textwidth}
+  \thispagestyle{empty}
+  \vspace{0.8cm}
   \centering
-  \vspace{0.5cm}
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=2cm]{UCAD-removebg-preview.png} \par
+    {\color{blue}\footnotesize
+      \centering
+      Université Cheikhe Anta Diop de Dakar \vspace{-0.5em} \newline
+      Faculté des Sciences et Techniques \vspace{-0.5em} \newline
+      Département Mathématiques et Informatique}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.47\textwidth}
+    \centering
+    \vspace{-0.3em} % Diminue l'espacement vertical avant ce bloc
+    \includegraphics[width=2cm]{image.png} \par
+    {\color{blue}\footnotesize
+      Laboratoire d'Algèbre de Cryptographie de\vspace{-0.5em} \newline
+      Géométrie Algébrique et Applications \vspace{-0.5em} \newline
+      LACGAA}
+  \end{minipage}
 
-  {\fontsize{28}{32}\selectfont\bfseries\color{bleuUniv}
-  JOKKO AGRO}\\[0.3cm]
+  \vspace{1cm}
 
-  \begin{tikzpicture}
-  \draw[bleuClair, line width=0.8pt] (0,0) -- (6,0);
-  \end{tikzpicture}
+  \begin{center}
+    {\fontsize{13}{15}\selectfont\itshape\color{bleuUniv}\textbf{Licence 3} --- Transmission de Données et Sécurité de l'Information} \\[0.3cm]
+
+    {\small\itshape\color{bleuMoyen}
+    Option : MCS}
+  \end{center}
+
+  % ================== TITRE STYLISÉ ==================
+  \begin{center}
+    \begin{tikzpicture}
+
+      \node[
+        inner sep=0pt,
+        rounded corners=12pt,
+        draw=bleuUniv,
+        line width=1.2pt,
+        fill=bleuUniv!2,
+        drop shadow
+      ] (box) {
+        \begin{minipage}{0.85\textwidth}
+          \centering
+          \vspace{0.3cm}
+          {\large\bfseries\color{bleuMoyen} Sujet :}\\[0.2cm]
+          % 🔥 RESET TOTAL LOCAL
+          \begingroup
+          \setstretch{1} % annule le 1.25
+          \setlength{\parskip}{0pt}
+          \setlength{\baselineskip}{15pt}
+
+          \vspace{0.4cm}
+
+          % Titre
+          {\fontsize{30}{32}\selectfont\bfseries\color{bleuUniv}
+            JOKKO AGRO}
+
+          \vspace{0.2cm}
+
+          % Ligne
+          \begin{tikzpicture}
+            \draw[bleuUniv!60, line width=0.8pt] (0,0) -- (7,0);
+            \draw[bleuUniv, line width=2pt] (2.5,0) -- (4.5,0);
+          \end{tikzpicture}
+
+          \vspace{0.3cm}
+
+          % Texte compact (SANS espace manuel)
+          {\fontsize{15}{17}\selectfont\itshape\color{bleuMoyen}
+            Une plateforme \textbf{Blockchain--IA} pour\\
+            la \textbf{certification} et la \textbf{monétisation}\\
+            des produits agricoles}
+
+          \vspace{0.4cm}
+
+          \endgroup
+
+        \end{minipage}
+      };
+
+    \end{tikzpicture}
+  \end{center}
+
   \vspace{0.3cm}
 
-  {\fontsize{16}{20}\selectfont\scshape\color{bleuMoyen}
-  une plateforme blockchain-IA pour\\[0.2cm]
-  la certification et la monétisation\\[0.2cm]
-  des produits agricoles}
-
-  \vspace{0.5cm}
+  \begin{minipage}{0.45\textwidth}
+    \raggedright
+    {\normalsize Présenté et soutenu par:\\[0.3cm]
+      \textcolor{bleuUniv}{\textbf{ Die Mbaye}}\\
+      \hspace{0.05cm} \textcolor{bleuUniv}{\textbf{Mouhamad Al Amine Ba}}
+    }
   \end{minipage}
-};
-\draw[line width=1.2pt,color=bleuUniv](box.north west) rectangle (box.south east);
-\draw[line width=2.8pt,color=bleuUniv](box.south west)--(box.south east);
-\end{tikzpicture}
-\end{center}
+  \hfill
+  \begin{minipage}{0.45\textwidth}
+    \raggedleft
+    {\normalsize Sous la direction de:\\[0.3cm]
+      \textcolor{bleuUniv}{\textbf{Dr Aminata Ngom Ba}}
+    }
+  \end{minipage}
 
-\vspace{1.2cm}
+  \vspace{1.2cm}
 
-\begin{minipage}{0.45\textwidth}
-\raggedright
-{\normalsize Présenté et soutenu par:\\[0.3cm]
-\textcolor{bleuUniv}{\textbf{ Die Mbaye}}\\
-\textcolor{bleuUniv}{\textbf{Mouhamad Al Amine Ba}}
-}
-\end{minipage}
-\hfill
-\begin{minipage}{0.45\textwidth}
-\raggedleft
-{\normalsize Sous la direction de:\\[0.3cm]
-\textcolor{bleuUniv}{\textbf{Dr Aminata Ngome Ba}}
-}
-\end{minipage}
+  \begin{center}
+    \fcolorbox{bleuUniv}{white}{
+      \begin{minipage}{0.85\textwidth}
+        \vspace{0.3cm}\centering
+        {\Large\bfseries\color{bleuUniv}Jury}\\[0.4cm]
+        \begin{tabular}{p{8cm} p{4cm}}
+          \textcolor{bleuUniv}{{\textbf{Présidente:}} Dr Aminata Ngom BA} & \textcolor{bleuUniv}{UCAD} \\[0.3cm]
+          \textcolor{bleuUniv}{\textbf{Membres:} Mme Nafy Dione}          & \textcolor{bleuUniv}{UCAD} \\
+          \textcolor{bleuUniv}{\hspace{2.2cm} M. Habib Ndiaye}            & \textcolor{bleuUniv}{UCAD} \\
+          \textcolor{bleuUniv}{\hspace{2.2cm} M. Ndiagua Gueye}           & \textcolor{bleuUniv}{UCAD}
+        \end{tabular}
+        \vspace{0.3cm}
+      \end{minipage}
+    }
+  \end{center}
 
-\vspace{1.2cm}
+  \vfill
 
-\begin{center}
-\fcolorbox{bleuUniv}{white}{
-\begin{minipage}{0.85\textwidth}
-\vspace{0.3cm}\centering
-{\Large\bfseries\color{bleuUniv}Jury}\\[0.4cm]
-\begin{tabular}{p{7cm} p{4cm}}
-\textcolor{bleuUniv}{Président: Dr Aminata Ngome BA} & \textcolor{bleuUniv}{UCAD}\\[0.3cm]
-\textcolor{bleuUniv}{Membres: Mme Nafy Dione} & \textcolor{bleuUniv}{UCAD}\\
-\textcolor{bleuUniv}{\hspace{1cm}M. Habib Ndiaye} & \textcolor{bleuUniv}{UCAD}\\
-\textcolor{bleuUniv}{\hspace{1cm}M. Ndiagua} & \textcolor{bleuUniv}{UCAD}
-\end{tabular}
-\vspace{0.3cm}
-\end{minipage}
-}
-\end{center}
-
-\vfill
-
-\begin{center}
-{\normalsize\bfseries Année académique 2024--2025}
-\end{center}
+  \begin{center}
+    {\normalsize\bfseries Année académique 2024--2025}
+  \end{center}
 \end{titlepage}
 
 % =========================================================
@@ -389,22 +406,22 @@ de Géométrie Algébrique et Applications\\
 {\Large Nous dédions ce mémoire:}
 \vspace{0.2cm}
 {\large
-\begin{itemize}
-  \item[$\star$] À nos très chers \textcolor{bleuUniv}{parents}. Puisse Allah nous protéger, vous accorder santé, bonheur et longue vie, et fasse en sorte que nous ne vous décevions jamais.
-  \item[$\star$] À nos chers \textcolor{bleuUniv}{frères et sœurs}. Puisse Allah vous garder, éclairer votre route et vous aider à réaliser vos rêves les plus chers.
-  \item[$\star$] À nos \textcolor{bleuUniv}{oncles et tantes}. Que le Tout-Puissant vous accorde une longue vie.
-  \item[$\star$] À nos \textcolor{bleuUniv}{amis, frères et camarades de promotion}. Qu'Allah SWT nous facilite la suite de notre parcours.
-\end{itemize}}
+  \begin{itemize}
+    \item[$\star$] À nos très chers \textcolor{bleuUniv}{parents}. Puisse Allah nous protéger, vous accorder santé, bonheur et longue vie, et fasse en sorte que nous ne vous décevions jamais.
+    \item[$\star$] À nos chers \textcolor{bleuUniv}{frères et sœurs}. Puisse Allah vous garder, éclairer votre route et vous aider à réaliser vos rêves les plus chers.
+    \item[$\star$] À nos \textcolor{bleuUniv}{oncles et tantes}. Que le Tout-Puissant vous accorde une longue vie.
+    \item[$\star$] À nos \textcolor{bleuUniv}{amis, frères et camarades de promotion}. Qu'Allah SWT nous facilite la suite de notre parcours.
+  \end{itemize}}
 \vspace{0.1cm}
 \begin{center}{\Large\bfseries AL HAMDOULILLAH RABBI AL ALAMINE}\end{center}
 \vspace{0.1cm}
 {\Large Nous tenons à exprimer notre profonde gratitude:}
 \vspace{0.1cm}
 {\large
-\begin{itemize}
-  \item[$\heartsuit$] À nos \textcolor{bleuUniv}{parents}, pour votre amour inconditionnel, votre soutien indéfectible et vos prières. Que Dieu vous comble de bénédictions et vous accorde une longue vie.
-  \item[$\heartsuit$] À notre \textcolor{bleuUniv}{encadrante Madame Ba Aminata}, pour son accompagnement, sa patience et ses encouragements constants tout au long de ce travail.
-\end{itemize}}
+  \begin{itemize}
+    \item[$\heartsuit$] À nos \textcolor{bleuUniv}{parents}, pour votre amour inconditionnel, votre soutien indéfectible et vos prières. Que Dieu vous comble de bénédictions et vous accorde une longue vie.
+    \item[$\heartsuit$] À notre \textcolor{bleuUniv}{encadrante Dr Aminata Ngom Ba}, pour son accompagnement, sa patience et ses encouragements constants tout au long de ce travail.
+  \end{itemize}}
 \vspace{0.15cm}
 \begin{center}\includegraphics[width=0.36\textwidth]{images/merci.png}\end{center}
 
@@ -415,7 +432,7 @@ de Géométrie Algébrique et Applications\\
 \thispagestyle{empty}
 \vspace*{1cm}
 \begin{center}
-{\Huge\bfseries\color{bleuUniv} Résumé}
+  {\Huge\bfseries\color{bleuUniv} Résumé}
 \end{center}
 \vspace{0.5cm}
 \noindent
@@ -440,7 +457,7 @@ Les résultats attendus incluent une meilleure traçabilité des produits agrico
 \thispagestyle{empty}
 \vspace*{1cm}
 \begin{center}
-{\Huge\bfseries\color{bleuUniv} Abstract}
+  {\Huge\bfseries\color{bleuUniv} Abstract}
 \end{center}
 \vspace{0.5cm}
 \noindent
@@ -485,23 +502,23 @@ Expected outcomes include improved traceability of agricultural products, financ
 \vspace{0.5cm}
 
 \begin{tabular}{p{3cm} p{10cm}}
-\textbf{AGC} & Agricoin (monnaie numérique agricole) \\
-\textbf{API} & Application Programming Interface \\
-\textbf{CID} & Content Identifier (identifiant de contenu IPFS) \\
-\textbf{DW} & Data Warehouse \\
-\textbf{ECDSA} & Elliptic Curve Digital Signature Algorithm \\
-\textbf{IA} & Intelligence Artificielle \\
-\textbf{IPFS} & InterPlanetary File System \\
-\textbf{LLM} & Large Language Model \\
-\textbf{PWA} & Progressive Web App \\
-\textbf{RPC} & Remote Procedure Call \\
-\textbf{SHA} & Secure Hash Algorithm \\
-\textbf{TOTP} & Time-based One-Time Password \\
-\textbf{2FA} & Two-Factor Authentication \\
-\textbf{FCFA} & Franc CFA \\
-\textbf{OM} & Orange Money \\
-\textbf{UI} & User Interface \\
-\textbf{UML} & Unified Modeling Language \\
+  \textbf{AGC}   & Agricoin (monnaie numérique agricole)            \\
+  \textbf{API}   & Application Programming Interface                \\
+  \textbf{CID}   & Content Identifier (identifiant de contenu IPFS) \\
+  \textbf{DW}    & Data Warehouse                                   \\
+  \textbf{ECDSA} & Elliptic Curve Digital Signature Algorithm       \\
+  \textbf{IA}    & Intelligence Artificielle                        \\
+  \textbf{IPFS}  & InterPlanetary File System                       \\
+  \textbf{LLM}   & Large Language Model                             \\
+  \textbf{PWA}   & Progressive Web App                              \\
+  \textbf{RPC}   & Remote Procedure Call                            \\
+  \textbf{SHA}   & Secure Hash Algorithm                            \\
+  \textbf{TOTP}  & Time-based One-Time Password                     \\
+  \textbf{2FA}   & Two-Factor Authentication                        \\
+  \textbf{FCFA}  & Franc CFA                                        \\
+  \textbf{OM}    & Orange Money                                     \\
+  \textbf{UI}    & User Interface                                   \\
+  \textbf{UML}   & Unified Modeling Language                        \\
 \end{tabular}
 
 \clearpage
@@ -519,7 +536,6 @@ Expected outcomes include improved traceability of agricultural products, financ
 \chapter*{Introduction Générale}
 \addcontentsline{toc}{chapter}{Introduction Générale}
 \markboth{Introduction Générale}{Introduction Générale}
-
 
 \noindent
 L'agriculture constitue le pilier économique de nombreux pays d'Afrique subsaharienne,
@@ -562,9 +578,9 @@ chacun des axes technologiques. Le mémoire s'achève sur une conclusion qui dre
 du travail accompli et ouvre sur les perspectives d'évolution de la plateforme.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.5\textwidth]{images/logo-JK.png}
-\label{fig:app-home}
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/logo-JK.png}
+  \label{fig:app-home}
 \end{figure}
 
 % =========================================================
@@ -573,7 +589,7 @@ du travail accompli et ouvre sur les perspectives d'évolution de la plateforme.
 \chapter{Présentation Générale du Projet}
 
 \begin{tcolorbox}[chapterbox,title={Vue d'ensemble du chapitre}]
-Ce chapitre introductif présente le cadre général du projet. Après une analyse du contexte agricole sénégalais et de ses contraintes structurelles, nous identifions la problématique centrale qui a motivé ce travail. Nous énonçons ensuite les objectifs poursuivis avant de décrire l'approche globale adoptée et de présenter les grandes lignes de la plateforme Jokko Agro.
+  Ce chapitre introductif présente le cadre général du projet. Après une analyse du contexte agricole sénégalais et de ses contraintes structurelles, nous identifions la problématique centrale qui a motivé ce travail. Nous énonçons ensuite les objectifs poursuivis avant de décrire l'approche globale adoptée et de présenter les grandes lignes de la plateforme Jokko Agro.
 \end{tcolorbox}
 
 \vspace{0.5cm}
@@ -581,10 +597,10 @@ Ce chapitre introductif présente le cadre général du projet. Après une analy
 \section{Contexte et état des lieux du secteur agricole sénégalais}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.7\textwidth]{images/app-home.jpeg}
-\caption{Chiffres clés du secteur agricole sénégalais}
-\label{fig:joko-agro-presentation}
+  \centering
+  \includegraphics[width=0.7\textwidth]{images/app-home.jpeg}
+  \caption{Chiffres clés du secteur agricole sénégalais}
+  \label{fig:joko-agro-presentation}
 \end{figure}
 
 \noindent
@@ -607,10 +623,10 @@ Malgré ce potentiel avéré, le secteur agricole sénégalais se caractérise p
 \noindent
 L'agriculture sénégalaise est dominée par de petites exploitations familiales. Plusieurs traits structurels freinent leur modernisation:
 \begin{itemize}
-    \item \textbf{Taille réduite des surfaces cultivées}: moins de 2 hectares en moyenne par exploitation ;
-    \item \textbf{Faible mécanisation} et recours limité aux intrants modernes ;
-    \item \textbf{Dépendance forte à la pluviométrie} et aux aléas climatiques ;
-    \item \textbf{Accès restreint au crédit} et aux services financiers formels.
+  \item \textbf{Taille réduite des surfaces cultivées}: moins de 2 hectares en moyenne par exploitation ;
+  \item \textbf{Faible mécanisation} et recours limité aux intrants modernes ;
+  \item \textbf{Dépendance forte à la pluviométrie} et aux aléas climatiques ;
+  \item \textbf{Accès restreint au crédit} et aux services financiers formels.
 \end{itemize}
 
 \vspace{0.4cm}
@@ -635,7 +651,7 @@ Cependant, cette infrastructure numérique demeure sous-exploitée dans le secte
 \vspace{0.4cm}
 
 \begin{tcolorbox}[colback=bleuTresClair, colframe=bleuUniv, sharp corners, title=\textbf{\color{bleuUniv}Question de recherche}]
-\textbf{Comment permettre aux agriculteurs sénégalais — souvent faiblement bancarisés, disposant d'une formation limitée et vivant dans des zones peu connectées — de bénéficier des avancées technologiques pour améliorer leurs pratiques agricoles, sécuriser la traçabilité de leurs productions et s'insérer durablement dans des circuits économiques formels et équitables ?}
+  \textbf{Comment permettre aux agriculteurs sénégalais — souvent faiblement bancarisés, disposant d'une formation limitée et vivant dans des zones peu connectées — de bénéficier des avancées technologiques pour améliorer leurs pratiques agricoles, sécuriser la traçabilité de leurs productions et s'insérer durablement dans des circuits économiques formels et équitables ?}
 \end{tcolorbox}
 
 \vspace{0.4cm}
@@ -644,31 +660,31 @@ Cependant, cette infrastructure numérique demeure sous-exploitée dans le secte
 Cette question centrale se décompose en trois sous-problèmes interdépendants:
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-  boite/.style={rounded corners=5pt, minimum width=4.8cm, minimum height=1.3cm,
-                text centered, text width=4.4cm, font=\small\bfseries,
-                draw=bleuUniv, line width=1pt},
-  fleche/.style={-{Stealth[scale=1.2]}, thick, bleuUniv}]
+  \centering
+  \begin{tikzpicture}[
+    boite/.style={rounded corners=5pt, minimum width=4.8cm, minimum height=1.3cm,
+        text centered, text width=4.4cm, font=\small\bfseries,
+        draw=bleuUniv, line width=1pt},
+    fleche/.style={-{Stealth[scale=1.2]}, thick, bleuUniv}]
 
-  \node[boite,fill=bleuPale] (P1) at (0,0)
+    \node[boite,fill=bleuPale] (P1) at (0,0)
     {Inaccessibilité du\\conseil agronomique};
-  \node[boite,fill=bleuPale] (P2) at (5.5,0)
+    \node[boite,fill=bleuPale] (P2) at (5.5,0)
     {Absence de\\traçabilité produit};
-  \node[boite,fill=bleuPale] (P3) at (11,0)
+    \node[boite,fill=bleuPale] (P3) at (11,0)
     {Paiements inadaptés\\aux zones rurales};
 
-  \node[boite,fill=bleuUniv,text=white,minimum width=10cm,text width=9.5cm]
+    \node[boite,fill=bleuUniv,text=white,minimum width=10cm,text width=9.5cm]
     (SOL) at (5.5,-3.2)
     {Plateforme unifiée \textbf{Jokko Agro}\\[4pt]
-     \normalfont\small IA + Blockchain + Agricoins + Sécurité};
+      \normalfont\small IA + Blockchain + Agricoins + Sécurité};
 
-  \draw[fleche] (P1.south)--++(0,-0.8)-|(SOL.north west);
-  \draw[fleche] (P2.south)--(SOL.north);
-  \draw[fleche] (P3.south)--++(0,-0.8)-|(SOL.north east);
-\end{tikzpicture}
-\caption{Triple problématique et réponse intégrée de Jokko Agro}
-\label{fig:problematique}
+    \draw[fleche] (P1.south)--++(0,-0.8)-|(SOL.north west);
+    \draw[fleche] (P2.south)--(SOL.north);
+    \draw[fleche] (P3.south)--++(0,-0.8)-|(SOL.north east);
+  \end{tikzpicture}
+  \caption{Triple problématique et réponse intégrée de Jokko Agro}
+  \label{fig:problematique}
 \end{figure}
 
 \vspace{0.3cm}
@@ -695,16 +711,19 @@ L'\textbf{objectif général} de ce travail est de concevoir et développer une 
 \subsection{Objectifs spécifiques}
 
 \begin{tcolorbox}[infobox,title={Objectifs spécifiques}]
-\begin{enumerate}[leftmargin=*,label=\textcolor{bleuUniv}{\textbf{OS\arabic*.}},itemsep=6pt]
-  \item Déployer un \textbf{assistant agricole intelligent bilingue} (français/Wolof)
-        accessible par texte et par voix pour démocratiser l'accès au conseil agronomique.
-  \item Développer un \textbf{système de certification basé sur la blockchain} enregistrant
-        de façon immuable les étapes du cycle de production, du semis à la commercialisation.
-  \item Créer une \textbf{monnaie numérique agricole} (Agricoins ou AGC), convertible en FCFA
-        via Wave et Orange Money, pour faciliter les micro-transactions en milieu rural.
-  \item Garantir la \textbf{sécurité cryptographique} de l'ensemble du système en mettant en
-        œuvre des mécanismes robustes.
-\end{enumerate}
+  \begin{enumerate}[leftmargin=*,label=\textcolor{bleuUniv}{\textbf{OS\arabic*.}},itemsep=6pt]
+    \item Déployer un \textbf{assistant agricole intelligent bilingue} (français/Wolof)
+          accessible par texte et par voix pour démocratiser l'accès au conseil
+          agronomique.
+    \item Développer un \textbf{système de certification basé sur la blockchain}
+          enregistrant de façon immuable les étapes du cycle de production, du semis à la
+          commercialisation.
+    \item Créer une \textbf{monnaie numérique agricole} (Agricoins ou AGC), convertible
+          en FCFA via Wave et Orange Money, pour faciliter les micro-transactions en
+          milieu rural.
+    \item Garantir la \textbf{sécurité cryptographique} de l'ensemble du système en
+          mettant en œuvre des mécanismes robustes.
+  \end{enumerate}
 \end{tcolorbox}
 
 \vspace{0.2cm}
@@ -716,19 +735,19 @@ Pour répondre aux objectifs fixés, nous avons adopté une approche modulaire o
 
 \begin{comment}
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{images/app-dashboard.png}
-\caption{Tableau de bord utilisateur de Jokko Agro}
-\label{fig:app-dashboard}
+  \centering
+  \includegraphics[width=0.9\textwidth]{images/app-dashboard.png}
+  \caption{Tableau de bord utilisateur de Jokko Agro}
+  \label{fig:app-dashboard}
 \end{figure}
 \end{comment}
 \vspace{0.2cm}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{images/axes.png}
-\caption{Les quatre axes fonctionnels de Jokko Agro}
-\label{fig:quatre_axes_conceptuels}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/axes.png}
+  \caption{Les quatre axes fonctionnels de Jokko Agro}
+  \label{fig:quatre_axes_conceptuels}
 \end{figure}
 
 \vspace{0.4cm}
@@ -736,10 +755,10 @@ Pour répondre aux objectifs fixés, nous avons adopté une approche modulaire o
 \noindent
 Chaque axe répond à un besoin spécifique identifié dans la problématique:
 \begin{itemize}
-    \item \textbf{Axe 1 — Intelligence Artificielle}: démocratiser l'accès au conseil agronomique via un assistant accessible en français et en Wolof, par texte ou par voix ;
-    \item \textbf{Axe 2 — Blockchain et Certification}: instaurer un système de confiance grâce à une traçabilité immuable des produits, du semis à la vente ;
-    \item \textbf{Axe 3 — Agricoins et Datawarehouse}: faciliter les transactions financières en milieu rural et fournir des outils d'analyse de performance ;
-    \item \textbf{Axe 4 — Sécurité multicouche}: protéger l'intégrité des données et des transactions des utilisateurs.
+  \item \textbf{Axe 1 — Intelligence Artificielle}: démocratiser l'accès au conseil agronomique via un assistant accessible en français et en Wolof, par texte ou par voix ;
+  \item \textbf{Axe 2 — Blockchain et Certification}: instaurer un système de confiance grâce à une traçabilité immuable des produits, du semis à la vente ;
+  \item \textbf{Axe 3 — Agricoins et Datawarehouse}: faciliter les transactions financières en milieu rural et fournir des outils d'analyse de performance ;
+  \item \textbf{Axe 4 — Sécurité multicouche}: protéger l'intégrité des données et des transactions des utilisateurs.
 \end{itemize}
 
 \vspace{0.3cm}
@@ -757,27 +776,27 @@ Chaque axe répond à un besoin spécifique identifié dans la problématique:
 La plateforme met en relation deux types d'acteurs aux intérêts complémentaires:
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small,
-  acteur/.style={rectangle,rounded corners=6pt,minimum width=4.5cm,minimum height=3.2cm,
-                 text centered,text width=4.2cm,draw=bleuUniv,line width=1pt}]
+  \centering
+  \begin{tikzpicture}[font=\small,
+      acteur/.style={rectangle,rounded corners=6pt,minimum width=4.5cm,minimum height=3.2cm,
+          text centered,text width=4.2cm,draw=bleuUniv,line width=1pt}]
 
-  \node[acteur,fill=bleuTresClair] (AGR) at (0,0) {
-    \textcolor{bleuUniv}{\bfseries\large Agriculteur}\\[6pt]
-    Ajoute et certifie ses produits\\Reçoit des AGC\\Vend sur le marché
-  };
-  \node[acteur,fill=bleuPale] (ACH) at (7,0) {
-    \textcolor{bleuUniv}{\bfseries\large Acheteur}\\[6pt]
-    Achète des produits\\Vérifie la certification\\Paie en AGC\\Consulte l'assistant
-  };
+    \node[acteur,fill=bleuTresClair] (AGR) at (0,0) {
+      \textcolor{bleuUniv}{\bfseries\large Agriculteur}\\[6pt]
+      Ajoute et certifie ses produits\\Reçoit des AGC\\Vend sur le marché
+    };
+    \node[acteur,fill=bleuPale] (ACH) at (7,0) {
+      \textcolor{bleuUniv}{\bfseries\large Acheteur}\\[6pt]
+      Achète des produits\\Vérifie la certification\\Paie en AGC\\Consulte l'assistant
+    };
 
-  \draw[-{Stealth},bleuUniv,thick] (AGR.east)--(ACH.west)
+    \draw[-{Stealth},bleuUniv,thick] (AGR.east)--(ACH.west)
     node[midway,above,font=\tiny]{Vend à};
-  \draw[-{Stealth},bleuUniv,thick] (ACH.west)--(AGR.east)
+    \draw[-{Stealth},bleuUniv,thick] (ACH.west)--(AGR.east)
     node[midway,below,font=\tiny]{Achète};
-\end{tikzpicture}
-\caption{Acteurs de la plateforme Jokko Agro}
-\label{fig:acteurs}
+  \end{tikzpicture}
+  \caption{Acteurs de la plateforme Jokko Agro}
+  \label{fig:acteurs}
 \end{figure}
 
 \vspace{0.2cm}
@@ -787,16 +806,16 @@ La plateforme met en relation deux types d'acteurs aux intérêts complémentair
 \noindent
 La suite de ce mémoire est organisée comme suit:
 \begin{itemize}
-    \item \textbf{Chapitre 2}: État de l'art — analyse des solutions existantes et positionnement de Jokko Agro ;
-    \item \textbf{Chapitre 3}: Technologies utilisées — présentation détaillée des briques technologiques retenues ;
-    \item \textbf{Chapitre 4}: Architecture globale — description de l'architecture technique et des interactions entre composants ;
-    \item \textbf{Chapitres 5 à 8}: Présentation détaillée des quatre axes (IA, Blockchain, Agricoins, Sécurité) ;
-    \item \textbf{Conclusion}: bilan du travail réalisé et perspectives d'évolution.
+  \item \textbf{Chapitre 2}: État de l'art — analyse des solutions existantes et positionnement de Jokko Agro ;
+  \item \textbf{Chapitre 3}: Technologies utilisées — présentation détaillée des briques technologiques retenues ;
+  \item \textbf{Chapitre 4}: Architecture globale — description de l'architecture technique et des interactions entre composants ;
+  \item \textbf{Chapitres 5 à 8}: Présentation détaillée des quatre axes (IA, Blockchain, Agricoins, Sécurité) ;
+  \item \textbf{Conclusion}: bilan du travail réalisé et perspectives d'évolution.
 \end{itemize}
 
 \vspace{0.5cm}
 \begin{flushright}
-\textit{«~Jokko~»: connecter l'agriculture sénégalaise aux technologies de demain.}
+  \textit{«~Jokko~»: connecter l'agriculture sénégalaise aux technologies de demain.}
 \end{flushright}
 
 % =========================================================
@@ -805,10 +824,10 @@ La suite de ce mémoire est organisée comme suit:
 \chapter{État de l'art}
 
 \begin{tcolorbox}[chapterbox,title={Vue d'ensemble du chapitre}]
-Ce chapitre dresse un panorama des solutions numériques agricoles existantes en Afrique
-subsaharienne. Après avoir exposé notre méthodologie d'analyse, nous présentons les
-plateformes les plus représentatives, identifions leurs limites communes, et positionnons
-Jokko Agro comme une réponse intégrée aux lacunes constatées.
+  Ce chapitre dresse un panorama des solutions numériques agricoles existantes en Afrique
+  subsaharienne. Après avoir exposé notre méthodologie d'analyse, nous présentons les
+  plateformes les plus représentatives, identifions leurs limites communes, et positionnons
+  Jokko Agro comme une réponse intégrée aux lacunes constatées.
 \end{tcolorbox}
 
 \vspace{0.5cm}
@@ -823,14 +842,15 @@ comprend:
 \vspace{0.3cm}
 
 \begin{itemize}
-    \item Une recherche bibliographique sur les bases \textbf{Scopus}, \textbf{Google Scholar}
-          et \textbf{Web of Science} avec les mots-clés: \textit{"agricultural digital platform"},
-          \textit{"blockchain agriculture Africa"}, \textit{"agritech Senegal"} ;
-    \item Une analyse des \textbf{rapports sectoriels} (GSMA, FAO, Agence Française de
-          Développement) publiés entre 2020 et 2024 ;
-    \item L'étude de \textbf{5 plateformes représentatives} sélectionnées selon trois critères:
-          présence en Afrique de l'Ouest, fonctionnalités innovantes, données disponibles sur
-          l'impact réel.
+  \item Une recherche bibliographique sur les bases \textbf{Scopus}, \textbf{Google
+          Scholar} et \textbf{Web of Science} avec les mots-clés: \textit{"agricultural
+          digital platform"}, \textit{"blockchain agriculture Africa"}, \textit{"agritech
+          Senegal"} ;
+  \item Une analyse des \textbf{rapports sectoriels} (GSMA, FAO, Agence Française de
+        Développement) publiés entre 2020 et 2024 ;
+  \item L'étude de \textbf{5 plateformes représentatives} sélectionnées selon trois
+        critères: présence en Afrique de l'Ouest, fonctionnalités innovantes, données
+        disponibles sur l'impact réel.
 \end{itemize}
 
 \vspace{0.5cm}
@@ -846,10 +866,10 @@ financement. Le tableau \ref{tab:solutions} synthétise les principales platefor
 \vspace{0.4cm}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.7\textwidth]{images/solutions-comparison.png}
-\caption{Interfaces des principales solutions concurrentes}
-\label{fig:solutions-comparison}
+  \centering
+  \includegraphics[width=0.7\textwidth]{images/solutions-comparison.png}
+  \caption{Interfaces des principales solutions concurrentes}
+  \label{fig:solutions-comparison}
 \end{figure}
 
 \vspace{0.1cm}
@@ -863,23 +883,23 @@ financement. Le tableau \ref{tab:solutions} synthétise les principales platefor
   >{\small}p{2.5cm}
   >{\small}p{2.8cm}
   >{\small}X}
-\rowcolor{bleuUniv}
-\multicolumn{1}{>{\bfseries\color{white}\small}p{2.5cm}}{Solution} &
-\multicolumn{1}{>{\bfseries\color{white}\small}p{2.5cm}}{Pays} &
-\multicolumn{1}{>{\bfseries\color{white}\small}p{2.5cm}}{Lancement} &
-\multicolumn{1}{>{\bfseries\color{white}\small}p{2.8cm}}{Utilisateurs} &
-\multicolumn{1}{>{\bfseries\color{white}\small}X}{Limite principale} \\
-Esoko           & Ghana / Mali & 2005 & 500 000+ & Pas de traçabilité ni d'IA \\
-\rowcolor{bleuTresClair}
-Farmcrowdy      & Nigeria      & 2016 & 25 000+  & Pas de certification blockchain \\
-Hello Tractor   & Nigeria      & 2014 & 100 000+ & Hors chaîne de valeur \\
-\rowcolor{bleuTresClair}
-M-Farm          & Kenya        & 2012 & 50 000+  & Langue anglaise uniquement \\
-Agri-Wallet     & Kenya        & 2019 & 30 000+  & Pas d'IA ni de certification \\
-\rowcolor{bleuTresClair}
-DigiFarm        & Kenya        & 2017 & 1 M+     & Non adapté au Sénégal / Wolof \\
-\bottomrule
-\multicolumn{5}{l}{\footnotesize \textit{Sources: Rapports GSMA 2023, sites officiels des plateformes}} \\
+  \rowcolor{bleuUniv}
+  \multicolumn{1}{>{\bfseries\color{white}\small}p{2.5cm}}{Solution}     &
+  \multicolumn{1}{>{\bfseries\color{white}\small}p{2.5cm}}{Pays}         &
+  \multicolumn{1}{>{\bfseries\color{white}\small}p{2.5cm}}{Lancement}    &
+  \multicolumn{1}{>{\bfseries\color{white}\small}p{2.8cm}}{Utilisateurs} &
+  \multicolumn{1}{>{\bfseries\color{white}\small}X}{Limite principale}                                                                      \\
+  Esoko                                                                  & Ghana / Mali & 2005 & 500 000+ & Pas de traçabilité ni d'IA      \\
+  \rowcolor{bleuTresClair}
+  Farmcrowdy                                                             & Nigeria      & 2016 & 25 000+  & Pas de certification blockchain \\
+  Hello Tractor                                                          & Nigeria      & 2014 & 100 000+ & Hors chaîne de valeur           \\
+  \rowcolor{bleuTresClair}
+  M-Farm                                                                 & Kenya        & 2012 & 50 000+  & Langue anglaise uniquement      \\
+  Agri-Wallet                                                            & Kenya        & 2019 & 30 000+  & Pas d'IA ni de certification    \\
+  \rowcolor{bleuTresClair}
+  DigiFarm                                                               & Kenya        & 2017 & 1 M+     & Non adapté au Sénégal / Wolof   \\
+  \bottomrule
+  \multicolumn{5}{l}{\footnotesize \textit{Sources: Rapports GSMA 2023, sites officiels des plateformes}}                                   \\
 \end{tabularx}
 
 \vspace{0.5cm}
@@ -891,36 +911,36 @@ L'analyse comparative met en évidence quatre lacunes structurelles, que nous av
 formalisées comme autant de verrous à lever:
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{images/gap-analysis.png}
-\caption{Analyse des lacunes des solutions existantes}
-\label{fig:gap-analysis}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/gap-analysis.png}
+  \caption{Analyse des lacunes des solutions existantes}
+  \label{fig:gap-analysis}
 \end{figure}
 
 \begin{tcolorbox}[infobox,title={Synthèse des lacunes identifiées}]
-\begin{enumerate}[leftmargin=*,label=\textcolor{bleuUniv}{\textbf{L\arabic*.}},itemsep=8pt]
-  \item \textbf{Absence de certification décentralisée}: aucune solution ne s'appuie
-        sur la blockchain pour garantir l'immuabilité des preuves de production.
-        \textit{Conséquence:} impossibilité de prouver l'origine et la qualité
-        auprès des acheteurs exigeants (export, grande distribution).
+  \begin{enumerate}[leftmargin=*,label=\textcolor{bleuUniv}{\textbf{L\arabic*.}},itemsep=8pt]
+    \item \textbf{Absence de certification décentralisée}: aucune solution ne s'appuie
+          sur la blockchain pour garantir l'immuabilité des preuves de production.
+          \textit{Conséquence:} impossibilité de prouver l'origine et la qualité
+          auprès des acheteurs exigeants (export, grande distribution).
 
-  \item \textbf{Barrière linguistique et technique}: les applications existantes
-        fonctionnent en anglais ou en français standard, excluant les populations
-        rurales non scolarisées ou ne maîtrisant pas ces langues.
-        \textit{Conséquence:} fracture numérique doublée d'une fracture linguistique.
+    \item \textbf{Barrière linguistique et technique}: les applications existantes
+          fonctionnent en anglais ou en français standard, excluant les populations
+          rurales non scolarisées ou ne maîtrisant pas ces langues.
+          \textit{Conséquence:} fracture numérique doublée d'une fracture linguistique.
 
-  \item \textbf{Absence de mécanisme incitatif}: aucune solution ne propose un système
-        de récompense monétaire (reward token) lié aux bonnes pratiques agricoles
-        ou à la qualité de la certification.
-        \textit{Conséquence:} faible motivation des agriculteurs à s'approprier
-        durablement les outils numériques.
+    \item \textbf{Absence de mécanisme incitatif}: aucune solution ne propose un système
+          de récompense monétaire (reward token) lié aux bonnes pratiques agricoles
+          ou à la qualité de la certification.
+          \textit{Conséquence:} faible motivation des agriculteurs à s'approprier
+          durablement les outils numériques.
 
-  \item \textbf{Approche cloisonnée}: les solutions traitent un seul problème
-        (conseil, paiement \textit{ou} traçabilité) sans les intégrer dans un
-        écosystème unifié.
-        \textit{Conséquence:} multiplicité des applications, lassitude des
-        utilisateurs, données fragmentées.
-\end{enumerate}
+    \item \textbf{Approche cloisonnée}: les solutions traitent un seul problème
+          (conseil, paiement \textit{ou} traçabilité) sans les intégrer dans un
+          écosystème unifié.
+          \textit{Conséquence:} multiplicité des applications, lassitude des
+          utilisateurs, données fragmentées.
+  \end{enumerate}
 \end{tcolorbox}
 
 \vspace{0.5cm}
@@ -941,33 +961,33 @@ Jokko Agro se distingue par une combinaison unique de quatre innovations qui ré
 directement aux lacunes identifiées:
 
 \begin{tcolorbox}[definbox]
-\textbf{\color{bleuUniv}Innovation 1 — IA multilingue:}
-Premier chatbot agricole bilingue français/Wolof basé sur un LLM (Claude API),
-avec reconnaissance vocale adaptée aux langues locales. \textit{Répond à L2.}
+  \textbf{\color{bleuUniv}Innovation 1 — IA multilingue:}
+  Premier chatbot agricole bilingue français/Wolof basé sur un LLM (Claude API),
+  avec reconnaissance vocale adaptée aux langues locales. \textit{Répond à L2.}
 \end{tcolorbox}
 
 \vspace{0.2cm}
 
 \begin{tcolorbox}[definbox]
-\textbf{\color{bleuUniv}Innovation 2 — Blockchain certifiante:}
-Système de certification décentralisé avec preuves photographiques géolocalisées,
-enregistrées de façon immuable sur Ethereum Sepolia et IPFS. \textit{Répond à L1.}
+  \textbf{\color{bleuUniv}Innovation 2 — Blockchain certifiante:}
+  Système de certification décentralisé avec preuves photographiques géolocalisées,
+  enregistrées de façon immuable sur Ethereum Sepolia et IPFS. \textit{Répond à L1.}
 \end{tcolorbox}
 
 \vspace{0.2cm}
 
 \begin{tcolorbox}[definbox]
-\textbf{\color{bleuUniv}Innovation 3 — Monnaie incitative (AGC):}
-Token agricole (1 AGC = 100 FCFA) convertible en mobile money, avec système de
-récompense pour les bonnes pratiques et la certification. \textit{Répond à L3.}
+  \textbf{\color{bleuUniv}Innovation 3 — Monnaie incitative (AGC):}
+  Token agricole (1 AGC = 100 FCFA) convertible en mobile money, avec système de
+  récompense pour les bonnes pratiques et la certification. \textit{Répond à L3.}
 \end{tcolorbox}
 
 \vspace{0.2cm}
 
 \begin{tcolorbox}[definbox]
-\textbf{\color{bleuUniv}Innovation 4 — Écosystème intégré:}
-Architecture unifiée combinant conseil, traçabilité et paiement dans une seule
-interface accessible par mobile. \textit{Répond à L4.}
+  \textbf{\color{bleuUniv}Innovation 4 — Écosystème intégré:}
+  Architecture unifiée combinant conseil, traçabilité et paiement dans une seule
+  interface accessible par mobile. \textit{Répond à L4.}
 \end{tcolorbox}
 
 \vspace{0.5cm}
@@ -978,13 +998,13 @@ interface accessible par mobile. \textit{Répond à L4.}
 L'analyse comparative menée dans ce chapitre aboutit à trois constats principaux:
 
 \begin{enumerate}
-    \item Les solutions existantes, bien que nombreuses, souffrent d'une \textbf{approche
+  \item Les solutions existantes, bien que nombreuses, souffrent d'une \textbf{approche
           sectorielle} qui limite leur impact systémique ;
-    \item Aucune plateforme ne combine actuellement \textbf{IA multilingue, blockchain
+  \item Aucune plateforme ne combine actuellement \textbf{IA multilingue, blockchain
           certifiante et monnaie incitative} dans une architecture unifiée ;
-    \item Le contexte sénégalais, avec sa spécificité linguistique (Wolof) et son
-          écosystème de mobile money mature, constitue un \textbf{terrain fertile}
-          pour une solution innovante.
+  \item Le contexte sénégalais, avec sa spécificité linguistique (Wolof) et son
+        écosystème de mobile money mature, constitue un \textbf{terrain fertile} pour
+        une solution innovante.
 \end{enumerate}
 
 \noindent
@@ -993,8 +1013,8 @@ détaillée dans les chapitres suivants.
 
 \vspace{0.5cm}
 \begin{flushright}
-\textit{« L'innovation ne consiste pas à ajouter de la technologie,
-mais à la rendre accessible à ceux qui en ont le plus besoin. »}
+  \textit{« L'innovation ne consiste pas à ajouter de la technologie,
+    mais à la rendre accessible à ceux qui en ont le plus besoin. »}
 \end{flushright}
 
 % =========================================================
@@ -1003,11 +1023,11 @@ mais à la rendre accessible à ceux qui en ont le plus besoin. »}
 \chapter{Technologies et Outils Utilisés}
 
 \begin{tcolorbox}[chapterbox,title={Vue d'ensemble du chapitre}]
-Ce chapitre décrit les technologies et outils retenus pour la conception de Jokko Agro.
-Pour chaque technologie, nous expliquons le choix effectué, ses caractéristiques
-techniques et son rôle précis dans la plateforme. L'accent est mis sur les technologies
-d'intelligence artificielle (TensorFlow.js, Claude API, Web Speech API) qui constituent
-le cœur de l'axe IA.
+  Ce chapitre décrit les technologies et outils retenus pour la conception de Jokko Agro.
+  Pour chaque technologie, nous expliquons le choix effectué, ses caractéristiques
+  techniques et son rôle précis dans la plateforme. L'accent est mis sur les technologies
+  d'intelligence artificielle (TensorFlow.js, Claude API, Web Speech API) qui constituent
+  le cœur de l'axe IA.
 \end{tcolorbox}
 
 \vspace{0.5cm}
@@ -1021,34 +1041,34 @@ mais interconnectées, chacune jouant un rôle précis dans le cycle de vie des 
 \vspace{0.4cm}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{images/app-login.png}
-\caption{Écran de connexion / inscription de Jokko Agro}
-\label{fig:app-login}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/app-login.png}
+  \caption{Écran de connexion / inscription de Jokko Agro}
+  \label{fig:app-login}
 \end{figure}
 
 \vspace{0.4cm}
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small,
-  couche/.style={rectangle,rounded corners=4pt,minimum width=12cm,minimum height=1.1cm,
-                 text centered,draw=bleuUniv,line width=1pt,font=\bfseries}]
-  \node[couche,fill=bleuUniv,text=white] (C1) at (0,4.5)
+  \centering
+  \begin{tikzpicture}[font=\small,
+      couche/.style={rectangle,rounded corners=4pt,minimum width=12cm,minimum height=1.1cm,
+          text centered,draw=bleuUniv,line width=1pt,font=\bfseries}]
+    \node[couche,fill=bleuUniv,text=white] (C1) at (0,4.5)
     {Couche Présentation — Angular 17 (Frontend SPA / PWA)};
-  \node[couche,fill=bleuMoyen,text=white] (C2) at (0,3.0)
+    \node[couche,fill=bleuMoyen,text=white] (C2) at (0,3.0)
     {Couche Métier — Services Angular (IA · Blockchain · AGC · Sécurité)};
-  \node[couche,fill=bleuClair,text=white] (C3) at (0,1.5)
+    \node[couche,fill=bleuClair,text=white] (C3) at (0,1.5)
     {Couche Données — Firebase / Firestore / IPFS};
-  \node[couche,fill=bleuPale,text=bleuUniv] (C4) at (0,0)
+    \node[couche,fill=bleuPale,text=bleuUniv] (C4) at (0,0)
     {Couche Externe — Ethereum · Claude API · MetaMask · Wave / OM};
 
-  \draw[{Stealth}-{Stealth},bleuUniv,thick] (C1.south)--(C2.north);
-  \draw[{Stealth}-{Stealth},bleuUniv,thick] (C2.south)--(C3.north);
-  \draw[{Stealth}-{Stealth},bleuUniv,thick] (C3.south)--(C4.north);
-\end{tikzpicture}
-\caption{Architecture en couches de Jokko Agro}
-\label{fig:couches}
+    \draw[{Stealth}-{Stealth},bleuUniv,thick] (C1.south)--(C2.north);
+    \draw[{Stealth}-{Stealth},bleuUniv,thick] (C2.south)--(C3.north);
+    \draw[{Stealth}-{Stealth},bleuUniv,thick] (C3.south)--(C4.north);
+  \end{tikzpicture}
+  \caption{Architecture en couches de Jokko Agro}
+  \label{fig:couches}
 \end{figure}
 
 \vspace{0.5cm}
@@ -1056,30 +1076,30 @@ mais interconnectées, chacune jouant un rôle précis dans le cycle de vie des 
 \section{Frontend: Angular 17}
 
 \begin{figure}[H]
-\centering
-\begin{minipage}{0.2\textwidth}
-\centering
-\includegraphics[width=0.9\textwidth]{images/angular.png}
-\end{minipage}
-\hfill
-\begin{minipage}{0.75\textwidth}
-\textbf{Angular 17} est le framework JavaScript retenu pour le développement de l'interface
-utilisateur. Il s'agit d'un framework front-end développé par Google, basé sur TypeScript,
-qui permet la construction d'applications web monopages (SPA) robustes et maintenables.
-\end{minipage}
+  \centering
+  \begin{minipage}{0.2\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/angular.png}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.75\textwidth}
+    \textbf{Angular 17} est le framework JavaScript retenu pour le développement de l'interface
+    utilisateur. Il s'agit d'un framework front-end développé par Google, basé sur TypeScript,
+    qui permet la construction d'applications web monopages (SPA) robustes et maintenables.
+  \end{minipage}
 \end{figure}
 
 \vspace{0.3cm}
 
 \begin{tcolorbox}[infobox,title={Pourquoi Angular 17 ?}]
-\begin{itemize}[itemsep=4pt]
-  \item \textbf{Standalone components:} réduction du boilerplate, modules allégés.
-  \item \textbf{RxJS intégré:} gestion réactive des états (wallet, solde AGC) via
-        \texttt{BehaviorSubject}.
-  \item \textbf{TypeScript natif:} typage fort, détection d'erreurs à la compilation.
-  \item \textbf{PWA support:} application installable sur mobile sans store.
-  \item \textbf{Lazy loading:} chargement à la demande des modules lourds (TensorFlow.js).
-\end{itemize}
+  \begin{itemize}[itemsep=4pt]
+    \item \textbf{Standalone components:} réduction du boilerplate, modules allégés.
+    \item \textbf{RxJS intégré:} gestion réactive des états (wallet, solde AGC) via
+          \texttt{BehaviorSubject}.
+    \item \textbf{TypeScript natif:} typage fort, détection d'erreurs à la compilation.
+    \item \textbf{PWA support:} application installable sur mobile sans store.
+    \item \textbf{Lazy loading:} chargement à la demande des modules lourds (TensorFlow.js).
+  \end{itemize}
 \end{tcolorbox}
 
 \vspace{0.5cm}
@@ -1087,62 +1107,62 @@ qui permet la construction d'applications web monopages (SPA) robustes et mainte
 \section{Backend: Firebase / Firestore}
 
 \begin{figure}[H]
-\centering
-\begin{minipage}{0.2\textwidth}
-\centering
-\includegraphics[width=0.9\textwidth]{images/firebase.png}
-\end{minipage}
-\hfill
-\begin{minipage}{0.75\textwidth}
-\textbf{Firebase} (Google) est utilisé comme plateforme backend-as-a-service. Il fournit
-l'authentification, la base de données en temps réel (Firestore), les Cloud Functions et
-l'hébergement.
-\end{minipage}
+  \centering
+  \begin{minipage}{0.2\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/firebase.png}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.75\textwidth}
+    \textbf{Firebase} (Google) est utilisé comme plateforme backend-as-a-service. Il fournit
+    l'authentification, la base de données en temps réel (Firestore), les Cloud Functions et
+    l'hébergement.
+  \end{minipage}
 \end{figure}
 
 \vspace{0.3cm}
 
 \begin{tcolorbox}[infobox,title={Fonctionnalités Firebase utilisées}]
-\begin{itemize}[itemsep=4pt]
-  \item \textbf{Authentication:} gestion des utilisateurs (email/mot de passe, Google)
-  \item \textbf{Firestore:} base de données NoSQL temps réel
-  \item \textbf{Cloud Functions:} logique métier serverless (validation AGC)
-  \item \textbf{Security Rules:} contrôle d'accès granulaire
-\end{itemize}
+  \begin{itemize}[itemsep=4pt]
+    \item \textbf{Authentication:} gestion des utilisateurs (email/mot de passe, Google)
+    \item \textbf{Firestore:} base de données NoSQL temps réel
+    \item \textbf{Cloud Functions:} logique métier serverless (validation AGC)
+    \item \textbf{Security Rules:} contrôle d'accès granulaire
+  \end{itemize}
 \end{tcolorbox}
 
 \vspace{0.3cm}
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small,
-  col/.style={rectangle,rounded corners=3pt,minimum width=2.8cm,minimum height=0.8cm,
-              text centered,draw=bleuUniv,line width=0.8pt,fill=bleuTresClair},
-  doc/.style={rectangle,rounded corners=2pt,minimum width=2.4cm,minimum height=0.7cm,
-              text centered,draw=bleuUniv!60,fill=white,font=\footnotesize}]
+  \centering
+  \begin{tikzpicture}[font=\small,
+      col/.style={rectangle,rounded corners=3pt,minimum width=2.8cm,minimum height=0.8cm,
+          text centered,draw=bleuUniv,line width=0.8pt,fill=bleuTresClair},
+      doc/.style={rectangle,rounded corners=2pt,minimum width=2.4cm,minimum height=0.7cm,
+          text centered,draw=bleuUniv!60,fill=white,font=\footnotesize}]
 
-  \node[col] (users) at (0,4) {users/\{uid\}};
-  \node[doc] (bal)   at (0,3.1) {agc\_balance};
-  \node[doc] (tx)    at (0,2.3) {transactions[]};
+    \node[col] (users) at (0,4) {users/\{uid\}};
+    \node[doc] (bal)   at (0,3.1) {agc\_balance};
+    \node[doc] (tx)    at (0,2.3) {transactions[]};
 
-  \node[col] (prod)  at (4,4) {products/\{pid\}};
-  \node[doc] (name)  at (4,3.1) {name, price};
-  \node[doc] (cert)  at (4,2.3) {certificationId};
+    \node[col] (prod)  at (4,4) {products/\{pid\}};
+    \node[doc] (name)  at (4,3.1) {name, price};
+    \node[doc] (cert)  at (4,2.3) {certificationId};
 
-  \node[col] (certc) at (8,4) {certifications/\{cid\}};
-  \node[doc] (hash)  at (8,3.1) {proofHash (SHA256)};
-  \node[doc] (ipfs)  at (8,2.3) {ipfsCID};
-  \node[doc] (txh)   at (8,1.5) {txHash (Ethereum)};
+    \node[col] (certc) at (8,4) {certifications/\{cid\}};
+    \node[doc] (hash)  at (8,3.1) {proofHash (SHA256)};
+    \node[doc] (ipfs)  at (8,2.3) {ipfsCID};
+    \node[doc] (txh)   at (8,1.5) {txHash (Ethereum)};
 
-  \foreach \n in {users,prod,certc} {
-    \draw[bleuUniv,thick] (\n.south)--++(0,-0.2);
-  }
+    \foreach \n in {users,prod,certc} {
+        \draw[bleuUniv,thick] (\n.south)--++(0,-0.2);
+      }
 
-  \draw[bleuUniv!50,dashed,-{Stealth}] (prod.east)--(certc.west)
+    \draw[bleuUniv!50,dashed,-{Stealth}] (prod.east)--(certc.west)
     node[midway,above,font=\tiny]{référence};
-\end{tikzpicture}
-\caption{Schéma simplifié des collections Firestore de Jokko Agro}
-\label{fig:firestore}
+  \end{tikzpicture}
+  \caption{Schéma simplifié des collections Firestore de Jokko Agro}
+  \label{fig:firestore}
 \end{figure}
 
 \vspace{0.1cm}
@@ -1159,29 +1179,29 @@ chacune sélectionnée pour son adéquation avec les contraintes du contexte sé
 \subsection{TensorFlow.js — Vision par ordinateur côté client}
 
 \begin{figure}[H]
-\centering
-\begin{minipage}{0.2\textwidth}
-\centering
-\includegraphics[width=0.9\textwidth]{images/tensorflow.png}
-\end{minipage}
-\hfill
-\begin{minipage}{0.75\textwidth}
-\textbf{TensorFlow.js} est la bibliothèque JavaScript de Google permettant d'exécuter
-des modèles d'apprentissage automatique directement dans le navigateur. Dans Jokko Agro,
-elle est utilisée pour la \textbf{comparaison d'images anti-fraude} lors du processus
-de certification.
-\end{minipage}
+  \centering
+  \begin{minipage}{0.2\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/tensorflow.png}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.75\textwidth}
+    \textbf{TensorFlow.js} est la bibliothèque JavaScript de Google permettant d'exécuter
+    des modèles d'apprentissage automatique directement dans le navigateur. Dans Jokko Agro,
+    elle est utilisée pour la \textbf{comparaison d'images anti-fraude} lors du processus
+    de certification.
+  \end{minipage}
 \end{figure}
 
 \begin{tcolorbox}[infobox,title={Pourquoi TensorFlow.js plutôt que Python ?}]
-\begin{itemize}[itemsep=4pt]
-  \item \textbf{Côté client:} pas d'envoi d'images sensibles vers un serveur,
-        préservation de la confidentialité des agriculteurs
-  \item \textbf{Hors ligne:} les comparaisons d'images fonctionnent sans connexion
-        internet (mode dégradé)
-  \item \textbf{Latence nulle:} pas de temps d'attente serveur, retour immédiat
-  \item \textbf{Coût réduit:} pas d'infrastructure GPU à provisionner
-\end{itemize}
+  \begin{itemize}[itemsep=4pt]
+    \item \textbf{Côté client:} pas d'envoi d'images sensibles vers un serveur,
+          préservation de la confidentialité des agriculteurs
+    \item \textbf{Hors ligne:} les comparaisons d'images fonctionnent sans connexion
+          internet (mode dégradé)
+    \item \textbf{Latence nulle:} pas de temps d'attente serveur, retour immédiat
+    \item \textbf{Coût réduit:} pas d'infrastructure GPU à provisionner
+  \end{itemize}
 \end{tcolorbox}
 
 \noindent
@@ -1189,17 +1209,17 @@ Le service \texttt{image-comparison.service.ts} implémente cinq métriques de s
 qui sont combinées pour détecter les fraudes:
 
 \begin{tcolorbox}[definbox,title={Métriques de comparaison d'images avec TensorFlow.js}]
-\begin{enumerate}[leftmargin=*,itemsep=4pt]
-  \item \textbf{Mean Squared Error (MSE)}: différence quadratique moyenne entre pixels
-  \item \textbf{Cosine Similarity}: similarité angulaire des vecteurs d'image
-  \item \textbf{Histogram Correlation}: corrélation des histogrammes de couleurs
-  \item \textbf{SSIM (Structural Similarity)}: similarité structurelle
-  \item \textbf{Edge Detection Consistency}: cohérence des contours (Canny)
-\end{enumerate}
+  \begin{enumerate}[leftmargin=*,itemsep=4pt]
+    \item \textbf{Mean Squared Error (MSE)}: différence quadratique moyenne entre pixels
+    \item \textbf{Cosine Similarity}: similarité angulaire des vecteurs d'image
+    \item \textbf{Histogram Correlation}: corrélation des histogrammes de couleurs
+    \item \textbf{SSIM (Structural Similarity)}: similarité structurelle
+    \item \textbf{Edge Detection Consistency}: cohérence des contours (Canny)
+  \end{enumerate}
 \end{tcolorbox}
 
 \begin{tcolorbox}[infobox,title={Extrait du service de comparaison d'images}]
-\begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Typescript]
+  \begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Typescript]
 // image-comparison.service.ts
 import * as tf from '@tensorflow/tfjs';
 
@@ -1238,42 +1258,42 @@ export class ImageComparisonService {
 \subsection{Claude API (Anthropic) — Chatbot agricole multilingue}
 
 \begin{figure}[H]
-\centering
-\begin{minipage}{0.2\textwidth}
-\centering
-\includegraphics[width=0.9\textwidth]{images/claude.png}
-\end{minipage}
-\hfill
-\begin{minipage}{0.75\textwidth}
-\textbf{Claude} est le modèle de langage (LLM) développé par Anthropic, retenu pour ses
-performances en français et sa capacité à suivre des instructions précises. L'API Claude
-est utilisée pour le chatbot agronomique, accessible en français et en Wolof.
-\end{minipage}
+  \centering
+  \begin{minipage}{0.2\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/claude.png}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.75\textwidth}
+    \textbf{Claude} est le modèle de langage (LLM) développé par Anthropic, retenu pour ses
+    performances en français et sa capacité à suivre des instructions précises. L'API Claude
+    est utilisée pour le chatbot agronomique, accessible en français et en Wolof.
+  \end{minipage}
 \end{figure}
 
 \begin{tcolorbox}[infobox,title={Pourquoi Claude plutôt que GPT-4 ?}]
-\begin{itemize}[itemsep=4pt]
-  \item \textbf{Contexte long:} fenêtre de 200k tokens, idéale pour les conversations
-        agricoles détaillées
-  \item \textbf{Performance en français:} meilleure compréhension du français oral
-        et des termes agronomiques locaux
-  \item \textbf{Sécurité intégrée:} mécanismes de refus natifs pour les requêtes
-        hors périmètre agricole
-  \item \textbf{Coût:} tarifs plus compétitifs que GPT-4 Turbo
-\end{itemize}
+  \begin{itemize}[itemsep=4pt]
+    \item \textbf{Contexte long:} fenêtre de 200k tokens, idéale pour les conversations
+          agricoles détaillées
+    \item \textbf{Performance en français:} meilleure compréhension du français oral
+          et des termes agronomiques locaux
+    \item \textbf{Sécurité intégrée:} mécanismes de refus natifs pour les requêtes
+          hors périmètre agricole
+    \item \textbf{Coût:} tarifs plus compétitifs que GPT-4 Turbo
+  \end{itemize}
 \end{tcolorbox}
 
 \begin{tcolorbox}[definbox,title={Fonctionnalités Claude utilisées}]
-\begin{itemize}[itemsep=4pt]
-  \item \textbf{Claude 3.5 Sonnet}: modèle principal pour le chatbot
-  \item \textbf{System prompts}: contexte agricole sénégalais injecté à chaque requête
-  \item \textbf{Tool use}: recherche dans la base de connaissances agronomique
-  \item \textbf{Streaming}: réponse en temps réel (effet "typing")
-\end{itemize}
+  \begin{itemize}[itemsep=4pt]
+    \item \textbf{Claude 3.5 Sonnet}: modèle principal pour le chatbot
+    \item \textbf{System prompts}: contexte agricole sénégalais injecté à chaque requête
+    \item \textbf{Tool use}: recherche dans la base de connaissances agronomique
+    \item \textbf{Streaming}: réponse en temps réel (effet "typing")
+  \end{itemize}
 \end{tcolorbox}
 
 \begin{tcolorbox}[infobox,title={Extrait du service Claude}]
-\begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Typescript]
+  \begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Typescript]
 // claude-chat.service.ts
 export class ClaudeChatService {
   private readonly systemPrompt = `
@@ -1316,17 +1336,17 @@ permet la détection de maladies, l'estimation de rendement et la validation des
 certifications.
 
 \begin{tcolorbox}[definbox,title={Cas d'usage de Claude Vision}]
-\begin{itemize}[itemsep=4pt]
-  \item \textbf{Détection de maladies}: analyse des feuilles (mildiou, rouille, chenilles)
-  \item \textbf{Estimation de maturité}: détermination du stade optimal de récolte
-  \item \textbf{Validation certification}: vérification que la photo correspond bien
-        à la culture déclarée
-  \item \textbf{Recommandations}: conseils agronomiques basés sur l'observation visuelle
-\end{itemize}
+  \begin{itemize}[itemsep=4pt]
+    \item \textbf{Détection de maladies}: analyse des feuilles (mildiou, rouille, chenilles)
+    \item \textbf{Estimation de maturité}: détermination du stade optimal de récolte
+    \item \textbf{Validation certification}: vérification que la photo correspond bien
+          à la culture déclarée
+    \item \textbf{Recommandations}: conseils agronomiques basés sur l'observation visuelle
+  \end{itemize}
 \end{tcolorbox}
 
 \begin{tcolorbox}[infobox,title={Extrait du service Claude Vision}]
-\begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Typescript]
+  \begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Typescript]
 // claude-vision.service.ts
 export class ClaudeVisionService {
   async analyzePlantImage(imageBase64: string, cropType: string): Promise<PlantAnalysis> {
@@ -1358,45 +1378,46 @@ export class ClaudeVisionService {
 \subsection{Web Speech API — Reconnaissance vocale pour les langues locales}
 
 \begin{figure}[H]
-\centering
-\begin{minipage}{0.2\textwidth}
-\centering
-\includegraphics[width=0.9\textwidth]{images/speech-api.png}
-\end{minipage}
-\hfill
-\begin{minipage}{0.75\textwidth}
-\textbf{Web Speech API} est une API native des navigateurs modernes qui permet la
-reconnaissance vocale côté client. Dans Jokko Agro, elle est utilisée pour permettre
-aux agriculteurs non lecteurs d'interagir avec le chatbot en Wolof ou en français.
-\end{minipage}
+  \centering
+  \begin{minipage}{0.2\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/speech-api.png}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.75\textwidth}
+    \textbf{Web Speech API} est une API native des navigateurs modernes qui permet la
+    reconnaissance vocale côté client. Dans Jokko Agro, elle est utilisée pour permettre
+    aux agriculteurs non lecteurs d'interagir avec le chatbot en Wolof ou en français.
+  \end{minipage}
 \end{figure}
 
 \begin{tcolorbox}[infobox,title={Pourquoi Web Speech API ?}]
-\begin{itemize}[itemsep=4pt]
-  \item \textbf{Natif navigateur:} aucune bibliothèque externe, léger
-  \item \textbf{Hors ligne:} fonctionne sans connexion (mode dégradé)
-  \item \textbf{Reconnaissance continue:} sessions de dialogue fluides
-  \item \textbf{Gratuit:} pas de coût API par utilisateur
-\end{itemize}
+  \begin{itemize}[itemsep=4pt]
+    \item \textbf{Natif navigateur:} aucune bibliothèque externe, léger
+    \item \textbf{Hors ligne:} fonctionne sans connexion (mode dégradé)
+    \item \textbf{Reconnaissance continue:} sessions de dialogue fluides
+    \item \textbf{Gratuit:} pas de coût API par utilisateur
+  \end{itemize}
 \end{tcolorbox}
 
 \noindent
 La reconnaissance vocale est enrichie par un post-traitement spécifique au Wolof:
 
 \begin{tcolorbox}[definbox,title={Pipeline de reconnaissance vocale}]
-\begin{enumerate}[leftmargin=*,itemsep=4pt]
-  \item Capture audio via \texttt{webkitSpeechRecognition} et Transcription brute en Francais
-  \item Post-traitement phonologique pour adapter au Wolof:
-        \begin{itemize}
+  \begin{enumerate}[leftmargin=*,itemsep=4pt]
+    \item Capture audio via \texttt{webkitSpeechRecognition} et Transcription brute en
+          Francais
+    \item Post-traitement phonologique pour adapter au Wolof:
+          \begin{itemize}
             \item Substitution phonétique (\texttt{/r/} → \texttt{/l/} en contexte)
             \item Correction des termes et étection des noms en Wolof (\texttt{maaro} = mil)
-        \end{itemize}
-  \item Envoi du texte normalisé au chatbot Claude
-\end{enumerate}
+          \end{itemize}
+    \item Envoi du texte normalisé au chatbot Claude
+  \end{enumerate}
 \end{tcolorbox}
 
 \begin{tcolorbox}[infobox,title={Extrait du service de reconnaissance vocale}]
-\begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Typescript]
+  \begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Typescript]
 // speech-recognition.service.ts
 export class SpeechRecognitionService {
   private recognition: SpeechRecognition;
@@ -1436,117 +1457,98 @@ export class SpeechRecognitionService {
 \subsection{Schéma d'interaction des services IA}
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small,
-  node distance=1.2cm,
-  user/.style={rectangle,rounded corners=6pt,minimum width=2.2cm,minimum height=1cm,
-               text centered,align=center,draw=bleuUniv,line width=1.5pt,fill=bleuUniv!20,font=\bfseries},
-  service/.style={rectangle,rounded corners=6pt,minimum width=2.5cm,minimum height=0.9cm,
-                  text centered,align=center,draw=bleuUniv,line width=1pt,fill=bleuTresClair},
-  external/.style={rectangle,rounded corners=6pt,minimum width=2.5cm,minimum height=0.9cm,
-                   text centered,align=center,draw=bleuUniv,line width=1pt,fill=bleuPale},
-  arrow/.style={-{Stealth},thick,bleuUniv}]
-
-  \node[user, align=center] (farmer) at (0,0) {Agriculteur};
-
-  \node[service, align=center] (speech) at (3.5,1.5) {Web Speech\\API};
-  \node[service, align=center] (tfjs) at (3.5,-1.5) {TensorFlow.js\\Vision};
-
-  \node[external, align=center] (claude) at (7,0) {Claude API\\+ Vision};
-
-  \node[service, align=center] (chat) at (10.5,0) {Chatbot\\Reponse};
-
-  \draw[arrow] (farmer.east) -- ++(1,0) |- (speech.west);
-  \draw[arrow] (farmer.east) -- ++(1,0) |- (tfjs.west);
-  \draw[arrow] (speech.east) -- (claude.west);
-  \draw[arrow] (tfjs.east) -- (claude.west);
-  \draw[arrow] (claude.east) -- (chat.west);
-  \draw[arrow] (chat.east) -- ++(1,0) |- (farmer.east);
-
-  \node[font=\tiny,bleuUniv] at (5.25,2.2) {Texte vocal};
-  \node[font=\tiny,bleuUniv] at (5.25,-2) {Image analyse};
-\end{tikzpicture}
-\caption{Interaction des services d'intelligence artificielle}
-\label{fig:ia-interaction}
+  \centering
+  \includegraphics[width=0.6\textwidth]{images/schema-interaction-ia.png}
+  \caption{Interaction des services d'intelligence artificielle}
+  \label{fig:ia-interaction}
 \end{figure}
 
-\vspace{0.5cm}
+\vspace{0.2cm}
 
 \subsection{Synthèse des technologies IA}
 
-\vspace{0.3cm}
-\renewcommand{\arraystretch}{1.5}
-\begin{tcolorbox}[tablebox,title={Récapitulatif des technologies IA}]
-\begin{tabularx}{\textwidth}{
-  >{\bfseries\small\color{bleuUniv}}p{3cm}
-  >{\small\bfseries}p{3cm}
-  >{\small}p{2.5cm}
-  >{\small}X}
-\rowcolor{bleuUniv}
-\multicolumn{1}{>{\bfseries\color{white}\small}p{3cm}}{Technologie} &
-\multicolumn{1}{>{\bfseries\color{white}\small}p{3cm}}{Usage} &
-\multicolumn{1}{>{\bfseries\color{white}\small}p{2.5cm}}{Exécution} &
-\multicolumn{1}{>{\bfseries\color{white}\small}X}{Avantage} \\
-TensorFlow.js     & Vision anti-fraude      & Navigateur client & Confidentialite, zero latence \\
-\rowcolor{bleuTresClair}
-Claude API        & Chatbot agronomique     & API externe       & Multilingue, contexte long \\
-Claude Vision     & Analyse de cultures     & API externe       & Diagnostic multimodal \\
-\rowcolor{bleuTresClair}
-Web Speech API    & Reconnaissance vocale   & Navigateur client & Gratuit, hors ligne \\
-\end{tabularx}
-\end{tcolorbox}
+\renewcommand{\arraystretch}{0.8} % ↓ hauteur des lignes
+\begin{tcolorbox}[
+    tablebox,
+    title={Récapitulatif des technologies IA},
+    boxsep=2pt,
+    left=2pt,right=2pt,top=2pt,bottom=2pt
+  ]
 
-\vspace{0.3cm}
+  {\scriptsize % ↓ texte plus petit
 
-\section{Blockchain: Ethereum \& Smart Contracts}
+    \begin{tabularx}{\textwidth}{
+      >{\bfseries\color{bleuUniv}}p{3cm}
+      >{\bfseries}p{3cm}
+      >{\bfseries}p{2.5cm}
+      X
+      }
+
+      \rowcolor{bleuUniv}
+      \multicolumn{1}{>{\bfseries\color{white}}p{3cm}}{Technologie} &
+      \multicolumn{1}{>{\bfseries\color{white}}p{3cm}}{Usage}       &
+      \multicolumn{1}{>{\bfseries\color{white}}p{2.5cm}}{Exécution} &
+      \multicolumn{1}{>{\bfseries\color{white}}X}{Avantage}                                                                                  \\
+
+      TensorFlow.js                                                 & Vision anti-fraude         & Navigateur client & Confidentialité, zero
+      latence                                                                                                                                \\ \rowcolor{bleuTresClair} Claude API & Chatbot agronomique                                 & API
+      externe                                                       & Multilingue, contexte long                                             \\ Claude Vision & Analyse de cultures                            &
+      API externe                                                   & Diagnostic multimodal                                                  \\ \rowcolor{bleuTresClair} Web Speech API
+                                                                    & Reconnaissance vocale      & Navigateur client & Gratuit, hors ligne   \\
+
+    \end{tabularx}
+
+  }
+
+\end{tcolorbox}\section{Blockchain: Ethereum \& Smart Contracts}
 
 \begin{figure}[H]
-\centering
-\begin{minipage}{0.2\textwidth}
-\centering
-\includegraphics[width=0.9\textwidth]{images/etheureum.jpeg}
-\end{minipage}
-\hfill
-\begin{minipage}{0.75\textwidth}
-\textbf{Ethereum} est la plateforme blockchain retenue pour la certification des produits
-agricoles. Le réseau \textbf{Sepolia Testnet} (chainId: 11155111) est utilisé en
-développement. Le smart contract \texttt{CertificationRegistry} est rédigé en
-\textbf{Solidity \^{}0.8.19}.
-\end{minipage}
+  \centering
+  \begin{minipage}{0.2\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/etheureum.jpeg}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.75\textwidth}
+    \textbf{Ethereum} est la plateforme blockchain retenue pour la certification des produits
+    agricoles. Le réseau \textbf{Sepolia Testnet} (chainId: 11155111) est utilisé en
+    développement. Le smart contract \texttt{CertificationRegistry} est rédigé en
+    \textbf{Solidity \^{}0.8.19}.
+  \end{minipage}
 \end{figure}
 
 \begin{figure}[H]
-\centering
-\begin{minipage}{0.2\textwidth}
-\centering
-\includegraphics[width=0.9\textwidth]{images/ipfs.png}
-\end{minipage}
-\hfill
-\begin{minipage}{0.75\textwidth}
-\textbf{IPFS} (InterPlanetary File System) est utilisé pour le stockage décentralisé des
-photos de certification.
-\end{minipage}
+  \centering
+  \begin{minipage}{0.2\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/ipfs.png}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.75\textwidth}
+    \textbf{IPFS} (InterPlanetary File System) est utilisé pour le stockage décentralisé des
+    photos de certification.
+  \end{minipage}
 \end{figure}
 
 \begin{figure}[H]
-\centering
-\begin{minipage}{0.2\textwidth}
-\centering
-\includegraphics[width=0.9\textwidth]{images/metamask.png}
-\end{minipage}
-\hfill
-\begin{minipage}{0.75\textwidth}
-\textbf{MetaMask} est l'extension de navigateur permettant aux utilisateurs de gérer leur
-wallet Ethereum et de signer les transactions de certification.
-\end{minipage}
+  \centering
+  \begin{minipage}{0.2\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/metamask.png}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.75\textwidth}
+    \textbf{MetaMask} est l'extension de navigateur permettant aux utilisateurs de gérer leur
+    wallet Ethereum et de signer les transactions de certification.
+  \end{minipage}
 \end{figure}
 
 \begin{tcolorbox}[infobox,title={Caractéristiques Ethereum}]
-\begin{itemize}[itemsep=4pt]
-  \item \textbf{Réseau:} Sepolia Testnet (chainId: 11155111)
-  \item \textbf{Smart Contract:} Solidity \^{}0.8.19
-  \item \textbf{Transactions:} signatures ECDSA
-\end{itemize}
+  \begin{itemize}[itemsep=4pt]
+    \item \textbf{Réseau:} Sepolia Testnet (chainId: 11155111)
+    \item \textbf{Smart Contract:} Solidity \^{}0.8.19
+    \item \textbf{Transactions:} signatures ECDSA
+  \end{itemize}
 \end{tcolorbox}
 
 \vspace{0.2cm}
@@ -1554,36 +1556,36 @@ wallet Ethereum et de signer les transactions de certification.
 \subsection{Flux de certification blockchain}
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small,
-  block/.style={rectangle,rounded corners=4pt,minimum width=2.5cm,minimum height=0.9cm,
-                text centered,align=center,draw=bleuUniv,line width=1pt,fill=bleuTresClair},
-  arrow/.style={-{Stealth},thick,bleuUniv}]
+  \centering
+  \begin{tikzpicture}[font=\small,
+    block/.style={rectangle,rounded corners=4pt,minimum width=2.5cm,minimum height=0.9cm,
+        text centered,align=center,draw=bleuUniv,line width=1pt,fill=bleuTresClair},
+    arrow/.style={-{Stealth},thick,bleuUniv}]
 
-  \node[block, align=center] (photo) at (0,0) {Photo\\certification};
-  \node[block, align=center] (ipfs) at (3.5,0) {IPFS\\Pinata};
-  \node[block, align=center] (hash) at (7,0) {SHA-256\\hash};
-  \node[block, align=center] (eth) at (10.5,0) {Ethereum\\Sepolia};
-  \node[block, align=center] (firestore) at (14,0) {Firestore\\reference};
+    \node[block, align=center] (photo) at (0,0) {Photo\\certification};
+    \node[block, align=center] (ipfs) at (3.5,0) {IPFS\\Pinata};
+    \node[block, align=center] (hash) at (7,0) {SHA-256\\hash};
+    \node[block, align=center] (eth) at (10.5,0) {Ethereum\\Sepolia};
+    \node[block, align=center] (firestore) at (14,0) {Firestore\\reference};
 
-  \draw[arrow] (photo.east) -- (ipfs.west);
-  \draw[arrow] (ipfs.east) -- (hash.west);
-  \draw[arrow] (hash.east) -- (eth.west);
-  \draw[arrow] (eth.east) -- (firestore.west);
+    \draw[arrow] (photo.east) -- (ipfs.west);
+    \draw[arrow] (ipfs.east) -- (hash.west);
+    \draw[arrow] (hash.east) -- (eth.west);
+    \draw[arrow] (eth.east) -- (firestore.west);
 
-  \node[font=\tiny,bleuUniv] at (1.75,-0.8) {upload};
-  \node[font=\tiny,bleuUniv] at (5.25,-0.8) {CID genere};
-  \node[font=\tiny,bleuUniv] at (8.75,-0.8) {proofHash};
-  \node[font=\tiny,bleuUniv] at (12.25,-0.8) {txHash};
-\end{tikzpicture}
-\caption{Flux de certification avec IPFS et Ethereum}
-\label{fig:certification-flux}
+    \node[font=\tiny,bleuUniv] at (1.75,-0.8) {upload};
+    \node[font=\tiny,bleuUniv] at (5.25,-0.8) {CID genere};
+    \node[font=\tiny,bleuUniv] at (8.75,-0.8) {proofHash};
+    \node[font=\tiny,bleuUniv] at (12.25,-0.8) {txHash};
+  \end{tikzpicture}
+  \caption{Flux de certification avec IPFS et Ethereum}
+  \label{fig:certification-flux}
 \end{figure}
 
 \vspace{0.1cm}
 
 \begin{tcolorbox}[infobox,title={Extrait du Smart Contract}]
-\begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Java]
+  \begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Java]
 pragma solidity ^0.8.19;
 contract CertificationRegistry {
     struct CertificationProof {
@@ -1636,39 +1638,37 @@ d'Agricoins (AGC). Leur adoption massive au Sénégal (plus de 8M d'utilisateurs
 garantit l'accessibilité du système de paiement.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.7\textwidth]{images/others_services.png}
-\caption{Autres services externes intégrés dans Jokko Agro}
-\label{fig:other-services}
+  \centering
+  \includegraphics[width=0.7\textwidth]{images/others_services.png}
+  \caption{Autres services externes intégrés dans Jokko Agro}
+  \label{fig:other-services}
 \end{figure}
 \vspace{0.5cm}
 
 \section{Outils de développement}
 
 \begin{tcolorbox}[infobox,title={Stack de développement}]
-\begin{itemize}[itemsep=4pt]
-  \item \textbf{IDE:} Visual Studio Code avec extensions Angular, Python, Solidity
-  \item \textbf{Versioning:} Git / GitHub (branches feature, develop, main)
-  \item \textbf{Déploiement smart contract:} Remix IDE + Hardhat
-  \item \textbf{Test blockchain:} Sepolia Faucet (ETH de test)
-  \item \textbf{Monitoring:} Firebase Console + Etherscan Sepolia
-  \item \textbf{Cryptographie:} WebCrypto API (natif navigateur) + CryptoJS
-  \item \textbf{IA / ML:} TensorFlow.js, Claude API (Anthropic)
-\end{itemize}
+  \begin{itemize}[itemsep=4pt]
+    \item \textbf{IDE:} Visual Studio Code avec extensions Angular, Python, Solidity
+    \item \textbf{Versioning:} Git / GitHub (branches feature, develop, main)
+    \item \textbf{Déploiement smart contract:} Remix IDE + Hardhat
+    \item \textbf{Test blockchain:} Sepolia Faucet (ETH de test)
+    \item \textbf{Monitoring:} Firebase Console + Etherscan Sepolia
+    \item \textbf{Cryptographie:} WebCrypto API (natif navigateur) + CryptoJS
+    \item \textbf{IA / ML:} TensorFlow.js, Claude API (Anthropic)
+  \end{itemize}
 \end{tcolorbox}
 
-
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{images/stack.png}
-\caption{Outils et technologies utilisés dans le développement de Jokko Agro}
-\label{fig:stack-development}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/stack.png}
+  \caption{Outils et technologies utilisés dans le développement de Jokko Agro}
+  \label{fig:stack-development}
 \end{figure}
-
 
 \vspace{0.5cm}
 \begin{flushright}
-\textit{« La technologie la plus avancée est celle qui disparaît au service de l'utilisateur. »}
+  \textit{« La technologie la plus avancée est celle qui disparaît au service de l'utilisateur. »}
 \end{flushright}
 
 % =========================================================
@@ -1677,10 +1677,10 @@ garantit l'accessibilité du système de paiement.
 \chapter{Conception et Architecture du Système}
 
 \begin{tcolorbox}[chapterbox,title={Vue d'ensemble du chapitre}]
-Ce chapitre présente l'architecture complète de Jokko Agro à travers ses diagrammes UML,
-ses flux de données inter-modules et ses principes de conception. Il constitue le blueprint
-technique de la plateforme, détaillant l'organisation des services, les interactions entre
-les composants et les mécanismes de scalabilité.
+  Ce chapitre présente l'architecture complète de Jokko Agro à travers ses diagrammes UML,
+  ses flux de données inter-modules et ses principes de conception. Il constitue le blueprint
+  technique de la plateforme, détaillant l'organisation des services, les interactions entre
+  les composants et les mécanismes de scalabilité.
 \end{tcolorbox}
 
 \vspace{0.5cm}
@@ -1696,10 +1696,10 @@ composants.
 \vspace{0.2cm}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{images/architecture_service.png}
-\caption{Architecture des services Angular de Jokko Agro}
-\label{fig:services}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/architecture_service.png}
+  \caption{Architecture des services Angular de Jokko Agro}
+  \label{fig:services}
 \end{figure}
 
 \vspace{0.5cm}
@@ -1714,25 +1714,25 @@ Angular, garantissant un couplage faible entre les modules.
 \vspace{0.3cm}
 
 \begin{tcolorbox}[infobox,title={Principes de l'architecture modulaire}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Séparation des responsabilités:} chaque service a une responsabilité unique
-        (Single Responsibility Principle).
-  \item \textbf{Injection de dépendances:} les services s'injectent mutuellement via le
-        conteneur IoC d'Angular, sans couplage direct.
-  \item \textbf{Observables RxJS:} les états partagés (solde AGC, état wallet) sont
-        exposés via \texttt{BehaviorSubject} pour une réactivité globale.
-  \item \textbf{Lazy loading:} les modules lourds (TensorFlow.js) sont chargés à la
-        demande pour optimiser le temps de démarrage.
-\end{itemize}
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Séparation des responsabilités:} chaque service a une responsabilité unique
+          (Single Responsibility Principle).
+    \item \textbf{Injection de dépendances:} les services s'injectent mutuellement via le
+          conteneur IoC d'Angular, sans couplage direct.
+    \item \textbf{Observables RxJS:} les états partagés (solde AGC, état wallet) sont
+          exposés via \texttt{BehaviorSubject} pour une réactivité globale.
+    \item \textbf{Lazy loading:} les modules lourds (TensorFlow.js) sont chargés à la
+          demande pour optimiser le temps de démarrage.
+  \end{itemize}
 \end{tcolorbox}
 
 \vspace{0.5cm}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{images/architecture-services.png}
-\caption{Vue d'ensemble des services Angular}
-\label{fig:architecture-services}
+  \centering
+  \includegraphics[width=0.9\textwidth]{images/architecture-services.png}
+  \caption{Vue d'ensemble des services Angular}
+  \label{fig:architecture-services}
 \end{figure}
 
 \vspace{0.5cm}
@@ -1746,10 +1746,10 @@ Les quatre modules métier sont représentés avec leurs attributs et méthodes 
 \vspace{0.3cm}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=1.0\textwidth,keepaspectratio]{images/diagramme_uml.png}
-\caption{Diagramme de classes UML --- Architecture modulaire complète de Jokko Agro}
-\label{fig:uml}
+  \centering
+  \includegraphics[width=1.0\textwidth,keepaspectratio]{images/diagramme_uml.png}
+  \caption{Diagramme de classes UML --- Architecture modulaire complète de Jokko Agro}
+  \label{fig:uml}
 \end{figure}
 
 \vspace{0.5cm}
@@ -1757,21 +1757,21 @@ Les quatre modules métier sont représentés avec leurs attributs et méthodes 
 \subsection{Description des entités principales}
 
 \begin{tcolorbox}[definbox,title={Entités principales du modèle de données}]
-\begin{itemize}[itemsep=4pt]
-  \item \textbf{User} : représentant un agriculteur ou un acheteur. Attributs: \texttt{uid},
-        \texttt{email}, \texttt{role}, \texttt{walletAddress}, \texttt{agcBalance}.
-  \item \textbf{Product} : produit agricole mis en vente. Attributs: \texttt{productId},
-        \texttt{name}, \texttt{price}, \texttt{certificationId}, \texttt{farmerId}.
-  \item \textbf{Certification} : preuve de traçabilité. Attributs: \texttt{certId},
-        \texttt{productId}, \texttt{proofHash}, \texttt{ipfsCID}, \texttt{txHash},
-        \texttt{timestamp}, \texttt{checkpoint} (7 étapes).
-  \item \textbf{Transaction} : échange d'Agricoins. Attributs: \texttt{txId},
-        \texttt{senderId}, \texttt{receiverId}, \texttt{amount}, \texttt{status},
-        \texttt{signature}.
-  \item \textbf{AuditLog} : trace de toutes les actions sensibles. Attributs:
-        \texttt{logId}, \texttt{userId}, \texttt{action}, \texttt{timestamp},
-        \texttt{ipfsHash} (preuve d'intégrité).
-\end{itemize}
+  \begin{itemize}[itemsep=4pt]
+    \item \textbf{User} : représentant un agriculteur ou un acheteur. Attributs: \texttt{uid},
+          \texttt{email}, \texttt{role}, \texttt{walletAddress}, \texttt{agcBalance}.
+    \item \textbf{Product} : produit agricole mis en vente. Attributs: \texttt{productId},
+          \texttt{name}, \texttt{price}, \texttt{certificationId}, \texttt{farmerId}.
+    \item \textbf{Certification} : preuve de traçabilité. Attributs: \texttt{certId},
+          \texttt{productId}, \texttt{proofHash}, \texttt{ipfsCID}, \texttt{txHash},
+          \texttt{timestamp}, \texttt{checkpoint} (7 étapes).
+    \item \textbf{Transaction} : échange d'Agricoins. Attributs: \texttt{txId},
+          \texttt{senderId}, \texttt{receiverId}, \texttt{amount}, \texttt{status},
+          \texttt{signature}.
+    \item \textbf{AuditLog} : trace de toutes les actions sensibles. Attributs:
+          \texttt{logId}, \texttt{userId}, \texttt{action}, \texttt{timestamp},
+          \texttt{ipfsHash} (preuve d'intégrité).
+  \end{itemize}
 \end{tcolorbox}
 
 \vspace{0.5cm}
@@ -1787,10 +1787,10 @@ depuis la prise de photo par l'agriculteur jusqu'à l'enregistrement on-chain.
 \vspace{0.3cm}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=1.0\textwidth,keepaspectratio]{images/diagramme_sequence_blockchain.jpeg}
-\caption{Diagramme de séquence --- Flux de certification blockchain}
-\label{fig:seq_bc}
+  \centering
+  \includegraphics[width=1.0\textwidth,keepaspectratio]{images/diagramme_sequence_blockchain.jpeg}
+  \caption{Diagramme de séquence --- Flux de certification blockchain}
+  \label{fig:seq_bc}
 \end{figure}
 
 \vspace{0.3cm}
@@ -1824,10 +1824,10 @@ le traitement de la voix Wolof, l'appel à l'API Claude et le retour de la répo
 \vspace{0.3cm}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=1.0\textwidth,keepaspectratio]{images/diagramme_sequence_ia.jpeg}
-\caption{Diagramme de séquence --- Interaction utilisateur avec l'IA}
-\label{fig:seq_ia}
+  \centering
+  \includegraphics[width=1.0\textwidth,keepaspectratio]{images/diagramme_sequence_ia.jpeg}
+  \caption{Diagramme de séquence --- Interaction utilisateur avec l'IA}
+  \label{fig:seq_ia}
 \end{figure}
 
 \vspace{0.3cm}
@@ -1855,28 +1855,28 @@ incluant le mécanisme de séquestre (escrow).
 \vspace{0.3cm}
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small,
-  actor/.style={rectangle,rounded corners=4pt,minimum width=2cm,minimum height=0.8cm,
-                text centered,draw=bleuUniv,line width=1pt,fill=bleuTresClair},
-  arrow/.style={-{Stealth},thick,bleuUniv}]
+  \centering
+  \begin{tikzpicture}[font=\small,
+    actor/.style={rectangle,rounded corners=4pt,minimum width=2cm,minimum height=0.8cm,
+        text centered,draw=bleuUniv,line width=1pt,fill=bleuTresClair},
+    arrow/.style={-{Stealth},thick,bleuUniv}]
 
-  \node[actor] (buyer) at (0,0) {Acheteur};
-  \node[actor] (escrow) at (4,0) {Séquestre AGC};
-  \node[actor] (farmer) at (8,0) {Agriculteur};
-  \node[actor] (bc) at (12,0) {Blockchain};
+    \node[actor] (buyer) at (0,0) {Acheteur};
+    \node[actor] (escrow) at (4,0) {Séquestre AGC};
+    \node[actor] (farmer) at (8,0) {Agriculteur};
+    \node[actor] (bc) at (12,0) {Blockchain};
 
-  \draw[arrow] (buyer.east) -- (escrow.west) node[midway,above,font=\tiny] {1. Paiement AGC};
-  \draw[arrow] (escrow.east) -- (farmer.west) node[midway,above,font=\tiny] {2. Lock fonds};
-  \draw[arrow] (farmer.east) -- (bc.west) node[midway,above,font=\tiny] {3. Livraison + preuve};
-  \draw[arrow] (bc.west) -- (farmer.east) node[midway,below,font=\tiny] {4. Vérification};
-  \draw[arrow] (farmer.west) -- (escrow.east) node[midway,below,font=\tiny] {5. Release AGC};
-  \draw[arrow] (escrow.west) -- (buyer.east) node[midway,below,font=\tiny] {6. Confirmation};
+    \draw[arrow] (buyer.east) -- (escrow.west) node[midway,above,font=\tiny] {1. Paiement AGC};
+    \draw[arrow] (escrow.east) -- (farmer.west) node[midway,above,font=\tiny] {2. Lock fonds};
+    \draw[arrow] (farmer.east) -- (bc.west) node[midway,above,font=\tiny] {3. Livraison + preuve};
+    \draw[arrow] (bc.west) -- (farmer.east) node[midway,below,font=\tiny] {4. Vérification};
+    \draw[arrow] (farmer.west) -- (escrow.east) node[midway,below,font=\tiny] {5. Release AGC};
+    \draw[arrow] (escrow.west) -- (buyer.east) node[midway,below,font=\tiny] {6. Confirmation};
 
-  \node[font=\tiny,bleuUniv] at (6,0.8) {Transaction sécurisée};
-\end{tikzpicture}
-\caption{Diagramme de séquence simplifié --- Paiement avec séquestre AGC}
-\label{fig:seq_agc}
+    \node[font=\tiny,bleuUniv] at (6,0.8) {Transaction sécurisée};
+  \end{tikzpicture}
+  \caption{Diagramme de séquence simplifié --- Paiement avec séquestre AGC}
+  \label{fig:seq_agc}
 \end{figure}
 
 \vspace{0.3cm}
@@ -1889,53 +1889,37 @@ sont essentielles à la cohérence du système:
 
 \vspace{0.3cm}
 
-\begin{tcolorbox}[infobox,title={Interactions inter-axes}]
-\begin{itemize}[itemsep=6pt]
-  \item \textbf{IA $\leftrightarrow$ Blockchain:} le service
-        \texttt{image\_comparison\_service} valide la photo \textit{avant} que
-        \texttt{blockchain\_service} l'enregistre sur IPFS. Les coordonnées GPS
-        validées sont incluses dans le hash de preuve canonique.
-  \item \textbf{Blockchain $\leftrightarrow$ Sécurité:} chaque enregistrement
-        on-chain est précédé d'une signature ECDSA et journalisé dans l'Audit Trail.
-        Le Ledger SHA-256 trace tous les états de certification.
-  \item \textbf{AGC $\leftrightarrow$ Blockchain:} un bonus AGC est crédité
-        automatiquement lors d'une certification réussie. Le cycle
-        lock/release du séquestre est enregistré dans le Ledger.
-  \item \textbf{Sécurité $\leftrightarrow$ Tous:} les transactions atomiques
-        Firestore protègent AGC et Blockchain. L'Audit Trail couvre les quatre axes.
-\end{itemize}
-\end{tcolorbox}
+\begin{tcolorbox}[
+    infobox,
+    title={Interactions inter-axes},
+    boxsep=2pt,
+    left=2pt,right=2pt,top=2pt,bottom=2pt
+  ]
 
+  {\scriptsize % ↓ taille texte
+
+    \begin{itemize}[itemsep=2pt, topsep=2pt, parsep=0pt]
+      \item \textbf{IA $\leftrightarrow$ Blockchain:} validation image avant enregistrement IPFS ; GPS inclus dans le hash
+      \item \textbf{Blockchain $\leftrightarrow$ Sécurité:} signature ECDSA + audit ; Ledger SHA-256 trace les états
+      \item \textbf{AGC $\leftrightarrow$ Blockchain:} bonus automatique ; cycle escrow enregistré dans le Ledger
+      \item \textbf{Sécurité $\leftrightarrow$ Tous:} transactions Firestore atomiques ; Audit Trail global
+    \end{itemize}
+
+  }
+
+\end{tcolorbox}
 \vspace{0.3cm}
 
 \subsection{Schéma des flux de données}
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small,
-  node distance=2cm,
-  axis/.style={rectangle,rounded corners=6pt,minimum width=2.5cm,minimum height=1cm,
-               text centered,align=center,draw=bleuUniv,line width=1pt,fill=bleuTresClair,
-               font=\bfseries\small},
-  arrow/.style={-{Stealth},thick,bleuUniv}]
-
-  \node[axis] (ia) at (0,0) {IA};
-  \node[axis] (bc) at (3,1.5) {Blockchain};
-  \node[axis] (agc) at (6,0) {AGC};
-  \node[axis] (sec) at (3,-1.5) {Sécurité};
-
-  \draw[arrow] (ia.east) -- (bc.west) node[midway,above,font=\tiny] {Image + GPS};
-  \draw[arrow] (bc.south) -- (sec.north) node[midway,right,font=\tiny] {Signature};
-  \draw[arrow] (sec.east) -- (agc.west) node[midway,below,font=\tiny] {Audit};
-  \draw[arrow] (agc.north) -- (bc.south) node[midway,left,font=\tiny] {Bonus AGC};
-  \draw[arrow, bend left] (ia.south) to (sec.north) node[midway,left,font=\tiny] {Anti-fraude};
-  \draw[arrow, bend left] (agc.north) to (ia.east) node[midway,above,font=\tiny] {Datawarehouse};
-\end{tikzpicture}
-\caption{Flux de données entre les quatre axes technologiques}
-\label{fig:dataflows}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/flux_data.png}
+  \caption{Flux de données entre les quatre axes technologiques}
+  \label{fig:dataflows}
 \end{figure}
 
-\vspace{0.5cm}
+\vspace{0.2cm}
 
 \section{Base de données Firestore}
 
@@ -1943,33 +1927,33 @@ sont essentielles à la cohérence du système:
 Le modèle de données Firestore est organisé en collections principales et sous-collections
 pour optimiser les performances et la scalabilité.
 
-\vspace{0.3cm}
+\vspace{0.1cm}
 
 \begin{tcolorbox}[definbox,title={Collections Firestore}]
-\begin{itemize}[itemsep=4pt]
-  \item \textbf{users/\{uid\}} : informations utilisateur, solde AGC, historique transactions
-  \item \textbf{products/\{pid\}} : produits mis en vente, référence certification
-  \item \textbf{certifications/\{cid\}} : preuves de certification, IPFS CID, txHash
-  \item \textbf{transactions/\{tid\}} : transactions AGC (montant, statut, signature)
-  \item \textbf{audit\_logs/\{lid\}} : journal d'audit immuable
-  \item \textbf{chat\_sessions/\{sid\}} : sessions de conversation avec Claude
-\end{itemize}
+  \begin{itemize}[itemsep=4pt]
+    \item \textbf{users/\{uid\}} : informations utilisateur, solde AGC, historique transactions
+    \item \textbf{products/\{pid\}} : produits mis en vente, référence certification
+    \item \textbf{certifications/\{cid\}} : preuves de certification, IPFS CID, txHash
+    \item \textbf{transactions/\{tid\}} : transactions AGC (montant, statut, signature)
+    \item \textbf{audit\_logs/\{lid\}} : journal d'audit immuable
+    \item \textbf{chat\_sessions/\{sid\}} : sessions de conversation avec Claude
+  \end{itemize}
 \end{tcolorbox}
 
-\vspace{0.5cm}
+\vspace{0.2cm}
 
 \subsection{Indexation et requêtes}
 
 \begin{tcolorbox}[infobox,title={Stratégie d'indexation}]
-\begin{itemize}[itemsep=4pt]
-  \item \textbf{Index composite} sur \texttt{products} pour les filtres (prix, certification)
-  \item \textbf{Index unique} sur \texttt{proofHash} pour éviter les doublons
-  \item \textbf{Sharding naturel} via Firestore (distribution automatique)
-  \item \textbf{Caching} des données fréquentes (solde AGC) via BehaviorSubject Angular
-\end{itemize}
+  \begin{itemize}[itemsep=4pt]
+    \item \textbf{Index composite} sur \texttt{products} pour les filtres (prix, certification)
+    \item \textbf{Index unique} sur \texttt{proofHash} pour éviter les doublons
+    \item \textbf{Sharding naturel} via Firestore (distribution automatique)
+    \item \textbf{Caching} des données fréquentes (solde AGC) via BehaviorSubject Angular
+  \end{itemize}
 \end{tcolorbox}
 
-\vspace{0.5cm}
+\vspace{0.2cm}
 
 \section{Scalabilité et déploiement}
 
@@ -1977,24 +1961,22 @@ pour optimiser les performances et la scalabilité.
 L'architecture de Jokko Agro est conçue pour évoluer. Plusieurs dimensions de
 scalabilité sont prises en compte:
 
-\vspace{0.3cm}
+\vspace{0.1cm}
 
 \begin{tcolorbox}[infobox,title={Perspectives de scalabilité}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Firebase Auto-scaling:} Firestore scale automatiquement en fonction
-        du nombre de connexions, sans intervention manuelle.
-  \item \textbf{Layer 2 Ethereum:} migration prévue vers \textbf{Polygon} pour
-        réduire les frais de transaction (gas fees) lors du passage en production.
-  \item \textbf{Multilangue:} l'architecture du chatbot permet d'ajouter d'autres
-        langues (Pulaar, Sérère) sans refonte, en modifiant uniquement le prompt système.
-  \item \textbf{Modèle de données extensible:} les collections Firestore sont conçues
-        pour absorber de nouveaux types de certifications sans migration de schéma.
-  \item \textbf{CDN et caching:} les images certifiées sont servies via CDN Cloudflare
-        pour une latence minimale en zones rurales.
-\end{itemize}
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Layer 2 Ethereum:} migration prévue vers \textbf{Polygon} pour
+          réduire les frais de transaction (gas fees) lors du passage en production.
+    \item \textbf{Multilangue:} l'architecture du chatbot permet d'ajouter d'autres
+          langues (Pulaar, Sérère) sans refonte, en modifiant uniquement le prompt système.
+    \item \textbf{Modèle de données extensible:} les collections Firestore sont conçues
+          pour absorber de nouveaux types de certifications sans migration de schéma.
+    \item \textbf{CDN et caching:} les images certifiées sont servies via CDN Cloudflare
+          pour une latence minimale en zones rurales.
+  \end{itemize}
 \end{tcolorbox}
 
-\vspace{0.5cm}
+\vspace{0.3cm}
 
 \section{Sécurité et authentification}
 
@@ -2005,39 +1987,26 @@ forte, chiffrement et journalisation immuable.
 \vspace{0.3cm}
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small,
-  layer/.style={rectangle,rounded corners=4pt,minimum width=10cm,minimum height=0.8cm,
-                text centered,draw=bleuUniv,line width=1pt,fill=bleuTresClair},
-  arrow/.style={-{Stealth},thick,bleuUniv}]
+  \centering
+  \begin{tikzpicture}[font=\small,
+    layer/.style={rectangle,rounded corners=4pt,minimum width=10cm,minimum height=0.8cm,
+        text centered,draw=bleuUniv,line width=1pt,fill=bleuTresClair},
+    arrow/.style={-{Stealth},thick,bleuUniv}]
 
-  \node[layer] (l1) at (0,4) {Couche 1: Authentification (Firebase Auth + 2FA)};
-  \node[layer] (l2) at (0,3) {Couche 2: Signature ECDSA P-256 (MetaMask)};
-  \node[layer] (l3) at (0,2) {Couche 3: Chiffrement AES-GCM (données sensibles)};
-  \node[layer] (l4) at (0,1) {Couche 4: Ledger SHA-256 (intégrité des logs)};
-  \node[layer] (l5) at (0,0) {Couche 5: Audit Trail immuable (Firestore + IPFS)};
+    \node[layer] (l1) at (0,4) {Authentification (Firebase Auth + 2FA)};
+    \node[layer] (l2) at (0,3) {Signature ECDSA P-256 (MetaMask)};
+    \node[layer] (l3) at (0,2) {Chiffrement AES-GCM (données sensibles)};
+    \node[layer] (l4) at (0,1) {Ledger SHA-256 (intégrité des logs)};
+    \node[layer] (l5) at (0,0) {Audit Trail immuable (Firestore + IPFS)};
 
-  \draw[arrow] (l1.south) -- (l2.north);
-  \draw[arrow] (l2.south) -- (l3.north);
-  \draw[arrow] (l3.south) -- (l4.north);
-  \draw[arrow] (l4.south) -- (l5.north);
-\end{tikzpicture}
-\caption{Couches de sécurité de Jokko Agro}
-\label{fig:security}
+    \draw[arrow] (l1.south) -- (l2.north);
+    \draw[arrow] (l2.south) -- (l3.north);
+    \draw[arrow] (l3.south) -- (l4.north);
+    \draw[arrow] (l4.south) -- (l5.north);
+  \end{tikzpicture}
+  \caption{Couches de sécurité de Jokko Agro}
+  \label{fig:security}
 \end{figure}
-
-\vspace{0.3cm}
-
-\begin{tcolorbox}[infobox,title={Mécanismes de sécurité implémentés}]
-\begin{itemize}[itemsep=4pt]
-  \item \textbf{Authentification forte:} Firebase Auth + authentification à deux facteurs (2FA)
-  \item \textbf{Signatures numériques:} ECDSA P-256 pour les transactions AGC et certifications
-  \item \textbf{Chiffrement:} AES-GCM pour les données personnelles et métadonnées sensibles
-  \item \textbf{Intégrité:} Ledger local SHA-256 pour tracer toutes les modifications
-  \item \textbf{Journalisation:} Audit Trail immuable avec preuves IPFS
-  \item \textbf{Atomicité:} Transactions Firestore pour les opérations critiques AGC
-\end{itemize}
-\end{tcolorbox}
 
 \vspace{0.5cm}
 
@@ -2048,16 +2017,17 @@ Ce chapitre a présenté l'architecture technique complète de Jokko Agro, struc
 autour de quatre modules interconnectés. Les principaux éléments à retenir sont:
 
 \begin{enumerate}
-  \item Une \textbf{architecture modulaire} basée sur Angular 17 avec injection de dépendances,
-        garantissant un couplage faible et une maintenabilité optimale.
-  \item Des \textbf{diagrammes UML} détaillant la structure des classes et les séquences
-        d'interaction critiques (certification blockchain, assistant IA, paiement AGC).
-  \item Un \textbf{modèle de données Firestore} optimisé pour la scalabilité et les requêtes
-        temps réel.
-  \item Des \textbf{mécanismes de scalabilité} anticipant la croissance du nombre d'utilisateurs
-        et le passage en production.
-  \item Une \textbf{architecture de sécurité multicouche} intégrant authentification forte,
-        signatures numériques et journalisation immuable.
+  \item Une \textbf{architecture modulaire} basée sur Angular 17 avec injection de
+        dépendances, garantissant un couplage faible et une maintenabilité optimale.
+  \item Des \textbf{diagrammes UML} détaillant la structure des classes et les
+        séquences d'interaction critiques (certification blockchain, assistant IA,
+        paiement AGC).
+  \item Un \textbf{modèle de données Firestore} optimisé pour la scalabilité et les
+        requêtes temps réel.
+  \item Des \textbf{mécanismes de scalabilité} anticipant la croissance du nombre
+        d'utilisateurs et le passage en production.
+  \item Une \textbf{architecture de sécurité multicouche} intégrant authentification
+        forte, signatures numériques et journalisation immuable.
 \end{enumerate}
 
 \noindent
@@ -2066,7 +2036,7 @@ implémentation, leurs services spécifiques et leurs mécanismes internes.
 
 \vspace{0.5cm}
 \begin{flushright}
-\textit{« Une architecture bien conçue est celle qui permet d'ajouter des fonctionnalités sans en détruire d'autres. »}
+  \textit{« Une architecture bien conçue est celle qui permet d'ajouter des fonctionnalités sans en détruire d'autres. »}
 \end{flushright}
 
 % =========================================================
@@ -2075,10 +2045,10 @@ implémentation, leurs services spécifiques et leurs mécanismes internes.
 \chapter{Axe Intelligence Artificielle}
 
 \begin{tcolorbox}[chapterbox,title={Vue d'ensemble du chapitre}]
-L'axe IA regroupe quatre services: le chatbot agricole bilingue, la reconnaissance
-vocale en Wolof, la comparaison d'images anti-fraude, et la géolocalisation intelligente.
-Ensemble, ils rendent Jokko Agro accessible aux agriculteurs quelle que soit leur maîtrise
-du numérique.
+  L'axe IA regroupe quatre services: le chatbot agricole bilingue, la reconnaissance
+  vocale en Wolof, la comparaison d'images anti-fraude, et la géolocalisation intelligente.
+  Ensemble, ils rendent Jokko Agro accessible aux agriculteurs quelle que soit leur maîtrise
+  du numérique.
 \end{tcolorbox}
 
 \vspace{0.5cm}
@@ -2088,38 +2058,11 @@ du numérique.
 \noindent
 L'axe IA de Jokko Agro comprend \textbf{quatre services Angular} spécialisés, tous
 orientés vers l'assistance des agriculteurs.
-
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small]
-
-\draw[fill=bleuUniv, draw=bleuUniv] (0,0) circle (0.9cm);
-\node[text=white, font=\bfseries\small] at (0,0) {Axe IA};
-
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=5pt] (-5,2.5) rectangle (0,3.9);
-\node[text width=4.6cm, align=center, font=\bfseries\small] at (-2.5,3.2) {chatbot\_service};
-\node[text width=4.6cm, align=center] at (-2.5,-3.2) {Assistant agricole FR/Wolof};
-
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=5pt] (0,2.5) rectangle (5,3.9);
-\node[text width=4.6cm, align=center, font=\bfseries\small] at (2.5,3.2) {wolof\_voice\_service};
-\node[text width=4.6cm, align=center] at (2.5,-3.2) {Reconnaissance vocale Wolof};
-
-\draw[fill=bleuPale, draw=bleuUniv, rounded corners=5pt] (-5,-3.9) rectangle (0,-2.5);
-\node[text width=4.6cm, align=center, font=\bfseries\small] at (-2.5,-2.8) {image\_comparison\_service};
-\node[text width=4.6cm, align=center] at (-2.5,-3.2) {Vision \& anti-fraude};
-
-\draw[fill=bleuPale, draw=bleuUniv, rounded corners=5pt] (0,-3.9) rectangle (5,-2.5);
-\node[text width=4.6cm, align=center, font=\bfseries\small] at (2.5,-2.8) {smart\_geolocation\_service};
-\node[text width=4.6cm, align=center] at (2.5,-3.2) {GPS \& validation terrain};
-
-\draw[->, bleuUniv, thick] (0,0.9) -- (-2.5,2.5);
-\draw[->, bleuUniv, thick] (0,0.9) -- (2.5,2.5);
-\draw[->, bleuUniv, thick] (0,-0.9) -- (-2.5,-2.5);
-\draw[->, bleuUniv, thick] (0,-0.9) -- (2.5,-2.5);
-
-\end{tikzpicture}
-\caption{Les quatre services de l'axe IA}
-\label{fig:axe_ia}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/axes-ia.png}
+  \caption{Les quatre services de l'axe IA}
+  \label{fig:axe_ia}
 \end{figure}
 
 \vspace{0.5cm}
@@ -2134,61 +2077,61 @@ personnalisés, adaptés aux cultures et aux conditions climatiques du Sénégal
 \vspace{0.3cm}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.5\textwidth]{images/chatbot-interface.png}
-\caption{Interface du chatbot agricole avec Claude API}
-\label{fig:chatbot-interface}
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/chatbot-interface.png}
+  \caption{Interface du chatbot agricole avec Claude API}
+  \label{fig:chatbot-interface}
 \end{figure}
 
 \begin{comment}
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{images/chatbot-wolof.png}
-\caption{Exemple de conversation en Wolof avec l'assistant agricole}
-\label{fig:chatbot-wolof}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/chatbot-wolof.png}
+  \caption{Exemple de conversation en Wolof avec l'assistant agricole}
+  \label{fig:chatbot-wolof}
 \end{figure}
 \end{comment}
 \begin{tcolorbox}[infobox,title={Caractéristiques du chatbot}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Moteur LLM:} API Claude d'Anthropic (\texttt{claude-3-5-sonnet})
-  \item \textbf{Prompt système:} orienté agronomie sénégalaise (cultures locales,
-        saisons, parasites, irrigation)
-  \item \textbf{Historique de conversation:} maintenu côté client (array de messages),
-        transmis à chaque requête pour des échanges cohérents sur plusieurs tours
-  \item \textbf{Bilingue natif:} le modèle gère nativement le Wolof et répond dans
-        la langue de l'utilisateur
-\end{itemize}
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Moteur LLM:} API Claude d'Anthropic (\texttt{claude-3-5-sonnet})
+    \item \textbf{Prompt système:} orienté agronomie sénégalaise (cultures locales,
+          saisons, parasites, irrigation)
+    \item \textbf{Historique de conversation:} maintenu côté client (array de messages),
+          transmis à chaque requête pour des échanges cohérents sur plusieurs tours
+    \item \textbf{Bilingue natif:} le modèle gère nativement le Wolof et répond dans
+          la langue de l'utilisateur
+  \end{itemize}
 \end{tcolorbox}
 
 \vspace{0.4cm}
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small]
+  \centering
+  \begin{tikzpicture}[font=\small]
 
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (0,0) rectangle (3.5,1);
-\node[align=center] at (1.75,0.5) {Utilisateur\\(FR ou Wolof)};
+    \draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (0,0) rectangle (3.5,1);
+    \node[align=center] at (1.75,0.5) {Utilisateur\\(FR ou Wolof)};
 
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (4,0) rectangle (7.5,1);
-\node[align=center] at (5.75,0.5) {Historique\\conversation};
+    \draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (4,0) rectangle (7.5,1);
+    \node[align=center] at (5.75,0.5) {Historique\\conversation};
 
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (8,0) rectangle (11.5,1);
-\node[align=center] at (9.75,0.5) {Claude API\\(Anthropic)};
+    \draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (8,0) rectangle (11.5,1);
+    \node[align=center] at (9.75,0.5) {Claude API\\(Anthropic)};
 
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (12,0) rectangle (15.5,1);
-\node[align=center] at (13.75,0.5) {Réponse enrichie\\affichée};
+    \draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (12,0) rectangle (15.5,1);
+    \node[align=center] at (13.75,0.5) {Réponse enrichie\\affichée};
 
-\draw[->, bleuUniv, thick] (3.5,0.5) -- (4,0.5) node[midway,above,font=\tiny]{message};
-\draw[->, bleuUniv, thick] (7.5,0.5) -- (8,0.5) node[midway,above,font=\tiny]{messages[]};
-\draw[->, bleuUniv, thick] (11.5,0.5) -- (12,0.5) node[midway,above,font=\tiny]{conseil};
+    \draw[->, bleuUniv, thick] (3.5,0.5) -- (4,0.5) node[midway,above,font=\tiny]{message};
+    \draw[->, bleuUniv, thick] (7.5,0.5) -- (8,0.5) node[midway,above,font=\tiny]{messages[]};
+    \draw[->, bleuUniv, thick] (11.5,0.5) -- (12,0.5) node[midway,above,font=\tiny]{conseil};
 
-\node[draw=bleuUniv!50, rounded corners, fill=white, font=\footnotesize\itshape, text width=8cm, align=center] at (7.75,-1.5)
+    \node[draw=bleuUniv!50, rounded corners, fill=white, font=\footnotesize\itshape, text width=8cm, align=center] at (7.75,-1.5)
     {Exemple: \textit{«~Ndax mango bi dafa am problème ci sunuy?~»}\\
-    $\Rightarrow$ Conseil en Wolof sur les parasites de la mangue};
+      $\Rightarrow$ Conseil en Wolof sur les parasites de la mangue};
 
-\end{tikzpicture}
-\caption{Flux de traitement du chatbot agricole}
-\label{fig:chatbot_flux}
+  \end{tikzpicture}
+  \caption{Flux de traitement du chatbot agricole}
+  \label{fig:chatbot_flux}
 \end{figure}
 
 \vspace{0.2cm}
@@ -2201,10 +2144,10 @@ avec le texte de \textbf{dicter leurs questions}.
 \begin{comment}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{images/voice-recognition.png}
-\caption{Interface de reconnaissance vocale pour le Wolof}
-\label{fig:voice-recognition}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/voice-recognition.png}
+  \caption{Interface de reconnaissance vocale pour le Wolof}
+  \label{fig:voice-recognition}
 \end{figure}
 \end{comment}
 
@@ -2222,10 +2165,10 @@ Le service fonctionne en trois étapes:
 \end{enumerate}
 
 \begin{tcolorbox}[definbox]
-\textbf{\color{bleuUniv}Défi technique:} La Web Speech API de Google ne supporte pas
-officiellement le Wolof. Jokko Agro implémente une couche de post-traitement propriétaire
-qui corrige les erreurs les plus fréquentes dans la transcription automatique du Wolof à
-partir des modèles français.
+  \textbf{\color{bleuUniv}Défi technique:} La Web Speech API de Google ne supporte pas
+  officiellement le Wolof. Jokko Agro implémente une couche de post-traitement propriétaire
+  qui corrige les erreurs les plus fréquentes dans la transcription automatique du Wolof à
+  partir des modèles français.
 \end{tcolorbox}
 
 \vspace{0.2cm}
@@ -2239,33 +2182,33 @@ certification. Il utilise \textbf{TensorFlow.js} (exécuté côté navigateur, s
 et calcule cinq métriques:
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.5\textwidth]{images/image-comparison.png}
-\caption{Exemple de comparaison d'images anti-fraude avec TensorFlow.js}
-\label{fig:image-comparison}
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/image-comparison.png}
+  \caption{Exemple de comparaison d'images anti-fraude avec TensorFlow.js}
+  \label{fig:image-comparison}
 \end{figure}
 
 \vspace{0.01cm}
 
 \renewcommand{\arraystretch}{1.5}
 \begin{tcolorbox}[tablebox]
-\begin{tabularx}{\textwidth}{
-  >{\bfseries\small\color{bleuUniv}}p{3.5cm}
-  >{\small\bfseries}p{2.8cm}
-  >{\small}X
-  >{\small\bfseries}p{1.2cm}}
-\rowcolor{bleuUniv}
-\multicolumn{1}{>{\bfseries\color{white}\small}p{3.5cm}}{Métrique} &
-\multicolumn{1}{>{\bfseries\color{white}\small}p{2.8cm}}{Méthode} &
-\multicolumn{1}{>{\bfseries\color{white}\small}X}{Usage} &
-\multicolumn{1}{>{\bfseries\color{white}\small}p{1.2cm}}{Poids} \\
-Similarité struct. & MSE               & Détecter les photos copiées & 0.30 \\
-\rowcolor{bleuTresClair}
-Similarité features & Cosinus (embed.) & Identifier le même produit  & 0.40 \\
-Cohérence couleurs  & Histogramme HSV  & Vérifier maturité / saison  & 0.20 \\
-\rowcolor{bleuTresClair}
-Cohérence éclairage & Variance pixel   & Anti-spoofing               & 0.10 \\
-\end{tabularx}
+  \begin{tabularx}{\textwidth}{
+    >{\bfseries\small\color{bleuUniv}}p{3.5cm}
+    >{\small\bfseries}p{2.8cm}
+    >{\small}X
+    >{\small\bfseries}p{1.2cm}}
+    \rowcolor{bleuUniv}
+    \multicolumn{1}{>{\bfseries\color{white}\small}p{3.5cm}}{Métrique} &
+    \multicolumn{1}{>{\bfseries\color{white}\small}p{2.8cm}}{Méthode}  &
+    \multicolumn{1}{>{\bfseries\color{white}\small}X}{Usage}           &
+    \multicolumn{1}{>{\bfseries\color{white}\small}p{1.2cm}}{Poids}                                                            \\
+    Similarité struct.                                                 & MSE              & Détecter les photos copiées & 0.30 \\
+    \rowcolor{bleuTresClair}
+    Similarité features                                                & Cosinus (embed.) & Identifier le même produit  & 0.40 \\
+    Cohérence couleurs                                                 & Histogramme HSV  & Vérifier maturité / saison  & 0.20 \\
+    \rowcolor{bleuTresClair}
+    Cohérence éclairage                                                & Variance pixel   & Anti-spoofing               & 0.10 \\
+  \end{tabularx}
 \end{tcolorbox}
 
 \vspace{0.3cm}
@@ -2287,22 +2230,22 @@ Le service \texttt{smart\_geolocation\_service} valide que les photos de certifi
 sont bien prises \textbf{sur le terrain déclaré}, empêchant les certifications à distance.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.6\textwidth]{images/gps-validation.png}
-\caption{Validation GPS des points de certification}
-\label{fig:gps-validation}
+  \centering
+  \includegraphics[width=0.6\textwidth]{images/gps-validation.png}
+  \caption{Validation GPS des points de certification}
+  \label{fig:gps-validation}
 \end{figure}
 
 \begin{tcolorbox}[infobox,title={Mécanismes de validation GPS}]
-\begin{enumerate}[leftmargin=*,label=\textcolor{bleuUniv}{\textbf{V\arabic*.}},itemsep=5pt]
-  \item \textbf{Cohérence de position:} distance entre coordonnées GPS actuelles
-        et coordonnées du checkpoint enregistré $\leq$ rayon de tolérance (500 m).
-  \item \textbf{Précision GPS:} \texttt{accuracy} $\leq$ seuil maximal accepté
-        (ex: 100 m) pour rejeter les signaux de mauvaise qualité.
-  \item \textbf{Anti-spoofing temporel:} cohérence entre l'horodatage GPS
-        (\texttt{position.timestamp}) et l'heure réelle du système pour détecter
-        les coordonnées figées ou rejouées.
-\end{enumerate}
+  \begin{enumerate}[leftmargin=*,label=\textcolor{bleuUniv}{\textbf{V\arabic*.}},itemsep=5pt]
+    \item \textbf{Cohérence de position:} distance entre coordonnées GPS actuelles
+          et coordonnées du checkpoint enregistré $\leq$ rayon de tolérance (500 m).
+    \item \textbf{Précision GPS:} \texttt{accuracy} $\leq$ seuil maximal accepté
+          (ex: 100 m) pour rejeter les signaux de mauvaise qualité.
+    \item \textbf{Anti-spoofing temporel:} cohérence entre l'horodatage GPS
+          (\texttt{position.timestamp}) et l'heure réelle du système pour détecter
+          les coordonnées figées ou rejouées.
+  \end{enumerate}
 \end{tcolorbox}
 
 \vspace{0.3cm}
@@ -2310,17 +2253,17 @@ sont bien prises \textbf{sur le terrain déclaré}, empêchant les certification
 \section{Apports de l'IA dans le système}
 
 \begin{tcolorbox}[synthbox]
-\textbf{Synthèse de l'axe IA}\\[6pt]
-L'axe IA transforme Jokko Agro en une plateforme réellement accessible: le chatbot
-supprime la barrière de l'expertise agronomique, la voix élimine la barrière de
-l'alphabétisation, l'analyse d'images renforce l'intégrité de la certification, et
-la géolocalisation garantit l'authenticité terrain. Ensemble, ces quatre services
-rendent la plateforme utilisable par n'importe quel agriculteur sénégalais.
+  \textbf{Synthèse de l'axe IA}\\[6pt]
+  L'axe IA transforme Jokko Agro en une plateforme réellement accessible: le chatbot
+  supprime la barrière de l'expertise agronomique, la voix élimine la barrière de
+  l'alphabétisation, l'analyse d'images renforce l'intégrité de la certification, et
+  la géolocalisation garantit l'authenticité terrain. Ensemble, ces quatre services
+  rendent la plateforme utilisable par n'importe quel agriculteur sénégalais.
 \end{tcolorbox}
 
 \vspace{0.5cm}
 \begin{flushright}
-\textit{« L'intelligence artificielle ne remplace pas l'agriculteur, elle lui donne les clés pour mieux décider. »}
+  \textit{« L'intelligence artificielle ne remplace pas l'agriculteur, elle lui donne les clés pour mieux décider. »}
 \end{flushright}
 
 % =========================================================
@@ -2329,9 +2272,9 @@ rendent la plateforme utilisable par n'importe quel agriculteur sénégalais.
 \chapter{Axe Blockchain et Certification}
 
 \begin{tcolorbox}[chapterbox,title={Vue d'ensemble du chapitre}]
-L'axe Blockchain est le pilier de confiance de Jokko Agro. Il permet d'enregistrer de
-façon immuable et décentralisée les preuves de certification des produits agricoles, du
-semis à la récolte, via Ethereum, IPFS et un smart contract Solidity.
+  L'axe Blockchain est le pilier de confiance de Jokko Agro. Il permet d'enregistrer de
+  façon immuable et décentralisée les preuves de certification des produits agricoles, du
+  semis à la récolte, via Ethereum, IPFS et un smart contract Solidity.
 \end{tcolorbox}
 
 \vspace{0.5cm}
@@ -2347,46 +2290,46 @@ immédiatement.
 \vspace{0.4cm}
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small,
-  bloc/.style={rectangle,rounded corners=4pt,minimum width=3.2cm,minimum height=2.4cm,
-               text centered,text width=3cm,draw=bleuUniv,line width=1pt,fill=bleuTresClair}]
+  \centering
+  \begin{tikzpicture}[font=\small,
+      bloc/.style={rectangle,rounded corners=4pt,minimum width=3.2cm,minimum height=2.4cm,
+          text centered,text width=3cm,draw=bleuUniv,line width=1pt,fill=bleuTresClair}]
 
-  \node[bloc] (B0) at (0,0) {
-    \textbf{\small Bloc \#0}\\[4pt]
-    \footnotesize Hash: \texttt{000...}\\
-    Prev: \texttt{---}\\
-    Data: genesis
-  };
-  \node[bloc] (B1) at (4.2,0) {
-    \textbf{\small Bloc \#1}\\[4pt]
-    \footnotesize Hash: \texttt{a3f...}\\
-    Prev: \texttt{000...}\\
-    Data: cert\#1
-  };
-  \node[bloc] (B2) at (8.4,0) {
-    \textbf{\small Bloc \#2}\\[4pt]
-    \footnotesize Hash: \texttt{7bc...}\\
-    Prev: \texttt{a3f...}\\
-    Data: cert\#2
-  };
-  \node[bloc,draw=bleuUniv!50,fill=white] (B3) at (12.6,0) {
-    \textbf{\small Bloc \#n}\\[4pt]
-    \footnotesize Hash: \texttt{...}\\
-    Prev: \texttt{7bc...}\\
-    Data: cert\#n
-  };
+    \node[bloc] (B0) at (0,0) {
+      \textbf{\small Bloc \#0}\\[4pt]
+      \footnotesize Hash: \texttt{000...}\\
+      Prev: \texttt{---}\\
+      Data: genesis
+    };
+    \node[bloc] (B1) at (4.2,0) {
+      \textbf{\small Bloc \#1}\\[4pt]
+      \footnotesize Hash: \texttt{a3f...}\\
+      Prev: \texttt{000...}\\
+      Data: cert\#1
+    };
+    \node[bloc] (B2) at (8.4,0) {
+      \textbf{\small Bloc \#2}\\[4pt]
+      \footnotesize Hash: \texttt{7bc...}\\
+      Prev: \texttt{a3f...}\\
+      Data: cert\#2
+    };
+    \node[bloc,draw=bleuUniv!50,fill=white] (B3) at (12.6,0) {
+      \textbf{\small Bloc \#n}\\[4pt]
+      \footnotesize Hash: \texttt{...}\\
+      Prev: \texttt{7bc...}\\
+      Data: cert\#n
+    };
 
-  \draw[-{Stealth},bleuUniv,thick] (B0.east)--(B1.west);
-  \draw[-{Stealth},bleuUniv,thick] (B1.east)--(B2.west);
-  \draw[-{Stealth},bleuUniv!50,thick,dashed] (B2.east)--(B3.west);
+    \draw[-{Stealth},bleuUniv,thick] (B0.east)--(B1.west);
+    \draw[-{Stealth},bleuUniv,thick] (B1.east)--(B2.west);
+    \draw[-{Stealth},bleuUniv!50,thick,dashed] (B2.east)--(B3.west);
 
-  \draw[bleuUniv!60,decorate,decoration={brace,amplitude=6pt,mirror}]
+    \draw[bleuUniv!60,decorate,decoration={brace,amplitude=6pt,mirror}]
     (0,-1.5)--(12.6,-1.5) node[midway,below=8pt,font=\small\itshape,bleuUniv]
     {Chaîne immuable --- toute modification est détectée};
-\end{tikzpicture}
-\caption{Structure d'une blockchain --- principe de chaînage par hash}
-\label{fig:blockchain_structure}
+  \end{tikzpicture}
+  \caption{Structure d'une blockchain --- principe de chaînage par hash}
+  \label{fig:blockchain_structure}
 \end{figure}
 
 \vspace{0.5cm}
@@ -2401,18 +2344,18 @@ les garanties suivantes:
 \vspace{0.3cm}
 
 \begin{tcolorbox}[infobox,title={Garanties du Smart Contract}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Immuabilité:} une preuve enregistrée ne peut jamais être modifiée
-        ou supprimée.
-  \item \textbf{Non-répudiation:} \texttt{msg.sender} (adresse Ethereum de l'appelant)
-        est automatiquement stocké, liant chaque certification à son auteur de façon
-        cryptographiquement prouvable.
-  \item \textbf{Horodatage blockchain:} \texttt{block.timestamp} est fourni par le
-        réseau, non par l'utilisateur --- il ne peut pas être falsifié.
-  \item \textbf{Indexation:} l'événement \texttt{ProofRegistered} est indexé sur
-        \texttt{productId}, permettant des recherches rapides sans parcourir toute la
-        chaîne.
-\end{itemize}
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Immuabilité:} une preuve enregistrée ne peut jamais être modifiée
+          ou supprimée.
+    \item \textbf{Non-répudiation:} \texttt{msg.sender} (adresse Ethereum de l'appelant)
+          est automatiquement stocké, liant chaque certification à son auteur de façon
+          cryptographiquement prouvable.
+    \item \textbf{Horodatage blockchain:} \texttt{block.timestamp} est fourni par le
+          réseau, non par l'utilisateur --- il ne peut pas être falsifié.
+    \item \textbf{Indexation:} l'événement \texttt{ProofRegistered} est indexé sur
+          \texttt{productId}, permettant des recherches rapides sans parcourir toute la
+          chaîne.
+  \end{itemize}
 \end{tcolorbox}
 
 \vspace{0.5cm}
@@ -2423,62 +2366,64 @@ les garanties suivantes:
 Le flux complet de certification coordonne trois services Angular:
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.7\textwidth]{images/certification-flow.png}
-\caption{Interface de certification avec upload d'image}
-\label{fig:certification-flow}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.7\textwidth]{images/metamask-sign.png}
-\caption{Popup MetaMask pour signature de la transaction}
-\label{fig:metamask-sign}
+  \centering
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/certification-flow.png}
+    \caption{Interface de certification avec upload d'image}
+    \label{fig:certification-flow}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\textwidth}
+    \includegraphics[width=0.7\textwidth]{images/metamask-sign.png}
+    \caption{Popup MetaMask pour signature de la transaction}
+    \label{fig:metamask-sign}
+  \end{minipage}
 \end{figure}
 
 \vspace{0.4cm}
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small]
+  \centering
+  \begin{tikzpicture}[font=\small]
 
-\draw[fill=bleuUniv, draw=bleuUniv, rounded corners=4pt, text=white] (0,6.5) rectangle (4,7.4);
-\node[align=center, text=white] at (2,6.95) {1. Photo uploadée};
+    \draw[fill=bleuUniv, draw=bleuUniv, rounded corners=4pt, text=white] (0,6.5) rectangle (4,7.4);
+    \node[align=center, text=white] at (2,6.95) {1. Photo uploadée};
 
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (0,5.3) rectangle (4,6.2);
-\node[align=center] at (2,5.75) {2. Hash SHA-256 calculé};
+    \draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (0,5.3) rectangle (4,6.2);
+    \node[align=center] at (2,5.75) {2. Hash SHA-256 calculé};
 
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (0,4.1) rectangle (4,5);
-\node[align=center] at (2,4.55) {3. Upload IPFS $\rightarrow$ CID};
+    \draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (0,4.1) rectangle (4,5);
+    \node[align=center] at (2,4.55) {3. Upload IPFS $\rightarrow$ CID};
 
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (0,2.9) rectangle (4,3.8);
-\node[align=center] at (2,3.35) {4. Objet canonique créé};
+    \draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (0,2.9) rectangle (4,3.8);
+    \node[align=center] at (2,3.35) {4. Objet canonique créé};
 
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (0,1.7) rectangle (4,2.6);
-\node[align=center] at (2,2.15) {5. Hash final (proofHash)};
+    \draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=4pt] (0,1.7) rectangle (4,2.6);
+    \node[align=center] at (2,2.15) {5. Hash final (proofHash)};
 
-\draw[fill=bleuMoyen, draw=bleuUniv, rounded corners=4pt, text=white] (0,0.5) rectangle (4,1.4);
-\node[align=center, text=white] at (2,0.95) {6. Transaction Sepolia};
+    \draw[fill=bleuMoyen, draw=bleuUniv, rounded corners=4pt, text=white] (0,0.5) rectangle (4,1.4);
+    \node[align=center, text=white] at (2,0.95) {6. Transaction Sepolia};
 
-\draw[fill=bleuPale, draw=bleuUniv, rounded corners=4pt] (0,-0.7) rectangle (4,0.2);
-\node[align=center] at (2,-0.25) {7. Résultat $\rightarrow$ Firestore};
+    \draw[fill=bleuPale, draw=bleuUniv, rounded corners=4pt] (0,-0.7) rectangle (4,0.2);
+    \node[align=center] at (2,-0.25) {7. Résultat $\rightarrow$ Firestore};
 
-\draw[->, bleuUniv, thick] (2,6.5) -- (2,6.2);
-\draw[->, bleuUniv, thick] (2,5.3) -- (2,5);
-\draw[->, bleuUniv, thick] (2,4.1) -- (2,3.8);
-\draw[->, bleuUniv, thick] (2,2.9) -- (2,2.6);
-\draw[->, bleuUniv, thick] (2,1.7) -- (2,1.4);
-\draw[->, bleuUniv, thick] (2,0.5) -- (2,0.2);
+    \draw[->, bleuUniv, thick] (2,6.5) -- (2,6.2);
+    \draw[->, bleuUniv, thick] (2,5.3) -- (2,5);
+    \draw[->, bleuUniv, thick] (2,4.1) -- (2,3.8);
+    \draw[->, bleuUniv, thick] (2,2.9) -- (2,2.6);
+    \draw[->, bleuUniv, thick] (2,1.7) -- (2,1.4);
+    \draw[->, bleuUniv, thick] (2,0.5) -- (2,0.2);
 
-\node[font=\tiny\itshape, bleuUniv, anchor=west] at (4.2,5.75) {\texttt{CryptoJS.SHA256(photoBuffer)}};
-\node[font=\tiny\itshape, bleuUniv, anchor=west] at (4.2,4.55) {\texttt{ipfs\_service.uploadFile()} $\rightarrow$ CIDv1};
-\node[font=\tiny\itshape, bleuUniv, anchor=west] at (4.2,3.35) {\texttt{\{productId, hash, lat, lng, step\}}};
-\node[font=\tiny\itshape, bleuUniv, anchor=west] at (4.2,2.15) {\texttt{SHA256(JSON.stringify(canonical))}};
-\node[font=\tiny\itshape, bleuUniv, anchor=west] at (4.2,0.95) {\texttt{registerProof()} $\rightarrow$ txHash};
+    \node[font=\tiny\itshape, bleuUniv, anchor=west] at (4.2,5.75) {\texttt{CryptoJS.SHA256(photoBuffer)}};
+    \node[font=\tiny\itshape, bleuUniv, anchor=west] at (4.2,4.55) {\texttt{ipfs\_service.uploadFile()} $\rightarrow$ CIDv1};
+    \node[font=\tiny\itshape, bleuUniv, anchor=west] at (4.2,3.35) {\texttt{\{productId, hash, lat, lng, step\}}};
+    \node[font=\tiny\itshape, bleuUniv, anchor=west] at (4.2,2.15) {\texttt{SHA256(JSON.stringify(canonical))}};
+    \node[font=\tiny\itshape, bleuUniv, anchor=west] at (4.2,0.95) {\texttt{registerProof()} $\rightarrow$ txHash};
 
-\end{tikzpicture}
-\caption{Flux complet de création d'une preuve de certification}
-\label{fig:flux_certification}
+  \end{tikzpicture}
+  \caption{Flux complet de création d'une preuve de certification}
+  \label{fig:flux_certification}
 \end{figure}
 
 \vspace{0.5cm}
@@ -2492,14 +2437,14 @@ réseau Ethereum via Alchemy RPC:
 \vspace{0.3cm}
 
 \begin{tcolorbox}[infobox,title={Méthodes clés de l'ethereum\_service}]
-\begin{itemize}[itemsep=4pt,font=\small]
-  \item \texttt{connectWallet()} --- \texttt{eth\_requestAccounts} $\rightarrow$ popup MetaMask
-  \item \texttt{checkNetwork(11155111)} --- vérifie que l'utilisateur est sur Sepolia
-  \item \texttt{switchNetwork(11155111)} --- bascule automatiquement sur Sepolia
-  \item \texttt{encodeContractCall(ABI, 'registerProof', params)} --- encodage ABI
-  \item \texttt{sendContractTransaction(addr, data)} --- envoi transaction signée
-  \item \texttt{getTransactionReceipt(txHash)} --- suivi confirmation (status 0x1)
-\end{itemize}
+  \begin{itemize}[itemsep=4pt,font=\small]
+    \item \texttt{connectWallet()} --- \texttt{eth\_requestAccounts} $\rightarrow$ popup MetaMask
+    \item \texttt{checkNetwork(11155111)} --- vérifie que l'utilisateur est sur Sepolia
+    \item \texttt{switchNetwork(11155111)} --- bascule automatiquement sur Sepolia
+    \item \texttt{encodeContractCall(ABI, 'registerProof', params)} --- encodage ABI
+    \item \texttt{sendContractTransaction(addr, data)} --- envoi transaction signée
+    \item \texttt{getTransactionReceipt(txHash)} --- suivi confirmation (status 0x1)
+  \end{itemize}
 \end{tcolorbox}
 
 \vspace{0.5cm}
@@ -2512,22 +2457,22 @@ leur accessibilité décentralisée. Le CIDv1 produit des identifiants stables, 
 aux collisions.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{images/ipfs-upload.png}
-\caption{Confirmation d'upload IPFS avec CID généré}
-\label{fig:ipfs-upload}
+  \centering
+  \includegraphics[width=0.6\textwidth]{images/ipfs-upload.png}
+  \caption{Confirmation d'upload IPFS avec CID généré}
+  \label{fig:ipfs-upload}
 \end{figure}
 
 \begin{tcolorbox}[infobox,title={Méthodes de l'ipfs\_service}]
-\begin{itemize}[itemsep=4pt]
-  \item \texttt{uploadFile(file)} $\rightarrow$ \texttt{\{cid, url\}} --- photo vers IPFS
-  \item \texttt{uploadJSON(data)} $\rightarrow$ \texttt{\{cid, url\}} --- métadonnées vers IPFS
-  \item \texttt{verifyCID(cid)} $\rightarrow$ \texttt{boolean} --- vérification existence
-  \item \texttt{getGatewayUrl(cid)} $\rightarrow$ \texttt{string} --- URL CDN Pinata
-\end{itemize}
+  \begin{itemize}[itemsep=4pt]
+    \item \texttt{uploadFile(file)} $\rightarrow$ \texttt{\{cid, url\}} --- photo vers IPFS
+    \item \texttt{uploadJSON(data)} $\rightarrow$ \texttt{\{cid, url\}} --- métadonnées vers IPFS
+    \item \texttt{verifyCID(cid)} $\rightarrow$ \texttt{boolean} --- vérification existence
+    \item \texttt{getGatewayUrl(cid)} $\rightarrow$ \texttt{string} --- URL CDN Pinata
+  \end{itemize}
 \end{tcolorbox}
 
-\vspace{0.5cm}
+\vspace{0.3cm}
 
 \section{Traçabilité et transparence}
 
@@ -2536,81 +2481,49 @@ La certification s'organise en \textbf{7 checkpoints} couvrant le cycle complet 
 production agricole, avec un système de badges récompensant la qualité:
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{images/badge-system.png}
-\caption{Système de badges (Bronze/Silver/Gold) selon le niveau de certification}
-\label{fig:badge-system}
+  \centering
+  \includegraphics[width=0.6\textwidth]{images/badge-system.png}
+  \caption{Système de badges (Bronze/Silver/Gold) selon le niveau de certification}
+  \label{fig:badge-system}
 \end{figure}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{images/certificate-detail.png}
-\caption{Détail d'un certificat blockchain avec QR code de vérification}
-\label{fig:certificate-detail}
+  \centering
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/verif_certif.png}
+    \caption{Détail de la verification d'un certificat blockchain }
+    \label{fig:certificate-detail}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/certificate-detail.png}
+    \caption{Certificat blockchain }
+    \label{fig:certification-atteste}
+  \end{minipage}
 \end{figure}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{images/qrcode-certification.png}
-\caption{QR code permettant la vérification instantanée de la certification}
-\label{fig:qrcode-certification}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small]
-
-% Checkpoints ligne 1
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=3pt] (0,0) rectangle (2.4,0.9);
-\node[align=center, font=\footnotesize\bfseries] at (1.2,0.45) {Préparation du sol};
-
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=3pt] (2.8,0) rectangle (5.2,0.9);
-\node[align=center, font=\footnotesize\bfseries] at (4,0.45) {Semis};
-
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=3pt] (5.6,0) rectangle (8,0.9);
-\node[align=center, font=\footnotesize\bfseries] at (6.8,0.45) {Irrigation};
-
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=3pt] (8.4,0) rectangle (10.8,0.9);
-\node[align=center, font=\footnotesize\bfseries] at (9.6,0.45) {Traitements};
-
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=3pt] (11.2,0) rectangle (13.6,0.9);
-\node[align=center, font=\footnotesize\bfseries] at (12.4,0.45) {Surveillance};
-
-% Checkpoints ligne 2
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=3pt] (9.8,-2) rectangle (12.2,-1.1);
-\node[align=center, font=\footnotesize\bfseries] at (11,-1.55) {Récolte};
-
-\draw[fill=bleuTresClair, draw=bleuUniv, rounded corners=3pt] (7,-2) rectangle (9.4,-1.1);
-\node[align=center, font=\footnotesize\bfseries] at (8.2,-1.55) {Stockage};
-
-% Flèches horizontales
-\draw[->, bleuUniv, thick] (2.4,0.45) -- (2.8,0.45);
-\draw[->, bleuUniv, thick] (5.2,0.45) -- (5.6,0.45);
-\draw[->, bleuUniv, thick] (8,0.45) -- (8.4,0.45);
-\draw[->, bleuUniv, thick] (10.8,0.45) -- (11.2,0.45);
-
-% Flèches verticales
-\draw[->, bleuUniv, thick] (12.4,0) -- (12.4,-0.8) -- (11,-1.1);
-\draw[->, bleuUniv, thick] (11,-1.1) -- (9.8,-1.55) -- (8.2,-1.55);
-
-% Badges
-\draw[bleuUniv, dashed, rounded corners] (-0.2,-3.2) rectangle (3.5,-2.6);
-\node[font=\footnotesize\bfseries, bleuUniv] at (1.65,-2.9) {Bronze (0--40 pts)};
-
-\draw[bleuUniv, dashed, rounded corners] (3.8,-3.2) rectangle (7.6,-2.6);
-\node[font=\footnotesize\bfseries, bleuUniv] at (5.7,-2.9) {Silver (41--70 pts)};
-
-\draw[fill=bleuUniv, draw=bleuUniv, rounded corners] (7.9,-3.2) rectangle (12.6,-2.6);
-\node[font=\footnotesize\bfseries, white] at (10.25,-2.9) {Gold (71--100 pts)};
-
-\end{tikzpicture}
-\caption{Les 7 checkpoints de certification et le système de badges}
-\label{fig:checkpoints}
+  \centering
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/preuve_etherscan.png}
+    \caption{Enregistrement signature dans etherscan }
+    \label{fig:etherscan-sign}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/checkpoints.png}
+    \caption{Les 7 checkpoints de certification et le système de badges}
+    \label{fig:checkpoints}
+  \end{minipage}
 \end{figure}
 
 \vspace{0.5cm}
 \begin{flushright}
-\textit{« La blockchain ne crée pas la confiance, elle la rend vérifiable par tous. »}
+  \textit{« La blockchain ne crée pas la confiance, elle la rend vérifiable par tous. »}
 \end{flushright}
 
 % =========================================================
@@ -2619,9 +2532,9 @@ production agricole, avec un système de badges récompensant la qualité:
 \chapter{Axe Agricoins (AGC) et Datawarehouse}
 
 \begin{tcolorbox}[chapterbox,title={Vue d'ensemble du chapitre}]
-L'axe Agricoins crée un écosystème économique incitatif au sein de Jokko Agro. Il combine
-une monnaie numérique agricole (AGC), un système de paiement hybride sécurisé, un module
-commerce complet et un datawarehouse d'aide à la décision.
+  L'axe Agricoins crée un écosystème économique incitatif au sein de Jokko Agro. Il combine
+  une monnaie numérique agricole (AGC), un système de paiement hybride sécurisé, un module
+  commerce complet et un datawarehouse d'aide à la décision.
 \end{tcolorbox}
 
 \vspace{0.3cm}
@@ -2635,47 +2548,47 @@ bonnes pratiques via des récompenses, et créer un lien direct entre certificat
 valeur économique.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.6\textwidth]{images/card_agc.png}
-\caption{Portefeuille AGC }
-\label{fig:agc-wallet}
+  \centering
+  \includegraphics[width=0.6\textwidth]{images/card_agc.png}
+  \caption{Portefeuille AGC }
+  \label{fig:agc-wallet}
 \end{figure}
 
 \vspace{0.1cm}
 
 \begin{tcolorbox}[infobox,title={Parité et sources d'AGC}]
-\begin{center}
-\large\bfseries\color{bleuUniv} 1 AGC = 100 FCFA (parité fixe)
-\end{center}
-\vspace{0.1cm}
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Achat direct:} via Wave, Orange Money ou Free
-  \item \textbf{Récompense de certification:} bonus AGC crédité automatiquement
-        à chaque checkpoint blockchain validé
-  \item \textbf{Solde initial:} émission à l'inscription pour les nouveaux utilisateurs
-\end{itemize}
+  \begin{center}
+    \large\bfseries\color{bleuUniv} 1 AGC = 100 FCFA (parité fixe)
+  \end{center}
+  \vspace{0.1cm}
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Achat direct:} via Wave, Orange Money ou Free
+    \item \textbf{Récompense de certification:} bonus AGC crédité automatiquement
+          à chaque checkpoint blockchain validé
+    \item \textbf{Solde initial:} émission à l'inscription pour les nouveaux utilisateurs
+  \end{itemize}
 \end{tcolorbox}
 
 \vspace{0.3cm}
 
 \begin{figure}[H]
-\centering
-\begin{minipage}{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{images/agc1.jpeg}
-\caption{Interface d'achat des Agricoins (AGC)}
-\label{fig:agc_achat}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{images/agc2.jpeg}
-\caption{Historique des transactions AGC}
-\label{fig:agc_historique}
-\end{minipage}
+  \centering
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/agc1.jpeg}
+    \caption{Interface d'achat des Agricoins (AGC)}
+    \label{fig:agc_achat}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/agc2.jpeg}
+    \caption{Historique des transactions AGC}
+    \label{fig:agc_historique}
+  \end{minipage}
 \end{figure}
 
-\vspace{0.3cm}
+\vspace{0.1cm}
 
 \noindent
 L'interface d'achat permet aux utilisateurs d'acquérir des AGC via les plateformes de
@@ -2683,17 +2596,17 @@ mobile money (Wave, Orange Money, Free) ou par carte bancaire. Le taux de conver
 est fixe: \textbf{1 AGC = 100 FCFA}. L'historique des transactions permet de suivre
 l'ensemble des achats effectués, avec le statut de chaque transaction (Complété / En attente).
 
-\vspace{0.5cm}
+\vspace{0.2cm}
 
 \section{Mécanisme d'émission}
 
 \noindent
 Le solde AGC de chaque utilisateur est stocké dans Firestore sous la structure suivante:
 
-\vspace{0.3cm}
+\vspace{0.1cm}
 
 \begin{tcolorbox}[infobox,title={Structure Firestore du portefeuille AGC}]
-\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,language=Typescript]
+  \begin{lstlisting}[basicstyle=\footnotesize\ttfamily,language=Typescript]
 users/{uid}/
   agc_balance: number          // Solde courant en AGC
   agc_transactions[]:
@@ -2706,7 +2619,7 @@ users/{uid}/
 \end{lstlisting}
 \end{tcolorbox}
 
-\vspace{0.5cm}
+\vspace{0.2cm}
 
 \section{Paiement hybride (AGC + Mobile Money)}
 
@@ -2715,62 +2628,62 @@ Le système de paiement hybride permet de combiner AGC et mobile money pour rég
 commande. Un mécanisme de \textbf{séquestre (escrow)} protège acheteur et vendeur.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.6\textwidth]{images/payment.png}
-\caption{Interface de paiement avec Wave / Orange Money}
-\label{fig:payment-wave}
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/payment.png}
+  \caption{Interface de paiement avec Wave / Orange Money}
+  \label{fig:payment-wave}
 \end{figure}
 \begin{comment}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{images/escrow-status.png}
-\caption{Statut du séquestre lors d'une transaction en cours}
-\label{fig:escrow-status}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/escrow-status.png}
+  \caption{Statut du séquestre lors d'une transaction en cours}
+  \label{fig:escrow-status}
 \end{figure}
 \end{comment}
 
-\vspace{0.4cm}
+\vspace{0.2cm}
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small,
-  etape/.style={rectangle,rounded corners=4pt,minimum width=4.5cm,minimum height=1cm,
-                text centered,text width=4.2cm,draw=bleuUniv,line width=0.8pt},
-  arr/.style={-{Stealth},bleuUniv,thick}]
+  \centering
+  \begin{tikzpicture}[font=\small,
+    etape/.style={rectangle,rounded corners=4pt,minimum width=4.5cm,minimum height=1cm,
+        text centered,text width=4.2cm,draw=bleuUniv,line width=0.8pt},
+    arr/.style={-{Stealth},bleuUniv,thick}]
 
-  \node[etape,fill=bleuUniv,text=white] (E1) at (0,5.5)
+    \node[etape,fill=bleuUniv,text=white] (E1) at (0,5.5)
     {1. Acheteur passe commande};
-  \node[etape,fill=bleuMoyen,text=white] (E2) at (0,4.2)
+    \node[etape,fill=bleuMoyen,text=white] (E2) at (0,4.2)
     {2. Lock AGC (séquestre)};
-  \node[etape,fill=bleuTresClair] (E3) at (0,2.9)
+    \node[etape,fill=bleuTresClair] (E3) at (0,2.9)
     {3. Livraison en cours};
-  \node[etape,fill=bleuTresClair] (E4a) at (-3,1.6)
+    \node[etape,fill=bleuTresClair] (E4a) at (-3,1.6)
     {4a. Livraison confirmée};
-  \node[etape,fill=bleuTresClair] (E4b) at (3,1.6)
+    \node[etape,fill=bleuTresClair] (E4b) at (3,1.6)
     {4b. Litige déclaré};
-  \node[etape,fill=bleuPale] (E5a) at (-3,0.3)
+    \node[etape,fill=bleuPale] (E5a) at (-3,0.3)
     {Release AGC $\rightarrow$ Producteur};
-  \node[etape,fill=bleuPale] (E5b) at (3,0.3)
+    \node[etape,fill=bleuPale] (E5b) at (3,0.3)
     {Rollback $\rightarrow$ Acheteur};
-  \node[etape,fill=bleuUniv!20] (E6) at (0,-1.0)
+    \node[etape,fill=bleuUniv!20] (E6) at (0,-1.0)
     {5. DW mis à jour};
 
-  \draw[arr] (E1.south)--(E2.north);
-  \draw[arr] (E2.south)--(E3.north);
-  \draw[arr] (E3.south west)--(E4a.north);
-  \draw[arr] (E3.south east)--(E4b.north);
-  \draw[arr] (E4a.south)--(E5a.north);
-  \draw[arr] (E4b.south)--(E5b.north);
-  \draw[arr] (E5a.south east)--(E6.north west);
-  \draw[arr] (E5b.south west)--(E6.north east);
+    \draw[arr] (E1.south)--(E2.north);
+    \draw[arr] (E2.south)--(E3.north);
+    \draw[arr] (E3.south west)--(E4a.north);
+    \draw[arr] (E3.south east)--(E4b.north);
+    \draw[arr] (E4a.south)--(E5a.north);
+    \draw[arr] (E4b.south)--(E5b.north);
+    \draw[arr] (E5a.south east)--(E6.north west);
+    \draw[arr] (E5b.south west)--(E6.north east);
 
-  % Escrow box
-  \draw[bleuMoyen,dashed,rounded corners] (-2.7,1.3) rectangle (2.7,4.6);
-  \node[font=\tiny\itshape,bleuMoyen] at (0,4.45) {Zone Séquestre};
-\end{tikzpicture}
-\caption{Cycle de vie d'un paiement AGC avec escrow}
-\label{fig:agc_escrow}
+    % Escrow box
+    \draw[bleuMoyen,dashed,rounded corners] (-2.7,1.3) rectangle (2.7,4.6);
+    \node[font=\tiny\itshape,bleuMoyen] at (0,4.45) {Zone Séquestre};
+  \end{tikzpicture}
+  \caption{Cycle de vie d'un paiement AGC avec escrow}
+  \label{fig:agc_escrow}
 \end{figure}
 
 \vspace{0.1cm}
@@ -2785,10 +2698,10 @@ producteur s'effectuent toujours ensemble --- ou pas du tout en cas d'erreur ré
 \vspace{0.1cm}
 
 \begin{tcolorbox}[definbox]
-\textbf{\color{bleuUniv}Propriétés ACID garanties:}
-\textbf{Atomicité} (débit + crédit simultanés),
-\textbf{Cohérence} (double dépense impossible, balance vérifiée atomiquement),
-\textbf{Rollback automatique} (état précédent restauré en cas d'erreur).
+  \textbf{\color{bleuUniv}Propriétés ACID garanties:}
+  \textbf{Atomicité} (débit + crédit simultanés),
+  \textbf{Cohérence} (double dépense impossible, balance vérifiée atomiquement),
+  \textbf{Rollback automatique} (état précédent restauré en cas d'erreur).
 \end{tcolorbox}
 
 \vspace{0.2cm}
@@ -2799,42 +2712,19 @@ producteur s'effectuent toujours ensemble --- ou pas du tout en cas d'erreur ré
 Le module commerce gère le cycle complet d'une vente avec \textbf{7 états de commande}:
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.6\textwidth]{images/marketplace.png}
-\caption{Interface du marketplace avec produits certifiés}
-\label{fig:marketplace}
+  \centering
+  \includegraphics[width=0.6\textwidth]{images/marketplace.png}
+  \caption{Interface du marketplace avec produits certifiés}
+  \label{fig:marketplace}
 \end{figure}
 
 \vspace{0.3cm}
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\footnotesize,
-  s/.style={rectangle,rounded corners=3pt,minimum width=2cm,minimum height=0.7cm,
-            text centered,draw=bleuUniv,fill=bleuTresClair,line width=0.7pt},
-  a/.style={-{Stealth},bleuUniv,thick}]
-
-  \node[s] (s1) at (0,0)    {pending};
-  \node[s] (s2) at (2.6,0)  {confirmed};
-  \node[s] (s3) at (5.2,0)  {preparing};
-  \node[s] (s4) at (7.8,0)  {ready};
-  \node[s] (s5) at (10.4,1) {pickup};
-  \node[s] (s6) at (10.4,-1){delivery};
-  \node[s,fill=bleuMoyen,text=white] (s7) at (13,0) {completed};
-  \node[s,fill=bleuPale] (s8) at (7.8,-2) {disputed};
-  \node[s,fill=bleuPale] (s9) at (5.2,-2) {cancelled};
-
-  \draw[a] (s1)--(s2); \draw[a] (s2)--(s3);
-  \draw[a] (s3)--(s4);
-  \draw[a] (s4.north east)--(s5.west);
-  \draw[a] (s4.south east)--(s6.west);
-  \draw[a] (s5.east)--(s7.north west);
-  \draw[a] (s6.east)--(s7.south west);
-  \draw[a] (s6.south)--(s8.east);
-  \draw[a] (s8.west)--(s9.east);
-\end{tikzpicture}
-\caption{Machine à états d'une commande Jokko Agro}
-\label{fig:etats_commande}
+  \centering
+  \includegraphics[width=0.6\textwidth]{images/shecma-etat-agc.png}
+  \caption{Machine à états d'une commande Jokko Agro}
+  \label{fig:etats_commande}
 \end{figure}
 
 % =========================================================
@@ -2843,11 +2733,11 @@ Le module commerce gère le cycle complet d'une vente avec \textbf{7 états de c
 \chapter{Axe Sécurité et Cryptographie}
 
 \begin{tcolorbox}[chapterbox,title={Vue d'ensemble du chapitre}]
-L'axe Sécurité est transversal à toute la plateforme. Il garantit l'intégrité des données,
-l'authentification des acteurs et la confidentialité des informations sensibles à travers
-dix mécanismes cryptographiques complémentaires, organisés en couches de défense en
-profondeur (Defence in Depth). Chaque couche adresse une menace spécifique et les couches
-sont conçues pour se renforcer mutuellement.
+  L'axe Sécurité est transversal à toute la plateforme. Il garantit l'intégrité des données,
+  l'authentification des acteurs et la confidentialité des informations sensibles à travers
+  dix mécanismes cryptographiques complémentaires, organisés en couches de défense en
+  profondeur (Defence in Depth). Chaque couche adresse une menace spécifique et les couches
+  sont conçues pour se renforcer mutuellement.
 \end{tcolorbox}
 
 \vspace{0.5cm}
@@ -2856,17 +2746,17 @@ sont conçues pour se renforcer mutuellement.
 
 \noindent
 La sécurité de Jokko Agro repose sur une architecture en \textbf{dix couches
-complémentaires}, chacune adressant une menace spécifique. Cette approche de défense
+  complémentaires}, chacune adressant une menace spécifique. Cette approche de défense
 en profondeur garantit que la compromission d'une couche n'entraîne pas celle de
 l'ensemble du système.
 
 \vspace{0.4cm}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.7\textwidth]{images/secure-couche.png}
-\caption{Architecture de sécurité en dix couches de Jokko Agro}
-\label{fig:securite_couches}
+  \centering
+  \includegraphics[width=0.7\textwidth]{images/secure-couche.png}
+  \caption{Architecture de sécurité en dix couches de Jokko Agro}
+  \label{fig:securite_couches}
 \end{figure}
 
 \vspace{0.5cm}
@@ -2876,32 +2766,32 @@ l'ensemble du système.
 \vspace{0.3cm}
 \renewcommand{\arraystretch}{1.6}
 \begin{tcolorbox}[tablebox,title={Les dix couches de sécurité de Jokko Agro}]
-\begin{tabularx}{\textwidth}{
-  >{\bfseries\small\color{bleuUniv}}p{1.2cm}
-  >{\small\bfseries}p{3.5cm}
-  >{\small\bfseries}p{3cm}
-  >{\small}X}
-\rowcolor{bleuUniv}
-\multicolumn{1}{>{\bfseries\color{white}\small}p{1.2cm}}{\#} &
-\multicolumn{1}{>{\bfseries\color{white}\small}p{3.5cm}}{Couche} &
-\multicolumn{1}{>{\bfseries\color{white}\small}p{3cm}}{Menace adressée} &
-\multicolumn{1}{>{\bfseries\color{white}\small}X}{Technologies} \\
-C1 & Signatures ECDSA P-256 & Répudiation de transaction & ECDSA P-256 · WebCrypto API · JSON canonique \\
-\rowcolor{bleuTresClair}
-C2 & IndexedDB non extractable & Vol de clé par injection XSS & WebCrypto API · IndexedDB Extractable: false \\
-C3 & Validation serveur (Cloud Functions) & Contournement des règles client & Firebase Cloud Functions · runTransaction \\
-\rowcolor{bleuTresClair}
-C4 & Nonce anti-rejeu (UUID + timestamp) & Replay attack & crypto.randomUUID() · Firestore used\_nonces · TTL \\
-C5 & Hash image SHA-256 (vérification IPFS) & Manipulation du score IA & WebCrypto SHA-256 · IPFS Pinata Gateway \\
-\rowcolor{bleuTresClair}
-C6 & Ledger immuable (SHA-256 chaîné) & Falsification rétroactive & SHA-256 · Firestore chaînage previousHash \\
-C7 & Chiffrement AES-GCM + PBKDF2 & Vol de clé privée par accès Firestore & AES-GCM-256 · PBKDF2-SHA256 310k iter. \\
-\rowcolor{bleuTresClair}
-C8 & Escrow AGC (séquestre atomique) & Double-dépense & Firestore runTransaction · Lock/Release/Cancel \\
-C9 & Audit Trail immuable & Effacement de preuves post-compromission & Firestore write-only Rules · serverTimestamp \\
-\rowcolor{bleuTresClair}
-C10 & Firestore Security Rules & Accès non autorisé aux données & Ownership Rules · Admin SDK only \\
-\end{tabularx}
+  \begin{tabularx}{\textwidth}{
+    >{\bfseries\small\color{bleuUniv}}p{1.2cm}
+    >{\small\bfseries}p{3.5cm}
+    >{\small\bfseries}p{3cm}
+    >{\small}X}
+    \rowcolor{bleuUniv}
+    \multicolumn{1}{>{\bfseries\color{white}\small}p{1.2cm}}{\#}            &
+    \multicolumn{1}{>{\bfseries\color{white}\small}p{3.5cm}}{Couche}        &
+    \multicolumn{1}{>{\bfseries\color{white}\small}p{3cm}}{Menace adressée} &
+    \multicolumn{1}{>{\bfseries\color{white}\small}X}{Technologies}                                                                                                                                                  \\
+    C1                                                                      & Signatures ECDSA P-256                 & Répudiation de transaction               & ECDSA P-256 · WebCrypto API · JSON canonique       \\
+    \rowcolor{bleuTresClair}
+    C2                                                                      & IndexedDB non extractable              & Vol de clé par injection XSS             & WebCrypto API · IndexedDB Extractable: false       \\
+    C3                                                                      & Validation serveur (Cloud Functions)   & Contournement des règles client          & Firebase Cloud Functions · runTransaction          \\
+    \rowcolor{bleuTresClair}
+    C4                                                                      & Nonce anti-rejeu (UUID + timestamp)    & Replay attack                            & crypto.randomUUID() · Firestore used\_nonces · TTL \\
+    C5                                                                      & Hash image SHA-256 (vérification IPFS) & Manipulation du score IA                 & WebCrypto SHA-256 · IPFS Pinata Gateway            \\
+    \rowcolor{bleuTresClair}
+    C6                                                                      & Ledger immuable (SHA-256 chaîné)       & Falsification rétroactive                & SHA-256 · Firestore chaînage previousHash          \\
+    C7                                                                      & Chiffrement AES-GCM + PBKDF2           & Vol de clé privée par accès Firestore    & AES-GCM-256 · PBKDF2-SHA256 310k iter.             \\
+    \rowcolor{bleuTresClair}
+    C8                                                                      & Escrow AGC (séquestre atomique)        & Double-dépense                           & Firestore runTransaction · Lock/Release/Cancel     \\
+    C9                                                                      & Audit Trail immuable                   & Effacement de preuves post-compromission & Firestore write-only Rules · serverTimestamp       \\
+    \rowcolor{bleuTresClair}
+    C10                                                                     & Firestore Security Rules               & Accès non autorisé aux données           & Ownership Rules · Admin SDK only                   \\
+  \end{tabularx}
 \end{tcolorbox}
 
 \vspace{0.5cm}
@@ -2911,18 +2801,18 @@ C10 & Firestore Security Rules & Accès non autorisé aux données & Ownership R
 \subsection{C1 — Signatures ECDSA P-256 (Web Crypto API)}
 
 \begin{tcolorbox}[definbox,title={Couche C1 --- Signatures ECDSA P-256}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Composant:} \texttt{CryptoECDAService} (\texttt{crypto-ecdsa.service.ts})
-  \item \textbf{Menace adressée:} Répudiation de transaction --- « je n'ai pas signé ça »
-  \item \textbf{Technologies:} ECDSA P-256 · WebCrypto API · Signature JSON canonique
-\end{itemize}
-\vspace{0.3cm}f
-Toutes les transactions financières (lock AGC, release, transfer) sont signées avec la
-courbe elliptique P-256 via l'API WebCrypto native du navigateur, sans dépendance externe.
-La signature couvre le payload JSON canonique de la transaction --- toute modification
-du contenu invalide la signature. La clé publique est stockée dans Firestore (collection
-\texttt{user\_keys}) et utilisée pour la vérification. La vérification est également
-effectuée côté serveur via Cloud Function (C3).
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Composant:} \texttt{CryptoECDAService} (\texttt{crypto-ecdsa.service.ts})
+    \item \textbf{Menace adressée:} Répudiation de transaction --- « je n'ai pas signé ça »
+    \item \textbf{Technologies:} ECDSA P-256 · WebCrypto API · Signature JSON canonique
+  \end{itemize}
+  \vspace{0.3cm}f
+  Toutes les transactions financières (lock AGC, release, transfer) sont signées avec la
+  courbe elliptique P-256 via l'API WebCrypto native du navigateur, sans dépendance externe.
+  La signature couvre le payload JSON canonique de la transaction --- toute modification
+  du contenu invalide la signature. La clé publique est stockée dans Firestore (collection
+  \texttt{user\_keys}) et utilisée pour la vérification. La vérification est également
+  effectuée côté serveur via Cloud Function (C3).
 \end{tcolorbox}
 
 \vspace{0.3cm}
@@ -2930,19 +2820,19 @@ effectuée côté serveur via Cloud Function (C3).
 \subsection{C2 — IndexedDB non extractable}
 
 \begin{tcolorbox}[definbox,title={Couche C2 --- IndexedDB non extractable}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Composant:} \texttt{SecureKeyService} (\texttt{secure-key.service.ts})
-  \item \textbf{Menace adressée:} Vol de clé par injection XSS (Cross-Site Scripting)
-  \item \textbf{Technologies:} WebCrypto API · IndexedDB Extractable: false · P-256
-\end{itemize}
-\vspace{0.3cm}
-La clé privée ECDSA est générée avec l'option \texttt{extractable: false} via l'API
-WebCrypto du navigateur et stockée directement dans IndexedDB sous forme d'objet
-\texttt{CryptoKey}. Contrairement à \texttt{sessionStorage} (accessible à tout script JS),
-un objet \texttt{CryptoKey} non extractable ne peut jamais être sérialisé ni exporté en
-bytes --- même du code malveillant injecté via XSS peut appeler \texttt{sign()} mais ne
-verra jamais les octets de la clé privée. C'est l'équivalent logiciel d'un Secure Enclave
-ou HSM (Hardware Security Module).
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Composant:} \texttt{SecureKeyService} (\texttt{secure-key.service.ts})
+    \item \textbf{Menace adressée:} Vol de clé par injection XSS (Cross-Site Scripting)
+    \item \textbf{Technologies:} WebCrypto API · IndexedDB Extractable: false · P-256
+  \end{itemize}
+  \vspace{0.3cm}
+  La clé privée ECDSA est générée avec l'option \texttt{extractable: false} via l'API
+  WebCrypto du navigateur et stockée directement dans IndexedDB sous forme d'objet
+  \texttt{CryptoKey}. Contrairement à \texttt{sessionStorage} (accessible à tout script JS),
+  un objet \texttt{CryptoKey} non extractable ne peut jamais être sérialisé ni exporté en
+  bytes --- même du code malveillant injecté via XSS peut appeler \texttt{sign()} mais ne
+  verra jamais les octets de la clé privée. C'est l'équivalent logiciel d'un Secure Enclave
+  ou HSM (Hardware Security Module).
 \end{tcolorbox}
 
 \vspace{0.3cm}
@@ -2950,20 +2840,20 @@ ou HSM (Hardware Security Module).
 \subsection{C3 — Validation serveur (Cloud Functions)}
 
 \begin{tcolorbox}[definbox,title={Couche C3 --- Validation serveur Cloud Functions}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Composant:} \texttt{certify-checkpoint.ts} (\texttt{functions/src/})
-  \item \textbf{Menace adressée:} Contournement des règles client Angular via API directe
-  \item \textbf{Technologies:} Firebase Cloud Functions Node.js · runTransaction
-\end{itemize}
-\vspace{0.3cm}
-Toute la logique métier critique est déplacée dans une Cloud Function Firebase (Node.js),
-hors de portée du navigateur. La fonction \texttt{certifyCheckpoint()} re-vérifie
-indépendamment: l'authentification Firebase, la signature ECDSA via la clé publique
-Firestore, l'appartenance du produit à l'utilisateur, le rate limiting (1 checkpoint/60s)
-et la validité des données. Un utilisateur ne peut pas bypasser Angular en envoyant
-directement des requêtes à l'API Firebase --- sans passer par la Cloud Function, aucune
-certification n'est enregistrée. Toutes les écritures sont atomiques (runTransaction)
-avec audit trail immuable.
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Composant:} \texttt{certify-checkpoint.ts} (\texttt{functions/src/})
+    \item \textbf{Menace adressée:} Contournement des règles client Angular via API directe
+    \item \textbf{Technologies:} Firebase Cloud Functions Node.js · runTransaction
+  \end{itemize}
+  \vspace{0.3cm}
+  Toute la logique métier critique est déplacée dans une Cloud Function Firebase (Node.js),
+  hors de portée du navigateur. La fonction \texttt{certifyCheckpoint()} re-vérifie
+  indépendamment: l'authentification Firebase, la signature ECDSA via la clé publique
+  Firestore, l'appartenance du produit à l'utilisateur, le rate limiting (1 checkpoint/60s)
+  et la validité des données. Un utilisateur ne peut pas bypasser Angular en envoyant
+  directement des requêtes à l'API Firebase --- sans passer par la Cloud Function, aucune
+  certification n'est enregistrée. Toutes les écritures sont atomiques (runTransaction)
+  avec audit trail immuable.
 \end{tcolorbox}
 
 \vspace{0.3cm}
@@ -2971,19 +2861,19 @@ avec audit trail immuable.
 \subsection{C4 — Nonce anti-rejeu (UUID + timestamp)}
 
 \begin{tcolorbox}[definbox,title={Couche C4 --- Nonce anti-rejeu}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Composant:} \texttt{SignedMessageService} (\texttt{signed-message.service.ts})
-  \item \textbf{Menace adressée:} Replay attack --- rejeu d'une signature interceptée
-  \item \textbf{Technologies:} \texttt{crypto.randomUUID()} · Firestore \texttt{used\_nonces} · TTL 10 min
-\end{itemize}
-\vspace{0.3cm}
-Chaque message signé embarque un UUID v4 aléatoire (nonce) généré via \texttt{crypto.randomUUID()}
-ainsi qu'un timestamp Unix en secondes. Côté Cloud Function, le nonce est vérifié dans la
-collection Firestore \texttt{used\_nonces}: s'il existe déjà, la requête est immédiatement
-rejetée (code already-exists). Si c'est la première utilisation, le nonce est marqué comme
-consommé avec un TTL de 10 minutes. Le timestamp limite la fenêtre d'attaque à ±5 minutes
---- une signature capturée perd toute validité après ce délai. Cette combinaison nonce +
-timestamp rend toute attaque par rejeu impossible même sur un réseau intercepté.
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Composant:} \texttt{SignedMessageService} (\texttt{signed-message.service.ts})
+    \item \textbf{Menace adressée:} Replay attack --- rejeu d'une signature interceptée
+    \item \textbf{Technologies:} \texttt{crypto.randomUUID()} · Firestore \texttt{used\_nonces} · TTL 10 min
+  \end{itemize}
+  \vspace{0.3cm}
+  Chaque message signé embarque un UUID v4 aléatoire (nonce) généré via \texttt{crypto.randomUUID()}
+  ainsi qu'un timestamp Unix en secondes. Côté Cloud Function, le nonce est vérifié dans la
+  collection Firestore \texttt{used\_nonces}: s'il existe déjà, la requête est immédiatement
+  rejetée (code already-exists). Si c'est la première utilisation, le nonce est marqué comme
+  consommé avec un TTL de 10 minutes. Le timestamp limite la fenêtre d'attaque à ±5 minutes
+  --- une signature capturée perd toute validité après ce délai. Cette combinaison nonce +
+  timestamp rend toute attaque par rejeu impossible même sur un réseau intercepté.
 \end{tcolorbox}
 
 \vspace{0.3cm}
@@ -2991,20 +2881,20 @@ timestamp rend toute attaque par rejeu impossible même sur un réseau intercept
 \subsection{C5 — Hash image SHA-256 (vérification IPFS serveur)}
 
 \begin{tcolorbox}[definbox,title={Couche C5 --- Hash image SHA-256}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Composant:} \texttt{ImageIntegrityService} (\texttt{image-integrity.service.ts})
-  \item \textbf{Menace adressée:} Manipulation du score TensorFlow.js avant envoi au serveur
-  \item \textbf{Technologies:} WebCrypto SHA-256 · IPFS Pinata Gateway · Node crypto
-\end{itemize}
-\vspace{0.3cm}
-Le scoring de qualité TensorFlow.js s'exécute dans le navigateur et peut être manipulé par
-un utilisateur avancé. La parade consiste à calculer le hash SHA-256 de l'image brute
-\textit{avant} toute analyse IA, le signer et l'envoyer avec la preuve de certification.
-Côté Cloud Function, l'image est re-téléchargée depuis son CID IPFS via le gateway Pinata,
-son hash SHA-256 est recalculé de manière indépendante et comparé au hash soumis. Si les
-deux hash diffèrent, l'image a été modifiée après le calcul initial --- la certification
-est immédiatement rejetée. Le score IA reste un indicateur (marqué \texttt{indicative\_only}
-dans le payload) mais l'intégrité de l'image est prouvée cryptographiquement.
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Composant:} \texttt{ImageIntegrityService} (\texttt{image-integrity.service.ts})
+    \item \textbf{Menace adressée:} Manipulation du score TensorFlow.js avant envoi au serveur
+    \item \textbf{Technologies:} WebCrypto SHA-256 · IPFS Pinata Gateway · Node crypto
+  \end{itemize}
+  \vspace{0.3cm}
+  Le scoring de qualité TensorFlow.js s'exécute dans le navigateur et peut être manipulé par
+  un utilisateur avancé. La parade consiste à calculer le hash SHA-256 de l'image brute
+  \textit{avant} toute analyse IA, le signer et l'envoyer avec la preuve de certification.
+  Côté Cloud Function, l'image est re-téléchargée depuis son CID IPFS via le gateway Pinata,
+  son hash SHA-256 est recalculé de manière indépendante et comparé au hash soumis. Si les
+  deux hash diffèrent, l'image a été modifiée après le calcul initial --- la certification
+  est immédiatement rejetée. Le score IA reste un indicateur (marqué \texttt{indicative\_only}
+  dans le payload) mais l'intégrité de l'image est prouvée cryptographiquement.
 \end{tcolorbox}
 
 \vspace{0.3cm}
@@ -3012,186 +2902,140 @@ dans le payload) mais l'intégrité de l'image est prouvée cryptographiquement.
 \subsection{C6 — Ledger immuable (SHA-256 chaîné)}
 
 \begin{tcolorbox}[definbox,title={Couche C6 --- Ledger immuable SHA-256}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Composant:} \texttt{BlockchainService} (\texttt{ledger-service.ts})
-  \item \textbf{Menace adressée:} Falsification rétroactive des transactions AGC
-  \item \textbf{Technologies:} SHA-256 · Firestore chaînage previousHash
-\end{itemize}
-\vspace{0.3cm}
-Un ledger local inspiré de la blockchain est implémenté dans Firestore pour toutes les
-transactions AGC. Chaque bloc contient le hash SHA-256 du bloc précédent (previousHash),
-sa hauteur (blockHeight), un nonce anti-collision, un timestamp et les données de
-transaction. Son hash est calculé via:
-\[
-\text{hash} = \text{SHA256}(\text{previousHash} + \text{data} + \text{timestamp} + \text{nonce})
-\]
-Cette structure rend toute modification rétroactive détectable: changer un bloc invalide
-tous les blocs suivants. Un service de vérification périodique parcourt l'ensemble du
-ledger et alerte en cas d'incohérence de hash, avec journalisation critique dans l'Audit Trail.
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Composant:} \texttt{BlockchainService} (\texttt{ledger-service.ts})
+    \item \textbf{Menace adressée:} Falsification rétroactive des transactions AGC
+    \item \textbf{Technologies:} SHA-256 · Firestore chaînage previousHash
+  \end{itemize}
+  \vspace{0.3cm}
+  Un ledger local inspiré de la blockchain est implémenté dans Firestore pour toutes les
+  transactions AGC. Chaque bloc contient le hash SHA-256 du bloc précédent (previousHash),
+  sa hauteur (blockHeight), un nonce anti-collision, un timestamp et les données de
+  transaction. Son hash est calculé via:
+  \[
+    \text{hash} = \text{SHA256}(\text{previousHash} + \text{data} + \text{timestamp} + \text{nonce})
+  \]
+  Cette structure rend toute modification rétroactive détectable: changer un bloc
+  invalide tous les blocs suivants. Un service de vérification périodique
+  parcourt l'ensemble du ledger et alerte en cas d'incohérence de hash, avec
+  journalisation critique dans l'Audit Trail.
 \end{tcolorbox}
 
-\vspace{0.3cm}
+\vspace{0.1cm}
 
 \subsection{C7 — Chiffrement AES-GCM + PBKDF2 (310 000 itérations)}
 
 \begin{tcolorbox}[definbox,title={Couche C7 --- Chiffrement AES-GCM + PBKDF2}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Composant:} \texttt{UserKeysService} (\texttt{user-keys.service.ts})
-  \item \textbf{Menace adressée:} Vol de clé privée par accès à Firestore
-  \item \textbf{Technologies:} AES-GCM-256 · PBKDF2-SHA256 310k iter. · OWASP 2024
-\end{itemize}
-\vspace{0.3cm}
-La clé privée ECDSA est chiffrée avec AES-GCM 256 bits avant tout stockage dans Firestore.
-La clé de chiffrement est dérivée du mot de passe utilisateur via PBKDF2 avec 310 000
-itérations SHA-256 et un salt aléatoire de 16 octets --- recommandation OWASP 2024.
-AES-GCM offre un chiffrement authentifié: toute modification du chiffré (même 1 bit) fait
-échouer le déchiffrement (authentication tag invalide). Le format stocké est:
-\[
-\text{base64}(\text{salt}[16] \parallel \text{IV}[12] \parallel \text{ciphertext})
-\]
-Cette couche protège la clé privée chiffrée en transit et en stockage.
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Composant:} \texttt{UserKeysService} (\texttt{user-keys.service.ts})
+    \item \textbf{Menace adressée:} Vol de clé privée par accès à Firestore
+    \item \textbf{Technologies:} AES-GCM-256 · PBKDF2-SHA256 310k iter. · OWASP 2024
+  \end{itemize}
+  \vspace{0.1cm}
+  La clé privée ECDSA est chiffrée avec AES-GCM 256 bits avant tout stockage dans Firestore.
+  La clé de chiffrement est dérivée du mot de passe utilisateur via PBKDF2 avec 310 000
+  itérations SHA-256 et un salt aléatoire de 16 octets --- recommandation OWASP 2024.
+  AES-GCM offre un chiffrement authentifié: toute modification du chiffré (même 1 bit) fait
+  échouer le déchiffrement (authentication tag invalide). Le format stocké est:
+  \[
+    \text{base64}(\text{salt}[16] \parallel \text{IV}[12] \parallel \text{ciphertext})
+  \]
+  Cette couche protège la clé privée chiffrée en transit et en stockage.
 \end{tcolorbox}
 
-\vspace{0.3cm}
+\vspace{0.1cm}
 
 \subsection{C8 — Escrow AGC (séquestre atomique)}
 
 \begin{tcolorbox}[definbox,title={Couche C8 --- Escrow AGC}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Composant:} \texttt{AgcService} · \texttt{SalesService} (\texttt{escrow-lock.ts})
-  \item \textbf{Menace adressée:} Double-dépense · fonds non reversés en cas de litige
-  \item \textbf{Technologies:} Firestore runTransaction · Escrow Lock/Release/Cancel
-\end{itemize}
-\vspace{0.3cm}
-Les AGC (Agricoins) impliqués dans une transaction commerciale sont bloqués dans un
-séquestre Firestore dès la confirmation de commande. Quatre états sont possibles:
-\begin{itemize}
-  \item \textbf{Lock:} signature ECDSA requise, AGC gelés atomiquement
-  \item \textbf{Release:} hash Ledger enregistré, AGC transférés vers le producteur après confirmation livraison
-  \item \textbf{Cancel:} rollback Firestore atomique, AGC remboursés à l'acheteur
-  \item \textbf{Litige:} intervention manuelle avec traces Audit Trail complètes
-\end{itemize}
-Toutes les opérations utilisent \texttt{runTransaction()} Firestore pour garantir
-l'atomicité --- une coupure réseau en cours de transaction ne laisse jamais les fonds
-dans un état incohérent. La couche C4 (nonce) protège les opérations de lock contre les
-rejeux. Délai maximum: 7 jours pour confirmation, 48h pour résolution de litige.
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Composant:} \texttt{AgcService} · \texttt{SalesService} (\texttt{escrow-lock.ts})
+    \item \textbf{Menace adressée:} Double-dépense · fonds non reversés en cas de litige
+    \item \textbf{Technologies:} Firestore runTransaction · Escrow Lock/Release/Cancel
+  \end{itemize}
+  \vspace{0.3cm}
+  Les AGC (Agricoins) impliqués dans une transaction commerciale sont bloqués dans un
+  séquestre Firestore dès la confirmation de commande. Quatre états sont possibles:
+  \begin{itemize}
+    \item \textbf{Lock:} signature ECDSA requise, AGC gelés atomiquement
+    \item \textbf{Release:} hash Ledger enregistré, AGC transférés vers le producteur après confirmation livraison
+    \item \textbf{Cancel:} rollback Firestore atomique, AGC remboursés à l'acheteur
+    \item \textbf{Litige:} intervention manuelle avec traces Audit Trail complètes
+  \end{itemize}
+  Toutes les opérations utilisent \texttt{runTransaction()} Firestore pour garantir
+  l'atomicité --- une coupure réseau en cours de transaction ne laisse jamais les fonds
+  dans un état incohérent. La couche C4 (nonce) protège les opérations de lock contre les
+  rejeux. Délai maximum: 7 jours pour confirmation, 48h pour résolution de litige.
 \end{tcolorbox}
-
-\vspace{0.3cm}
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small,
-  etape/.style={rectangle,rounded corners=4pt,minimum width=4.5cm,minimum height=1cm,
-                text centered,text width=4.2cm,draw=bleuUniv,line width=0.8pt},
-  arr/.style={-{Stealth},bleuUniv,thick}]
-
-  \node[etape,fill=bleuUniv,text=white] (E1) at (0,5.5)
-    {1. Acheteur passe commande};
-  \node[etape,fill=bleuMoyen,text=white] (E2) at (0,4.2)
-    {2. Lock AGC (séquestre)};
-  \node[etape,fill=bleuTresClair] (E3) at (0,2.9)
-    {3. Livraison en cours};
-  \node[etape,fill=bleuTresClair] (E4a) at (-3,1.6)
-    {4a. Livraison confirmée};
-  \node[etape,fill=bleuTresClair] (E4b) at (3,1.6)
-    {4b. Litige déclaré};
-  \node[etape,fill=bleuPale] (E5a) at (-3,0.3)
-    {Release AGC $\rightarrow$ Producteur};
-  \node[etape,fill=bleuPale] (E5b) at (3,0.3)
-    {Rollback $\rightarrow$ Acheteur};
-  \node[etape,fill=bleuUniv!20] (E6) at (0,-1.0)
-    {5. DW mis à jour};
-
-  \draw[arr] (E1.south)--(E2.north);
-  \draw[arr] (E2.south)--(E3.north);
-  \draw[arr] (E3.south west)--(E4a.north);
-  \draw[arr] (E3.south east)--(E4b.north);
-  \draw[arr] (E4a.south)--(E5a.north);
-  \draw[arr] (E4b.south)--(E5b.north);
-  \draw[arr] (E5a.south east)--(E6.north west);
-  \draw[arr] (E5b.south west)--(E6.north east);
-
-  % Escrow box
-  \draw[bleuMoyen,dashed,rounded corners] (-2.7,1.3) rectangle (2.7,4.6);
-  \node[font=\tiny\itshape,bleuMoyen] at (0,4.45) {Zone Séquestre};
-\end{tikzpicture}
-\caption{Cycle de vie d'un paiement AGC avec escrow}
-\label{fig:agc_escrow}
-\end{figure}
 
 \vspace{0.3cm}
 
 \subsection{C9 — Audit Trail immuable (journalisation write-only)}
 
 \begin{tcolorbox}[definbox,title={Couche C9 --- Audit Trail immuable}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Composant:} \texttt{AuditTrailService} (\texttt{audit-trail.service.ts})
-  \item \textbf{Menace adressée:} Effacement de preuves post-compromission
-  \item \textbf{Technologies:} Firestore write-only Rules · serverTimestamp · Admin SDK
-\end{itemize}
-\vspace{0.3cm}
-Chaque action sensible (génération de clés, lock/release AGC, certification checkpoint,
-signature invalide, tentative de double-dépense, falsification détectée) est enregistrée
-dans la collection Firestore \texttt{audit\_logs} avec \texttt{serverTimestamp()} côté
-serveur. Les Security Rules Firestore interdisent formellement toute modification ou
-suppression:
-\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,language=Typescript]
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Composant:} \texttt{AuditTrailService} (\texttt{audit-trail.service.ts})
+    \item \textbf{Menace adressée:} Effacement de preuves post-compromission
+    \item \textbf{Technologies:} Firestore write-only Rules · serverTimestamp · Admin SDK
+  \end{itemize}
+  \vspace{0.3cm}
+  Chaque action sensible (génération de clés, lock/release AGC, certification checkpoint,
+  signature invalide, tentative de double-dépense, falsification détectée) est enregistrée
+  dans la collection Firestore \texttt{audit\_logs} avec \texttt{serverTimestamp()} côté
+  serveur. Les Security Rules Firestore interdisent formellement toute modification ou
+  suppression:
+  \begin{lstlisting}[basicstyle=\footnotesize\ttfamily,language=Typescript]
 match /audit_logs/{logId} {
   allow create: if request.auth != null;
   allow read:   if request.auth.token.admin == true;
   allow update, delete: if false; // JAMAIS modifiable
 }
 \end{lstlisting}
-Même un administrateur ne peut pas supprimer un log. Les entrées critiques incluent le
-\texttt{blockHeight} et \texttt{blockHash} du ledger pour une traçabilité croisée.
+  Même un administrateur ne peut pas supprimer un log. Les entrées critiques
+  incluent le \texttt{blockHeight} et \texttt{blockHash} du ledger pour une
+  traçabilité croisée.
 \end{tcolorbox}
-
 
 \vspace{0.3cm}
 
 \subsection{C10 — Firestore Security Rules (ownership + rate limiting)}
 
 \begin{tcolorbox}[definbox,title={Couche C10 --- Firestore Security Rules}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Composant:} \texttt{firestore.rules} · Cloud Functions middleware
-  \item \textbf{Menace adressée:} Accès non autorisé aux données d'autres utilisateurs
-  \item \textbf{Technologies:} Firestore Security Rules · Ownership · Admin SDK only
-\end{itemize}
-\vspace{0.3cm}
-Les règles Firestore constituent le dernier rempart de sécurité côté serveur. Chaque
-collection est protégée par des règles d'ownership: un utilisateur ne peut lire ou modifier
-que ses propres documents (\texttt{request.auth.uid == resource.data.userId}). Les produits
-et certifications vérifient l'appartenance au producteur. Les AGC et transactions
-financières n'autorisent l'écriture que via les Cloud Functions (Admin SDK), jamais
-directement depuis le client. La couche C3 complète ces règles avec un rate limiting
-applicatif (1 checkpoint/60s) et une validation métier approfondie impossible à
-implémenter dans les Security Rules seules. Les règles sont versionées et auditées à
-chaque déploiement.
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Composant:} \texttt{firestore.rules} · Cloud Functions middleware
+    \item \textbf{Menace adressée:} Accès non autorisé aux données d'autres utilisateurs
+    \item \textbf{Technologies:} Firestore Security Rules · Ownership · Admin SDK only
+  \end{itemize}
+  \vspace{0.3cm}
+  Les règles Firestore constituent le dernier rempart de sécurité côté serveur. Chaque
+  collection est protégée par des règles d'ownership: un utilisateur ne peut lire ou modifier
+  que ses propres documents (\texttt{request.auth.uid == resource.data.userId}). Les produits
+  et certifications vérifient l'appartenance au producteur. Les AGC et transactions
+  financières n'autorisent l'écriture que via les Cloud Functions (Admin SDK), jamais
+  directement depuis le client. La couche C3 complète ces règles avec un rate limiting
+  applicatif (1 checkpoint/60s) et une validation métier approfondie impossible à
+  implémenter dans les Security Rules seules. Les règles sont versionées et auditées à
+  chaque déploiement.
 \end{tcolorbox}
 
 \vspace{0.3cm}
 
-
-
 \begin{figure}[H]
-\centering
-\begin{minipage}{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{images/security-rules.png}
-\caption{Extrait des règles de sécurité Firestore}
-\label{fig:security-rules}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{images/security-rules.png}
-\caption{Extrait des règles de sécurité Firestore}
-\label{fig:security-rules}
-\end{minipage}
+  \centering
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/security-rules.png}
+    \caption{Extrait des règles de sécurité Firestore}
+    \label{fig:security-rules}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/security-rules.png}
+    \caption{Extrait des règles de sécurité Firestore}
+    \label{fig:security-rules}
+  \end{minipage}
 \end{figure}
-
-
 
 \vspace{0.1cm}
 
@@ -3202,37 +3046,52 @@ Les dix couches forment un système défensif en profondeur (Defence in Depth). 
 couche n'est suffisante seule, mais leur combinaison garantit qu'un attaquant qui
 contourne une couche se heurte immédiatement à la suivante.
 
-\vspace{0.3cm}
+\vspace{0.1cm}
+\renewcommand{\arraystretch}{0.75} % ↓ hauteur des lignes
 
-\begin{tcolorbox}[infobox,title={Scénarios d'attaque et couches activées}]
-\begin{tabularx}{\textwidth}{
-  >{\bfseries\small\color{bleuUniv}}p{4.5cm}
-  >{\small}X}
-\rowcolor{bleuUniv}
-\multicolumn{1}{>{\bfseries\color{white}\small}p{4.5cm}}{Scénario d'attaque} &
-\multicolumn{1}{>{\bfseries\color{white}\small}X}{Couches qui s'activent} \\
-\textbf{XSS --- Injection JavaScript} & C2 (IndexedDB non extractable) + C1 (signature requise) + C3 (vérif. serveur) \\
-\rowcolor{bleuTresClair}
-\textbf{Replay attack} & C4 (nonce UUID + timestamp) + C3 (vérif. Firestore used\_nonces) \\
-\textbf{Manipulation image IA} & C5 (hash SHA-256 IPFS) + C3 (recalcul serveur indépendant) \\
-\rowcolor{bleuTresClair}
-\textbf{Double-dépense AGC} & C8 (escrow atomique) + C6 (ledger chaîné) + C9 (audit trail) \\
-\textbf{Accès API directe (bypass Angular)} & C3 (Cloud Functions) + C10 (Firestore Rules) + C1 (ECDSA obligatoire) \\
-\rowcolor{bleuTresClair}
-\textbf{Falsification de transaction} & C6 (ledger SHA-256 chaîné) + C1 (signature) + C9 (audit) + C3 (vérif. serveur) \\
-\textbf{Effacement de preuves} & C9 (write-only Firestore Rules: allow delete: if false) \\
-\rowcolor{bleuTresClair}
-\textbf{Vol de clé Firestore} & C7 (AES-GCM chiffrement) + C2 (clé privée jamais stockée en clair) \\
-\end{tabularx}
+\begin{tcolorbox}[
+    infobox,
+    title={Scénarios d'attaque et couches activées},
+    boxsep=2pt,
+    left=2pt,right=2pt,top=2pt,bottom=2pt
+  ]
+
+  {\scriptsize % ↓ taille du texte
+
+    \begin{tabularx}{\textwidth}{
+      >{\bfseries\color{bleuUniv}}p{4.5cm}
+      X
+      }
+
+      \rowcolor{bleuUniv}
+      \multicolumn{1}{>{\bfseries\color{white}}p{4.5cm}}{Scénario d'attaque} &
+      \multicolumn{1}{>{\bfseries\color{white}}X}{Couches qui s'activent}                        \\
+
+      \textbf{XSS --- Injection JavaScript}                                  & C2 + C1 + C3      \\
+      \rowcolor{bleuTresClair}
+      \textbf{Replay attack}                                                 & C4 + C3           \\
+      \textbf{Manipulation image IA}                                         & C5 + C3           \\
+      \rowcolor{bleuTresClair}
+      \textbf{Double-dépense AGC}                                            & C8 + C6 + C9      \\
+      \textbf{Accès API directe}                                             & C3 + C10 + C1     \\
+      \rowcolor{bleuTresClair}
+      \textbf{Falsification de transaction}                                  & C6 + C1 + C9 + C3 \\
+      \textbf{Effacement de preuves}                                         & C9                \\
+      \rowcolor{bleuTresClair}
+      \textbf{Vol de clé Firestore}                                          & C7 + C2           \\
+
+    \end{tabularx}
+
+  }
+
 \end{tcolorbox}
-
 \vspace{0.5cm}
 
 \section{Tests de sécurité automatisés}
 
 \noindent
 Pour valider l'implémentation des dix couches de sécurité, un \textbf{tableau de bord de test}
-a été développé. Il exécute automatiquement 25 tests couvrant l'ensemble des mécanismes
+a été développé. Il exécute automatiquement 22 tests couvrant l'ensemble des mécanismes
 cryptographiques et métier de la plateforme.
 
 \subsection{Architecture du tableau de bord}
@@ -3243,141 +3102,156 @@ qui orchestre l'exécution séquentielle des tests. Chaque test est isolé et pr
 résultats détaillés avec métriques de performance.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{images/secure-test-dashboard.png}
-\caption{Tableau de bord des tests de sécurité --- Vue d'ensemble}
-\label{fig:security-dashboard}
+  \centering
+  \includegraphics[width=0.95\textwidth]{images/secure-test-dashboard.png}
+  \caption{Tableau de bord des tests de sécurité --- Vue d'ensemble}
+  \label{fig:security-dashboard}
 \end{figure}
 
 \subsection{Jeu de tests implémentés}
 
 \noindent
-Les 25 tests sont organisés en 5 catégories correspondant aux couches de sécurité:
+Les 22 tests sont organisés en 5 catégories correspondant aux couches de sécurité:
 
 \begin{tcolorbox}[infobox,title={Tests des signatures ECDSA (Couche C1)}]
-\begin{itemize}[itemsep=3pt]
-  \item \textbf{Génération paire P-256:} Création clé privée/publique avec WebCrypto
-  \item \textbf{Signature transaction:} Génération de signature ECDSA
-  \item \textbf{Vérification valide:} Validation d'une signature authentique
-  \item \textbf{Rejet falsification:} Détection de modification de transaction
-  \item \textbf{Audit complet:} Vérification de toutes les signatures du ledger
-\end{itemize}
+  \begin{itemize}[itemsep=3pt]
+    \item \textbf{Génération paire P-256:} Création clé privée/publique avec WebCrypto
+    \item \textbf{Signature transaction:} Génération de signature ECDSA
+    \item \textbf{Vérification valide:} Validation d'une signature authentique
+    \item \textbf{Rejet falsification:} Détection de modification de transaction
+    \item \textbf{Audit complet:} Vérification de toutes les signatures du ledger
+  \end{itemize}
 \end{tcolorbox}
 
 \begin{tcolorbox}[infobox,title={Tests du stockage IndexedDB (Couche C2)}]
-\begin{itemize}[itemsep=3pt]
-  \item \textbf{Génération clé non extractable:} Vérification extractable: false
-  \item \textbf{Stockage IndexedDB:} Persistance des clés entre sessions
-  \item \textbf{Restaurationsession:} Récupération clé après fermeture navigateur
-\end{itemize}
+  \begin{itemize}[itemsep=3pt]
+    \item \textbf{Génération clé non extractable:} Vérification extractable: false
+    \item \textbf{Stockage IndexedDB:} Persistance des clés entre sessions
+    \item \textbf{Restaurationsession:} Récupération clé après fermeture navigateur
+  \end{itemize}
 \end{tcolorbox}
 
 \begin{tcolorbox}[infobox,title={Tests du Ledger immuable (Couche C6)}]
-\begin{itemize}[itemsep=3pt]
-  \item \textbf{Hash SHA-256:} Vérification du déterminisme et de l'effet avalanche
-  \item \textbf{Chaînage previousHash:} Validation de la liaison cryptographique
-  \item \textbf{Intégrité complète:} Parcours et validation de l'ensemble du ledger
-  \item \textbf{Détection falsification:} Modification d'un bloc et vérification d'invalidation
-\end{itemize}
+  \begin{itemize}[itemsep=3pt]
+    \item \textbf{Hash SHA-256:} Vérification du déterminisme et de l'effet avalanche
+    \item \textbf{Chaînage previousHash:} Validation de la liaison cryptographique
+    \item \textbf{Intégrité complète:} Parcours et validation de l'ensemble du ledger
+    \item \textbf{Détection falsification:} Modification d'un bloc et vérification d'invalidation
+  \end{itemize}
 \end{tcolorbox}
 
 \begin{tcolorbox}[infobox,title={Tests du séquestre AGC (Couche C8)}]
-\begin{itemize}[itemsep=3pt]
-  \item \textbf{Lecture solde:} Consultation des AGC disponibles et bloqués
-  \item \textbf{Blocage (lock):} Gel atomique des fonds en Firestore
-  \item \textbf{Vérification statut:} Confirmation de l'état "locked"
-  \item \textbf{Annulation (cancel):} Remboursement atomique des fonds
-  \item \textbf{Double-dépense:} Tentative de blocage supérieur au solde
-\end{itemize}
+  \begin{itemize}[itemsep=3pt]
+    \item \textbf{Lecture solde:} Consultation des AGC disponibles et bloqués
+    \item \textbf{Blocage (lock):} Gel atomique des fonds en Firestore
+    \item \textbf{Vérification statut:} Confirmation de l'état "locked"
+    \item \textbf{Annulation (cancel):} Remboursement atomique des fonds
+    \item \textbf{Double-dépense:} Tentative de blocage supérieur au solde
+  \end{itemize}
 \end{tcolorbox}
 
 \begin{tcolorbox}[infobox,title={Tests du chiffrement AES-GCM (Couche C7)}]
-\begin{itemize}[itemsep=3pt]
-  \item \textbf{Chiffrement:} AES-GCM-256 avec PBKDF2 (310k itérations)
-  \item \textbf{Déchiffrement correct:} Récupération exacte des données
-  \item \textbf{Rejet mauvais mot de passe:} Authentication tag invalide
-  \item \textbf{Déverrouillage session:} Restauration clé depuis Firestore
-\end{itemize}
+  \begin{itemize}[itemsep=3pt]
+    \item \textbf{Chiffrement:} AES-GCM-256 avec PBKDF2 (310k itérations)
+    \item \textbf{Déchiffrement correct:} Récupération exacte des données
+    \item \textbf{Rejet mauvais mot de passe:} Authentication tag invalide
+    \item \textbf{Déverrouillage session:} Restauration clé depuis Firestore
+  \end{itemize}
 \end{tcolorbox}
 
 \begin{tcolorbox}[infobox,title={Tests de l'Audit Trail (Couche C9)}]
-\begin{itemize}[itemsep=3pt]
-  \item \textbf{Écriture événement:} Création de log avec serverTimestamp()
-  \item \textbf{Lecture logs:} Filtrage par utilisateur
-  \item \textbf{Événement critique:} Détection de falsification
-  \item \textbf{Tracé achat AGC:} Vérification de la journalisation
-\end{itemize}
+  \begin{itemize}[itemsep=3pt]
+    \item \textbf{Écriture événement:} Création de log avec serverTimestamp()
+    \item \textbf{Lecture logs:} Filtrage par utilisateur
+    \item \textbf{Événement critique:} Détection de falsification
+    \item \textbf{Tracé achat AGC:} Vérification de la journalisation
+  \end{itemize}
 \end{tcolorbox}
 
+\vspace{5cm}
 \subsection{Résultats des tests}
 
 \noindent
 L'exécution complète des tests produit les résultats suivants:
 
 \begin{figure}[H]
-\centering
-\begin{minipage}{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{images/test1.png}
-\caption{Résultats des tests de sécurité sur la couche Ledger}
-\label{fig:security-test-results-1}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{images/test2.png}
-\caption{Résultats détaillés des tests sur la signature ECDSA}
-\label{fig:security-test-results-2}
-\end{minipage}
-\end{figure}
-\begin{figure}[H]
-\centering
-\begin{minipage}{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{images/test3.png}
-\caption{Résultats des tests de sécurité sur le Chiffrement AEES}
-\label{fig:security-test-results-3}
-\end{minipage}
-\hfill
-\begin{minipage}{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{images/test_result.png}
-\caption{Résultats des tests de sécurité synthétisés}
-\label{fig:security-test-results}
-\end{minipage}
+  \centering
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/test1.png}
+    \caption{Résultats des tests de sécurité sur la couche Ledger}
+    \label{fig:security-test-results-1}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/test2.png}
+    \caption{Résultats détaillés des tests sur la signature ECDSA}
+    \label{fig:security-test-results-2}
+  \end{minipage}
 \end{figure}
 
+\vspace{0.1cm}
+\begin{figure}[H]
+  \centering
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/test3.png}
+    \caption{Résultats des tests de sécurité sur le Chiffrement AES}
+    \label{fig:security-test-results-3}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/test_result.png}
+    \caption{Résultats des tests de sécurité synthétisés}
+    \label{fig:security-test-results}
+  \end{minipage}
+\end{figure}
 
 \noindent
 Le tableau ci-dessous synthétise les résultats par catégorie:
 
-\vspace{0.3cm}
-\renewcommand{\arraystretch}{1.5}
-\begin{tcolorbox}[tablebox,title={Synthèse des tests de sécurité}]
-\begin{tabularx}{\textwidth}{
-  >{\bfseries\small\color{bleuUniv}}p{4cm}
-  >{\small\bfseries}p{2cm}
-  >{\small\bfseries}p{2cm}
-  >{\small\bfseries}p{2cm}
-  >{\small}X}
-\rowcolor{bleuUniv}
-\multicolumn{1}{>{\bfseries\color{white}\small}p{4cm}}{Catégorie} &
-\multicolumn{1}{>{\bfseries\color{white}\small}p{2cm}}{Tests} &
-\multicolumn{1}{>{\bfseries\color{white}\small}p{2cm}}{Pass} &
-\multicolumn{1}{>{\bfseries\color{white}\small}p{2cm}}{Fail} &
-\multicolumn{1}{>{\bfseries\color{white}\small}X}{Statut} \\
-Signatures ECDSA (C1) & 5 & 5 & 0 & \textcolor{green}{\checkmark Validé} \\
-\rowcolor{bleuTresClair}
-Stockage IndexedDB (C2) & 3 & 3 & 0 & \textcolor{green}{\checkmark Validé} \\
-Ledger immuable (C6) & 4 & 4 & 0 & \textcolor{green}{\checkmark Validé} \\
-\rowcolor{bleuTresClair}
-Séquestre AGC (C8) & 5 & 5 & 0 & \textcolor{green}{\checkmark Validé} \\
-Chiffrement AES-GCM (C7) & 4 & 4 & 0 & \textcolor{green}{\checkmark Validé} \\
-\rowcolor{bleuTresClair}
-Audit Trail (C9) & 4 & 4 & 0 & \textcolor{green}{\checkmark Validé} \\
-\hline
-\textbf{Total} & \textbf{25} & \textbf{25} & \textbf{0} & \textbf{100\% succès} \\
-\end{tabularx}
+\vspace{0.1cm}
+\renewcommand{\arraystretch}{0.75} % ↓ réduit hauteur des lignes
+
+\begin{tcolorbox}[tablebox,
+    title={Synthèse des tests de sécurité},
+    boxsep=2pt,      % ↓ espace interne
+    left=2pt,right=2pt,top=2pt,bottom=2pt
+  ]
+
+  {\scriptsize % ↓ réduit taille globale
+
+    \begin{tabularx}{\textwidth}{
+      >{\bfseries\color{bleuUniv}}p{4cm}
+      >{\bfseries}p{2cm}
+      >{\bfseries}p{2cm}
+      >{\bfseries}p{2cm}
+      X}
+
+      \rowcolor{bleuUniv}
+      \multicolumn{1}{>{\bfseries\color{white}}p{4cm}}{Catégorie} &
+      \multicolumn{1}{>{\bfseries\color{white}}p{2cm}}{Tests}     &
+      \multicolumn{1}{>{\bfseries\color{white}}p{2cm}}{Pass}      &
+      \multicolumn{1}{>{\bfseries\color{white}}p{2cm}}{Fail}      &
+      \multicolumn{1}{>{\bfseries\color{white}}X}{Statut}                                                                                                                   \\
+
+      Signatures ECDSA                                            & 5           & 5           & 0                                    & \textcolor{green}{\checkmark Validé} \\
+      \rowcolor{bleuTresClair} Stockage IndexedDB                 & 3           & 3           & 0                                    &
+      \textcolor{green}{\checkmark Validé}                                                                                                                                  \\ Ledger immuable & 4 & 4 & 0 &
+      \textcolor{green}{\checkmark Validé}                                                                                                                                  \\ \rowcolor{bleuTresClair} Séquestre AGC
+                                                                  & 5           & 5           & 0                                    & \textcolor{green}{\checkmark Validé} \\ AES-GCM & 4 & 4 & 0 &
+      \textcolor{green}{\checkmark Validé}                                                                                                                                  \\ \rowcolor{bleuTresClair} Audit Trail &
+      4                                                           & 4           & 0           & \textcolor{green}{\checkmark Validé}                                        \\
+
+      \hline
+      \textbf{Total}                                              & \textbf{22} & \textbf{22} & \textbf{0}                           & \textbf{100\% succès}                \\
+
+    \end{tabularx}
+
+  }
+
 \end{tcolorbox}
 
 \subsection{Extraits de code du tableau de bord}
@@ -3387,7 +3261,7 @@ Le composant de test implémente des fonctions de validation spécifiques pour c
 mécanisme de sécurité:
 
 \begin{tcolorbox}[infobox,title={Extrait — Test d'intégrité du ledger}]
-\begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Typescript]
+  \begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Typescript]
 case 'tamper_detect': {
 // Modifier le dernier bloc puis verifier la detection
   const lastDoc = snap.docs[0];
@@ -3412,7 +3286,7 @@ case 'tamper_detect': {
 \end{tcolorbox}
 
 \begin{tcolorbox}[infobox,title={Extrait — Test de signature ECDSA avec falsification}]
-\begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Typescript]
+  \begin{lstlisting}[basicstyle=\tiny\ttfamily,language=Typescript]
 case 'verify_tamper': {
   const tx = await this.agcService.createSignedTransaction(...);
 
@@ -3430,43 +3304,52 @@ case 'verify_tamper': {
 \end{tcolorbox}
 
 \vspace{0.2cm}
-
 \section{Bonnes pratiques de sécurité implémentées}
 
-\begin{tcolorbox}[infobox,title={Bonnes pratiques de sécurité}]
-\begin{itemize}[itemsep=4pt]
-  \item \textbf{Principes OWASP Top 10:} Respect des recommandations, validation côté serveur
-  \item \textbf{Moindre privilège:} Règles Firestore restrictives par rôle
-  \item \textbf{Défense en profondeur:} Chaque couche protège contre des menaces spécifiques
-  \item \textbf{Sécurité par conception:} Intégrée dès la phase d'architecture
-  \item \textbf{Journalisation centralisée:} Tous les événements critiques tracés
-  \item \textbf{Cryptographie moderne:} ECDSA P-256, AES-GCM, PBKDF2-310k, SHA-256
-  \item \textbf{Non-répudiation:} Signatures numériques sur toutes les transactions financières
-  \item \textbf{Atomicité:} Transactions Firestore pour les opérations critiques
-\end{itemize}
-\end{tcolorbox}
+\begin{tcolorbox}[
+    infobox,
+    title={Bonnes pratiques de sécurité},
+    boxsep=2pt,
+    left=2pt,right=2pt,top=2pt,bottom=2pt
+  ]
 
+  {\scriptsize % ↓ réduit taille
+
+    \begin{itemize}[itemsep=1pt, topsep=2pt, parsep=0pt]
+      \item \textbf{Principes OWASP Top 10:} Respect des recommandations, validation côté serveur
+      \item \textbf{Moindre privilège:} Règles Firestore restrictives par rôle
+      \item \textbf{Défense en profondeur:} Chaque couche protège contre des menaces spécifiques
+      \item \textbf{Sécurité par conception:} Intégrée dès la phase d'architecture
+      \item \textbf{Journalisation centralisée:} Tous les événements critiques tracés
+      \item \textbf{Cryptographie moderne:} ECDSA P-256, AES-GCM, PBKDF2-310k, SHA-256
+      \item \textbf{Non-répudiation:} Signatures numériques sur toutes les transactions financières
+      \item \textbf{Atomicité:} Transactions Firestore pour les opérations critiques
+    \end{itemize}
+
+  }
+
+\end{tcolorbox}
 \vspace{0.5cm}
 
 \section{Synthèse de l'axe Sécurité}
 
 \begin{tcolorbox}[synthbox]
-\textbf{Synthèse de l'axe Sécurité --- Défense en profondeur}\\[6pt]
-Les dix couches de sécurité de Jokko Agro forment un système défensif complet:
-\begin{itemize}[leftmargin=*,itemsep=2pt]
-  \item \textbf{Couches 1-2:} ECDSA P-256 + IndexedDB non extractable --- Non-répudiation et protection des clés
-  \item \textbf{Couches 3-4:} Validation serveur + Nonce anti-rejeu --- Prévention contournement et replay attacks
-  \item \textbf{Couches 5-6:} Hash image SHA-256 + Ledger immuable --- Intégrité des preuves et historique
-  \item \textbf{Couches 7-8:} Chiffrement AES + Escrow atomique --- Confidentialité et protection des paiements
-  \item \textbf{Couches 9-10:} Audit Trail immuable + Firestore Rules --- Traçabilité et contrôle d'accès
-\end{itemize}
-Ensemble, ces mécanismes font de Jokko Agro un système résistant à la fraude, aux manipulations
-et aux attaques extérieures, garantissant la confiance de tous les acteurs de l'écosystème agricole.
+  \textbf{Synthèse de l'axe Sécurité --- Défense en profondeur}\\[6pt]
+  Les dix couches de sécurité de Jokko Agro forment un système défensif complet:
+  \begin{itemize}[leftmargin=*,itemsep=2pt]
+    \item \textbf{Couches 1-2:} ECDSA P-256 + IndexedDB non extractable --- Non-répudiation et protection des clés
+    \item \textbf{Couches 3-4:} Validation serveur + Nonce anti-rejeu --- Prévention contournement et replay attacks
+    \item \textbf{Couches 5-6:} Hash image SHA-256 + Ledger immuable --- Intégrité des preuves et historique
+    \item \textbf{Couches 7-8:} Chiffrement AES + Escrow atomique --- Confidentialité et protection des paiements
+    \item \textbf{Couches 9-10:} Audit Trail immuable + Firestore Rules --- Traçabilité et contrôle d'accès
+  \end{itemize}
+  Ensemble, ces mécanismes font de Jokko Agro un système résistant à la fraude, aux manipulations
+  et aux attaques extérieures, garantissant la confiance de tous les acteurs de l'écosystème agricole.
 \end{tcolorbox}
 
 \vspace{0.5cm}
 \begin{flushright}
-\textit{« La sécurité n'est pas un produit, c'est un processus continu d'amélioration. »}
+  \textit{« La sécurité n'est pas un produit, c'est un processus continu d'amélioration. »}
 \end{flushright}
 \chapter*{Conclusion Générale}
 \addcontentsline{toc}{chapter}{Conclusion Générale}
@@ -3487,16 +3370,16 @@ Le bilan du travail accompli peut se résumer ainsi:
 \vspace{0.3cm}
 
 \begin{tcolorbox}[infobox,title={Réalisations principales}]
-\begin{itemize}[itemsep=5pt]
-  \item \textbf{Axe IA:} chatbot agricole bilingue français/Wolof basé sur Claude API,
-        avec reconnaissance vocale, analyse d'images anti-fraude et validation GPS.
-  \item \textbf{Axe Blockchain:} smart contract \texttt{CertificationRegistry} déployé
-        sur Ethereum Sepolia, avec 7 checkpoints de certification et système de badges.
-  \item \textbf{Axe Agricoins:} monnaie numérique AGC (1 AGC = 100 FCFA), paiement
-        hybride avec escrow sécurisé, marketplace et datawarehouse agricole.
-  \item \textbf{Axe Sécurité:} dix couches cryptographiques (Ledger SHA-256, ECDSA
-        P-256, AES-GCM, escrow, atomicité, Audit Trail, etc.) garantissant l'intégrité totale.
-\end{itemize}
+  \begin{itemize}[itemsep=5pt]
+    \item \textbf{Axe IA:} chatbot agricole bilingue français/Wolof basé sur Claude API,
+          avec reconnaissance vocale, analyse d'images anti-fraude et validation GPS.
+    \item \textbf{Axe Blockchain:} smart contract \texttt{CertificationRegistry} déployé
+          sur Ethereum Sepolia, avec 7 checkpoints de certification et système de badges.
+    \item \textbf{Axe Agricoins:} monnaie numérique AGC (1 AGC = 100 FCFA), paiement
+          hybride avec escrow sécurisé, marketplace et datawarehouse agricole.
+    \item \textbf{Axe Sécurité:} dix couches cryptographiques (Ledger SHA-256, ECDSA
+          P-256, AES-GCM, escrow, atomicité, Audit Trail, etc.) garantissant l'intégrité totale.
+  \end{itemize}
 \end{tcolorbox}
 
 \vspace{0.4cm}
@@ -3524,11 +3407,11 @@ production et la confiance, entre le terrain et la technologie.
 
 \begin{comment}
 \begin{tcolorbox}[synthbox]
-\begin{center}
-\Large\bfseries
-Jokko Agro --- Connecter l'agriculture sénégalaise\\
-à l'ère numérique
-\end{center}
+  \begin{center}
+    \Large\bfseries
+    Jokko Agro --- Connecter l'agriculture sénégalaise\\
+    à l'ère numérique
+  \end{center}
 \end{tcolorbox}
 \end{comment}
 
@@ -3549,23 +3432,22 @@ Jokko Agro --- Connecter l'agriculture sénégalaise\\
   \item Nakamoto, S. (2008). \textit{Bitcoin: A Peer-to-Peer Electronic Cash System}.
         White paper. \url{https://bitcoin.org/bitcoin.pdf}
   \item Buterin, V. (2014). \textit{Ethereum: A Next-Generation Smart Contract and
-        Decentralized Application Platform}. Ethereum Foundation.
+          Decentralized Application Platform}. Ethereum Foundation.
   \item Anthropic (2024). \textit{Claude API Documentation}.
         \url{https://docs.anthropic.com}
   \item Google Firebase (2024). \textit{Firestore Documentation}.
         \url{https://firebase.google.com/docs/firestore}
-  \item IPFS Project (2023). \textit{IPFS Documentation}.
-        \url{https://docs.ipfs.io}
+  \item IPFS Project (2023). \textit{IPFS Documentation}. \url{https://docs.ipfs.io}
   \item Pinata Cloud (2024). \textit{Pinata API Documentation}.
         \url{https://docs.pinata.cloud}
   \item Angular Team (2024). \textit{Angular 17 Documentation}.
         \url{https://angular.dev}
   \item TensorFlow.js Team (2023). \textit{TensorFlow.js Documentation}.
         \url{https://www.tensorflow.org/js}
-  \item ANSD (2023). \textit{Enquête nationale sur l'agriculture sénégalaise}.
-        Agence Nationale de la Statistique et de la Démographie, Dakar.
-  \item GSMA (2024). \textit{State of Mobile Money in Sub-Saharan Africa}.
-        GSMA Intelligence Report.
+  \item ANSD (2023). \textit{Enquête nationale sur l'agriculture sénégalaise}. Agence
+        Nationale de la Statistique et de la Démographie, Dakar.
+  \item GSMA (2024). \textit{State of Mobile Money in Sub-Saharan Africa}. GSMA
+        Intelligence Report.
 \end{enumerate}
 % =========================================================
 %  ANNEXES

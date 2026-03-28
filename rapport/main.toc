@@ -31,7 +31,7 @@
 \contentsline {subsection}{\numberline {3.4.2}Claude API (Anthropic) — Chatbot agricole multilingue}{14}{subsection.3.4.2}%
 \contentsline {subsection}{\numberline {3.4.3}Claude Vision — Analyse d'images de cultures}{15}{subsection.3.4.3}%
 \contentsline {subsection}{\numberline {3.4.4}Web Speech API — Reconnaissance vocale pour les langues locales}{16}{subsection.3.4.4}%
-\contentsline {subsection}{\numberline {3.4.5}Schéma d'interaction des services IA}{17}{subsection.3.4.5}%
+\contentsline {subsection}{\numberline {3.4.5}Schéma d'interaction des services IA}{18}{subsection.3.4.5}%
 \contentsline {subsection}{\numberline {3.4.6}Synthèse des technologies IA}{18}{subsection.3.4.6}%
 \contentsline {section}{\numberline {3.5}Blockchain: Ethereum \& Smart Contracts}{18}{section.3.5}%
 \contentsline {subsection}{\numberline {3.5.1}Flux de certification blockchain}{19}{subsection.3.5.1}%
@@ -50,52 +50,52 @@
 \contentsline {subsection}{\numberline {4.4.3}Séquence AGC et Paiement}{26}{subsection.4.4.3}%
 \contentsline {section}{\numberline {4.5}Flux de données}{26}{section.4.5}%
 \contentsline {subsection}{\numberline {4.5.1}Schéma des flux de données}{26}{subsection.4.5.1}%
-\contentsline {section}{\numberline {4.6}Base de données Firestore}{27}{section.4.6}%
+\contentsline {section}{\numberline {4.6}Base de données Firestore}{26}{section.4.6}%
 \contentsline {subsection}{\numberline {4.6.1}Indexation et requêtes}{27}{subsection.4.6.1}%
 \contentsline {section}{\numberline {4.7}Scalabilité et déploiement}{27}{section.4.7}%
 \contentsline {section}{\numberline {4.8}Sécurité et authentification}{28}{section.4.8}%
-\contentsline {section}{\numberline {4.9}Synthèse du chapitre}{29}{section.4.9}%
-\contentsline {chapter}{\numberline {5}Axe Intelligence Artificielle}{30}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Présentation de l'axe IA}{30}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Chatbot agricole intelligent}{30}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Reconnaissance vocale (Wolof)}{31}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Analyse d'images}{32}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Géolocalisation intelligente}{33}{section.5.5}%
-\contentsline {section}{\numberline {5.6}Apports de l'IA dans le système}{34}{section.5.6}%
-\contentsline {chapter}{\numberline {6}Axe Blockchain et Certification}{35}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Concept de blockchain}{35}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Smart Contract de certification}{35}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Enregistrement des preuves}{36}{section.6.3}%
-\contentsline {section}{\numberline {6.4}Interaction avec Ethereum}{37}{section.6.4}%
-\contentsline {section}{\numberline {6.5}Stockage IPFS}{38}{section.6.5}%
-\contentsline {section}{\numberline {6.6}Traçabilité et transparence}{39}{section.6.6}%
-\contentsline {chapter}{\numberline {7}Axe Agricoins (AGC) et Datawarehouse}{41}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Présentation des Agricoins}{41}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Mécanisme d'émission}{42}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Paiement hybride (AGC + Mobile Money)}{43}{section.7.3}%
-\contentsline {section}{\numberline {7.4}Gestion des transactions}{44}{section.7.4}%
-\contentsline {section}{\numberline {7.5}Commerce et marketplace}{44}{section.7.5}%
-\contentsline {chapter}{\numberline {8}Axe Sécurité et Cryptographie}{46}{chapter.8}%
-\contentsline {section}{\numberline {8.1}Architecture de sécurité}{46}{section.8.1}%
-\contentsline {section}{\numberline {8.2}Tableau récapitulatif des dix couches}{47}{section.8.2}%
-\contentsline {section}{\numberline {8.3}Description détaillée des couches}{48}{section.8.3}%
-\contentsline {subsection}{\numberline {8.3.1}C1 — Signatures ECDSA P-256 (Web Crypto API)}{48}{subsection.8.3.1}%
-\contentsline {subsection}{\numberline {8.3.2}C2 — IndexedDB non extractable}{48}{subsection.8.3.2}%
-\contentsline {subsection}{\numberline {8.3.3}C3 — Validation serveur (Cloud Functions)}{49}{subsection.8.3.3}%
-\contentsline {subsection}{\numberline {8.3.4}C4 — Nonce anti-rejeu (UUID + timestamp)}{49}{subsection.8.3.4}%
-\contentsline {subsection}{\numberline {8.3.5}C5 — Hash image SHA-256 (vérification IPFS serveur)}{50}{subsection.8.3.5}%
-\contentsline {subsection}{\numberline {8.3.6}C6 — Ledger immuable (SHA-256 chaîné)}{50}{subsection.8.3.6}%
-\contentsline {subsection}{\numberline {8.3.7}C7 — Chiffrement AES-GCM + PBKDF2 (310 000 itérations)}{51}{subsection.8.3.7}%
-\contentsline {subsection}{\numberline {8.3.8}C8 — Escrow AGC (séquestre atomique)}{52}{subsection.8.3.8}%
-\contentsline {subsection}{\numberline {8.3.9}C9 — Audit Trail immuable (journalisation write-only)}{53}{subsection.8.3.9}%
-\contentsline {subsection}{\numberline {8.3.10}C10 — Firestore Security Rules (ownership + rate limiting)}{53}{subsection.8.3.10}%
-\contentsline {section}{\numberline {8.4}Scénarios d'attaque et complémentarité des couches}{54}{section.8.4}%
-\contentsline {section}{\numberline {8.5}Tests de sécurité automatisés}{55}{section.8.5}%
-\contentsline {subsection}{\numberline {8.5.1}Architecture du tableau de bord}{56}{subsection.8.5.1}%
-\contentsline {subsection}{\numberline {8.5.2}Jeu de tests implémentés}{56}{subsection.8.5.2}%
-\contentsline {subsection}{\numberline {8.5.3}Résultats des tests}{57}{subsection.8.5.3}%
-\contentsline {subsection}{\numberline {8.5.4}Extraits de code du tableau de bord}{59}{subsection.8.5.4}%
-\contentsline {section}{\numberline {8.6}Bonnes pratiques de sécurité implémentées}{61}{section.8.6}%
-\contentsline {section}{\numberline {8.7}Synthèse de l'axe Sécurité}{61}{section.8.7}%
-\contentsline {chapter}{Conclusion Générale}{63}{chapter*.59}%
-\contentsline {chapter}{Bibliographie}{64}{chapter*.60}%
+\contentsline {section}{\numberline {4.9}Synthèse du chapitre}{28}{section.4.9}%
+\contentsline {chapter}{\numberline {5}Axe Intelligence Artificielle}{29}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Présentation de l'axe IA}{29}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Chatbot agricole intelligent}{29}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Reconnaissance vocale (Wolof)}{30}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Analyse d'images}{31}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Géolocalisation intelligente}{32}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Apports de l'IA dans le système}{33}{section.5.6}%
+\contentsline {chapter}{\numberline {6}Axe Blockchain et Certification}{34}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Concept de blockchain}{34}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Smart Contract de certification}{34}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Enregistrement des preuves}{35}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Interaction avec Ethereum}{36}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Stockage IPFS}{36}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Traçabilité et transparence}{37}{section.6.6}%
+\contentsline {chapter}{\numberline {7}Axe Agricoins (AGC) et Datawarehouse}{39}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Présentation des Agricoins}{39}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Mécanisme d'émission}{40}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Paiement hybride (AGC + Mobile Money)}{40}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Gestion des transactions}{42}{section.7.4}%
+\contentsline {section}{\numberline {7.5}Commerce et marketplace}{42}{section.7.5}%
+\contentsline {chapter}{\numberline {8}Axe Sécurité et Cryptographie}{43}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Architecture de sécurité}{43}{section.8.1}%
+\contentsline {section}{\numberline {8.2}Tableau récapitulatif des dix couches}{44}{section.8.2}%
+\contentsline {section}{\numberline {8.3}Description détaillée des couches}{45}{section.8.3}%
+\contentsline {subsection}{\numberline {8.3.1}C1 — Signatures ECDSA P-256 (Web Crypto API)}{45}{subsection.8.3.1}%
+\contentsline {subsection}{\numberline {8.3.2}C2 — IndexedDB non extractable}{45}{subsection.8.3.2}%
+\contentsline {subsection}{\numberline {8.3.3}C3 — Validation serveur (Cloud Functions)}{46}{subsection.8.3.3}%
+\contentsline {subsection}{\numberline {8.3.4}C4 — Nonce anti-rejeu (UUID + timestamp)}{46}{subsection.8.3.4}%
+\contentsline {subsection}{\numberline {8.3.5}C5 — Hash image SHA-256 (vérification IPFS serveur)}{47}{subsection.8.3.5}%
+\contentsline {subsection}{\numberline {8.3.6}C6 — Ledger immuable (SHA-256 chaîné)}{47}{subsection.8.3.6}%
+\contentsline {subsection}{\numberline {8.3.7}C7 — Chiffrement AES-GCM + PBKDF2 (310 000 itérations)}{48}{subsection.8.3.7}%
+\contentsline {subsection}{\numberline {8.3.8}C8 — Escrow AGC (séquestre atomique)}{48}{subsection.8.3.8}%
+\contentsline {subsection}{\numberline {8.3.9}C9 — Audit Trail immuable (journalisation write-only)}{49}{subsection.8.3.9}%
+\contentsline {subsection}{\numberline {8.3.10}C10 — Firestore Security Rules (ownership + rate limiting)}{49}{subsection.8.3.10}%
+\contentsline {section}{\numberline {8.4}Scénarios d'attaque et complémentarité des couches}{50}{section.8.4}%
+\contentsline {section}{\numberline {8.5}Tests de sécurité automatisés}{50}{section.8.5}%
+\contentsline {subsection}{\numberline {8.5.1}Architecture du tableau de bord}{51}{subsection.8.5.1}%
+\contentsline {subsection}{\numberline {8.5.2}Jeu de tests implémentés}{51}{subsection.8.5.2}%
+\contentsline {subsection}{\numberline {8.5.3}Résultats des tests}{53}{subsection.8.5.3}%
+\contentsline {subsection}{\numberline {8.5.4}Extraits de code du tableau de bord}{54}{subsection.8.5.4}%
+\contentsline {section}{\numberline {8.6}Bonnes pratiques de sécurité implémentées}{55}{section.8.6}%
+\contentsline {section}{\numberline {8.7}Synthèse de l'axe Sécurité}{55}{section.8.7}%
+\contentsline {chapter}{Conclusion Générale}{56}{chapter*.56}%
+\contentsline {chapter}{Bibliographie}{57}{chapter*.57}%
